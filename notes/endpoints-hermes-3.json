@@ -1,0 +1,95 @@
+[
+  {
+    "name": "Lambda | nousresearch/hermes-3-llama-3.1-405b",
+    "context_length": 131072,
+    "pricing": {
+      "request": "0",
+      "image": "0",
+      "prompt": "0.0000008",
+      "completion": "0.0000008",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "discount": 0
+    },
+    "provider_name": "Lambda",
+    "supported_parameters": [
+      "max_tokens",
+      "temperature",
+      "top_p",
+      "stop",
+      "frequency_penalty",
+      "presence_penalty",
+      "seed",
+      "logit_bias",
+      "logprobs",
+      "top_logprobs",
+      "response_format"
+    ],
+    "quantization": "fp8",
+    "max_completion_tokens": 131072,
+    "max_prompt_tokens": null,
+    "status": 0
+  },
+  {
+    "name": "DeepInfra | nousresearch/hermes-3-llama-3.1-405b",
+    "context_length": 131072,
+    "pricing": {
+      "request": "0",
+      "image": "0",
+      "prompt": "0.0000008",
+      "completion": "0.0000008",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "discount": 0
+    },
+    "provider_name": "DeepInfra",
+    "supported_parameters": [
+      "max_tokens",
+      "temperature",
+      "top_p",
+      "stop",
+      "frequency_penalty",
+      "presence_penalty",
+      "repetition_penalty",
+      "response_format",
+      "top_k",
+      "seed",
+      "min_p"
+    ],
+    "quantization": "fp8",
+    "max_completion_tokens": 16384,
+    "max_prompt_tokens": null,
+    "status": 0
+  },
+  {
+    "name": "Nebius | nousresearch/hermes-3-llama-3.1-405b",
+    "context_length": 131072,
+    "pricing": {
+      "request": "0",
+      "image": "0",
+      "prompt": "0.000001",
+      "completion": "0.000003",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "discount": 0
+    },
+    "provider_name": "Nebius",
+    "supported_parameters": [
+      "max_tokens",
+      "temperature",
+      "top_p",
+      "stop",
+      "frequency_penalty",
+      "presence_penalty",
+      "seed",
+      "top_k",
+      "logit_bias",
+      "logprobs",
+      "top_logprobs"
+    ],
+    "quantization": "fp8",
+    "max_completion_tokens": null,
+    "max_prompt_tokens": null,
+    "status": 0
+  }
+]

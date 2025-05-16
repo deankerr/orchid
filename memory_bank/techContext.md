@@ -1,69 +1,100 @@
-# Technical Context
+# Technology Context
 
-## Technology Stack
+## Core Technologies
 
-- **Frontend**: Next.js, React, TypeScript
-- **UI Components**: shadcn/ui (based on Radix UI)
-- **Backend/Database**: Convex
-- **Package Management**: bun
-- **Styling**: Tailwind CSS
-- **Testing**: Vitest (frontend), Convex testing utilities (backend) [?]
+### Frontend
+
+- **Next.js**: React framework for frontend rendering and routing
+- **TypeScript**: For type-safe code across the application
+- **shadcn/ui**: Component library for UI elements
+
+### Backend
+
+- **Convex**: Backend-as-a-service for database and server functions
+  - Used for storing model and endpoint data
+  - Provides real-time updates and query capabilities
+  - Handles data synchronization with OpenRouter API
+
+### API Integration
+
+- **OpenRouter API**: Source of AI model and endpoint data
+  - `/models` endpoint for basic model listing
+  - `/models/{id}/endpoints` for detailed endpoint information
+- **Zod**: Schema validation for API responses
 
 ## Development Environment
 
-- Node.js environment with bun as package manager
-- Git for version control
-- VSCode as recommended editor with TypeScript and ESLint extensions [?]
+- **Bun**: Package manager and runtime
+- **ESLint**: Code linting and style enforcement
+- **Prettier**: Code formatting
 
-## External Dependencies
+## Data Integration
 
-- **OpenRouter API**: Primary data source for model/provider information
-- **shadcn/ui**: Component library for rapid UI development
-- **Tailwind CSS**: Utility-first CSS framework
-- **Convex**: Backend-as-a-Service for database and real-time functionality
+### OpenRouter API Structure
 
-## Coding Standards [?]
+- Models have general information (architecture, context length)
+- Endpoints provide provider-specific implementations
+- Pricing varies by provider for the same model
 
-- TypeScript for type safety
-- Functional components with React hooks
-- Composable functions over class hierarchies
-- Tailwind for styling following utility-first approach
-- ESLint for code quality enforcement
+### Data Processing Flow
 
-## Infrastructure [?]
+1. Fetch data from OpenRouter API
+2. Transform data to match Convex schema
+3. Store in normalized tables (models, endpoints)
+4. Query through type-safe Convex functions
+
+### Type System
+
+- Zod schemas for API validation
+- Convex validators for database schema
+- TypeScript types for frontend and backend consistency
+
+## Convex Best Practices
+
+### Function Design
+
+- Use type annotations instead of validators for internal functions
+
+  ```typescript
+  // Preferred approach for internal functions
+  handler: async (ctx, args: MyType) => {
+    // function body
+  }
+  ```
+
+- Return document IDs (or null) from mutations
+
+### Code Organization
+
+- Create standalone transformation utility functions for API to DB conversions
+- Avoid duplicating transformation logic in mutations or actions
+- Use dedicated query functions for existence checks rather than duplicating query logic
+
+### Type Safety
+
+- Add explicit return type annotations to all actions and mutations
+- Use explicit typing for arrays and promises in async operations
+- Export schema type definitions for reuse across the application
+
+## Security Considerations
+
+- API key management for OpenRouter integration
+- Rate limiting to respect OpenRouter's usage policies
+- Proper error handling for API failures
+
+## Performance Considerations
+
+- Database indexes for common query patterns
+- Caching strategy for model data
+- Pagination for large result sets
+
+## Deployment
 
 - Vercel for frontend hosting
-- Convex for backend hosting and database
+- Convex Cloud for backend services
 
-## API Integrations
+## Testing Strategy [?]
 
-- **OpenRouter API**: Used for fetching model and provider data
-  - Endpoints for model listing [?]
-  - Endpoints for provider information [?]
-  - Endpoints for model testing and evaluation [?]
-
-## Technical Constraints
-
-- What are the OpenRouter API rate limits?
-- How often is OpenRouter API data updated?
-- Are there any Convex-specific limitations we should be aware of?
-- What are the performance considerations for data visualization?
-
-## Performance Considerations [?]
-
-- Efficient data fetching and caching
-- Optimized database queries
-- Lazy loading and code splitting
-- Server-side rendering for critical pages
-
-## Security Approach
-
-- How should API keys be managed?
-- What credential handling approach should we use?
-- What input validation and sanitization methods should we implement?
-
-## Monitoring and Logging [?]
-
-- Application performance monitoring
-- Error tracking and reporting
-- Usage analytics for feature optimization
+- Unit tests for data transformation functions
+- Integration tests for API communication
+- End-to-end tests for critical user flows
