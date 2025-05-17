@@ -1,18 +1,18 @@
-import { action } from '../_generated/server'
 import { v } from 'convex/values'
 import { internal } from '../_generated/api'
+import { internalAction } from '../_generated/server'
 import { listEndpoints } from './listEndpoints'
 import { listModels } from './listModels'
-import { transformOrModel, transformOrEndpoint } from './transforms'
+import { transformOrEndpoint, transformOrModel } from './transforms'
 
 /**
  * Synchronizes model and endpoint data from OpenRouter
  * Can sync a specific model, a list of models, or all models
  */
-export const syncModels = action({
+export const syncModels = internalAction({
   args: {
     modelKeys: v.optional(v.array(v.string())),
-    limit: v.optional(v.number()),
+    replace: v.boolean(),
   },
   handler: async (ctx, args) => {
     let modelKeys: string[] = []
@@ -24,18 +24,14 @@ export const syncModels = action({
       modelKeys = modelsResponse.data.map((model) => model.id)
     }
 
-    if (args.limit && args.limit > 0 && args.limit < modelKeys.length) {
-      modelKeys = modelKeys.slice(0, args.limit)
-    }
-
     for (const modelKey of modelKeys) {
       try {
         const endpointsResponse = await listEndpoints(modelKey)
         const model = transformOrModel(endpointsResponse)
-        const existingModel = await ctx.runQuery(internal.models.getModelByKey, { modelKey: model.modelKey })
+        const existingModel = await ctx.runQuery(internal.models.getModel, { modelKey: model.modelKey })
         if (!existingModel) {
           await ctx.runMutation(internal.models.insertModel, model)
-        } else {
+        } else if (args.replace) {
           await ctx.runMutation(internal.models.replaceModel, { ...existingModel, ...model })
         }
 
@@ -51,11 +47,10 @@ export const syncModels = action({
           const existing = existingByProvider.get(modelEndpoint.providerName)
           if (!existing) {
             await ctx.runMutation(internal.models.insertEndpoint, modelEndpoint)
-          } else {
+          } else if (args.replace) {
             await ctx.runMutation(internal.models.replaceEndpoint, { ...existing, ...modelEndpoint })
           }
         }
-        console.log(`${modelKey}: ${endpoints.length} endpoints`)
       } catch (error) {
         console.error(`Error syncing ${modelKey}:`, error)
       }

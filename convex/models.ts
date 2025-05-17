@@ -1,31 +1,8 @@
-import type {} from 'convex-helpers/validators'
-import type { WithoutSystemFields } from 'convex/server'
+import { paginationOptsValidator, type WithoutSystemFields } from 'convex/server'
 import { v } from 'convex/values'
 import type { Doc } from './_generated/dataModel'
 import { internalMutation, internalQuery, query } from './_generated/server'
-
-// Check if a model exists by its key
-export const getModelByKey = internalQuery({
-  args: { modelKey: v.string() },
-  handler: async (ctx, args) => {
-    return await ctx.db
-      .query('models')
-      .withIndex('by_modelKey', (q) => q.eq('modelKey', args.modelKey))
-      .unique()
-  },
-})
-
-export const getModelEndpoints = internalQuery({
-  args: {
-    modelKey: v.string(),
-  },
-  handler: async (ctx, args) => {
-    return await ctx.db
-      .query('modelEndpoints')
-      .withIndex('by_modelKey', (q) => q.eq('modelKey', args.modelKey))
-      .collect()
-  },
-})
+import { asyncMap } from 'convex-helpers'
 
 export const insertModel = internalMutation({
   handler: async (ctx, args: WithoutSystemFields<Doc<'models'>>) => {
@@ -53,6 +30,75 @@ export const replaceEndpoint = internalMutation({
   },
 })
 
+export const getModel = internalQuery({
+  args: { modelKey: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query('models')
+      .withIndex('by_modelKey', (q) => q.eq('modelKey', args.modelKey))
+      .unique()
+  },
+})
+
+export const getModelEndpoints = internalQuery({
+  args: {
+    modelKey: v.string(),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query('modelEndpoints')
+      .withIndex('by_modelKey', (q) => q.eq('modelKey', args.modelKey))
+      .collect()
+  },
+})
+
+export const listModelsWithEndpoints = query({
+  args: {
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
+    const models = await ctx.db.query('models').paginate(args.paginationOpts)
+
+    return {
+      ...models,
+      page: await asyncMap(models.page, async (model) => {
+        const endpoints = await ctx.db
+          .query('modelEndpoints')
+          .withIndex('by_modelKey', (q) => q.eq('modelKey', model.modelKey))
+          .collect()
+        return {
+          ...model,
+          endpoints,
+        }
+      }),
+    }
+  },
+})
+
+export const getModelWithEndpoints = query({
+  args: {
+    modelKey: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const model = await ctx.db
+      .query('models')
+      .withIndex('by_modelKey', (q) => q.eq('modelKey', args.modelKey))
+      .unique()
+
+    if (!model) {
+      return null
+    }
+
+    const endpoints = await ctx.db
+      .query('modelEndpoints')
+      .withIndex('by_modelKey', (q) => q.eq('modelKey', args.modelKey))
+      .collect()
+    return {
+      ...model,
+      endpoints,
+    }
+  },
+})
 // Query to find endpoints with specific capabilities
 export const findEndpointsByCapabilities = query({
   args: {

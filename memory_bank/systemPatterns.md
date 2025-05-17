@@ -8,7 +8,7 @@ ORCHID follows a modern web application architecture:
 - Convex for backend database and real-time updates
 - shadcn/ui for UI components
 
-## Data Flow [?]
+## Data Flow
 
 1. **Data Collection**: Scheduled jobs fetch model/provider data from OpenRouter API
 2. **Data Processing**: Raw data is processed and enriched before storage
@@ -16,13 +16,36 @@ ORCHID follows a modern web application architecture:
 4. **Retrieval**: Frontend queries data through Convex client
 5. **Visualization**: Data is presented through configurable UI components
 
-## Potential Architecture Patterns [?]
+## Frontend Patterns
 
-The following patterns are proposed based on typical Next.js and Convex applications but have not been confirmed for this project:
+### Component Organization
+
+- **Page Components**: Top-level components for routes (e.g., ModelPage)
+- **UI Components**: Reusable interface elements (cards, buttons, etc.)
+- **Display Components**: Purpose-built for specific data types (ModelCard, ModelList)
+
+### Data Formatting
+
+- **Utils Module Pattern**: Centralized formatting logic in utils.ts files
+- **Type-Specific Formatters**: Specialized formatting functions for different data types:
+  - `formatPricePerM` for per-million token pricing
+  - `formatPricePerK` for per-thousand token pricing
+  - `formatFlatPrice` for single-value prices
+  - `formatContextLength` for token quantities
+  - `formatTimestamp` for date/time values
+- **Conditional Formatting**: Display logic based on data properties (e.g., free models)
+
+### Data Access Pattern
+
+- **Paginated Queries**: Using Convex's usePaginatedQuery for efficient data loading
+- **Single-Item Queries**: Using standard useQuery for detailed lookups
+- **Model-Endpoint Relationship**: Single query fetches model with associated endpoints
+
+## Architecture Patterns
 
 - **Functional Service Modules**: Self-contained modules for specific functionality (model fetching, data processing)
 - **Custom Hooks**: React hooks for data access and state management
-- **Server Actions/Functions**: Convex functions for backend operations
+- **Server Functions**: Convex functions for backend operations
 
 ## Database Schema
 
@@ -43,6 +66,7 @@ Stores core information about AI models:
   - `instructType`: Instruction format (ChatML, etc.)
 - `contextLength`: Maximum context window size
 - `supportedParameters`: Array of parameters the model supports
+- `huggingFaceId`: Optional ID for HuggingFace model repository
 
 ### Endpoints Table
 
@@ -56,16 +80,17 @@ Stores provider-specific implementations of models:
 - `quantization`: Quantization level (fp8, etc.)
 - `status`: Operational status
 - `pricing`: Object containing:
-  - `prompt`: Cost per input token
-  - `completion`: Cost per output token
-  - Various other pricing parameters (image, request, etc.)
-- `supportedParameters`: Array of parameters supported by this endpoint
+  - `prompt`: Cost per input token (displayed per million tokens)
+  - `completion`: Cost per output token (displayed per million tokens)
+  - `image`: Cost for image processing (displayed per thousand tokens)
+  - `request`: Request-based cost (displayed per thousand tokens)
+  - `webSearch`: Web search cost (displayed as flat price)
+  - Other pricing parameters as needed
 
 ### Indexes
 
 - `by_modelKey`: For model lookup
 - `by_providerName`: For provider filtering
-- `by_modelKey_and_providerName`: For combined lookups
 
 ## API Approach
 
@@ -79,18 +104,15 @@ For data retrieval:
 
 - `findEndpointsByCapabilities`: Query to filter endpoints by specific capabilities
 - `getModelByKey` / `getEndpointByModelAndProvider`: Queries to check existence
+- `listModelsWithEndpoints`: Paginated query for model listing with endpoints
 
-Some considerations for the API structure:
+## UI Design Patterns
 
-- How will the frontend query the Convex backend?
-- Will we need any Next.js API routes or will Convex handle all data needs?
-- What authentication approach should we use?
-
-## State Management [?]
-
-- Server-side state managed through Convex
-- Client-side state handled with React hooks and context
-- Caching strategy for optimized performance
+- **Card Pattern**: Consistent card UI for displaying model information
+- **Progressive Disclosure**: Summary in listings, details on dedicated pages
+- **Responsive Layout**: Grid-based layouts that adapt to different screen sizes
+- **Visual Hierarchy**: Prominent display of key identifiers (model keys)
+- **External Resources**: Links to external documentation and resources
 
 ## Error Handling
 
@@ -100,41 +122,7 @@ Areas to consider:
 - What logging approach should we implement?
 - How will errors be presented to users?
 
-## Security Considerations
-
-- How will we handle API key management for OpenRouter access?
-- Do we need to consider rate limiting?
-- What data validation approach should we use?
-
-# System Architecture and Technical Decisions
-
-## OpenRouter Sync Refactor
-
-### Changes Made
-
-1. **Combined Sync Actions**: Merged `syncModelEndpoints` and `batchSync` into a single `syncModels` action that can handle:
-
-   - Syncing a specific list of models
-   - Syncing all models (default)
-   - Applying a limit to the number of models processed
-
-2. **Simplified Stats**: Removed redundant stats tracking and replaced with concise logging:
-
-   ```typescript
-   console.log(`${modelKey}: ${endpoints.length} endpoints`)
-   console.error(`Error syncing ${modelKey}:`, error)
-   ```
-
-3. **Renamed Transform Functions**:
-
-   - `apiModelToDbModel` → `transformOrModel`
-   - `apiEndpointToDbEndpoint` → `transformOrEndpoint`
-
-4. **Improved Model/Endpoint Handling**:
-   - Uses `getModelEndpoints` for batch endpoint checks
-   - Properly handles `insert` vs. `replace` for both models and endpoints
-
-### Learnings
+## Learnings
 
 - **Avoid Nested Actions**: Calling an action from another action is a bad practice in Convex. Instead, consolidate logic into a single action.
 - **Logging Over Stats**: For background sync tasks, logging is often more useful than tracking granular stats.
@@ -142,8 +130,14 @@ Areas to consider:
   ```typescript
   await ctx.runMutation(internal.models.replaceModel, { ...existingModel, ...model })
   ```
+- **Data Formatting**: Different data types require specialized formatting for user readability:
+  - Prices per token are too small for direct display and need scaling
+  - Different pricing models need different units and scaling
+  - Timestamps need conversion from Unix seconds to JavaScript milliseconds
 
-### Future Considerations
+## Future Considerations
 
 - **Error Recovery**: Add retry logic for failed model syncs.
 - **Batching**: Explore batching endpoints for very large models to avoid timeouts.
+- **Client Caching**: Add client-side caching for common queries.
+- **Advanced Filtering**: Implement complex filtering based on model capabilities.
