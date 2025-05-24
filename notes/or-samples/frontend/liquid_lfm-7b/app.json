@@ -1,0 +1,262 @@
+[
+  {
+    "app_id": 170472,
+    "total_tokens": "890260479",
+    "app": {
+      "id": 170472,
+      "created_at": "2024-01-31T08:29:20.525061+00:00",
+      "description": "Games with AI companions",
+      "title": "FunTalk AI",
+      "main_url": null,
+      "origin_url": "https://www.funtalk.ai/",
+      "source_code_url": null
+    }
+  },
+  {
+    "app_id": 2228748,
+    "total_tokens": "230402077",
+    "app": {
+      "id": 2228748,
+      "created_at": "2025-02-17T17:01:55.958342+00:00",
+      "description": null,
+      "title": "ClimbOnline",
+      "main_url": null,
+      "origin_url": "https://climb.online/",
+      "source_code_url": null
+    }
+  },
+  {
+    "app_id": 189156,
+    "total_tokens": "13064027",
+    "app": {
+      "id": 189156,
+      "created_at": "2024-09-18T22:55:50.622588+00:00",
+      "description": "Open-source recreation of the old c.ai site",
+      "title": "OpenCharacter",
+      "main_url": null,
+      "origin_url": "https://opencharacter.org/",
+      "source_code_url": null
+    }
+  },
+  {
+    "app_id": 2238515,
+    "total_tokens": "507093",
+    "app": {
+      "id": 2238515,
+      "created_at": "2025-03-11T09:56:44.144573+00:00",
+      "description": null,
+      "title": null,
+      "main_url": null,
+      "origin_url": "https://dubesor.de/",
+      "source_code_url": null
+    }
+  },
+  {
+    "app_id": 142576,
+    "total_tokens": "492786",
+    "app": {
+      "id": 142576,
+      "created_at": "2023-07-21T00:27:58.324546+00:00",
+      "description": "LLM frontend for power users",
+      "title": "SillyTavern",
+      "main_url": null,
+      "origin_url": "https://sillytavern.app/",
+      "source_code_url": null
+    }
+  },
+  {
+    "app_id": 2243194,
+    "total_tokens": "417043",
+    "app": {
+      "id": 2243194,
+      "created_at": "2025-03-20T00:13:18.400272+00:00",
+      "description": null,
+      "title": null,
+      "main_url": null,
+      "origin_url": "https://rnews.giize.com/",
+      "source_code_url": null
+    }
+  },
+  {
+    "app_id": 182247,
+    "total_tokens": "190732",
+    "app": {
+      "id": 182247,
+      "created_at": "2024-07-05T06:50:35.124254+00:00",
+      "description": null,
+      "title": "MUME AI",
+      "main_url": null,
+      "origin_url": "https://musemesh.ai/",
+      "source_code_url": null
+    }
+  },
+  {
+    "app_id": 167635,
+    "total_tokens": "176667",
+    "app": {
+      "id": 167635,
+      "created_at": "2023-11-15T02:19:52.458066+00:00",
+      "description": "Chat with multiple LLMs at once",
+      "title": "OpenRouter: Chatroom",
+      "main_url": "https://openrouter.ai/chat",
+      "origin_url": "https://openrouter.ai/",
+      "source_code_url": null
+    }
+  },
+  {
+    "app_id": 184102,
+    "total_tokens": "71503",
+    "app": {
+      "id": 184102,
+      "created_at": "2024-07-28T14:31:04.263164+00:00",
+      "description": "Extensible, self-hosted AI interface",
+      "title": "Open WebUI",
+      "main_url": null,
+      "origin_url": "https://openwebui.com/",
+      "source_code_url": null
+    }
+  },
+  {
+    "app_id": 166114,
+    "total_tokens": "65878",
+    "app": {
+      "id": 166114,
+      "created_at": "2023-09-30T07:18:29.115842+00:00",
+      "description": null,
+      "title": null,
+      "main_url": null,
+      "origin_url": "https://discord.com/",
+      "source_code_url": null
+    }
+  },
+  {
+    "app_id": 2243367,
+    "total_tokens": "49993",
+    "app": {
+      "id": 2243367,
+      "created_at": "2025-03-20T04:40:04.603627+00:00",
+      "description": null,
+      "title": "RPRP AI",
+      "main_url": null,
+      "origin_url": "https://rprp.ai/",
+      "source_code_url": null
+    }
+  },
+  {
+    "app_id": 175692,
+    "total_tokens": "39602",
+    "app": {
+      "id": 175692,
+      "created_at": "2024-04-18T19:40:04.437027+00:00",
+      "description": null,
+      "title": "ChatLabs",
+      "main_url": null,
+      "origin_url": "https://writingmate.ai/",
+      "source_code_url": null
+    }
+  },
+  {
+    "app_id": 186442,
+    "total_tokens": "36712",
+    "app": {
+      "id": 186442,
+      "created_at": "2024-08-16T01:04:59.66335+00:00",
+      "description": null,
+      "title": "Future Fiction Academy (Raptor Write)",
+      "main_url": null,
+      "origin_url": "https://www.raptorwrite.com/",
+      "source_code_url": null
+    }
+  },
+  {
+    "app_id": 177987,
+    "total_tokens": "34618",
+    "app": {
+      "id": 177987,
+      "created_at": "2024-05-14T18:30:30.695728+00:00",
+      "description": null,
+      "title": "APIpie.ai",
+      "main_url": null,
+      "origin_url": "https://apipie.ai/",
+      "source_code_url": null
+    }
+  },
+  {
+    "app_id": 188881,
+    "total_tokens": "22770",
+    "app": {
+      "id": 188881,
+      "created_at": "2024-09-15T10:33:45.374272+00:00",
+      "description": "GenAI for everyone",
+      "title": "Chub AI",
+      "main_url": null,
+      "origin_url": "https://chub.ai/",
+      "source_code_url": null
+    }
+  },
+  {
+    "app_id": 2236212,
+    "total_tokens": "11181",
+    "app": {
+      "id": 2236212,
+      "created_at": "2025-03-06T18:34:33.64981+00:00",
+      "description": null,
+      "title": "Cherry Studio",
+      "main_url": null,
+      "origin_url": "https://cherry-ai.com/",
+      "source_code_url": null
+    }
+  },
+  {
+    "app_id": 143572,
+    "total_tokens": "10607",
+    "app": {
+      "id": 143572,
+      "created_at": "2023-08-09T21:07:10.433583+00:00",
+      "description": "Open-source library to simplify LLM calls",
+      "title": "liteLLM",
+      "main_url": null,
+      "origin_url": "https://litellm.ai/",
+      "source_code_url": null
+    }
+  },
+  {
+    "app_id": 2270797,
+    "total_tokens": "9226",
+    "app": {
+      "id": 2270797,
+      "created_at": "2025-04-20T22:12:37.39566+00:00",
+      "description": null,
+      "title": "CodersInFlow",
+      "main_url": null,
+      "origin_url": "https://github.com/CodersInFlow/CodersInFlow",
+      "source_code_url": null
+    }
+  },
+  {
+    "app_id": 190794,
+    "total_tokens": "7149",
+    "app": {
+      "id": 190794,
+      "created_at": "2024-10-11T13:22:07.407736+00:00",
+      "description": null,
+      "title": "Voices of the Court",
+      "main_url": null,
+      "origin_url": "https://github.com/Demeter29/Voices_of_the_Court",
+      "source_code_url": null
+    }
+  },
+  {
+    "app_id": 2248764,
+    "total_tokens": "6367",
+    "app": {
+      "id": 2248764,
+      "created_at": "2025-03-27T09:36:23.905974+00:00",
+      "description": null,
+      "title": "AI Hub",
+      "main_url": null,
+      "origin_url": "https://aihubapp.io/ai-hub/mobile",
+      "source_code_url": null
+    }
+  }
+]

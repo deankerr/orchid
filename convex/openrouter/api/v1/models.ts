@@ -44,12 +44,3 @@ export const ModelRecordSchema = z
 export const ModelsResponseSchema = z.object({
   data: z.array(ModelRecordSchema),
 })
-
-export type ModelRecord = z.infer<typeof ModelRecordSchema>
-export type ModelsResponse = z.infer<typeof ModelsResponseSchema>
-
-export const listModels = async (): Promise<ModelsResponse> => {
-  const response = await fetch('https://openrouter.ai/api/v1/models')
-  const data = await response.json()
-  return ModelsResponseSchema.parse(data)
-}

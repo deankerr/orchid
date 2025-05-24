@@ -48,12 +48,3 @@ const ModelEndpointResponseSchema = z
       .strict(),
   })
   .strict()
-
-export type ModelEndpoint = z.infer<typeof ModelEndpointSchema>
-export type ModelEndpointResponse = z.infer<typeof ModelEndpointResponseSchema>
-
-export const listEndpoints = async (modelKey: string): Promise<ModelEndpointResponse> => {
-  const response = await fetch(`https://openrouter.ai/api/v1/models/${modelKey}/endpoints`)
-  const data = await response.json()
-  return ModelEndpointResponseSchema.parse(data)
-}

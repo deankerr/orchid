@@ -1,5 +1,3 @@
-import { ModelsList } from '@/components/models/ModelsList'
-
 export default function Home() {
   return (
     <main className="min-h-screen bg-background">
@@ -8,7 +6,6 @@ export default function Home() {
           <h1 className="text-4xl font-bold">ORCHID</h1>
           <p className="text-muted-foreground">OpenRouter Capability & Health Intelligence Dashboard</p>
         </header>
-        <ModelsList />
       </div>
     </main>
   )

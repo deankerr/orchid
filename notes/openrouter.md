@@ -56,6 +56,34 @@ This document tracks unusual behaviors, inconsistencies, and open questions abou
 - https://openrouter.ai/api/frontend/models
 - https://openrouter.ai/api/frontend/all-providers
 - https://openrouter.ai/api/frontend/stats/endpoint?permaslug=meta-llama/llama-4-scout-17b-16e-instruct&variant=standard
+  - variant is optional if "standard"
+  - if there are no endpoints available, it will return a 404 error object, even if the model exists
+  - stats: computed p50 values?
+
+### Undocumented
+
+- https://openrouter.ai/api/frontend/model-author?authorSlug=liquid&shouldIncludeStats=true&shouldIncludeVariants=false
+
+  - author object. canonical name, description?
+  - modelsWithStats array - Model with Endpoint (with internal Model again?)
+    - stats: daily token input/output totals, 'count' = requests?
+    - despite the param, always seems to include stats
+
+- https://openrouter.ai/api/frontend/models/versions?permaslug=liquid%2Flfm-7b&variant=standard
+
+  - So far, only this object has been observed, with no values contained: `{ "models": [], "analytics": [] }`
+
+- https://openrouter.ai/api/frontend/stats/app?limit=20&permaslug=liquid%2Flfm-7b&variant=standard
+
+  - "Top public apps this week using this model"
+
+- https://openrouter.ai/api/frontend/stats/uptime-recent?permaslug=liquid%2Flfm-7b
+
+  - Map of endpoint UUIDs to uptime data (last 3 days)
+
+- https://openrouter.ai/api/frontend/stats/uptime-hourly?id=25b2cca5-53f6-40e7-b47b-191ec968b7c2
+
+  - Last 72 hours of uptime data for an endpoint
 
 ## Frontend API Sample Schemas
 

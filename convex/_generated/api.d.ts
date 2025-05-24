@@ -13,11 +13,15 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
-import type * as models from "../models.js";
-import type * as openrouter_listEndpoints from "../openrouter/listEndpoints.js";
-import type * as openrouter_listModels from "../openrouter/listModels.js";
-import type * as openrouter_sync from "../openrouter/sync.js";
-import type * as openrouter_transforms from "../openrouter/transforms.js";
+import type * as openrouter_api_frontend_allProviders from "../openrouter/api/frontend/allProviders.js";
+import type * as openrouter_api_frontend_endpoint from "../openrouter/api/frontend/endpoint.js";
+import type * as openrouter_api_frontend_models from "../openrouter/api/frontend/models.js";
+import type * as openrouter_api_v1_endpoints from "../openrouter/api/v1/endpoints.js";
+import type * as openrouter_api_v1_models from "../openrouter/api/v1/models.js";
+import type * as openrouter_fetch from "../openrouter/fetch.js";
+import type * as projections from "../projections.js";
+import type * as snapshots from "../snapshots.js";
+import type * as sync from "../sync.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -28,11 +32,15 @@ import type * as openrouter_transforms from "../openrouter/transforms.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
-  models: typeof models;
-  "openrouter/listEndpoints": typeof openrouter_listEndpoints;
-  "openrouter/listModels": typeof openrouter_listModels;
-  "openrouter/sync": typeof openrouter_sync;
-  "openrouter/transforms": typeof openrouter_transforms;
+  "openrouter/api/frontend/allProviders": typeof openrouter_api_frontend_allProviders;
+  "openrouter/api/frontend/endpoint": typeof openrouter_api_frontend_endpoint;
+  "openrouter/api/frontend/models": typeof openrouter_api_frontend_models;
+  "openrouter/api/v1/endpoints": typeof openrouter_api_v1_endpoints;
+  "openrouter/api/v1/models": typeof openrouter_api_v1_models;
+  "openrouter/fetch": typeof openrouter_fetch;
+  projections: typeof projections;
+  snapshots: typeof snapshots;
+  sync: typeof sync;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,
