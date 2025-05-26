@@ -1,9 +1,8 @@
-import { ConvexError, v, type Infer } from 'convex/values'
-import { internal } from './_generated/api'
-import { internalAction, internalQuery } from './_generated/server'
-import { openrouter } from './openrouter/client'
+import { ConvexError, v } from 'convex/values'
 import { z } from 'zod'
-import { nullable } from 'convex-helpers/validators'
+import { internal } from './_generated/api'
+import { internalAction } from './_generated/server'
+import { openrouter } from './openrouter/client'
 
 export const syncProviders = internalAction({
   args: {
@@ -11,25 +10,16 @@ export const syncProviders = internalAction({
   },
   handler: async (ctx, { epoch }) => {
     const result = await openrouter.frontend.allProviders()
-
-    if (!result.success) {
-      await ctx.runMutation(internal.snapshots.insertSnapshot, {
-        category: 'providers',
-        key: '',
-        epoch,
-        data: { error: result.error },
-      })
-
-      console.error('Failed to sync providers', result.error)
-      return
-    }
-
     await ctx.runMutation(internal.snapshots.insertSnapshot, {
       category: 'providers',
       key: '',
       epoch,
-      data: { providers: result.data },
+      data: result,
     })
+
+    if (!result.success) {
+      console.error('Failed to sync providers', result.error)
+    }
   },
 })
 
@@ -44,7 +34,7 @@ export const syncModels = internalAction({
         category: 'models',
         key: '',
         epoch,
-        data: { error: result.error },
+        data: result,
       })
       console.error('Failed to sync models', result.error)
       return
@@ -64,14 +54,14 @@ export const syncModels = internalAction({
 
     const models = ModelListDataSchema.passthrough().array().safeParse(result.data)
     if (!models.success) {
-      throw new ConvexError({ message: 'Failed to get models', epoch })
+      throw new ConvexError({ message: 'Failed to get models', epoch, issues: models.error.flatten() })
     }
 
     await ctx.runMutation(internal.snapshots.insertSnapshot, {
       category: 'models',
       key: '',
       epoch,
-      data: { models: models.data },
+      data: { success: true, data: models.data },
     })
 
     const modelList = models.data
@@ -91,49 +81,15 @@ export const syncModels = internalAction({
       .filter((m) => m !== null)
 
     await ctx.runMutation(internal.snapshots.insertSnapshot, {
-      category: 'modelList',
+      category: 'model-list',
       key: '',
       epoch,
-      data: { modelList },
+      data: { success: true, data: modelList },
     })
 
     await ctx.scheduler.runAfter(0, internal.sync.syncEndpoints, { epoch })
-  },
-})
-
-const vModelList = v.array(
-  v.object({
-    modelId: v.string(),
-    author: v.string(),
-    params: v.object({ permaslug: v.string(), variant: v.string() }),
-    topEndpointId: v.string(),
-  }),
-)
-
-export const getModelList = internalQuery({
-  args: {
-    epoch: v.number(),
-  },
-  returns: nullable(vModelList),
-  handler: async (ctx, { epoch }) => {
-    const snapshot = await ctx.db
-      .query('snapshots')
-      .withIndex('by_category_key_epoch', (q) =>
-        q.eq('category', 'modelList').eq('key', '').eq('epoch', epoch),
-      )
-      .first()
-
-    if (!snapshot || typeof snapshot.data !== 'string') {
-      return null
-    }
-
-    try {
-      const { modelList } = JSON.parse(snapshot.data) as { modelList: Infer<typeof vModelList> }
-      return modelList
-    } catch (error) {
-      console.error('Failed to parse model list', error)
-      return null
-    }
+    await ctx.scheduler.runAfter(0, internal.sync.syncRecentUptimes, { epoch })
+    await ctx.scheduler.runAfter(0, internal.sync.syncModelAuthors, { epoch })
   },
 })
 
@@ -142,7 +98,7 @@ export const syncEndpoints = internalAction({
     epoch: v.number(),
   },
   handler: async (ctx, { epoch }) => {
-    const modelList = await ctx.runQuery(internal.sync.getModelList, { epoch })
+    const modelList = await ctx.runQuery(internal.snapshots.getEpochModelList, { epoch })
     if (!modelList) {
       throw new ConvexError({ message: 'Failed to get model list', epoch })
     }
@@ -156,109 +112,84 @@ export const syncEndpoints = internalAction({
           category: 'endpoints',
           key: modelId,
           epoch,
-          data: { error: result.error },
+          data: result,
         })
         console.error('Failed to sync endpoint', modelId, params, result.error)
         continue
       }
 
-      const endpoints = result.data
+      const endpoints = z.object({ id: z.string() }).passthrough().array().safeParse(result.data)
+
+      if (!endpoints.success) {
+        console.error('Failed to parse endpoint ids', modelId, params, endpoints.error.flatten())
+        continue
+      }
+
       await ctx.runMutation(internal.snapshots.insertSnapshot, {
         category: 'endpoints',
         key: modelId,
         epoch,
-        data: { endpoints },
+        data: { success: true, data: endpoints.data },
       })
 
-      const endpointIds = z.object({ id: z.string() }).array().safeParse(endpoints)
-      if (!endpointIds.success) {
-        console.error('Failed to parse endpoint ids', modelId, params, endpoints)
-        continue
-      }
-
-      endpointIdsList.push({ modelId, endpointIds: endpointIds.data.map((e) => e.id) })
+      endpointIdsList.push({ modelId, endpointIds: endpoints.data.map((e) => e.id) })
     }
 
     await ctx.runMutation(internal.snapshots.insertSnapshot, {
-      category: 'endpointIdsList',
+      category: 'endpoint-ids-list',
       key: '',
       epoch,
-      data: { endpointIdsList },
+      data: { success: true, data: endpointIdsList },
     })
 
-    await ctx.scheduler.runAfter(0, internal.sync.syncUptimes, { epoch })
+    await ctx.scheduler.runAfter(0, internal.sync.syncHourlyUptimes, { epoch })
     await ctx.scheduler.runAfter(0, internal.sync.syncApp, { epoch })
   },
 })
 
-const vEndpointIdsList = v.array(
-  v.object({
-    modelId: v.string(),
-    endpointIds: v.array(v.string()),
-  }),
-)
-
-export const getEndpointIdsList = internalQuery({
-  args: {
-    epoch: v.number(),
-  },
-  returns: nullable(vEndpointIdsList),
-  handler: async (ctx, { epoch }) => {
-    const snapshot = await ctx.db
-      .query('snapshots')
-      .withIndex('by_category_key_epoch', (q) =>
-        q.eq('category', 'endpointIdsList').eq('key', '').eq('epoch', epoch),
-      )
-      .first()
-
-    if (!snapshot || typeof snapshot.data !== 'string') {
-      return null
-    }
-
-    try {
-      const { endpointIdsList } = JSON.parse(snapshot.data) as {
-        endpointIdsList: Infer<typeof vEndpointIdsList>
-      }
-      return endpointIdsList
-    } catch (error) {
-      console.error('Failed to parse endpoint ids list', error)
-      return null
-    }
-  },
-})
-
-export const syncUptimes = internalAction({
+export const syncHourlyUptimes = internalAction({
   args: {
     epoch: v.number(),
   },
   handler: async (ctx, { epoch }) => {
-    const endpointIdsList = await ctx.runQuery(internal.sync.getEndpointIdsList, { epoch })
+    const endpointIdsList = await ctx.runQuery(internal.snapshots.getEpochEndpointIdsList, { epoch })
     if (!endpointIdsList) {
       throw new ConvexError({ message: 'Failed to get endpoint ids list', epoch })
     }
 
     for (const { modelId, endpointIds } of endpointIdsList) {
       for (const endpointId of endpointIds) {
-        const hourly = await openrouter.frontend.stats.uptimeHourly({ id: endpointId })
-
-        if (!hourly.success) {
-          console.error('Failed to sync uptime', modelId, endpointId, hourly.error)
-          await ctx.runMutation(internal.snapshots.insertSnapshot, {
-            category: 'uptimes',
-            key: modelId,
-            epoch,
-            data: { error: hourly.error },
-          })
-          continue
-        }
+        const result = await openrouter.frontend.stats.uptimeHourly({ id: endpointId })
 
         await ctx.runMutation(internal.snapshots.insertSnapshot, {
-          category: 'hourly-uptime',
+          category: 'uptime-hourly',
           key: modelId,
           epoch,
-          data: { hourly: hourly.data },
+          data: result,
         })
       }
+    }
+  },
+})
+
+export const syncRecentUptimes = internalAction({
+  args: {
+    epoch: v.number(),
+  },
+  handler: async (ctx, { epoch }) => {
+    const modelList = await ctx.runQuery(internal.snapshots.getEpochModelList, { epoch })
+    if (!modelList) {
+      throw new ConvexError({ message: 'Failed to get model list', epoch })
+    }
+
+    for (const { modelId, params } of modelList) {
+      const result = await openrouter.frontend.stats.uptimeRecent(params)
+      await ctx.runMutation(internal.snapshots.insertSnapshot, {
+        category: 'uptime-recent',
+        key: modelId,
+        epoch,
+        data: result,
+      })
     }
   },
 })
@@ -268,30 +199,97 @@ export const syncApp = internalAction({
     epoch: v.number(),
   },
   handler: async (ctx, { epoch }) => {
-    const modelList = await ctx.runQuery(internal.sync.getModelList, { epoch })
+    const modelList = await ctx.runQuery(internal.snapshots.getEpochModelList, { epoch })
     if (!modelList) {
       throw new ConvexError({ message: 'Failed to get model list', epoch })
     }
 
     for (const { modelId, params } of modelList) {
       const result = await openrouter.frontend.stats.app(params)
-      if (!result.success) {
-        console.error('Failed to sync app', modelId, params, result.error)
-        await ctx.runMutation(internal.snapshots.insertSnapshot, {
-          category: 'app',
-          key: modelId,
-          epoch,
-          data: { error: result.error },
-        })
-        continue
-      }
-
       await ctx.runMutation(internal.snapshots.insertSnapshot, {
         category: 'app',
         key: modelId,
         epoch,
-        data: { app: result.data },
+        data: result,
       })
+    }
+  },
+})
+
+export const syncModelAuthors = internalAction({
+  args: {
+    epoch: v.number(),
+  },
+  handler: async (ctx, { epoch }) => {
+    const modelList = await ctx.runQuery(internal.snapshots.getEpochModelList, { epoch })
+    if (!modelList) {
+      throw new ConvexError({ message: 'Failed to get model list', epoch })
+    }
+
+    const authorSlugs = new Set(modelList.map((m) => m.author))
+
+    for (const authorSlug of authorSlugs) {
+      const result = await openrouter.frontend.modelAuthor({
+        authorSlug,
+        shouldIncludeStats: true,
+        shouldIncludeVariants: false,
+      })
+      if (!result.success) {
+        await ctx.runMutation(internal.snapshots.insertSnapshot, {
+          category: 'model-author',
+          key: authorSlug,
+          epoch,
+          data: result,
+        })
+        console.error('Failed to sync model author', authorSlug, result.error)
+        continue
+      }
+
+      const authorStatsResult = z
+        .object({
+          author: z.record(z.string(), z.unknown()),
+          modelsWithStats: z
+            .object({
+              stats: z.record(z.string(), z.unknown()).array(),
+              endpoint: z
+                .object({
+                  model_variant_slug: z.string(),
+                })
+                .nullable(),
+            })
+            .array(),
+        })
+        .safeParse(result.data)
+
+      if (!authorStatsResult.success) {
+        console.error('Failed to parse model author stats', authorSlug, authorStatsResult.error.flatten())
+        continue
+      }
+
+      const { author, modelsWithStats } = authorStatsResult.data
+
+      await ctx.runMutation(internal.snapshots.insertSnapshot, {
+        category: 'model-author',
+        key: authorSlug,
+        epoch,
+        data: { success: true, data: author },
+      })
+
+      for (const modelStats of modelsWithStats) {
+        const { stats, endpoint } = modelStats
+
+        if (endpoint === null) {
+          // no endpoint means no stats
+          continue
+        }
+
+        await ctx.runMutation(internal.snapshots.insertSnapshot, {
+          category: 'model-stats',
+          key: endpoint.model_variant_slug,
+          epoch,
+          data: { success: true, data: stats },
+        })
+      }
     }
   },
 })
