@@ -1,34 +1,5 @@
 # OpenRouter API Notes
 
-## Overview
-
-This document tracks unusual behaviors, inconsistencies, and open questions about the OpenRouter API. These notes help maintain our understanding of how to properly integrate with and interpret data from OpenRouter.
-
-## Pricing
-
-- `webSearch` and `request` both appear to relate to web searches, but their exact difference is unclear
-- Models using `webSearch` pricing:
-  - perplexity/sonar-reasoning-pro: $0.005
-  - perplexity/sonar-pro: $0.005
-  - perplexity/sonar-deep-research: $0.005
-- Models using `request` pricing:
-  - openai/gpt-4o-mini-search-preview: $0.0275
-  - openai/gpt-4o-search-preview: $0.035
-  - perplexity/sonar-reasoning: $0.005
-  - perplexity/sonar: $0.005
-  - perplexity/llama-3.1-sonar-small-128k-online: $0.005
-  - perplexity/llama-3.1-sonar-large-128k-online: $0.005
-
-## Mancer
-
-- There are two Mancer providers in the API: "Mancer" and "Mancer 2"
-- Both are the same inference service but with different data usage policies
-- "Mancer" has a 25% discount because they use your input data for training new models
-- "Mancer 2" lacks the discount and has higher prices, but won't store your data (labeled as "Mancer (private)" on the site)
-- Oddly, the "Mancer" endpoint is no longer visible on the OpenRouter site
-  - Need to check with OpenRouter Discord if this is intentional or an error
-  - Abnormal for an endpoint to appear in the API but not on the site
-
 ## Modalities
 
 - All models accept "text" as an input modality
@@ -40,16 +11,33 @@ This document tracks unusual behaviors, inconsistencies, and open questions abou
 - No models were found with non-text output capabilities
 - No models were found that don't accept text input
 
-## Outstanding Questions
-
-- What's the exact difference between `webSearch` and `request` pricing models?
-- Is the "Mancer" provider being phased out, or is this a display error on the site?
-
 ## Entities
 
 - **Provider**: Represents an entity that offers access to AI models (e.g., OpenAI, Anthropic, Google). They have specific data policies, features (like chat completions), and may host multiple model endpoints.
 - **Model**: Represents a specific AI model architecture or family (e.g., GPT-4, Claude 3 Opus, Llama 4 Scout). It has inherent characteristics like context length, input/output modalities, and a description. A single model can be offered by multiple providers through different endpoints.
 - **Endpoint**: Represents a specific instance or deployment of a Model by a Provider. It has its own pricing, context length (which can sometimes differ from the base model's advertised length), performance statistics, and specific capabilities (e.g., quantization, supported parameters).
+
+## Identifiers
+
+- The primary identifier for a model that we use is:
+  - The `id` field of the `model` object from `/api/v1/models`
+  - Also found as `model_variant_slug` from the endpoint object from `/api/frontend/stats/endpoint`
+  - Identifiers are not guaranteed to be unique, but they are unique within a given model.
+  - This identifier is used to view the model page on OpenRouter at `https://openrouter.ai/<identifier>`, and as the model id to make an inference request.
+  - Separately, these values are found as the `slug` and `variant` fields from the model object from `/api/frontend/models`.
+  - Examples: `openai/gpt-4.1`, `anthropic/claude-3-sonnet:beta`, `mistralai/mistral-small`, `meta-llama/llama-3.1-8b-instruct`, `meta-llama/llama-3.1-8b-instruct:free`
+- Some endpoints require using the `permaslug` field from the model, listed on the model object from `/api/frontend/models`, as well as the `variant` field.
+  - The `permaslug` and `variant` combined can be found on the `endpoint` object as `model_variant_permaslug`, but you can't discover this object without already knowing these values.
+  - For most models, `slug` and `permaslug` are identical.
+  - When they differ, this is usually a model from a major vendor that creates revisions/updates of that model, eg. OpenAI's incremental updates to GPT-4.1.
+  - But it's very inconsistent, and there is no way to reliably reason about when it will actually differ. It should be treated as an opaque value for the purpose of querying the requiring API endpoints only.
+  - Examples: `openai/gpt-4.1-2025-04-14`, `anthropic/claude-3-sonnet`, `mistralai/mistral-small`, `meta-llama/llama-3.1-8b-instruct`, `meta-llama/llama-3.1-8b-instruct`
+  - As you can see, these are NOT a unique identifier for a model.
+- Variants include `free`, `beta`, `thinking`, `extended`.
+  - While they ultimately refer to a same base model, they are essentially different "models", in that they have different endpoints, pricing, behaviour, etc.
+  - This is why the combination of `slug` and `variant` is used as the primary identifier for a model.
+  - Variants are never mixed within a model - ie. all endpoints from a model share the same variant property.
+  - `free` is the most common, and notable because it's not necessarily a "positive" trait - all `free` variants data policies state in some form that the providers will store your data, and use it for training, or any other purpose.
 
 ## Frontend API
 

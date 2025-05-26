@@ -18,10 +18,14 @@ import type * as openrouter_api_frontend_endpoint from "../openrouter/api/fronte
 import type * as openrouter_api_frontend_models from "../openrouter/api/frontend/models.js";
 import type * as openrouter_api_v1_endpoints from "../openrouter/api/v1/endpoints.js";
 import type * as openrouter_api_v1_models from "../openrouter/api/v1/models.js";
+import type * as openrouter_client from "../openrouter/client.js";
 import type * as openrouter_fetch from "../openrouter/fetch.js";
 import type * as projections from "../projections.js";
 import type * as snapshots from "../snapshots.js";
+import type * as snapshots_old from "../snapshots_old.js";
+import type * as sync_providers from "../sync/providers.js";
 import type * as sync from "../sync.js";
+import type * as sync_old from "../sync_old.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -37,10 +41,14 @@ declare const fullApi: ApiFromModules<{
   "openrouter/api/frontend/models": typeof openrouter_api_frontend_models;
   "openrouter/api/v1/endpoints": typeof openrouter_api_v1_endpoints;
   "openrouter/api/v1/models": typeof openrouter_api_v1_models;
+  "openrouter/client": typeof openrouter_client;
   "openrouter/fetch": typeof openrouter_fetch;
   projections: typeof projections;
   snapshots: typeof snapshots;
+  snapshots_old: typeof snapshots_old;
+  "sync/providers": typeof sync_providers;
   sync: typeof sync;
+  sync_old: typeof sync_old;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

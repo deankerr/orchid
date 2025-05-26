@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import type { ModelEndpointsPack } from './sync'
+import type { ModelEndpointsPack } from './sync_old'
 import { mutation, query } from './_generated/server'
 import pako from 'pako'
 
@@ -299,7 +299,7 @@ export const processLatestSnapshot = mutation({
   handler: async (ctx) => {
     // Get the latest model_endpoints snapshot
     const snapshot = await ctx.db
-      .query('snapshots')
+      .query('snapshots_old')
       .withIndex('by_category', (q) => q.eq('category', 'model_endpoints'))
       .order('desc')
       .first()
