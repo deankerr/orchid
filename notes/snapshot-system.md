@@ -1,0 +1,175 @@
+# Snapshot System
+
+## Overview
+
+The ORCHID snapshot system captures comprehensive data from OpenRouter's APIs at regular intervals to build a historical record of the AI model ecosystem. The system uses a granular, uncompressed storage approach that prioritizes data preservation and schema flexibility over storage efficiency.
+
+## Architecture
+
+### Core Principles
+
+- **Preservation First**: Store every API response in full to handle schema changes gracefully
+- **Schema Agnostic**: The system continues functioning regardless of OpenRouter API changes
+- **Historical Reconstruction**: Complete ability to recreate any point-in-time state from snapshot data
+- **Granular Storage**: Individual entities stored separately for efficient querying and change tracking
+
+### Storage Design
+
+The system uses a single polymorphic `snapshots` table with the following structure:
+
+```typescript
+{
+  resourceType: string      // "model", "endpoint", "provider", etc.
+  resourceId?: string       // modelKey, endpointId, providerSlug, etc.
+  epoch: number            // Hour-aligned timestamp linking related snapshots
+  hash: ArrayBuffer        // SHA-256 hash for deduplication and change detection
+  data: string             // Raw API response as JSON string
+  size: number             // Size of data field in bytes
+  success: boolean         // Whether the API call succeeded
+}
+```
+
+### Terminology
+
+- **`epoch`**: Hour-aligned timestamp (rounded to start of hour) that links all data from the same sync operation
+- **`modelKey`**: Our definitive model identifier - corresponds to OpenRouter's `model.id` from `/api/v1/models`
+- **`endpointId`**: OpenRouter's endpoint UUID from the endpoint objects
+- **`resourceType`**: Category of data being stored ("model", "endpoint", "provider", "sync-status", etc.)
+
+## Data Collection Process
+
+### Sync Orchestration
+
+The sync process runs hourly via cron and follows this sequence:
+
+1. **Start Sync**: Calculate hour-aligned epoch timestamp
+2. **Providers**: Fetch and store all provider information
+3. **Models**: Fetch model list and individual model data
+4. **Dependent Actions**: Schedule multiple parallel actions:
+   - **Endpoints**: Fetch endpoint data for each model
+   - **Uptime Recent**: Get 3-day uptime data
+   - **Apps**: Get top applications using each model
+   - **Model Authors**: Get author information and usage statistics
+   - **Uptime Hourly**: Get detailed hourly uptime for all endpoints
+
+### Resource Types Collected
+
+| Resource Type   | Description                 | Example resourceId                               |
+| --------------- | --------------------------- | ------------------------------------------------ |
+| `providers`     | Provider list summary       | (none)                                           |
+| `provider`      | Individual provider data    | `openai`, `anthropic`                            |
+| `model-list`    | Processed model listing     | (none)                                           |
+| `model`         | Individual model data       | `openai/gpt-4`, `anthropic/claude-3-sonnet:beta` |
+| `endpoints`     | Endpoint list for a model   | `openai/gpt-4`                                   |
+| `uptime-recent` | 3-day uptime data           | `openai/gpt-4`                                   |
+| `uptime-hourly` | Hourly uptime for endpoints | `openai/gpt-4`                                   |
+| `apps`          | Top apps using model        | `openai/gpt-4`                                   |
+| `model-author`  | Author information          | `openai`, `anthropic`                            |
+| `model-stats`   | Usage statistics            | `openai/gpt-4`                                   |
+| `sync-status`   | Process tracking            | action name                                      |
+
+### Change Detection
+
+- Each snapshot includes a SHA-256 hash of the normalized JSON data
+- Identical data produces identical hashes, enabling efficient deduplication
+- Change detection compares hashes rather than full data comparison
+- Natural point-in-time versioning via `epoch` timestamps
+
+## Data Characteristics
+
+Based on current observations:
+
+- **Models**: ~434 unique models tracked
+- **Endpoints**: ~676 endpoint configurations across providers
+- **Providers**: ~56 different AI service providers
+- **Authors**: ~83 model authors/organizations
+- **Sync Duration**: ~6-8 minutes for complete data collection
+- **Storage**: Raw uncompressed JSON strings for maximum compatibility
+
+## Query Patterns
+
+### Accessing Current Data
+
+```typescript
+// Get latest model list
+const snapshot = await ctx.db
+  .query('snapshots')
+  .withIndex('by_resourceType_epoch', (q) => q.eq('resourceType', 'model-list').eq('epoch', currentEpoch))
+  .first()
+
+// Get specific model's endpoints
+const endpointsSnapshot = await ctx.db
+  .query('snapshots')
+  .withIndex('by_resourceType_resourceId_epoch', (q) =>
+    q.eq('resourceType', 'endpoints').eq('resourceId', 'openai/gpt-4').eq('epoch', currentEpoch),
+  )
+  .first()
+```
+
+### Historical Analysis
+
+```typescript
+// Track model availability over time
+const modelHistory = await ctx.db
+  .query('snapshots')
+  .withIndex('by_resourceType_resourceId_epoch', (q) =>
+    q.eq('resourceType', 'model').eq('resourceId', 'openai/gpt-4'),
+  )
+  .collect()
+```
+
+### Query Performance Considerations
+
+**⚠️ Important**: The system stores large amounts of raw data. Care must be taken when querying:
+
+- Use specific indexes rather than table scans
+- Limit query scope to specific epochs when possible
+- Be mindful that model-author and endpoint data can be particularly large
+- Consider pagination for queries that might return many results
+
+## Advantages of Current Approach
+
+### Development Benefits
+
+- **Raw Format**: Uncompressed JSON is easy to inspect and debug
+- **Schema Flexibility**: No preprocessing means we adapt to API changes automatically
+- **Complete Preservation**: Nothing is lost, all original data is maintained
+- **Query Flexibility**: Can extract any field or relationship from stored data
+
+### Operational Benefits
+
+- **Reliable Storage**: Simple insert operations with minimal failure points
+- **Change Tracking**: Hash-based deduplication detects modifications
+- **Parallel Processing**: Independent storage of different resource types
+- **Monitoring**: Comprehensive sync status tracking
+
+## Future Enhancements
+
+### Planned Features
+
+- **Archival System**: Compress and archive older snapshots to manage storage growth
+- **Differential Storage**: Store only changes rather than complete snapshots for stable entities
+- **Advanced Indexing**: Additional indexes for common query patterns
+- **Data Validation**: Schema validation for critical fields while maintaining flexibility
+
+### Timeline
+
+These enhancements are planned for later phases. The current uncompressed approach is sustainable and beneficial during active development, allowing us to fully understand data patterns before implementing optimization strategies.
+
+## Error Handling
+
+The system is designed to be resilient:
+
+- **Partial Failures**: Individual resource collection failures don't stop the entire sync
+- **API Changes**: Validation errors are logged but don't prevent storage
+- **Network Issues**: Built-in retry logic handles temporary connectivity problems
+- **Status Tracking**: Comprehensive logging of sync progress and completion status
+
+## Monitoring
+
+Sync status is tracked in the `sync-status` resource type, providing:
+
+- Start/completion timestamps for each action
+- Item counts for successful operations
+- Error details for failed operations
+- Overall sync health monitoring

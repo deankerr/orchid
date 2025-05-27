@@ -415,14 +415,25 @@ export const syncModelAuthors = internalAction({
   },
 })
 
+function getHourlyEpoch(now: number = Date.now()) {
+  const date = new Date(now)
+  date.setMinutes(0, 0, 0)
+  return date.getTime()
+}
+
 export const start = internalAction({
-  args: {
-    epoch: v.number(),
-  },
   handler: async (ctx) => {
-    const epoch = Date.now() // NOTE: temporary during dev
+    const epoch = getHourlyEpoch()
+
     await ctx.scheduler.runAfter(0, internal.sync.syncProviders, { epoch })
     await ctx.scheduler.runAfter(0, internal.sync.syncModels, { epoch })
+
+    await ctx.runMutation(internal.snapshots.insertSyncStatus, {
+      action: 'sync',
+      epoch,
+      event: 'started',
+      metadata: { timestamp: Date.now() },
+    })
 
     return { epoch }
   },

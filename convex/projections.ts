@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import type { ModelEndpointsPack } from './sync_old'
+
 import { mutation, query } from './_generated/server'
 import pako from 'pako'
 
@@ -115,7 +115,7 @@ export const ModelSchema = z.object({
   reasoning_config: ReasoningConfigSchema.nullable(),
 })
 
-function processModelEnpoints(modelEndpoints: ModelEndpointsPack) {
+function processModelEnpoints(modelEndpoints: any) {
   const modelParse = ModelSchema.safeParse(modelEndpoints.model)
   if (!modelParse.success) {
     console.warn('processModelEnpoints: invalid model payload', modelParse.error)
@@ -295,45 +295,45 @@ function processModelEnpoints(modelEndpoints: ModelEndpointsPack) {
   return { model, endpoints }
 }
 
-export const processLatestSnapshot = mutation({
-  handler: async (ctx) => {
-    // Get the latest model_endpoints snapshot
-    const snapshot = await ctx.db
-      .query('snapshots_old')
-      .withIndex('by_category', (q) => q.eq('category', 'model_endpoints'))
-      .order('desc')
-      .first()
+// export const processLatestSnapshot = mutation({
+//   handler: async (ctx) => {
+//     // Get the latest model_endpoints snapshot
+//     const snapshot = await ctx.db
+//       .query('snapshots_old')
+//       .withIndex('by_category', (q) => q.eq('category', 'model_endpoints'))
+//       .order('desc')
+//       .first()
 
-    if (!snapshot) {
-      throw new Error('No model endpoints snapshot found')
-    }
+//     if (!snapshot) {
+//       throw new Error('No model endpoints snapshot found')
+//     }
 
-    // Decompress and parse the snapshot data
-    const snapshotData: { all: ModelEndpointsPack[] } = JSON.parse(
-      pako.inflate(snapshot.data, { to: 'string' }),
-    )
+//     // Decompress and parse the snapshot data
+//     const snapshotData: { all: ModelEndpointsPack[] } = JSON.parse(
+//       pako.inflate(snapshot.data, { to: 'string' }),
+//     )
 
-    // Clear existing processed data
-    const existing = await ctx.db.query('meps').collect()
-    for (const record of existing) {
-      await ctx.db.delete(record._id)
-    }
+//     // Clear existing processed data
+//     const existing = await ctx.db.query('meps').collect()
+//     for (const record of existing) {
+//       await ctx.db.delete(record._id)
+//     }
 
-    // Process each ModelEndpointsPack and insert results
-    for (const pack of snapshotData.all) {
-      const { model, endpoints } = processModelEnpoints(pack)
+//     // Process each ModelEndpointsPack and insert results
+//     for (const pack of snapshotData.all) {
+//       const { model, endpoints } = processModelEnpoints(pack)
 
-      if (model) {
-        await ctx.db.insert('meps', {
-          model,
-          endpoints,
-        })
-      }
-    }
+//       if (model) {
+//         await ctx.db.insert('meps', {
+//           model,
+//           endpoints,
+//         })
+//       }
+//     }
 
-    return { processed: snapshotData.all.length }
-  },
-})
+//     return { processed: snapshotData.all.length }
+//   },
+// })
 
 export const getAllProcessedData = query({
   handler: async (ctx) => {
