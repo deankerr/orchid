@@ -1,12 +1,14 @@
-import { v, type Infer } from 'convex/values'
+import { ConvexError, v, type Infer } from 'convex/values'
 import { internalMutation, internalQuery } from './_generated/server'
 
 export const vModelList = v.array(
   v.object({
     modelId: v.string(),
     author: v.string(),
-    params: v.object({ permaslug: v.string(), variant: v.string() }),
-    topEndpointId: v.string(),
+    slug: v.string(),
+    permaslug: v.string(),
+    variant: v.optional(v.string()),
+    topEndpointId: v.optional(v.string()),
   }),
 )
 
@@ -19,27 +21,31 @@ export const vEndpointIdsList = v.array(
 
 export const insertSnapshot = internalMutation({
   args: {
-    category: v.string(),
-    key: v.string(),
+    resourceType: v.string(),
+    resourceId: v.optional(v.string()),
     epoch: v.number(),
     data: v.union(
       v.object({ success: v.boolean(), data: v.any() }),
       v.object({ success: v.boolean(), error: v.any() }),
     ),
   },
-  handler: async (ctx, { category, key, epoch, data }) => {
+  handler: async (ctx, { resourceType, resourceId, epoch, data }) => {
     const stringified = JSON.stringify(data)
     const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(stringified))
 
     const id = await ctx.db.insert('snapshots', {
-      category,
-      key,
+      resourceType,
+      resourceId,
       epoch,
       hash,
       data: stringified,
       size: stringified.length,
       success: data.success,
     })
+
+    if (!data.success) {
+      console.error(`${resourceType}:${resourceId}`, (data as any)?.error)
+    }
 
     return id
   },
@@ -49,23 +55,22 @@ export const getEpochModelList = internalQuery({
   args: {
     epoch: v.number(),
   },
+  returns: vModelList,
   handler: async (ctx, { epoch }) => {
     const snapshot = await ctx.db
       .query('snapshots')
-      .withIndex('by_category_key_epoch', (q) =>
-        q.eq('category', 'model-list').eq('key', '').eq('epoch', epoch),
-      )
+      .withIndex('by_resourceType_epoch', (q) => q.eq('resourceType', 'model-list').eq('epoch', epoch))
       .first()
+
     if (!snapshot || typeof snapshot.data !== 'string') {
-      return null
+      throw new ConvexError({ message: 'Failed to get model list', epoch })
     }
 
     try {
       const { data } = JSON.parse(snapshot.data) as { data: Infer<typeof vModelList> }
       return data
-    } catch (error) {
-      console.error('Failed to parse model list', epoch, error)
-      return null
+    } catch {
+      throw new ConvexError({ message: 'Failed to parse model list', epoch })
     }
   },
 })
@@ -74,23 +79,22 @@ export const getEpochEndpointIdsList = internalQuery({
   args: {
     epoch: v.number(),
   },
+  returns: vEndpointIdsList,
   handler: async (ctx, { epoch }) => {
     const snapshot = await ctx.db
       .query('snapshots')
-      .withIndex('by_category_key_epoch', (q) =>
-        q.eq('category', 'endpoint-ids-list').eq('key', '').eq('epoch', epoch),
-      )
+      .withIndex('by_resourceType_epoch', (q) => q.eq('resourceType', 'endpoint-ids-list').eq('epoch', epoch))
       .first()
+
     if (!snapshot || typeof snapshot.data !== 'string') {
-      return null
+      throw new ConvexError({ message: 'Failed to get endpoint ids list', epoch })
     }
 
     try {
       const { data } = JSON.parse(snapshot.data) as { data: Infer<typeof vEndpointIdsList> }
       return data
-    } catch (error) {
-      console.error('Failed to parse endpoint ids list', epoch, error)
-      return null
+    } catch {
+      throw new ConvexError({ message: 'Failed to parse endpoint ids list', epoch })
     }
   },
 })
@@ -114,8 +118,8 @@ export const insertSyncStatus = internalMutation({
     const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(stringified))
 
     return await ctx.db.insert('snapshots', {
-      category: 'sync-status',
-      key: action,
+      resourceType: 'sync-status',
+      resourceId: action,
       epoch,
       hash,
       data: stringified,
@@ -132,16 +136,16 @@ export const getSyncStatus = internalQuery({
   handler: async (ctx, { epoch }) => {
     const snapshots = await ctx.db
       .query('snapshots')
-      .withIndex('by_category_epoch', (q) => q.eq('category', 'sync-status').eq('epoch', epoch))
+      .withIndex('by_resourceType_epoch', (q) => q.eq('resourceType', 'sync-status').eq('epoch', epoch))
       .collect()
 
     return snapshots
       .map((snapshot) => {
         try {
           const { data } = JSON.parse(snapshot.data as string) as { data: any }
-          return { action: snapshot.key, ...data }
+          return { action: snapshot.resourceId, ...data }
         } catch (error) {
-          console.error('Failed to parse sync status', epoch, snapshot.key, error)
+          console.error('Failed to parse sync status', epoch, snapshot.resourceId, error)
           return null
         }
       })

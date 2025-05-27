@@ -68,6 +68,7 @@
 - https://openrouter.ai/api/frontend/stats/uptime-recent?permaslug=liquid%2Flfm-7b
 
   - Map of endpoint UUIDs to uptime data (last 3 days)
+  - Doesn't take a variant parameter, always has every variant's data included
 
 - https://openrouter.ai/api/frontend/stats/uptime-hourly?id=25b2cca5-53f6-40e7-b47b-191ec968b7c2
 

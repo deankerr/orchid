@@ -1,7 +1,7 @@
-import { up, isResponseError, isValidationError } from 'up-fetch'
+import { isResponseError, isValidationError, up } from 'up-fetch'
 import { z } from 'zod'
 
-export type Result = { success: true; data: unknown } | { success: false; error: ErrorInfo }
+export type Result<T = unknown> = { success: true; data: T } | { success: false; error: ErrorInfo }
 
 export type ErrorInfo = {
   type: 'response' | 'validation' | 'api' | 'unknown'
@@ -18,25 +18,33 @@ const ErrorResultSchema = z.object({
   }),
 })
 
-const DataResultSchema = z.object({
-  data: z.unknown(),
-})
+const DataObjectResultSchema = z
+  .object({
+    data: z.record(z.string(), z.unknown()),
+  })
+  .or(ErrorResultSchema)
 
-const safeRequest = async (
-  input: string,
-  options?: { params?: Record<string, unknown> },
-): Promise<Result> => {
+const DataArrayResultSchema = z
+  .object({
+    data: z.array(z.unknown()),
+  })
+  .or(ErrorResultSchema)
+
+const upFetch = up(fetch, () => ({
+  baseUrl: 'https://openrouter.ai',
+  retry: {
+    attempts: 3,
+    delay: (ctx) => ctx.attempt ** 2 * 1000,
+  },
+}))
+
+async function fetchDataArray(input: string, params: Record<string, unknown>): Promise<Result<unknown[]>> {
   try {
-    const client = up(fetch, () => ({
-      ...options,
-      baseUrl: 'https://openrouter.ai',
-      retry: {
-        attempts: 3,
-        delay: (ctx) => ctx.attempt ** 2 * 1000,
-      },
-    }))
+    const result = await upFetch(input, {
+      schema: DataArrayResultSchema,
+      params,
+    })
 
-    const result = await client(input, { schema: DataResultSchema.or(ErrorResultSchema) })
     if ('error' in result) {
       return {
         success: false,
@@ -47,73 +55,102 @@ const safeRequest = async (
         },
       }
     }
+
     return { success: true, data: result.data }
-  } catch (error) {
-    if (isValidationError(error)) {
+  } catch (err) {
+    return handleError(err)
+  }
+}
+
+async function fetchDataObject(
+  input: string,
+  params: Record<string, unknown>,
+): Promise<Result<Record<string, unknown>>> {
+  try {
+    const result = await upFetch(input, {
+      schema: DataObjectResultSchema,
+      params,
+    })
+
+    if ('error' in result) {
       return {
-        success: false,
+        success: false as const,
         error: {
-          type: 'validation',
-          message: 'Received invalid response format (likely HTML error page)',
+          type: 'api',
+          message: result.error.message,
+          code: result.error.code,
         },
       }
     }
 
-    if (isResponseError(error)) {
-      return {
-        success: false,
-        error: {
-          type: 'response',
-          message: `${error.response.statusText}: ${error.message}`,
-          status: error.status,
-          details: error.data,
-        },
-      }
-    }
+    return { success: true, data: result.data }
+  } catch (err) {
+    return handleError(err)
+  }
+}
 
+function handleError(error: unknown) {
+  if (isValidationError(error)) {
     return {
-      success: false,
+      success: false as const,
       error: {
-        type: 'unknown',
-        message: error instanceof Error ? error.message : 'An unknown error occurred',
-        details: error,
+        type: 'validation' as const,
+        message: error.message,
       },
     }
+  }
+
+  if (isResponseError(error)) {
+    return {
+      success: false as const,
+      error: {
+        type: 'response' as const,
+        message: `${error.response.statusText}: ${error.message}`,
+        status: error.status,
+        details: error.data,
+      },
+    }
+  }
+
+  return {
+    success: false as const,
+    error: {
+      type: 'unknown' as const,
+      message: error instanceof Error ? error.message : 'An unknown error occurred',
+    },
   }
 }
 
 export const openrouter = {
   v1: {
-    models: () => safeRequest('/api/v1/models'),
+    models: () => fetchDataObject('/api/v1/models', {}),
   },
 
   frontend: {
-    models: () => safeRequest('/api/frontend/models'),
+    models: () => fetchDataArray('/api/frontend/models', {}),
 
-    allProviders: () => safeRequest('/api/frontend/all-providers'),
+    allProviders: () => fetchDataArray('/api/frontend/all-providers', {}),
 
     stats: {
       endpoint: (params: { permaslug: string; variant?: string }) =>
-        safeRequest('/api/frontend/stats/endpoint', { params }),
+        fetchDataArray('/api/frontend/stats/endpoint', params),
 
-      app: (params: { permaslug: string; variant: string; limit?: number }) =>
-        safeRequest('/api/frontend/stats/app', { params }),
+      app: (params: { permaslug: string; variant?: string; limit?: number }) =>
+        fetchDataArray('/api/frontend/stats/app', params),
 
       uptimeRecent: (params: { permaslug: string }) =>
-        safeRequest('/api/frontend/stats/uptime-recent', { params }),
+        fetchDataObject('/api/frontend/stats/uptime-recent', params),
 
-      uptimeHourly: (params: { id: string }) => safeRequest('/api/frontend/stats/uptime-hourly', { params }),
+      uptimeHourly: (params: { id: string }) => fetchDataObject('/api/frontend/stats/uptime-hourly', params),
     },
 
     modelAuthor: (params: {
       authorSlug: string
       shouldIncludeStats?: boolean
       shouldIncludeVariants?: boolean
-    }) => safeRequest('/api/frontend/model-author', { params }),
+    }) => fetchDataObject('/api/frontend/model-author', params),
 
     modelVersions: (params: { permaslug: string; variant?: string }) =>
-      safeRequest('/api/frontend/models/versions', { params }),
+      fetchDataObject('/api/frontend/models/versions', params),
   },
-
-  custom: (path: string, options?: { params?: Record<string, unknown> }) => safeRequest(path, options),
 }

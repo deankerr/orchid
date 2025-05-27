@@ -110,12 +110,12 @@ async function runDemo() {
   validateAndLog('Test 3: Invalid permaslug', invalidPermaslusgResult, false)
 
   // Test 4: Invalid URL path (should fail)
-  const invalidUrlResult = await openrouter.custom('/api/nonexistent/endpoint')
-  validateAndLog('Test 4: Invalid URL path', invalidUrlResult, false)
+  // const invalidUrlResult = await openrouter.custom('/api/nonexistent/endpoint')
+  // validateAndLog('Test 4: Invalid URL path', invalidUrlResult, false)
 
   // Test 5: Completely malformed URL (should fail)
-  const malformedUrlResult = await openrouter.custom('/this/is/definitely/not/a/valid/endpoint')
-  validateAndLog('Test 5: Completely malformed path', malformedUrlResult, false)
+  // const malformedUrlResult = await openrouter.custom('/this/is/definitely/not/a/valid/endpoint')
+  // validateAndLog('Test 5: Completely malformed path', malformedUrlResult, false)
 
   // Test 6: Invalid variant parameter (should fail)
   const missingVariantResult = await openrouter.frontend.stats.endpoint({
@@ -132,7 +132,7 @@ async function runDemo() {
 }
 
 // Run the demo
-runDemo().catch((error) => {
-  console.error('💥 Demo failed with unhandled error:', error)
-  process.exit(1)
-})
+// runDemo().catch((error) => {
+//   console.error('💥 Demo failed with unhandled error:', error)
+//   process.exit(1)
+// })
