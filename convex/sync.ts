@@ -36,8 +36,18 @@ export const syncModels = internalAction({
         epoch,
         data: result,
       })
-      console.error('Failed to sync models', result.error)
-      return
+
+      throw new ConvexError({ message: 'Failed to sync models', epoch })
+    }
+
+    if (!Array.isArray(result.data)) {
+      await ctx.runMutation(internal.snapshots.insertSnapshot, {
+        category: 'models',
+        key: '',
+        epoch,
+        data: { ...result, success: false },
+      })
+      throw new ConvexError({ message: 'Invalid models data', epoch })
     }
 
     const ModelListDataSchema = z.object({
@@ -54,7 +64,13 @@ export const syncModels = internalAction({
 
     const models = ModelListDataSchema.passthrough().array().safeParse(result.data)
     if (!models.success) {
-      throw new ConvexError({ message: 'Failed to get models', epoch, issues: models.error.flatten() })
+      await ctx.runMutation(internal.snapshots.insertSnapshot, {
+        category: 'models',
+        key: '',
+        epoch,
+        data: { ...result, success: false },
+      })
+      throw new ConvexError({ message: 'Invalid models data', epoch, issues: models.error.flatten() })
     }
 
     await ctx.runMutation(internal.snapshots.insertSnapshot, {
@@ -89,6 +105,7 @@ export const syncModels = internalAction({
 
     await ctx.scheduler.runAfter(0, internal.sync.syncEndpoints, { epoch })
     await ctx.scheduler.runAfter(0, internal.sync.syncRecentUptimes, { epoch })
+    await ctx.scheduler.runAfter(0, internal.sync.syncApps, { epoch })
     await ctx.scheduler.runAfter(0, internal.sync.syncModelAuthors, { epoch })
   },
 })
@@ -121,6 +138,12 @@ export const syncEndpoints = internalAction({
       const endpoints = z.object({ id: z.string() }).passthrough().array().safeParse(result.data)
 
       if (!endpoints.success) {
+        await ctx.runMutation(internal.snapshots.insertSnapshot, {
+          category: 'endpoints',
+          key: modelId,
+          epoch,
+          data: { ...result, success: false },
+        })
         console.error('Failed to parse endpoint ids', modelId, params, endpoints.error.flatten())
         continue
       }
@@ -143,7 +166,6 @@ export const syncEndpoints = internalAction({
     })
 
     await ctx.scheduler.runAfter(0, internal.sync.syncHourlyUptimes, { epoch })
-    await ctx.scheduler.runAfter(0, internal.sync.syncApp, { epoch })
   },
 })
 
@@ -158,16 +180,18 @@ export const syncHourlyUptimes = internalAction({
     }
 
     for (const { modelId, endpointIds } of endpointIdsList) {
+      const uptimeMap = new Map<string, unknown>()
       for (const endpointId of endpointIds) {
         const result = await openrouter.frontend.stats.uptimeHourly({ id: endpointId })
-
-        await ctx.runMutation(internal.snapshots.insertSnapshot, {
-          category: 'uptime-hourly',
-          key: modelId,
-          epoch,
-          data: result,
-        })
+        uptimeMap.set(endpointId, result)
       }
+
+      await ctx.runMutation(internal.snapshots.insertSnapshot, {
+        category: 'uptime-hourly',
+        key: modelId,
+        epoch,
+        data: { success: true, data: Object.fromEntries(uptimeMap) },
+      })
     }
   },
 })
@@ -194,7 +218,7 @@ export const syncRecentUptimes = internalAction({
   },
 })
 
-export const syncApp = internalAction({
+export const syncApps = internalAction({
   args: {
     epoch: v.number(),
   },
@@ -207,7 +231,7 @@ export const syncApp = internalAction({
     for (const { modelId, params } of modelList) {
       const result = await openrouter.frontend.stats.app(params)
       await ctx.runMutation(internal.snapshots.insertSnapshot, {
-        category: 'app',
+        category: 'apps',
         key: modelId,
         epoch,
         data: result,
@@ -234,6 +258,7 @@ export const syncModelAuthors = internalAction({
         shouldIncludeStats: true,
         shouldIncludeVariants: false,
       })
+
       if (!result.success) {
         await ctx.runMutation(internal.snapshots.insertSnapshot, {
           category: 'model-author',
@@ -245,9 +270,42 @@ export const syncModelAuthors = internalAction({
         continue
       }
 
-      const authorStatsResult = z
+      // author data
+      const authorsResult = z
         .object({
           author: z.record(z.string(), z.unknown()),
+        })
+        .safeParse(result.data)
+
+      if (!authorsResult.success) {
+        // we can't store the entire result on error because it's too big
+        await ctx.runMutation(internal.snapshots.insertSnapshot, {
+          category: 'model-author',
+          key: authorSlug,
+          epoch,
+          data: {
+            success: false,
+            error: {
+              type: 'validation',
+              message: 'Invalid model author data',
+              details: authorsResult.error.flatten(),
+            },
+          },
+        })
+        console.error('Failed to parse model author', authorSlug, authorsResult.error.flatten())
+        continue
+      } else {
+        await ctx.runMutation(internal.snapshots.insertSnapshot, {
+          category: 'model-author',
+          key: authorSlug,
+          epoch,
+          data: { success: true, data: authorsResult.data },
+        })
+      }
+
+      // models with stats
+      const modelsWithStatsResult = z
+        .object({
           modelsWithStats: z
             .object({
               stats: z.record(z.string(), z.unknown()).array(),
@@ -261,21 +319,25 @@ export const syncModelAuthors = internalAction({
         })
         .safeParse(result.data)
 
-      if (!authorStatsResult.success) {
-        console.error('Failed to parse model author stats', authorSlug, authorStatsResult.error.flatten())
+      if (!modelsWithStatsResult.success) {
+        await ctx.runMutation(internal.snapshots.insertSnapshot, {
+          category: 'model-author',
+          key: authorSlug,
+          epoch,
+          data: {
+            success: false,
+            error: {
+              type: 'validation',
+              message: 'Invalid model author stats',
+              details: modelsWithStatsResult.error.flatten(),
+            },
+          },
+        })
+        console.error('Failed to parse model author stats', authorSlug, modelsWithStatsResult.error.flatten())
         continue
       }
 
-      const { author, modelsWithStats } = authorStatsResult.data
-
-      await ctx.runMutation(internal.snapshots.insertSnapshot, {
-        category: 'model-author',
-        key: authorSlug,
-        epoch,
-        data: { success: true, data: author },
-      })
-
-      for (const modelStats of modelsWithStats) {
+      for (const modelStats of modelsWithStatsResult.data.modelsWithStats) {
         const { stats, endpoint } = modelStats
 
         if (endpoint === null) {

@@ -23,8 +23,8 @@ export const insertSnapshot = internalMutation({
     key: v.string(),
     epoch: v.number(),
     data: v.union(
-      v.object({ success: v.literal(true), data: v.any() }),
-      v.object({ success: v.literal(false), error: v.any() }),
+      v.object({ success: v.boolean(), data: v.any() }),
+      v.object({ success: v.boolean(), error: v.any() }),
     ),
   },
   handler: async (ctx, { category, key, epoch, data }) => {
