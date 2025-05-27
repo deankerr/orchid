@@ -94,3 +94,57 @@ export const getEpochEndpointIdsList = internalQuery({
     }
   },
 })
+
+export const insertSyncStatus = internalMutation({
+  args: {
+    action: v.string(),
+    epoch: v.number(),
+    event: v.string(), // 'completed', 'started', 'failed', etc.
+    metadata: v.optional(v.any()),
+  },
+  handler: async (ctx, { action, epoch, event, metadata = {} }) => {
+    const stringified = JSON.stringify({
+      success: true,
+      data: {
+        event,
+        timestamp: Date.now(),
+        ...metadata,
+      },
+    })
+    const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(stringified))
+
+    return await ctx.db.insert('snapshots', {
+      category: 'sync-status',
+      key: action,
+      epoch,
+      hash,
+      data: stringified,
+      size: stringified.length,
+      success: true,
+    })
+  },
+})
+
+export const getSyncStatus = internalQuery({
+  args: {
+    epoch: v.number(),
+  },
+  handler: async (ctx, { epoch }) => {
+    const snapshots = await ctx.db
+      .query('snapshots')
+      .withIndex('by_category_epoch', (q) => q.eq('category', 'sync-status').eq('epoch', epoch))
+      .collect()
+
+    return snapshots
+      .map((snapshot) => {
+        try {
+          const { data } = JSON.parse(snapshot.data as string) as { data: any }
+          return { action: snapshot.key, ...data }
+        } catch (error) {
+          console.error('Failed to parse sync status', epoch, snapshot.key, error)
+          return null
+        }
+      })
+      .filter(Boolean)
+  },
+})

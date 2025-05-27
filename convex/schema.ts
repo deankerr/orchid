@@ -10,7 +10,9 @@ export const schema = defineSchema({
     size: v.number(),
     data: v.union(v.string(), v.bytes()),
     success: v.boolean(),
-  }).index('by_category_key_epoch', ['category', 'key', 'epoch']),
+  })
+    .index('by_category_key_epoch', ['category', 'key', 'epoch'])
+    .index('by_category_epoch', ['category', 'epoch']),
 
   snapshots_old: defineTable({
     category: v.string(),

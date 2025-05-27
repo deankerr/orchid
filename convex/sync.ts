@@ -20,6 +20,13 @@ export const syncProviders = internalAction({
     if (!result.success) {
       console.error('Failed to sync providers', result.error)
     }
+
+    // Track completion
+    await ctx.runMutation(internal.snapshots.insertSyncStatus, {
+      action: 'providers',
+      epoch,
+      event: 'completed',
+    })
   },
 })
 
@@ -107,6 +114,14 @@ export const syncModels = internalAction({
     await ctx.scheduler.runAfter(0, internal.sync.syncRecentUptimes, { epoch })
     await ctx.scheduler.runAfter(0, internal.sync.syncApps, { epoch })
     await ctx.scheduler.runAfter(0, internal.sync.syncModelAuthors, { epoch })
+
+    // Track completion
+    await ctx.runMutation(internal.snapshots.insertSyncStatus, {
+      action: 'models',
+      epoch,
+      event: 'completed',
+      metadata: { itemCount: modelList.length },
+    })
   },
 })
 
@@ -166,6 +181,18 @@ export const syncEndpoints = internalAction({
     })
 
     await ctx.scheduler.runAfter(0, internal.sync.syncHourlyUptimes, { epoch })
+
+    // Track completion
+    const totalEndpoints = endpointIdsList.reduce((sum, item) => sum + item.endpointIds.length, 0)
+    await ctx.runMutation(internal.snapshots.insertSyncStatus, {
+      action: 'endpoints',
+      epoch,
+      event: 'completed',
+      metadata: {
+        itemCount: modelList.length,
+        totalEndpoints,
+      },
+    })
   },
 })
 
@@ -193,6 +220,14 @@ export const syncHourlyUptimes = internalAction({
         data: { success: true, data: Object.fromEntries(uptimeMap) },
       })
     }
+
+    // Track completion
+    await ctx.runMutation(internal.snapshots.insertSyncStatus, {
+      action: 'uptime-hourly',
+      epoch,
+      event: 'completed',
+      metadata: { itemCount: endpointIdsList.length },
+    })
   },
 })
 
@@ -215,6 +250,14 @@ export const syncRecentUptimes = internalAction({
         data: result,
       })
     }
+
+    // Track completion
+    await ctx.runMutation(internal.snapshots.insertSyncStatus, {
+      action: 'uptime-recent',
+      epoch,
+      event: 'completed',
+      metadata: { itemCount: modelList.length },
+    })
   },
 })
 
@@ -237,6 +280,14 @@ export const syncApps = internalAction({
         data: result,
       })
     }
+
+    // Track completion
+    await ctx.runMutation(internal.snapshots.insertSyncStatus, {
+      action: 'apps',
+      epoch,
+      event: 'completed',
+      metadata: { itemCount: modelList.length },
+    })
   },
 })
 
@@ -353,6 +404,16 @@ export const syncModelAuthors = internalAction({
         })
       }
     }
+
+    // Track completion
+    await ctx.runMutation(internal.snapshots.insertSyncStatus, {
+      action: 'model-authors',
+      epoch,
+      event: 'completed',
+      metadata: {
+        itemCount: authorSlugs.size,
+      },
+    })
   },
 })
 
