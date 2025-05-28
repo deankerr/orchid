@@ -79,18 +79,20 @@ export const syncModels = internalAction({
       return
     }
 
-    const ModelSchema = z.object({
-      author: z.string(),
-      slug: z.string(),
-      permaslug: z.string(),
-      endpoint: z
-        .object({
-          id: z.string(),
-          model_variant_slug: z.string(),
-          variant: z.string(),
-        })
-        .nullable(),
-    })
+    const ModelSchema = z
+      .object({
+        author: z.string(),
+        slug: z.string(),
+        permaslug: z.string(),
+        endpoint: z
+          .object({
+            id: z.string(),
+            model_variant_slug: z.string(),
+            variant: z.string(),
+          })
+          .nullable(),
+      })
+      .passthrough()
 
     const modelList: Infer<typeof vModelList> = []
     for (const data of result.data) {
