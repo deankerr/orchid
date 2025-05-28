@@ -14,12 +14,14 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as crons from "../crons.js";
-import type * as openrouter_api_frontend_allProviders from "../openrouter/api/frontend/allProviders.js";
-import type * as openrouter_api_frontend_endpoint from "../openrouter/api/frontend/endpoint.js";
-import type * as openrouter_api_frontend_models from "../openrouter/api/frontend/models.js";
-import type * as openrouter_api_v1_endpoints from "../openrouter/api/v1/endpoints.js";
-import type * as openrouter_api_v1_models from "../openrouter/api/v1/models.js";
 import type * as openrouter_client from "../openrouter/client.js";
+import type * as openrouter_schemas_api_frontend_allProviders_strict from "../openrouter/schemas/api_frontend_allProviders_strict.js";
+import type * as openrouter_schemas_api_frontend_models from "../openrouter/schemas/api_frontend_models.js";
+import type * as openrouter_schemas_api_frontend_models_strict from "../openrouter/schemas/api_frontend_models_strict.js";
+import type * as openrouter_schemas_api_frontend_stats_endpoint from "../openrouter/schemas/api_frontend_stats_endpoint.js";
+import type * as openrouter_schemas_api_frontend_stats_endpoint_strict from "../openrouter/schemas/api_frontend_stats_endpoint_strict.js";
+import type * as openrouter_schemas_api_v1_endpoints_strict from "../openrouter/schemas/api_v1_endpoints_strict.js";
+import type * as openrouter_schemas_api_v1_models_strict from "../openrouter/schemas/api_v1_models_strict.js";
 import type * as projections from "../projections.js";
 import type * as snapshots from "../snapshots.js";
 import type * as sync from "../sync.js";
@@ -34,12 +36,14 @@ import type * as sync from "../sync.js";
  */
 declare const fullApi: ApiFromModules<{
   crons: typeof crons;
-  "openrouter/api/frontend/allProviders": typeof openrouter_api_frontend_allProviders;
-  "openrouter/api/frontend/endpoint": typeof openrouter_api_frontend_endpoint;
-  "openrouter/api/frontend/models": typeof openrouter_api_frontend_models;
-  "openrouter/api/v1/endpoints": typeof openrouter_api_v1_endpoints;
-  "openrouter/api/v1/models": typeof openrouter_api_v1_models;
   "openrouter/client": typeof openrouter_client;
+  "openrouter/schemas/api_frontend_allProviders_strict": typeof openrouter_schemas_api_frontend_allProviders_strict;
+  "openrouter/schemas/api_frontend_models": typeof openrouter_schemas_api_frontend_models;
+  "openrouter/schemas/api_frontend_models_strict": typeof openrouter_schemas_api_frontend_models_strict;
+  "openrouter/schemas/api_frontend_stats_endpoint": typeof openrouter_schemas_api_frontend_stats_endpoint;
+  "openrouter/schemas/api_frontend_stats_endpoint_strict": typeof openrouter_schemas_api_frontend_stats_endpoint_strict;
+  "openrouter/schemas/api_v1_endpoints_strict": typeof openrouter_schemas_api_v1_endpoints_strict;
+  "openrouter/schemas/api_v1_models_strict": typeof openrouter_schemas_api_v1_models_strict;
   projections: typeof projections;
   snapshots: typeof snapshots;
   sync: typeof sync;

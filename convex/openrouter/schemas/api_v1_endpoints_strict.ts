@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-const ModelEndpointSchema = z
+const OpenRouterV1EndpointRecordSchemaStrict = z
   .object({
     name: z.string(),
     context_length: z.number(),
@@ -26,25 +26,21 @@ const ModelEndpointSchema = z
   })
   .strict()
 
-const ModelEndpointResponseSchema = z
+const OpenRouterV1EndpointsSchemaStrict = z
   .object({
-    data: z
+    id: z.string(),
+    name: z.string(),
+    created: z.number(),
+    description: z.string(),
+    architecture: z
       .object({
-        id: z.string(),
-        name: z.string(),
-        created: z.number(),
-        description: z.string(),
-        architecture: z
-          .object({
-            input_modalities: z.array(z.string()),
-            output_modalities: z.array(z.string()),
-            tokenizer: z.string(),
-            instruct_type: z.string().nullable(),
-            modality: z.string(),
-          })
-          .strict(),
-        endpoints: z.array(ModelEndpointSchema),
+        input_modalities: z.array(z.string()),
+        output_modalities: z.array(z.string()),
+        tokenizer: z.string(),
+        instruct_type: z.string().nullable(),
+        modality: z.string(),
       })
       .strict(),
+    endpoints: z.array(OpenRouterV1EndpointRecordSchemaStrict),
   })
   .strict()

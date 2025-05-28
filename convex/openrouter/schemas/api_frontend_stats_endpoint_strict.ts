@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 // NOTE: May be the same as ProviderDataPolicySchema
-const EndpointDataPolicySchema = z
+const DataPolicySchemaStrict = z
   .object({
     termsOfServiceURL: z.string().url().optional(),
     privacyPolicyURL: z.string().url().optional(),
@@ -29,7 +29,7 @@ const EndpointDataPolicySchema = z
   })
   .strict()
 
-const EndpointPricingSchema = z
+const PricingSchemaStrict = z
   .object({
     prompt: z.string(),
     completion: z.string(),
@@ -43,7 +43,7 @@ const EndpointPricingSchema = z
   })
   .strict()
 
-const EndpointStatsSchema = z
+const StatsSchemaStrict = z
   .object({
     endpoint_id: z.string(),
     p50_throughput: z.number(),
@@ -52,19 +52,20 @@ const EndpointStatsSchema = z
   })
   .strict()
 
-export const EndpointSchema = z
+const OpenRouterFrontendEndpointRecordSchemaStrict = z
   .object({
     id: z.string(),
     name: z.string(),
     context_length: z.number(),
-    model: z.unknown(), // NOTE: ModelSchema object
+    model: z.unknown(), // NOTE: OpenRouterFrontendModelRecordSchema object
     model_variant_slug: z.string(),
     model_variant_permaslug: z.string(),
     provider_name: z.string(),
-    provider_info: z.unknown(), // NOTE: ProviderSchema object
+    provider_info: z.unknown(), // NOTE: OpenRouterFrontendProviderRecordSchema object
     provider_display_name: z.string(),
     provider_slug: z.string(),
     provider_model_id: z.string(),
+    provider_region: z.string().nullable(),
     quantization: z.string().nullable(),
     variant: z.string(),
     is_free: z.boolean(),
@@ -76,8 +77,8 @@ export const EndpointSchema = z
     supported_parameters: z.array(z.string()),
     is_byok: z.boolean(),
     moderation_required: z.boolean(),
-    data_policy: EndpointDataPolicySchema,
-    pricing: EndpointPricingSchema,
+    data_policy: DataPolicySchemaStrict,
+    pricing: PricingSchemaStrict,
     variable_pricings: z.array(z.record(z.unknown())),
     is_hidden: z.boolean(),
     is_deranked: z.boolean(),
@@ -102,8 +103,7 @@ export const EndpointSchema = z
         supports_document_url: z.null(),
       })
       .strict(),
-    provider_region: z.string().nullable(),
-    stats: EndpointStatsSchema.optional(),
+    stats: StatsSchemaStrict.optional(),
     status: z.number().optional(),
   })
   .strict()

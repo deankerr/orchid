@@ -1,5 +1,5 @@
 import { ConvexError, v, type Infer } from 'convex/values'
-import { internalMutation, internalQuery } from './_generated/server'
+import { internalMutation, internalQuery, type QueryCtx } from './_generated/server'
 
 export const vModelList = v.array(
   v.object({
@@ -133,7 +133,10 @@ export const getSyncStatus = internalQuery({
   args: {
     epoch: v.number(),
   },
-  handler: async (ctx, { epoch }) => {
+  handler: async (ctx, args) => {
+    // 0 = get latest epoch (dev helper)
+    const epoch = args.epoch || (await getLatestSyncEpoch(ctx))
+
     const snapshots = await ctx.db
       .query('snapshots')
       .withIndex('by_resourceType_epoch', (q) => q.eq('resourceType', 'sync-status').eq('epoch', epoch))
@@ -152,3 +155,13 @@ export const getSyncStatus = internalQuery({
       .filter(Boolean)
   },
 })
+
+async function getLatestSyncEpoch(ctx: QueryCtx) {
+  const snapshot = await ctx.db
+    .query('snapshots')
+    .withIndex('by_resourceType_epoch', (q) => q.eq('resourceType', 'sync-status'))
+    .order('desc')
+    .first()
+  if (!snapshot) return 0
+  return snapshot.epoch
+}

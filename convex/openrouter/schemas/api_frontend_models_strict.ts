@@ -7,7 +7,7 @@ const ReasoningConfigSchema = z
   })
   .strict()
 
-export const ModelSchema = z
+const OpenRouterFrontendModelRecordSchemaStrict = z
   .object({
     slug: z.string(),
     hf_slug: z.string().nullable(),
@@ -33,6 +33,6 @@ export const ModelSchema = z
     permaslug: z.string(),
     reasoning_config: ReasoningConfigSchema.nullable(),
     features: z.object({ reasoning_config: ReasoningConfigSchema.optional() }).strict().nullable(),
-    endpoint: z.unknown().nullable(), // NOTE: EndpointSchemaInternal object
+    endpoint: z.unknown().nullable(), // NOTE: OpenRouterFrontendEndpointRecordSchema object
   })
   .strict()

@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export const ModelRecordSchema = z
+const OpenRouterV1ModelRecordSchemaStrict = z
   .object({
     id: z.string(),
     name: z.string(),
@@ -37,10 +37,6 @@ export const ModelRecordSchema = z
     context_length: z.number().nullable(),
     hugging_face_id: z.string().nullable(),
     supported_parameters: z.array(z.string()),
-    per_request_limits: z.null(), // deprecated
+    per_request_limits: z.null(), // deprecated, always null
   })
   .strict()
-
-export const ModelsResponseSchema = z.object({
-  data: z.array(ModelRecordSchema),
-})

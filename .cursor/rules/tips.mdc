@@ -1,0 +1,29 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Tips
+
+## OpenRouter Zod Schemas
+
+- When validating API artifacts, we utilise zod's characteristic of pruning properties from the result data if they are not specified in the schema, removing unnecessary values and duplicated/embedded entities from the source data.
+- The snapshots system uses the 'passthrough' method to partially validate artifact properties where necessary, while leaving the resulting data intact in an unvalidated state.
+- 'Strict' schemas intend to validate the full structure of each major entity, existing to confirm that our understanding of the structure of each artifact is correct and up to date.
+  - This may include data we don't need, or have determined is vestigial in practice (eg. despite what its key implies, it is always null).
+  - Many entities include recursively embedded sub-entities - we don't need to validate these as they are of little practical value and always checked elsewhere.
+  - These schemas could be used as part of a health monitoring component in the future, detecting changes in the data structures over time.
+
+### Best Practices
+
+- Do not export subcomponent schemas, ie. nested objects, unless there is a specific reason to do so (there usually is not).
+- Schema/file names should reflect the primary API endpoint these entities originate from.
+- Document our understanding of entity properties in a Markdown file with the same name.
+- Do not document "expected" or "assumed" information derived only from the key name - these names are often deceptive or outdated.
+- Do not clutter the documentation with redundant information that adds no value to our understanding of API artifacts.
+  - Example:
+    - <bad> - `is_free`: (boolean) Whether this endpoint is offered for free. </bad>
+    - <good> - `is_free`: (boolean) </good>
+    - <good> - `is_free`: (boolean) `variant` property will be equal to `free` </good>
+- Documentation is for the 'Strict' version of an entity, including properties that we remove in practice. These may be marked with `**pruned**`.
+- `null` and `optional` are NOT equivilant. The API uses both somewhat inconsistantly - track them accurately. There are NO observed instances of a truly `nullish` property.

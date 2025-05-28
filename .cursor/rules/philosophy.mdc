@@ -1,0 +1,114 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# ORCHID Project Philosophy
+
+## Core Principles
+
+### 1. Derived State is Expendable
+
+All processed data in ORCHID is **derived state** that can be completely regenerated from source snapshots. This fundamental principle shapes every design decision:
+
+- **Projections are expendable**: Any processed data can be voided and regenerated at any time
+- **Snapshots are the source of truth**: Raw API responses are preserved as the authoritative record
+- **Processing is idempotent**: Running the same process multiple times produces identical results
+- **Recovery by regeneration**: Rather than complex data migration, we rebuild from snapshots
+
+### 2. Embrace Uncertainty and Change
+
+The AI model ecosystem is rapidly evolving, and external APIs will change without notice:
+
+- **APIs will break**: OpenRouter's data structures and endpoints will change unexpectedly
+- **Schemas evolve**: New fields appear, old fields disappear, semantics shift over time
+- **Availability fluctuates**: Models and endpoints may vanish temporarily or permanently
+- **Complete rewrites are inevitable**: Major changes may require rebuilding entire systems
+
+**Response Strategy**: Design for adaptability, not perfection. Build systems that can evolve, fail gracefully, and be completely rebuilt when necessary.
+
+### 3. Temporal Awareness
+
+Everything in ORCHID exists within a temporal context defined by snapshot epochs:
+
+- **Data has validity periods**: Each piece of information is valid from one epoch until superseded
+- **Missing data is meaningful**: Absence of data in an epoch indicates unavailability
+- **Entities may disappear and return**: Models/endpoints can leave OpenRouter and come back
+- **Historical reconstruction**: Any point-in-time state can be rebuilt from epoch data
+
+### 4. Graceful Degradation
+
+Systems must continue functioning when individual components fail:
+
+- **Partial data is acceptable**: Continue processing even when some entities fail validation
+- **Individual failures don't cascade**: One bad data point doesn't halt the entire pipeline
+- **Visibility into failures**: Log and track failures without stopping progress
+- **Progressive enhancement**: Core functionality works, additional features enhance the experience
+
+### 5. Query-First Design
+
+Data structures are optimized for read performance and query convenience:
+
+- **Denormalization for speed**: Flatten and duplicate data to eliminate joins
+- **Boolean-heavy filtering**: Most query parameters are feature flags and boolean filters
+- **Predictable access patterns**: Design tables around known query needs
+- **Sub-second responses**: All user-facing queries should be nearly instantaneous
+
+### 6. Projection-Based Thinking
+
+All user-facing data comes from "projections" of the underlying snapshot data:
+
+- **Multiple views of the same data**: Different projections serve different query patterns
+- **Incremental updates**: Process only what has changed between epochs
+- **Epoch-aware queries**: Filter by validity periods to show current vs. historical data
+- **Missing epoch handling**: Gracefully handle gaps in temporal data
+
+### 7. Adaptive Implementation
+
+Plans and implementations evolve based on real-world data and experience:
+
+- **Proposals, not commitments**: All plans are marked as proposals until implemented
+- **Data-driven decisions**: Let actual API responses guide schema design
+- **Iterative refinement**: Build minimal working versions, then enhance based on learnings
+- **Documentation reflects reality**: Update specs when implementation teaches us better approaches
+
+## Design Implications
+
+### Schema Design
+
+- Use optional fields liberally to handle missing data
+- Include `epoch` timestamps on all processed data
+- Design for flat, denormalized query structures
+- Validate strictly but continue processing on failures
+
+### Processing Pipelines
+
+- Make all operations idempotent and restartable
+- Track processing state separately from data state
+- Handle partial failures gracefully
+- Enable reprocessing of any historical period
+
+### Error Handling
+
+- Log all failures with context but continue processing
+- Provide visibility into data quality and processing health
+- Design recovery mechanisms for common failure modes
+- Accept that some data will always be imperfect
+
+### API Design
+
+- Return meaningful results even with incomplete data
+- Include metadata about data freshness and completeness
+- Design for pagination and incremental loading
+- Provide clear indicators when data is stale or missing
+
+## Long-Term Perspective
+
+ORCHID is built to be **resilient to fundamental change**. While we optimize for current needs, we accept that:
+
+- External APIs will evolve beyond our current understanding
+- Data schemas will require complete redesign periodically
+- Processing logic will need major overhauls as the ecosystem changes
+- The only constant is change itself
+
+This philosophy guides us to build systems that can adapt, evolve, and when necessary, be completely rebuilt while preserving the valuable historical data we've collected along the way.

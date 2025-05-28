@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 // NOTE: May be the same as EndpointDataPolicySchema
-const ProviderDataPolicySchema = z
+const DataPolicySchemaStrict = z
   .object({
     privacyPolicyURL: z.string().url().optional(),
     termsOfServiceURL: z.string().url().optional(),
@@ -25,13 +25,13 @@ const ProviderDataPolicySchema = z
   })
   .strict()
 
-export const ProviderSchema = z
+const OpenRouterProviderRecordSchemaStrict = z
   .object({
     name: z.string(),
     displayName: z.string(),
     slug: z.string(),
     baseUrl: z.string(),
-    dataPolicy: ProviderDataPolicySchema,
+    dataPolicy: DataPolicySchemaStrict,
     headquarters: z.string().optional(),
     hasChatCompletions: z.boolean(),
     hasCompletions: z.boolean(),
