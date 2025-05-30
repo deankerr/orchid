@@ -18,7 +18,7 @@ export const vEndpoint = v.object({
   variant: v.string(),
   contextLength: v.number(),
   quantization: v.optional(v.string()),
-  supportedParameters: v.array(v.string()), // ? should store some as features? structured_outputs etc.
+  supportedParameters: v.array(v.string()),
 
   capabilities: v.object({
     completion: v.boolean(),
@@ -29,11 +29,9 @@ export const vEndpoint = v.object({
 
     reasoning: v.boolean(),
     tools: v.boolean(),
-    multipart: v.boolean(), // ? if image || file = this must be true?
+    multipart: v.boolean(),
     cancellation: v.boolean(),
     byok: v.boolean(),
-
-    moderation: v.boolean(),
   }),
 
   limits: v.object({
@@ -42,22 +40,18 @@ export const vEndpoint = v.object({
 
     imagesPerPrompt: v.optional(v.number()),
     tokensPerImage: v.optional(v.number()),
-
-    requestsPerMinute: v.optional(v.number()),
-    requestsPerDay: v.optional(v.number()),
-    requestsPerMinuteCf: v.optional(v.number()), // TODO: investigate
   }),
 
   pricing: v.object({
     // per token
     input: v.string(),
     output: v.string(),
-    imageInput: v.string(),
-    inputCacheRead: v.optional(v.string()),
-    inputCacheWrite: v.optional(v.string()),
+    imageInput: v.optional(v.string()),
+    cacheRead: v.optional(v.string()),
+    cacheWrite: v.optional(v.string()),
     reasoningOutput: v.optional(v.string()),
     // flat rate
-    request: v.string(),
+    request: v.optional(v.string()),
   }),
 
   variablePricings: v.array(v.record(v.string(), v.any())), // TODO: investigate
@@ -74,10 +68,10 @@ export const vEndpoint = v.object({
     requiresUserIDs: v.optional(v.boolean()),
   }),
 
-  status: v.optional(v.number()), // ? what endpoints lack this?
-  isDeranked: v.boolean(), // ? status < 0
-  isDisabled: v.boolean(), // ? should we even use disabled endpoints?
+  status: v.number(),
+  isDisabled: v.boolean(),
 
+  orModerated: v.boolean(),
   orModelCreatedAt: v.number(),
   orModelUpdatedAt: v.number(),
 
@@ -93,7 +87,7 @@ export function processEndpointsSnapshot(
   const { data } = z.object({ data: OpenRouterFrontendEndpointRecordSchema.array() }).parse(raw)
 
   const endpoints = data.map((data) => {
-    const endpoint: Omit<Infer<typeof vEndpoint>, 'epoch'> = {
+    const endpoint: Infer<typeof vEndpoint> = {
       uuid: data.id,
       modelSlug: model.slug,
       modelVariantSlug: data.model_variant_slug,
@@ -119,7 +113,6 @@ export function processEndpointsSnapshot(
         multipart: data.supports_multipart,
         cancellation: data.can_abort,
         byok: data.is_byok,
-        moderation: data.moderation_required,
       },
 
       limits: {
@@ -132,11 +125,11 @@ export function processEndpointsSnapshot(
       pricing: {
         input: data.pricing.prompt,
         output: data.pricing.completion,
-        imageInput: data.pricing.image,
-        inputCacheRead: data.pricing.input_cache_read,
-        inputCacheWrite: data.pricing.input_cache_write,
-        reasoningOutput: data.pricing.internal_reasoning,
-        request: data.pricing.request,
+        imageInput: pruneZero(data.pricing.image),
+        cacheRead: pruneZero(data.pricing.input_cache_read),
+        cacheWrite: pruneZero(data.pricing.input_cache_write),
+        reasoningOutput: pruneZero(data.pricing.internal_reasoning),
+        request: pruneZero(data.pricing.request),
       },
 
       variablePricings: data.variable_pricings,
@@ -152,12 +145,14 @@ export function processEndpointsSnapshot(
         requiresUserIDs: data.data_policy.requiresUserIDs,
       },
 
-      status: data.status,
-      isDeranked: data.is_deranked,
+      status: data.status ?? 0,
       isDisabled: data.is_disabled,
 
+      orModerated: data.moderation_required,
       orModelCreatedAt: model.orCreatedAt,
       orModelUpdatedAt: model.orUpdatedAt,
+
+      epoch: snapshot.epoch,
     }
 
     const stats = data.stats
@@ -172,4 +167,9 @@ export function processEndpointsSnapshot(
   })
 
   return endpoints
+}
+
+function pruneZero(input?: string) {
+  if (input === '0') return undefined
+  return input
 }

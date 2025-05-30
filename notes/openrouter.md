@@ -48,7 +48,7 @@
   - if there are no endpoints available, it will return a 404 error object, even if the model exists
   - stats: computed p50 values?
 
-### Undocumented
+### API Endpoints
 
 - https://openrouter.ai/api/frontend/model-author?authorSlug=liquid&shouldIncludeStats=true&shouldIncludeVariants=false
 
@@ -73,3 +73,8 @@
 - https://openrouter.ai/api/frontend/stats/uptime-hourly?id=25b2cca5-53f6-40e7-b47b-191ec968b7c2
 
   - Last 72 hours of uptime data for an endpoint
+
+## Assumptions we should test
+
+- Request limits are always null (vestigial)
+- Status < 0 = deranked, status <= -10 = disabled

@@ -32,7 +32,7 @@ export function processModelSnapshot(snapshot: Doc<'snapshots'>) {
 
   const { data } = z.object({ data: OpenRouterFrontendModelRecordSchema }).parse(raw)
 
-  const model: Omit<Infer<typeof vModel>, 'epoch'> = {
+  const model: Infer<typeof vModel> = {
     slug: data.slug,
     permaslug: data.permaslug,
     authorId: data.author,
@@ -45,12 +45,13 @@ export function processModelSnapshot(snapshot: Doc<'snapshots'>) {
     shortName: data.short_name,
     description: data.description,
     tokenizer: data.group,
-    instructType: data.instruct_type ?? undefined,
-    huggingfaceId: data.hf_slug ?? undefined,
+    instructType: data.instruct_type || undefined,
+    huggingfaceId: data.hf_slug || undefined,
     inputModalities: data.input_modalities,
     outputModalities: data.output_modalities,
+    warningMessage: data.warning_message || undefined,
 
-    warningMessage: data.warning_message ?? undefined,
+    epoch: snapshot.epoch,
   }
 
   return model

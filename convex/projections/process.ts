@@ -56,7 +56,7 @@ export const runEpoch = internalAction({
       }
 
       const model = processModelSnapshot(modelSnapshot)
-      await ctx.runMutation(internal.projections.process.mergeModel, { slug, model: { ...model, epoch } })
+      await ctx.runMutation(internal.projections.process.mergeModel, { model })
 
       for (const modelId of modelIds) {
         const endpointsSnapshot = await ctx.runQuery(internal.snapshots.getByResourceTypeResourceIdEpoch, {
@@ -78,8 +78,7 @@ export const runEpoch = internalAction({
         const endpoints = processEndpointsSnapshot(model, endpointsSnapshot)
         for (const { endpoint } of endpoints) {
           await ctx.runMutation(internal.projections.process.mergeEndpoint, {
-            uuid: endpoint.uuid,
-            endpoint: { ...endpoint, epoch },
+            endpoint,
           })
         }
       }
@@ -89,10 +88,11 @@ export const runEpoch = internalAction({
 
 export const mergeModel = internalMutation({
   args: {
-    slug: v.string(),
     model: vModel,
   },
-  handler: async (ctx, { slug, model }) => {
+  handler: async (ctx, { model }) => {
+    const slug = model.slug
+
     const existing = await ctx.db
       .query('models')
       .withIndex('by_slug', (q) => q.eq('slug', slug))
@@ -111,10 +111,11 @@ export const mergeModel = internalMutation({
 
 export const mergeEndpoint = internalMutation({
   args: {
-    uuid: v.string(),
     endpoint: vEndpoint,
   },
-  handler: async (ctx, { uuid, endpoint }) => {
+  handler: async (ctx, { endpoint }) => {
+    const uuid = endpoint.uuid
+
     const existing = await ctx.db
       .query('endpoints')
       .withIndex('by_uuid', (q) => q.eq('uuid', uuid))
