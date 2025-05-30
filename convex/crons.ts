@@ -8,7 +8,7 @@ crons.hourly(
   {
     minuteUTC: 10,
   },
-  internal.sync.start,
+  internal.sync.process.start,
 )
 
 export default crons

@@ -27,7 +27,14 @@ import type * as projections_endpoints from "../projections/endpoints.js";
 import type * as projections_models from "../projections/models.js";
 import type * as projections_process from "../projections/process.js";
 import type * as snapshots from "../snapshots.js";
-import type * as sync from "../sync.js";
+import type * as sync_apps from "../sync/apps.js";
+import type * as sync_endpoints from "../sync/endpoints.js";
+import type * as sync_hourlyUptimes from "../sync/hourlyUptimes.js";
+import type * as sync_modelAuthors from "../sync/modelAuthors.js";
+import type * as sync_models from "../sync/models.js";
+import type * as sync_process from "../sync/process.js";
+import type * as sync_providers from "../sync/providers.js";
+import type * as sync_recentUptimes from "../sync/recentUptimes.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -52,7 +59,14 @@ declare const fullApi: ApiFromModules<{
   "projections/models": typeof projections_models;
   "projections/process": typeof projections_process;
   snapshots: typeof snapshots;
-  sync: typeof sync;
+  "sync/apps": typeof sync_apps;
+  "sync/endpoints": typeof sync_endpoints;
+  "sync/hourlyUptimes": typeof sync_hourlyUptimes;
+  "sync/modelAuthors": typeof sync_modelAuthors;
+  "sync/models": typeof sync_models;
+  "sync/process": typeof sync_process;
+  "sync/providers": typeof sync_providers;
+  "sync/recentUptimes": typeof sync_recentUptimes;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

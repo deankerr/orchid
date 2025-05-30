@@ -221,45 +221,9 @@ export const getRecentSyncStatuses = internalQuery({
   },
 })
 
-export const explore = internalQuery({
-  args: {
-    limit: v.optional(v.number()),
-  },
-  handler: async (ctx, { limit = 100 }) => {
-    const snapshots = await ctx.db
-      .query('snapshots')
-      .withIndex('by_resourceType_epoch', (q) => q.eq('resourceType', 'model'))
-      .order('desc')
-      .take(limit)
-
-    const groupMap = new Map<string, string[]>()
-    const modelVersionGroupIdMap = new Map<string, string[]>()
-
-    for (const snapshot of snapshots) {
-      const data = readSnapshotData(snapshot) as { data: any }
-      if (!data) continue
-
-      if (data.data.group) {
-        groupMap.set(data.data.group, [...(groupMap.get(data.data.group) ?? []), snapshot.resourceId!])
-      }
-
-      if (data.data.model_version_group_id) {
-        modelVersionGroupIdMap.set(data.data.model_version_group_id, [
-          ...(modelVersionGroupIdMap.get(data.data.model_version_group_id) ?? []),
-          snapshot.resourceId!,
-        ])
-      }
-    }
-
-    return {
-      groupMap: [...groupMap.entries()],
-      modelVersionGroupIdMap: [...modelVersionGroupIdMap.entries()],
-    }
-  },
-})
-
 export function readSnapshotData(snapshot: Doc<'snapshots'>) {
   if (typeof snapshot.data !== 'string') {
+    // decompress here when we start archiving snapshots
     return null
   }
 
