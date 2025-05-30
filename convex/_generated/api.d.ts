@@ -26,7 +26,6 @@ import type * as openrouter_schemas_api_v1_models_strict from "../openrouter/sch
 import type * as projections_endpoints from "../projections/endpoints.js";
 import type * as projections_models from "../projections/models.js";
 import type * as projections_process from "../projections/process.js";
-import type * as projections_old from "../projections_old.js";
 import type * as snapshots from "../snapshots.js";
 import type * as sync from "../sync.js";
 
@@ -52,7 +51,6 @@ declare const fullApi: ApiFromModules<{
   "projections/endpoints": typeof projections_endpoints;
   "projections/models": typeof projections_models;
   "projections/process": typeof projections_process;
-  projections_old: typeof projections_old;
   snapshots: typeof snapshots;
   sync: typeof sync;
 }>;

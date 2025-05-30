@@ -20,11 +20,6 @@ export const schema = defineSchema({
 
   models: defineTable(vModel).index('by_slug', ['slug']),
   endpoints: defineTable(vEndpoint).index('by_uuid', ['uuid']),
-
-  meps: defineTable({
-    model: v.record(v.string(), v.any()),
-    endpoints: v.array(v.record(v.string(), v.any())),
-  }),
 })
 
 export default schema
