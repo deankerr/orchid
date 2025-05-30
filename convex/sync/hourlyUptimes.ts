@@ -2,13 +2,14 @@ import { v } from 'convex/values'
 import { internal } from '../_generated/api'
 import { internalAction } from '../_generated/server'
 import { openrouter } from '../openrouter/client'
+import { getEndpointIdsList } from './state'
 
 export const hourlyUptimes = internalAction({
   args: {
     epoch: v.number(),
   },
   handler: async (ctx, { epoch }) => {
-    const endpointIdsList = await ctx.runQuery(internal.snapshots.getEpochEndpointIdsList, { epoch })
+    const endpointIdsList = await getEndpointIdsList(ctx, { epoch })
 
     for (const { modelId, endpointIds } of endpointIdsList) {
       const uptimeMap = new Map<string, unknown>()
@@ -26,7 +27,7 @@ export const hourlyUptimes = internalAction({
     }
 
     // Track completion
-    await ctx.runMutation(internal.snapshots.insertSyncStatus, {
+    await ctx.runMutation(internal.sync.process.insertSyncStatus, {
       action: 'uptime-hourly',
       epoch,
       event: 'completed',

@@ -3,13 +3,14 @@ import { internal } from '../_generated/api'
 import { internalAction } from '../_generated/server'
 import { openrouter } from '../openrouter/client'
 import { z } from 'zod'
+import { getModelList } from './state'
 
 export const modelAuthors = internalAction({
   args: {
     epoch: v.number(),
   },
   handler: async (ctx, { epoch }) => {
-    const modelList = await ctx.runQuery(internal.snapshots.getEpochModelList, { epoch })
+    const modelList = await getModelList(ctx, { epoch })
 
     const authorSlugs = new Set(modelList.map((m) => m.author))
 
@@ -109,7 +110,7 @@ export const modelAuthors = internalAction({
     }
 
     // Track completion
-    await ctx.runMutation(internal.snapshots.insertSyncStatus, {
+    await ctx.runMutation(internal.sync.process.insertSyncStatus, {
       action: 'model-authors',
       epoch,
       event: 'completed',

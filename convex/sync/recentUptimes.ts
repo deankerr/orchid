@@ -2,13 +2,14 @@ import { v } from 'convex/values'
 import { internal } from '../_generated/api'
 import { internalAction } from '../_generated/server'
 import { openrouter } from '../openrouter/client'
+import { getModelList } from './state'
 
 export const recentUptimes = internalAction({
   args: {
     epoch: v.number(),
   },
   handler: async (ctx, { epoch }) => {
-    const modelList = await ctx.runQuery(internal.snapshots.getEpochModelList, { epoch })
+    const modelList = await getModelList(ctx, { epoch })
 
     for (const { modelId, permaslug } of modelList) {
       const result = await openrouter.frontend.stats.uptimeRecent({ permaslug })
@@ -21,7 +22,7 @@ export const recentUptimes = internalAction({
     }
 
     // Track completion
-    await ctx.runMutation(internal.snapshots.insertSyncStatus, {
+    await ctx.runMutation(internal.sync.process.insertSyncStatus, {
       action: 'uptime-recent',
       epoch,
       event: 'completed',

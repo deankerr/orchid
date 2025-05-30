@@ -54,7 +54,7 @@ export const providers = internalAction({
     }
 
     // Track completion
-    await ctx.runMutation(internal.snapshots.insertSyncStatus, {
+    await ctx.runMutation(internal.sync.process.insertSyncStatus, {
       action: 'providers',
       epoch,
       event: 'completed',

@@ -1,9 +1,9 @@
-import { v, type Infer } from 'convex/values'
+import { v } from 'convex/values'
 import { z } from 'zod'
 import { internal } from '../_generated/api'
 import { internalAction } from '../_generated/server'
 import { openrouter } from '../openrouter/client'
-import type { vModelList } from '../snapshots'
+import { insertModelList, type ModelList } from './state'
 
 export const models = internalAction({
   args: {
@@ -35,7 +35,7 @@ export const models = internalAction({
       })
       .passthrough()
 
-    const modelList: Infer<typeof vModelList> = []
+    const modelList: ModelList = []
     for (const data of result.data) {
       const model = ModelSchema.safeParse(data)
       if (!model.success) {
@@ -64,11 +64,7 @@ export const models = internalAction({
       })
     }
 
-    await ctx.runMutation(internal.snapshots.insertSnapshot, {
-      resourceType: 'model-list',
-      epoch,
-      data: { success: true, data: modelList },
-    })
+    await insertModelList(ctx, { epoch, modelList })
 
     await ctx.scheduler.runAfter(0, internal.sync.endpoints.endpoints, { epoch })
     await ctx.scheduler.runAfter(0, internal.sync.recentUptimes.recentUptimes, { epoch })
@@ -76,7 +72,7 @@ export const models = internalAction({
     await ctx.scheduler.runAfter(0, internal.sync.modelAuthors.modelAuthors, { epoch })
 
     // Track completion
-    await ctx.runMutation(internal.snapshots.insertSyncStatus, {
+    await ctx.runMutation(internal.sync.process.insertSyncStatus, {
       action: 'models',
       epoch,
       event: 'completed',

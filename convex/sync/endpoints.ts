@@ -3,15 +3,16 @@ import { z } from 'zod'
 import { internal } from '../_generated/api'
 import { internalAction } from '../_generated/server'
 import { openrouter } from '../openrouter/client'
+import { getModelList, insertEndpointIdsList, type EndpointIdsList } from './state'
 
 export const endpoints = internalAction({
   args: {
     epoch: v.number(),
   },
   handler: async (ctx, { epoch }) => {
-    const modelList = await ctx.runQuery(internal.snapshots.getEpochModelList, { epoch })
+    const modelList = await getModelList(ctx, { epoch })
 
-    const endpointIdsList: { modelId: string; endpointIds: string[] }[] = []
+    const endpointIdsList: EndpointIdsList = []
 
     for (const { modelId, permaslug, variant } of modelList) {
       if (!variant) {
@@ -53,17 +54,13 @@ export const endpoints = internalAction({
       endpointIdsList.push({ modelId, endpointIds: endpoints.data.map((e) => e.id) })
     }
 
-    await ctx.runMutation(internal.snapshots.insertSnapshot, {
-      resourceType: 'endpoint-ids-list',
-      epoch,
-      data: { success: true, data: endpointIdsList },
-    })
+    await insertEndpointIdsList(ctx, { epoch, endpointIdsList })
 
     await ctx.scheduler.runAfter(0, internal.sync.hourlyUptimes.hourlyUptimes, { epoch })
 
     // Track completion
     const totalEndpoints = endpointIdsList.reduce((sum, item) => sum + item.endpointIds.length, 0)
-    await ctx.runMutation(internal.snapshots.insertSyncStatus, {
+    await ctx.runMutation(internal.sync.process.insertSyncStatus, {
       action: 'endpoints',
       epoch,
       event: 'completed',

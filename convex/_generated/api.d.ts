@@ -35,6 +35,7 @@ import type * as sync_models from "../sync/models.js";
 import type * as sync_process from "../sync/process.js";
 import type * as sync_providers from "../sync/providers.js";
 import type * as sync_recentUptimes from "../sync/recentUptimes.js";
+import type * as sync_state from "../sync/state.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -67,6 +68,7 @@ declare const fullApi: ApiFromModules<{
   "sync/process": typeof sync_process;
   "sync/providers": typeof sync_providers;
   "sync/recentUptimes": typeof sync_recentUptimes;
+  "sync/state": typeof sync_state;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

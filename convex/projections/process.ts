@@ -4,30 +4,28 @@ import { internal } from '../_generated/api'
 import { internalAction, internalMutation } from '../_generated/server'
 import { processEndpointsSnapshot, vEndpoint } from './endpoints'
 import { processModelSnapshot, vModel } from './models'
+import { getModelList } from '../sync/state'
 
 export const startLatest = internalMutation({
   handler: async (ctx) => {
-    const syncStatuses = await ctx.runQuery(internal.snapshots.getRecentSyncStatuses, {})
+    // NOTE: shortcut to find latest epoch ready to process
+    const latestEndpointsStatus = await ctx.db
+      .query('snapshots')
+      .withIndex('by_resourceType_resourceId_epoch', (q) =>
+        q.eq('resourceType', 'sync-status').eq('resourceId', 'endpoints'),
+      )
+      .order('desc')
+      .first()
 
-    const sync = syncStatuses.find(({ epoch, items }) => {
-      if (
-        items.some((status) => status.action === 'models' && status.status === 'completed') &&
-        items.some((status) => status.action === 'endpoints' && status.status === 'completed')
-      ) {
-        return true
-      }
-
-      console.log('incomplete:', epoch)
-      return false
-    })
-
-    if (!sync) {
-      console.log('no sync found')
+    if (!latestEndpointsStatus) {
+      console.log('no endpoints sync found')
       return
     }
 
-    console.log('starting', sync.epoch)
-    await ctx.scheduler.runAfter(0, internal.projections.process.runEpoch, { epoch: sync.epoch })
+    console.log('starting', latestEndpointsStatus.epoch)
+    await ctx.scheduler.runAfter(0, internal.projections.process.runEpoch, {
+      epoch: latestEndpointsStatus.epoch,
+    })
   },
 })
 
@@ -36,7 +34,7 @@ export const runEpoch = internalAction({
     epoch: v.number(),
   },
   handler: async (ctx, { epoch }) => {
-    const modelList = await ctx.runQuery(internal.snapshots.getEpochModelList, { epoch })
+    const modelList = await getModelList(ctx, { epoch })
     const modelListBySlug = Map.groupBy(modelList, (m) => m.slug)
 
     for (const [slug, models] of modelListBySlug) {
