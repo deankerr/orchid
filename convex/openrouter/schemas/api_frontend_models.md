@@ -15,12 +15,12 @@ This endpoint returns an array of model objects representing AI models available
 - `short_name`: (string) Abbreviated display name, typically without author prefix
 - `author`: (string) **foreign key** Model author or organization slug
 - `description`: (string) Detailed description of model capabilities and characteristics
-- `model_version_group_id`: (string | null) **?**
+- `model_version_group_id`: (string | null) **pruned** meant to link closely related models, but barely used
 - `context_length`: (number) Native context length (endpoints may vary)
 - `input_modalities`: (array of strings) Supported input types (`text`, `image`, `file`)
 - `output_modalities`: (array of strings) Supported output types (always `text`)
 - `has_text_output`: (true) **pruned**
-- `group`: (string) Model family categorization (e.g., "GPT", "Claude", "Llama")
+- `group`: (string) Model family/tokenizer architecture eg., "GPT", "Claude", "Llama2"
 - `instruct_type`: (string | null) Instruction format type
 - `default_system`: (null) **pruned**
 - `default_stops`: (array of strings) Default stop sequences for generation
@@ -43,3 +43,4 @@ This endpoint returns an array of model objects representing AI models available
 - All models currently output only text, making `output_modalities` always `["text"]`
 - All models can read text, meaning `input_modalities` always includes `["text"]`
 - The presence of `reasoning_config` indicates that the model supports reasoning/thinking
+- `group` helps link related models, especially valuable for Llama2/Llama3/Mistral finetunes

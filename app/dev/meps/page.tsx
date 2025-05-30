@@ -11,7 +11,7 @@ const INITIAL_MODELS_LIMIT = 10
 const MODELS_INCREMENT = 10
 
 export default function MepsPage() {
-  const data = useQuery(api.projections.getAllProcessedData)
+  const data = useQuery(api.projections_old.getAllProcessedData)
   const [displayLimit, setDisplayLimit] = useState(INITIAL_MODELS_LIMIT)
 
   const handleShowMore = () => {

@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-const DataPolicySchemaStrict = z.object({
+const DataPolicySchema = z.object({
   termsOfServiceURL: z.string().url().optional(),
   privacyPolicyURL: z.string().url().optional(),
   dataPolicyUrl: z.string().url().optional(),
@@ -24,7 +24,7 @@ const DataPolicySchemaStrict = z.object({
   requiresUserIDs: z.boolean().optional(),
 })
 
-const PricingSchemaStrict = z.object({
+const PricingSchema = z.object({
   prompt: z.string(),
   completion: z.string(),
   image: z.string(),
@@ -34,26 +34,23 @@ const PricingSchemaStrict = z.object({
   internal_reasoning: z.string().optional(),
 })
 
-const StatsSchemaStrict = z.object({
+const StatsSchema = z.object({
   p50_throughput: z.number(),
   p50_latency: z.number(),
   request_count: z.number(),
 })
 
-export const OpenRouterFrontendEndpointRecordSchemaStrict = z.object({
+export const OpenRouterFrontendEndpointRecordSchema = z.object({
   id: z.string(),
   name: z.string(),
   context_length: z.number(),
   model_variant_slug: z.string(),
   model_variant_permaslug: z.string(),
-  provider_name: z.string(),
   provider_display_name: z.string(),
   provider_slug: z.string(),
-  provider_model_id: z.string(),
   provider_region: z.string().nullable(),
   quantization: z.string().nullable(),
   variant: z.string(),
-  is_free: z.boolean(),
   can_abort: z.boolean(),
   max_prompt_tokens: z.number().nullable(),
   max_completion_tokens: z.number().nullable(),
@@ -62,8 +59,8 @@ export const OpenRouterFrontendEndpointRecordSchemaStrict = z.object({
   supported_parameters: z.array(z.string()),
   is_byok: z.boolean(),
   moderation_required: z.boolean(),
-  data_policy: DataPolicySchemaStrict,
-  pricing: PricingSchemaStrict,
+  data_policy: DataPolicySchema,
+  pricing: PricingSchema,
   variable_pricings: z.array(z.record(z.unknown())),
   is_deranked: z.boolean(),
   is_disabled: z.boolean(),
@@ -75,6 +72,6 @@ export const OpenRouterFrontendEndpointRecordSchemaStrict = z.object({
   limit_rpm_cf: z.number().nullable(),
   has_completions: z.boolean(),
   has_chat_completions: z.boolean(),
-  stats: StatsSchemaStrict.optional(),
+  stats: StatsSchema.optional(),
   status: z.number().optional(),
 })

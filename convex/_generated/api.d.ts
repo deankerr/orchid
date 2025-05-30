@@ -14,6 +14,7 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as crons from "../crons.js";
+import type * as frontend from "../frontend.js";
 import type * as openrouter_client from "../openrouter/client.js";
 import type * as openrouter_schemas_api_frontend_allProviders_strict from "../openrouter/schemas/api_frontend_allProviders_strict.js";
 import type * as openrouter_schemas_api_frontend_models from "../openrouter/schemas/api_frontend_models.js";
@@ -22,7 +23,10 @@ import type * as openrouter_schemas_api_frontend_stats_endpoint from "../openrou
 import type * as openrouter_schemas_api_frontend_stats_endpoint_strict from "../openrouter/schemas/api_frontend_stats_endpoint_strict.js";
 import type * as openrouter_schemas_api_v1_endpoints_strict from "../openrouter/schemas/api_v1_endpoints_strict.js";
 import type * as openrouter_schemas_api_v1_models_strict from "../openrouter/schemas/api_v1_models_strict.js";
-import type * as projections from "../projections.js";
+import type * as projections_endpoints from "../projections/endpoints.js";
+import type * as projections_models from "../projections/models.js";
+import type * as projections_process from "../projections/process.js";
+import type * as projections_old from "../projections_old.js";
 import type * as snapshots from "../snapshots.js";
 import type * as sync from "../sync.js";
 
@@ -36,6 +40,7 @@ import type * as sync from "../sync.js";
  */
 declare const fullApi: ApiFromModules<{
   crons: typeof crons;
+  frontend: typeof frontend;
   "openrouter/client": typeof openrouter_client;
   "openrouter/schemas/api_frontend_allProviders_strict": typeof openrouter_schemas_api_frontend_allProviders_strict;
   "openrouter/schemas/api_frontend_models": typeof openrouter_schemas_api_frontend_models;
@@ -44,7 +49,10 @@ declare const fullApi: ApiFromModules<{
   "openrouter/schemas/api_frontend_stats_endpoint_strict": typeof openrouter_schemas_api_frontend_stats_endpoint_strict;
   "openrouter/schemas/api_v1_endpoints_strict": typeof openrouter_schemas_api_v1_endpoints_strict;
   "openrouter/schemas/api_v1_models_strict": typeof openrouter_schemas_api_v1_models_strict;
-  projections: typeof projections;
+  "projections/endpoints": typeof projections_endpoints;
+  "projections/models": typeof projections_models;
+  "projections/process": typeof projections_process;
+  projections_old: typeof projections_old;
   snapshots: typeof snapshots;
   sync: typeof sync;
 }>;

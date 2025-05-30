@@ -1,5 +1,6 @@
 import { ConvexError, v, type Infer } from 'convex/values'
-import { internalMutation, internalQuery, type QueryCtx } from './_generated/server'
+import type { Doc } from './_generated/dataModel'
+import { internalMutation, internalQuery } from './_generated/server'
 
 export const vModelList = v.array(
   v.object({
@@ -99,6 +100,24 @@ export const getEpochEndpointIdsList = internalQuery({
   },
 })
 
+export const getByResourceTypeResourceIdEpoch = internalQuery({
+  args: {
+    resourceType: v.string(),
+    resourceId: v.string(),
+    epoch: v.number(),
+  },
+  handler: async (ctx, { resourceType, resourceId, epoch }) => {
+    const snapshot = await ctx.db
+      .query('snapshots')
+      .withIndex('by_resourceType_resourceId_epoch', (q) =>
+        q.eq('resourceType', resourceType).eq('resourceId', resourceId).eq('epoch', epoch),
+      )
+      .first()
+
+    return snapshot
+  },
+})
+
 export const insertSyncStatus = internalMutation({
   args: {
     action: v.string(),
@@ -133,10 +152,7 @@ export const getSyncStatus = internalQuery({
   args: {
     epoch: v.number(),
   },
-  handler: async (ctx, args) => {
-    // 0 = get latest epoch (dev helper)
-    const epoch = args.epoch || (await getLatestSyncEpoch(ctx))
-
+  handler: async (ctx, { epoch }) => {
     const snapshots = await ctx.db
       .query('snapshots')
       .withIndex('by_resourceType_epoch', (q) => q.eq('resourceType', 'sync-status').eq('epoch', epoch))
@@ -156,12 +172,100 @@ export const getSyncStatus = internalQuery({
   },
 })
 
-async function getLatestSyncEpoch(ctx: QueryCtx) {
-  const snapshot = await ctx.db
-    .query('snapshots')
-    .withIndex('by_resourceType_epoch', (q) => q.eq('resourceType', 'sync-status'))
-    .order('desc')
-    .first()
-  if (!snapshot) return 0
-  return snapshot.epoch
+export const getRecentSyncStatuses = internalQuery({
+  args: {
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, { limit = 50 }) => {
+    const snapshots = await ctx.db
+      .query('snapshots')
+      .withIndex('by_resourceType_epoch', (q) => q.eq('resourceType', 'sync-status'))
+      .order('desc')
+      .take(limit)
+
+    // Group by epoch
+    const epochGroups = new Map<
+      number,
+      {
+        action: string
+        status?: string
+        timestamp?: number
+        metadata?: any
+      }[]
+    >()
+
+    for (const snapshot of snapshots) {
+      if (!snapshot.resourceId) continue
+
+      const epochGroup = epochGroups.get(snapshot.epoch) ?? []
+      epochGroups.set(snapshot.epoch, epochGroup)
+
+      const data = readSnapshotData(snapshot) as {
+        data: { event: string; timestamp: number; metadata: any }
+      } | null
+
+      epochGroup.push({
+        action: snapshot.resourceId,
+        status: data?.data.event,
+        timestamp: data?.data.timestamp,
+        metadata: data?.data.metadata,
+      })
+    }
+
+    return [...epochGroups]
+      .map(([epoch, items]) => ({
+        epoch,
+        items,
+      }))
+      .sort((a, b) => b.epoch - a.epoch)
+  },
+})
+
+export const explore = internalQuery({
+  args: {
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, { limit = 100 }) => {
+    const snapshots = await ctx.db
+      .query('snapshots')
+      .withIndex('by_resourceType_epoch', (q) => q.eq('resourceType', 'model'))
+      .order('desc')
+      .take(limit)
+
+    const groupMap = new Map<string, string[]>()
+    const modelVersionGroupIdMap = new Map<string, string[]>()
+
+    for (const snapshot of snapshots) {
+      const data = readSnapshotData(snapshot) as { data: any }
+      if (!data) continue
+
+      if (data.data.group) {
+        groupMap.set(data.data.group, [...(groupMap.get(data.data.group) ?? []), snapshot.resourceId!])
+      }
+
+      if (data.data.model_version_group_id) {
+        modelVersionGroupIdMap.set(data.data.model_version_group_id, [
+          ...(modelVersionGroupIdMap.get(data.data.model_version_group_id) ?? []),
+          snapshot.resourceId!,
+        ])
+      }
+    }
+
+    return {
+      groupMap: [...groupMap.entries()],
+      modelVersionGroupIdMap: [...modelVersionGroupIdMap.entries()],
+    }
+  },
+})
+
+export function readSnapshotData(snapshot: Doc<'snapshots'>) {
+  if (typeof snapshot.data !== 'string') {
+    return null
+  }
+
+  try {
+    return JSON.parse(snapshot.data) as unknown
+  } catch {
+    return null
+  }
 }

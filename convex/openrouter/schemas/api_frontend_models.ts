@@ -14,7 +14,6 @@ export const OpenRouterFrontendModelRecordSchema = z.object({
   short_name: z.string(),
   author: z.string(),
   description: z.string(),
-  model_version_group_id: z.string().nullable(),
   context_length: z.number(),
   input_modalities: z.array(z.string()),
   output_modalities: z.array(z.string()),

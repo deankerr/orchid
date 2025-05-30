@@ -1,5 +1,7 @@
 import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
+import { vModel } from './projections/models'
+import { vEndpoint } from './projections/endpoints'
 
 export const schema = defineSchema({
   snapshots: defineTable({
@@ -12,7 +14,12 @@ export const schema = defineSchema({
     success: v.boolean(),
   })
     .index('by_resourceType_resourceId_epoch', ['resourceType', 'resourceId', 'epoch'])
-    .index('by_resourceType_epoch', ['resourceType', 'epoch']),
+    .index('by_resourceType_epoch', ['resourceType', 'epoch'])
+    .index('by_resourceId_epoch', ['resourceId', 'epoch'])
+    .index('by_epoch_resourceId', ['epoch', 'resourceId']),
+
+  models: defineTable(vModel).index('by_slug', ['slug']),
+  endpoints: defineTable(vEndpoint).index('by_uuid', ['uuid']),
 
   meps: defineTable({
     model: v.record(v.string(), v.any()),
