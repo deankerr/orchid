@@ -14,9 +14,7 @@ export const schema = defineSchema({
     success: v.boolean(),
   })
     .index('by_resourceType_resourceId_epoch', ['resourceType', 'resourceId', 'epoch'])
-    .index('by_resourceType_epoch', ['resourceType', 'epoch'])
-    .index('by_resourceId_epoch', ['resourceId', 'epoch'])
-    .index('by_epoch_resourceId', ['epoch', 'resourceId']),
+    .index('by_epoch_resourceType_resourceId', ['epoch', 'resourceType', 'resourceId']),
 
   models: defineTable(vModel).index('by_slug', ['slug']),
   endpoints: defineTable(vEndpoint).index('by_uuid', ['uuid']),

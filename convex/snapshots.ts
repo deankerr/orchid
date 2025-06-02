@@ -2,6 +2,8 @@ import { ConvexError, v } from 'convex/values'
 import type { Doc } from './_generated/dataModel'
 import { internalMutation, internalQuery } from './_generated/server'
 
+export type SnapshotWithData = Omit<Doc<'snapshots'>, 'data'> & { data: unknown }
+
 export const insertSnapshot = internalMutation({
   args: {
     resourceType: v.string(),
@@ -40,12 +42,22 @@ export const get = internalQuery({
   args: {
     epoch: v.number(),
     resourceType: v.string(),
+    resourceId: v.optional(v.string()),
   },
-  handler: async (ctx, { resourceType, epoch }) => {
-    const snapshot = await ctx.db
-      .query('snapshots')
-      .withIndex('by_resourceType_epoch', (q) => q.eq('resourceType', resourceType).eq('epoch', epoch))
-      .first()
+  handler: async (ctx, { epoch, resourceType, resourceId }) => {
+    const snapshot = resourceId
+      ? await ctx.db
+          .query('snapshots')
+          .withIndex('by_epoch_resourceType_resourceId', (q) =>
+            q.eq('epoch', epoch).eq('resourceType', resourceType).eq('resourceId', resourceId),
+          )
+          .first()
+      : await ctx.db
+          .query('snapshots')
+          .withIndex('by_epoch_resourceType_resourceId', (q) =>
+            q.eq('epoch', epoch).eq('resourceType', resourceType),
+          )
+          .first()
     if (!snapshot) return null
 
     const data = readSnapshotData(snapshot)
@@ -61,57 +73,6 @@ export const get = internalQuery({
       ...snapshot,
       data,
     }
-  },
-})
-
-export const getWithResourceId = internalQuery({
-  args: {
-    epoch: v.number(),
-    resourceType: v.string(),
-    resourceId: v.string(),
-  },
-  handler: async (ctx, { resourceType, resourceId, epoch }) => {
-    const snapshot = await ctx.db
-      .query('snapshots')
-      .withIndex('by_resourceType_resourceId_epoch', (q) =>
-        q.eq('resourceType', resourceType).eq('resourceId', resourceId).eq('epoch', epoch),
-      )
-      .first()
-    if (!snapshot) return null
-
-    const data = readSnapshotData(snapshot)
-    if (!data)
-      throw new ConvexError({
-        message: 'Failed to read snapshot data',
-        epoch,
-        resourceType,
-        resourceId,
-        id: snapshot._id,
-      })
-
-    return {
-      ...snapshot,
-      data,
-      resourceId: snapshot.resourceId!,
-    }
-  },
-})
-
-export const getByResourceTypeResourceIdEpoch = internalQuery({
-  args: {
-    resourceType: v.string(),
-    resourceId: v.string(),
-    epoch: v.number(),
-  },
-  handler: async (ctx, { resourceType, resourceId, epoch }) => {
-    const snapshot = await ctx.db
-      .query('snapshots')
-      .withIndex('by_resourceType_resourceId_epoch', (q) =>
-        q.eq('resourceType', resourceType).eq('resourceId', resourceId).eq('epoch', epoch),
-      )
-      .first()
-
-    return snapshot
   },
 })
 

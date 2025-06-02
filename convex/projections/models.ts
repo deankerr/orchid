@@ -1,10 +1,8 @@
 import { v, type Infer } from 'convex/values'
 import { z } from 'zod'
-import type { Doc } from '../_generated/dataModel'
 import { OpenRouterFrontendModelRecordSchema } from '../openrouter/schemas/api_frontend_models'
-import { readSnapshotData } from '../snapshots'
+import { type SnapshotWithData } from '../snapshots'
 
-// draft table schema
 export const vModel = v.object({
   slug: v.string(),
   permaslug: v.string(),
@@ -27,10 +25,8 @@ export const vModel = v.object({
   epoch: v.number(),
 })
 
-export function processModelSnapshot(snapshot: Doc<'snapshots'>) {
-  const raw = readSnapshotData(snapshot)
-
-  const { data } = z.object({ data: OpenRouterFrontendModelRecordSchema }).parse(raw)
+export function processModelSnapshot(snapshot: SnapshotWithData) {
+  const { data } = z.object({ data: OpenRouterFrontendModelRecordSchema }).parse(snapshot.data)
 
   const model: Infer<typeof vModel> = {
     slug: data.slug,

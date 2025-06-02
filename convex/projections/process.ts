@@ -35,20 +35,30 @@ export const runEpoch = internalAction({
   },
   handler: async (ctx, { epoch }) => {
     const modelList = await getModelList(ctx, { epoch })
-    const modelListBySlug = Map.groupBy(modelList, (m) => m.slug)
+    const modelListBySlug = Map.groupBy(
+      // * sort most "standard" models first
+      modelList.sort((a, b) => a.modelId.localeCompare(b.modelId)),
+      (m) => m.slug,
+    )
 
     for (const [slug, models] of modelListBySlug) {
-      const modelIds = models.map((m) => m.modelId).sort()
-      const baseModelId = modelIds[0]
+      const baseModel = models[0]
+      if (models.length > 1) {
+        console.log(
+          'models',
+          slug,
+          models.map((m) => m.modelId),
+        )
+      }
 
       // * process the base model
-      const modelSnapshot = await ctx.runQuery(internal.snapshots.getByResourceTypeResourceIdEpoch, {
+      const modelSnapshot = await ctx.runQuery(internal.snapshots.get, {
         resourceType: 'model',
-        resourceId: baseModelId,
+        resourceId: baseModel.modelId,
         epoch,
       })
 
-      if (!modelSnapshot || !modelSnapshot.success) {
+      if (!modelSnapshot?.success) {
         console.log('model snapshot failed', slug)
         continue
       }
@@ -56,19 +66,19 @@ export const runEpoch = internalAction({
       const model = processModelSnapshot(modelSnapshot)
       await ctx.runMutation(internal.projections.process.mergeModel, { model })
 
-      for (const modelId of modelIds) {
-        const endpointsSnapshot = await ctx.runQuery(internal.snapshots.getByResourceTypeResourceIdEpoch, {
+      if (!baseModel.topEndpointId) {
+        // * model has zero endpoints, skip
+        continue
+      }
+
+      for (const { modelId } of models) {
+        const endpointsSnapshot = await ctx.runQuery(internal.snapshots.get, {
           resourceType: 'endpoints',
           resourceId: modelId,
           epoch,
         })
 
-        if (!endpointsSnapshot) {
-          console.log('endpoints snapshot not found', modelId)
-          continue
-        }
-
-        if (!endpointsSnapshot.success) {
+        if (!endpointsSnapshot?.success) {
           console.log('endpoints snapshot failed', modelId)
           continue
         }
@@ -96,9 +106,14 @@ export const mergeModel = internalMutation({
       .withIndex('by_slug', (q) => q.eq('slug', slug))
       .first()
     if (existing) {
-      const { _id, _creationTime, ...rest } = existing
-      const results = diff(rest, model)
-      console.log('replace model:', slug, results)
+      const results = diff(existing, model, {
+        keysToSkip: ['_id', '_creationTime', 'epoch'],
+      })
+
+      if (results.length > 0) {
+        console.log('replace model:', slug, results)
+      }
+
       return await ctx.db.replace(existing._id, model)
     } else {
       console.log('insert model:', slug)
@@ -119,9 +134,14 @@ export const mergeEndpoint = internalMutation({
       .withIndex('by_uuid', (q) => q.eq('uuid', uuid))
       .first()
     if (existing) {
-      const { _id, _creationTime, ...rest } = existing
-      const results = diff(rest, endpoint)
-      console.log('replace endpoint:', uuid, results)
+      const results = diff(existing, endpoint, {
+        keysToSkip: ['_id', '_creationTime', 'epoch'],
+      })
+
+      if (results.length > 0) {
+        console.log('replace endpoint:', endpoint.name, results)
+      }
+
       return await ctx.db.replace(existing._id, endpoint)
     } else {
       console.log('insert endpoint:', endpoint.name)
