@@ -1,17 +1,12 @@
 import { v } from 'convex/values'
 import { internal } from '../_generated/api'
-import { internalAction, internalMutation } from '../_generated/server'
 import type { Id } from '../_generated/dataModel'
-
-function getHourlyEpoch(now: number = Date.now()) {
-  const date = new Date(now)
-  date.setMinutes(0, 0, 0)
-  return date.getTime()
-}
+import { internalAction, internalMutation } from '../_generated/server'
+import { getEpoch } from '../shared'
 
 export const start = internalAction({
   handler: async (ctx) => {
-    const epoch = getHourlyEpoch()
+    const epoch = getEpoch()
 
     await ctx.scheduler.runAfter(0, internal.sync.providers.providers, { epoch })
     await ctx.scheduler.runAfter(0, internal.sync.models.models, { epoch })

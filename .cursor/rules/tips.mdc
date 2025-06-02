@@ -27,3 +27,12 @@ alwaysApply: true
     - <good> - `is_free`: (boolean) `variant` property will be equal to `free` </good>
 - Documentation is for the 'Strict' version of an entity, including properties that we remove in practice. These may be marked with `**pruned**`.
 - `null` and `optional` are NOT equivilant. The API uses both somewhat inconsistantly - track them accurately. There are NO observed instances of a truly `nullish` property.
+
+## Frontend
+
+- Dev UI only for now, rendering all technical details while we're still refining our data structures.
+- Desktop UI only for now, don't be concerned about our dev views rendering on mobile. Use the space to show more data on screen.
+- We're using ConvexQueryCacheProvider, so it's fine to query large amounts of data and consume it directly without need for Context/state management etc. beyond what the current view requires.
+- React 19, Next.js 15, Tailwind 4
+- Put the components we're currently developing in the top level components folder. Only the shadcn/ui components should be in components/ui.
+- Use a clean, techinical looking style. `font-mono`, no background colors/shades. Use colored text to call out atypical values.

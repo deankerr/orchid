@@ -23,3 +23,17 @@ export const getAll = query({
     }))
   },
 })
+
+export const getLatestProcessedEpoch = query({
+  args: {},
+  handler: async (ctx) => {
+    // Find the latest epoch from processed models
+    const latestModel = await ctx.db.query('models').order('desc').first()
+
+    if (!latestModel) {
+      return null
+    }
+
+    return latestModel.epoch
+  },
+})

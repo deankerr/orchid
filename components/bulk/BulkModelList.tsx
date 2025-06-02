@@ -1,11 +1,10 @@
 'use client'
 
-import { useQuery } from 'convex/react'
-import { api } from '../../convex/_generated/api'
+import { useBulkModels } from '@/hooks/api'
 import { BulkModel } from './BulkModel'
 
 export function BulkModelList() {
-  const models = useQuery(api.frontend.getAll)
+  const models = useBulkModels()
 
   if (!models) {
     return <div className="font-mono">Loading models...</div>

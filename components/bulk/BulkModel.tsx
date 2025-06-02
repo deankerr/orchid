@@ -1,5 +1,7 @@
 import type { Doc } from '@/convex/_generated/dataModel'
 import { BulkEndpoint } from './BulkEndpoint'
+import Link from 'next/link'
+import { EpochDisplay } from '../EpochDisplay'
 
 type ModelWithEndpoints = Doc<'models'> & {
   endpoints: Doc<'endpoints'>[]
@@ -21,7 +23,11 @@ export function BulkModel({ model }: { model: ModelWithEndpoints }) {
     <div className="border overflow-hidden">
       {/* Model header */}
       <div className="p-3 border-b">
-        <h3 className="font-mono text-sm font-semibold">{model.slug}</h3>
+        <h3 className="font-mono text-sm font-semibold">
+          <Link href={`/model/${model.slug}`} className="hover:underline">
+            {model.slug}
+          </Link>
+        </h3>
       </div>
 
       {/* Model details */}
@@ -82,7 +88,9 @@ export function BulkModel({ model }: { model: ModelWithEndpoints }) {
             </tr>
             <tr className="border-b">
               <td className="py-1 pr-4 text-muted-foreground">epoch</td>
-              <td className="py-1">{model.epoch}</td>
+              <td className="py-1">
+                <EpochDisplay epoch={model.epoch} />
+              </td>
             </tr>
           </tbody>
         </table>
