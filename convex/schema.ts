@@ -1,23 +1,40 @@
 import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
-import { vModel } from './projections/models'
 import { vEndpoint } from './projections/endpoints'
+import { vModel } from './projections/models'
+import { endpointStatsTable } from './sync_v1/endpoint_stats_v1'
+import { endpointsTable } from './sync_v1/endpoints_v1'
+import { modelsTable } from './sync_v1/models_v1'
+import { endpointUptimeTable } from './sync_v1/endpoint_uptime_v1'
+import { appTokensTable, appsTable } from './sync_v1/apps_v1'
 
-export const schema = defineSchema({
-  snapshots: defineTable({
-    resourceType: v.string(),
-    resourceId: v.optional(v.string()),
-    epoch: v.number(),
-    hash: v.bytes(),
-    size: v.number(),
-    data: v.union(v.string(), v.bytes()),
-    success: v.boolean(),
-  })
-    .index('by_resourceType_resourceId_epoch', ['resourceType', 'resourceId', 'epoch'])
-    .index('by_epoch_resourceType_resourceId', ['epoch', 'resourceType', 'resourceId']),
+export const schema = defineSchema(
+  {
+    models_v1: modelsTable,
+    endpoints_v1: endpointsTable,
+    endpoint_stats_v1: endpointStatsTable,
+    endpoint_uptime_v1: endpointUptimeTable,
+    apps_v1: appsTable,
+    app_tokens_v1: appTokensTable,
 
-  models: defineTable(vModel).index('by_slug', ['slug']),
-  endpoints: defineTable(vEndpoint).index('by_uuid', ['uuid']),
-})
+    snapshots: defineTable({
+      resourceType: v.string(),
+      resourceId: v.optional(v.string()),
+      epoch: v.number(),
+      hash: v.bytes(),
+      size: v.number(),
+      data: v.union(v.string(), v.bytes()),
+      success: v.boolean(),
+    })
+      .index('by_resourceType_resourceId_epoch', ['resourceType', 'resourceId', 'epoch'])
+      .index('by_epoch_resourceType_resourceId', ['epoch', 'resourceType', 'resourceId']),
+
+    models: defineTable(vModel).index('by_slug', ['slug']),
+    endpoints: defineTable(vEndpoint).index('by_uuid', ['uuid']),
+  },
+  {
+    strictTableNameTypes: false,
+  },
+)
 
 export default schema

@@ -1,0 +1,75 @@
+{
+  "data": [
+    {
+      "count": 151677,
+      "date": "2025-06-02 00:00:00",
+      "model_permaslug": "deepseek/deepseek-r1",
+      "total_completion_tokens": 131751524,
+      "total_native_tokens_reasoning": 81528653,
+      "total_prompt_tokens": 1265049753,
+      "variant": "free",
+      "variant_permaslug": "deepseek/deepseek-r1:free"
+    },
+    {
+      "count": 33992,
+      "date": "2025-06-02 00:00:00",
+      "model_permaslug": "deepseek/deepseek-r1",
+      "total_completion_tokens": 38750507,
+      "total_native_tokens_reasoning": 24420999,
+      "total_prompt_tokens": 132911815,
+      "variant": "standard",
+      "variant_permaslug": "deepseek/deepseek-r1"
+    },
+    {
+      "count": 483142,
+      "date": "2025-06-01 00:00:00",
+      "model_permaslug": "deepseek/deepseek-r1",
+      "total_completion_tokens": 396255004,
+      "total_native_tokens_reasoning": 250664428,
+      "total_prompt_tokens": 4152387358,
+      "variant": "free",
+      "variant_permaslug": "deepseek/deepseek-r1:free"
+    },
+    {
+      "count": 103070,
+      "date": "2025-06-01 00:00:00",
+      "model_permaslug": "deepseek/deepseek-r1",
+      "total_completion_tokens": 108857213,
+      "total_native_tokens_reasoning": 70509829,
+      "total_prompt_tokens": 429306229,
+      "variant": "standard",
+      "variant_permaslug": "deepseek/deepseek-r1"
+    },
+    {
+      "count": 458458,
+      "date": "2025-05-31 00:00:00",
+      "model_permaslug": "deepseek/deepseek-r1",
+      "total_completion_tokens": 374059755,
+      "total_native_tokens_reasoning": 238974608,
+      "total_prompt_tokens": 3888176611,
+      "variant": "free",
+      "variant_permaslug": "deepseek/deepseek-r1:free"
+    },
+    {
+      "count": 143360,
+      "date": "2025-05-31 00:00:00",
+      "model_permaslug": "deepseek/deepseek-r1",
+      "total_completion_tokens": 150167598,
+      "total_native_tokens_reasoning": 103075497,
+      "total_prompt_tokens": 583700170,
+      "variant": "standard",
+      "variant_permaslug": "deepseek/deepseek-r1"
+    },
+    {
+      "count": 205004,
+      "date": "2025-05-30 00:00:00",
+      "model_permaslug": "deepseek/deepseek-r1",
+      "total_completion_tokens": 191586523,
+      "total_native_tokens_reasoning": 141345594,
+      "total_prompt_tokens": 936994007,
+      "variant": "standard",
+      "variant_permaslug": "deepseek/deepseek-r1"
+    }
+  ],
+  "success": true
+}
