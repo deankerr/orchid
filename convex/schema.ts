@@ -1,14 +1,12 @@
 import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
-import { vEndpoint } from './projections/endpoints'
-import { vModel } from './projections/models'
-import { endpointStatsTable } from './sync_v1/endpoint_stats_v1'
-import { endpointsTable } from './sync_v1/endpoints_v1'
-import { modelsTable } from './sync_v1/models_v1'
-import { endpointUptimeTable } from './sync_v1/endpoint_uptime_v1'
 import { appTokensTable, appsTable } from './sync_v1/apps_v1'
 import { authorsTable } from './sync_v1/authors_v1'
+import { endpointStatsTable } from './sync_v1/endpoint_stats_v1'
+import { endpointUptimeTable } from './sync_v1/endpoint_uptime_v1'
+import { endpointsTable } from './sync_v1/endpoints_v1'
 import { modelTokensTable } from './sync_v1/model_tokens_v1'
+import { modelsTable } from './sync_v1/models_v1'
 
 export const schema = defineSchema(
   {
@@ -21,7 +19,7 @@ export const schema = defineSchema(
     model_tokens_v1: modelTokensTable,
     authors_v1: authorsTable,
 
-    // v0
+    // version 0 archived data
     snapshots: defineTable({
       resourceType: v.string(),
       resourceId: v.optional(v.string()),
@@ -33,9 +31,6 @@ export const schema = defineSchema(
     })
       .index('by_resourceType_resourceId_epoch', ['resourceType', 'resourceId', 'epoch'])
       .index('by_epoch_resourceType_resourceId', ['epoch', 'resourceType', 'resourceId']),
-
-    models: defineTable(vModel).index('by_slug', ['slug']),
-    endpoints: defineTable(vEndpoint).index('by_uuid', ['uuid']),
   },
   {
     strictTableNameTypes: false,
