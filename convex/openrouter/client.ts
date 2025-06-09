@@ -135,8 +135,8 @@ export const openrouter = {
       endpoint: (params: { permaslug: string; variant?: string }) =>
         fetchDataArray('/api/frontend/stats/endpoint', params),
 
-      app: (params: { permaslug: string; variant?: string; limit?: number }) =>
-        fetchDataArray('/api/frontend/stats/app', params),
+      app: ({ permaslug, variant, limit = 20 }: { permaslug: string; variant?: string; limit?: number }) =>
+        fetchDataArray('/api/frontend/stats/app', { permaslug, variant, limit }),
 
       uptimeRecent: (params: { permaslug: string }) =>
         fetchDataObject('/api/frontend/stats/uptime-recent', params),
@@ -144,11 +144,20 @@ export const openrouter = {
       uptimeHourly: (params: { id: string }) => fetchDataObject('/api/frontend/stats/uptime-hourly', params),
     },
 
-    modelAuthor: (params: {
+    modelAuthor: ({
+      authorSlug,
+      shouldIncludeStats = true,
+      shouldIncludeVariants = false,
+    }: {
       authorSlug: string
       shouldIncludeStats?: boolean
       shouldIncludeVariants?: boolean
-    }) => fetchDataObject('/api/frontend/model-author', params),
+    }) =>
+      fetchDataObject('/api/frontend/model-author', {
+        authorSlug,
+        shouldIncludeStats,
+        shouldIncludeVariants,
+      }),
 
     modelVersions: (params: { permaslug: string; variant?: string }) =>
       fetchDataObject('/api/frontend/models/versions', params),

@@ -1,11 +1,14 @@
-import { v, type AsObjectValidator, type Infer } from 'convex/values'
+import { ConvexError, v, type AsObjectValidator, type Infer } from 'convex/values'
 import { internal } from '../_generated/api'
 import { internalAction, internalMutation, type ActionCtx } from '../_generated/server'
+import { openrouter } from '../openrouter/client'
+import { fetchApps, mergeApps, mergeAppTokens, vAppsFields, vAppTokensFields } from './apps_v1'
+import { mergeAuthor, parseAuthorRecord, vAuthorFields } from './authors_v1'
 import { mergeEndpointStats, vEndpointStatsFields } from './endpoint_stats_v1'
 import { fetchEndpointUptime, mergeEndpointUptimes, vEndpointUptimeFields } from './endpoint_uptime_v1'
 import { fetchEndpoints, mergeEndpoint, vEndpointFields } from './endpoints_v1'
+import { mergeModelTokensStats, parseModelWithStatsRecords, vModelTokensFields } from './model_tokens_v1'
 import { fetchModels, mergeModel, vModelFields } from './models_v1'
-import { fetchApps, mergeApps, mergeAppTokens, vAppsFields, vAppTokensFields } from './apps_v1'
 
 export const run = internalAction({
   args: {
@@ -17,6 +20,7 @@ export const run = internalAction({
     // combined deduped apps
     const appsMap = new Map<number, Infer<AsObjectValidator<typeof vAppsFields>>>()
 
+    // * models with endpoints data
     const models = await fetchModels()
     for (const m of models) {
       const model = {
@@ -30,9 +34,27 @@ export const run = internalAction({
       }
     }
 
-    console.log('appsMap', appsMap.size)
+    // * apps
     await ctx.runMutation(internal.sync_v1.run.mergeAppProjections, {
       apps: Array.from(appsMap.values()),
+    })
+
+    // * authors and model_tokens data
+    const authorSlugs = new Set(models.map((m) => m.author_slug))
+    console.log('authorSlugs', authorSlugs.size)
+
+    const authors: Infer<AsObjectValidator<typeof vAuthorFields>>[] = []
+
+    for (const authorSlug of authorSlugs) {
+      const { author } = await syncModelAuthorTokensData(ctx, authorSlug)
+      authors.push({
+        ...author,
+        epoch,
+      })
+    }
+
+    await ctx.runMutation(internal.sync_v1.run.mergeAuthorsData, {
+      authors,
     })
   },
 })
@@ -98,7 +120,7 @@ async function syncEndpointData(ctx: ActionCtx, model: Infer<AsObjectValidator<t
     }
   }
 
-  await ctx.runMutation(internal.sync_v1.run.mergeModelProjections, {
+  await ctx.runMutation(internal.sync_v1.run.mergeModelEndpointsData, {
     model: {
       ...model,
       epoch: model.epoch,
@@ -112,7 +134,7 @@ async function syncEndpointData(ctx: ActionCtx, model: Infer<AsObjectValidator<t
   return { appsMap }
 }
 
-export const mergeModelProjections = internalMutation({
+export const mergeModelEndpointsData = internalMutation({
   args: {
     model: v.object(vModelFields),
     endpoints: v.array(v.object(vEndpointFields)),
@@ -136,11 +158,54 @@ export const mergeModelProjections = internalMutation({
   },
 })
 
+/* 
+  app token stats are stored with the relevant model, but we can pool together
+  all of the apps themselves and merge them in a single mutation.
+*/
 export const mergeAppProjections = internalMutation({
   args: {
     apps: v.array(v.object(vAppsFields)),
   },
   handler: async (ctx, { apps }) => {
     await mergeApps(ctx, apps)
+  },
+})
+
+/* 
+  the authors and model_tokens data come from the same 'modelAuthor' endpoint.
+  we request the data here, and validate and process each entity separately.
+  authors are returned to merge together.
+*/
+async function syncModelAuthorTokensData(ctx: ActionCtx, authorSlug: string) {
+  const result = await openrouter.frontend.modelAuthor({ authorSlug })
+  if (!result.success) throw new ConvexError(`failed to get author: ${authorSlug}`)
+
+  const modelTokensStats = parseModelWithStatsRecords(result.data)
+  await ctx.runMutation(internal.sync_v1.run.mergeModelTokensData, {
+    modelTokensStats,
+  })
+
+  return {
+    author: parseAuthorRecord(result.data),
+  }
+}
+
+export const mergeModelTokensData = internalMutation({
+  args: {
+    modelTokensStats: v.array(v.object(vModelTokensFields)),
+  },
+  handler: async (ctx, { modelTokensStats }) => {
+    await mergeModelTokensStats(ctx, modelTokensStats)
+  },
+})
+
+export const mergeAuthorsData = internalMutation({
+  args: {
+    authors: v.array(v.object(vAuthorFields)),
+  },
+  handler: async (ctx, { authors }) => {
+    for (const author of authors) {
+      await mergeAuthor(ctx, author)
+    }
   },
 })

@@ -38,9 +38,11 @@ import type * as sync_providers from "../sync/providers.js";
 import type * as sync_recentUptimes from "../sync/recentUptimes.js";
 import type * as sync_state from "../sync/state.js";
 import type * as sync_v1_apps_v1 from "../sync_v1/apps_v1.js";
+import type * as sync_v1_authors_v1 from "../sync_v1/authors_v1.js";
 import type * as sync_v1_endpoint_stats_v1 from "../sync_v1/endpoint_stats_v1.js";
 import type * as sync_v1_endpoint_uptime_v1 from "../sync_v1/endpoint_uptime_v1.js";
 import type * as sync_v1_endpoints_v1 from "../sync_v1/endpoints_v1.js";
+import type * as sync_v1_model_tokens_v1 from "../sync_v1/model_tokens_v1.js";
 import type * as sync_v1_models_v1 from "../sync_v1/models_v1.js";
 import type * as sync_v1_run from "../sync_v1/run.js";
 
@@ -78,9 +80,11 @@ declare const fullApi: ApiFromModules<{
   "sync/recentUptimes": typeof sync_recentUptimes;
   "sync/state": typeof sync_state;
   "sync_v1/apps_v1": typeof sync_v1_apps_v1;
+  "sync_v1/authors_v1": typeof sync_v1_authors_v1;
   "sync_v1/endpoint_stats_v1": typeof sync_v1_endpoint_stats_v1;
   "sync_v1/endpoint_uptime_v1": typeof sync_v1_endpoint_uptime_v1;
   "sync_v1/endpoints_v1": typeof sync_v1_endpoints_v1;
+  "sync_v1/model_tokens_v1": typeof sync_v1_model_tokens_v1;
   "sync_v1/models_v1": typeof sync_v1_models_v1;
   "sync_v1/run": typeof sync_v1_run;
 }>;
