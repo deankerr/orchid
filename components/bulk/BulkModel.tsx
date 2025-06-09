@@ -3,8 +3,8 @@ import { BulkEndpoint } from './BulkEndpoint'
 import Link from 'next/link'
 import { EpochDisplay } from '../EpochDisplay'
 
-type ModelWithEndpoints = Doc<'models'> & {
-  endpoints: Doc<'endpoints'>[]
+type ModelWithEndpoints = Doc<'models_v1'> & {
+  endpoints: Doc<'endpoints_v1'>[]
 }
 
 export function BulkModel({ model }: { model: ModelWithEndpoints }) {
@@ -40,15 +40,15 @@ export function BulkModel({ model }: { model: ModelWithEndpoints }) {
             </tr>
             <tr className="border-b">
               <td className="py-1 pr-4 text-muted-foreground">shortName</td>
-              <td className="py-1">{model.shortName}</td>
+              <td className="py-1">{model.short_name}</td>
             </tr>
             <tr className="border-b">
               <td className="py-1 pr-4 text-muted-foreground">author</td>
-              <td className="py-1">{model.authorId}</td>
+              <td className="py-1">{model.author_slug}</td>
             </tr>
             <tr className="border-b">
               <td className="py-1 pr-4 text-muted-foreground">contextLength</td>
-              <td className="py-1">{model.contextLength.toLocaleString()}</td>
+              <td className="py-1">{model.context_length.toLocaleString()}</td>
             </tr>
             <tr className="border-b">
               <td className="py-1 pr-4 text-muted-foreground">tokenizer</td>
@@ -56,23 +56,23 @@ export function BulkModel({ model }: { model: ModelWithEndpoints }) {
             </tr>
             <tr className="border-b">
               <td className="py-1 pr-4 text-muted-foreground">inputModalities</td>
-              <td className="py-1">{model.inputModalities.join(', ')}</td>
+              <td className="py-1">{model.input_modalities.join(', ')}</td>
             </tr>
             <tr className="border-b">
               <td className="py-1 pr-4 text-muted-foreground">outputModalities</td>
-              <td className="py-1">{model.outputModalities.join(', ')}</td>
+              <td className="py-1">{model.output_modalities.join(', ')}</td>
             </tr>
             <tr className="border-b">
               <td className="py-1 pr-4 text-muted-foreground">instructType</td>
-              <td className="py-1">{renderOptional(model.instructType)}</td>
+              <td className="py-1">{renderOptional(model.instruct_type)}</td>
             </tr>
             <tr className="border-b">
               <td className="py-1 pr-4 text-muted-foreground">huggingfaceId</td>
-              <td className="py-1">{renderOptional(model.huggingfaceId)}</td>
+              <td className="py-1">{renderOptional(model.hugging_face_id)}</td>
             </tr>
             <tr className="border-b">
               <td className="py-1 pr-4 text-muted-foreground">warningMessage</td>
-              <td className="py-1">{renderOptional(model.warningMessage)}</td>
+              <td className="py-1">{renderOptional(model.warning_message)}</td>
             </tr>
             <tr className="border-b">
               <td className="py-1 pr-4 text-muted-foreground">permaslug</td>
@@ -80,11 +80,11 @@ export function BulkModel({ model }: { model: ModelWithEndpoints }) {
             </tr>
             <tr className="border-b">
               <td className="py-1 pr-4 text-muted-foreground">created</td>
-              <td className="py-1">{formatDate(model.orCreatedAt)}</td>
+              <td className="py-1">{formatDate(model.origin_created_at)}</td>
             </tr>
             <tr className="border-b">
               <td className="py-1 pr-4 text-muted-foreground">updated</td>
-              <td className="py-1">{formatDate(model.orUpdatedAt)}</td>
+              <td className="py-1">{formatDate(model.origin_updated_at)}</td>
             </tr>
             <tr className="border-b">
               <td className="py-1 pr-4 text-muted-foreground">epoch</td>

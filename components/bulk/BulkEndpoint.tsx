@@ -1,6 +1,6 @@
 import type { Doc } from '@/convex/_generated/dataModel'
 
-export function BulkEndpoint({ endpoint }: { endpoint: Doc<'endpoints'> }) {
+export function BulkEndpoint({ endpoint }: { endpoint: Doc<'endpoints_v1'> }) {
   // Format pricing for display
   const formatPrice = (price: string, type: 'token' | 'request') => {
     const num = parseFloat(price)
@@ -20,18 +20,18 @@ export function BulkEndpoint({ endpoint }: { endpoint: Doc<'endpoints'> }) {
 
   // Collect capability flags
   const caps = []
-  if (endpoint.capabilities.completion) caps.push('completion')
-  if (endpoint.capabilities.chat) caps.push('chat')
-  if (endpoint.capabilities.imageInput) caps.push('image')
-  if (endpoint.capabilities.fileInput) caps.push('file')
+  if (endpoint.capabilities.completions) caps.push('completion')
+  if (endpoint.capabilities.chat_completions) caps.push('chat')
+  if (endpoint.capabilities.image_input) caps.push('image')
+  if (endpoint.capabilities.file_input) caps.push('file')
   if (endpoint.capabilities.reasoning) caps.push('reasoning')
   if (endpoint.capabilities.tools) caps.push('tools')
-  if (endpoint.capabilities.multipart) caps.push('multipart')
-  if (endpoint.capabilities.cancellation) caps.push('cancel')
+  if (endpoint.capabilities.multipart_messages) caps.push('multipart')
+  if (endpoint.capabilities.stream_cancellation) caps.push('cancel')
   if (endpoint.capabilities.byok) caps.push('byok')
-  if (endpoint.orModerated) caps.push('moderated')
+  if (endpoint.is_moderated) caps.push('moderated')
 
-  const isDeranked = endpoint.status !== undefined && endpoint.status < 0
+  const isDeranked = endpoint.status < 0
 
   return (
     <div className="border bg-muted/20 p-2 text-xs font-mono">
@@ -39,7 +39,7 @@ export function BulkEndpoint({ endpoint }: { endpoint: Doc<'endpoints'> }) {
       <div className="flex items-start gap-2 mb-1 ml-32">
         <span className="font-semibold">{endpoint.name}</span>
         {endpoint.variant !== 'standard' && <span className="text-blue-600">[{endpoint.variant}]</span>}
-        {endpoint.isDisabled && <span className="text-red-600">[disabled]</span>}
+        {endpoint.is_disabled && <span className="text-red-600">[disabled]</span>}
         {isDeranked && <span className="text-orange-600">[deranked]</span>}
       </div>
 
@@ -48,10 +48,10 @@ export function BulkEndpoint({ endpoint }: { endpoint: Doc<'endpoints'> }) {
         {/* Left column */}
         <div className="space-y-0.5">
           <div>
-            <span className="text-muted-foreground">provider:</span> {endpoint.providerName}
+            <span className="text-muted-foreground">provider:</span> {endpoint.provider_name}
           </div>
           <div>
-            <span className="text-muted-foreground">context:</span> {endpoint.contextLength.toLocaleString()}
+            <span className="text-muted-foreground">context:</span> {endpoint.context_length.toLocaleString()}
           </div>
           <div>
             <span className="text-muted-foreground">quantization:</span>{' '}
@@ -63,35 +63,35 @@ export function BulkEndpoint({ endpoint }: { endpoint: Doc<'endpoints'> }) {
           </div>
           <div>
             <span className="text-muted-foreground">image_pricing:</span>{' '}
-            {endpoint.pricing.imageInput
-              ? formatPrice(endpoint.pricing.imageInput, 'token')
+            {endpoint.pricing.image_input
+              ? formatPrice(endpoint.pricing.image_input, 'token')
               : renderOptional(null)}
           </div>
           <div>
             <span className="text-muted-foreground">cache_read:</span>{' '}
-            {endpoint.pricing.cacheRead
-              ? formatPrice(endpoint.pricing.cacheRead, 'token')
+            {endpoint.pricing.cache_read
+              ? formatPrice(endpoint.pricing.cache_read, 'token')
               : renderOptional(null)}
           </div>
           <div>
             <span className="text-muted-foreground">cache_write:</span>{' '}
-            {endpoint.pricing.cacheWrite
-              ? formatPrice(endpoint.pricing.cacheWrite, 'token')
+            {endpoint.pricing.cache_write
+              ? formatPrice(endpoint.pricing.cache_write, 'token')
               : renderOptional(null)}
           </div>
           <div>
             <span className="text-muted-foreground">reasoning:</span>{' '}
-            {endpoint.pricing.reasoningOutput
-              ? formatPrice(endpoint.pricing.reasoningOutput, 'token')
+            {endpoint.pricing.reasoning_output
+              ? formatPrice(endpoint.pricing.reasoning_output, 'token')
               : renderOptional(null)}
           </div>
           <div>
             <span className="text-muted-foreground">max_input:</span>{' '}
-            {renderOptional(endpoint.limits.inputTokens?.toLocaleString())}
+            {renderOptional(endpoint.limits.input_tokens?.toLocaleString())}
           </div>
           <div>
             <span className="text-muted-foreground">max_output:</span>{' '}
-            {renderOptional(endpoint.limits.outputTokens?.toLocaleString())}
+            {renderOptional(endpoint.limits.output_tokens?.toLocaleString())}
           </div>
         </div>
 
@@ -105,30 +105,30 @@ export function BulkEndpoint({ endpoint }: { endpoint: Doc<'endpoints'> }) {
           </div>
           <div>
             <span className="text-muted-foreground">max_images:</span>{' '}
-            {renderOptional(endpoint.limits.imagesPerPrompt)}
+            {renderOptional(endpoint.limits.images_per_prompt)}
           </div>
           <div>
             <span className="text-muted-foreground">tokens_per_image:</span>{' '}
-            {renderOptional(endpoint.limits.tokensPerImage)}
+            {renderOptional(endpoint.limits.tokens_per_image)}
           </div>
           <div>
             <span className="text-muted-foreground">training:</span>{' '}
-            {renderOptional(endpoint.dataPolicy.training)}
+            {renderOptional(endpoint.data_policy.training)}
           </div>
           <div>
             <span className="text-muted-foreground">retains_prompts:</span>{' '}
-            {renderOptional(endpoint.dataPolicy.retainsPrompts)}
+            {renderOptional(endpoint.data_policy.retains_prompts)}
           </div>
           <div>
             <span className="text-muted-foreground">retention_days:</span>{' '}
-            {renderOptional(endpoint.dataPolicy.retentionDays)}
+            {renderOptional(endpoint.data_policy.retention_days)}
           </div>
         </div>
       </div>
 
       {/* Supported parameters if any */}
       <div className="mt-1 text-xs ml-32">
-        <span className="text-muted-foreground">params:</span> {endpoint.supportedParameters.join(', ')}
+        <span className="text-muted-foreground">params:</span> {endpoint.supported_parameters.join(', ')}
       </div>
 
       {/* UUID */}

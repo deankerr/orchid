@@ -12,16 +12,6 @@ export function BulkModelList() {
 
   const totalEndpoints = models.reduce((sum, model) => sum + model.endpoints.length, 0)
 
-  const endpointUuids = new Set<string>()
-  for (const m of models) {
-    for (const e of m.endpoints) {
-      if (endpointUuids.has(e.uuid)) {
-        console.log('dupe', e.modelVariantSlug)
-      }
-      endpointUuids.add(e.uuid)
-    }
-  }
-
   return (
     <div className="space-y-4">
       {/* Summary stats */}
