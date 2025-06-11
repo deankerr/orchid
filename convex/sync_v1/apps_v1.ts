@@ -3,15 +3,18 @@ import { ConvexError, v, type AsObjectValidator, type Infer } from 'convex/value
 import { openrouter } from '../openrouter/client'
 import { z } from 'zod'
 import type { MutationCtx } from '../_generated/server'
+import { diff } from 'json-diff-ts'
 
 export const appsTable = defineTable({
   app_id: v.number(),
-  origin_created_at: v.number(),
+
   title: v.optional(v.string()),
   description: v.optional(v.string()),
   main_url: v.optional(v.string()),
   origin_url: v.string(),
   source_code_url: v.optional(v.string()),
+  origin_created_at: v.number(),
+
   epoch: v.number(),
 }).index('by_app_id', ['app_id'])
 
@@ -20,6 +23,7 @@ export const vAppsFields = appsTable.validator.fields
 export const appTokensTable = defineTable({
   app_id: v.number(),
   total_tokens: v.number(),
+  model_slug: v.string(),
   model_permaslug: v.string(),
   model_variant: v.optional(v.string()),
   epoch: v.number(),
@@ -76,6 +80,12 @@ export async function mergeApps(ctx: MutationCtx, apps: Infer<AsObjectValidator<
       .query('apps_v1')
       .withIndex('by_app_id', (q) => q.eq('app_id', app.app_id))
       .first()
+
+    const diffResults = diff(existingApp || {}, app, {
+      keysToSkip: ['_id', '_creationTime', 'epoch'],
+    })
+    await ctx.db.insert('apps_v1_diff', { app_id: app.app_id, epoch: app.epoch, diff: diffResults })
+
     if (existingApp) {
       await ctx.db.patch(existingApp._id, app)
     } else {

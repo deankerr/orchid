@@ -9,13 +9,15 @@ import { fetchEndpointUptime, mergeEndpointUptimes, vEndpointUptimeFields } from
 import { fetchEndpoints, mergeEndpoint, vEndpointFields } from './endpoints_v1'
 import { mergeModelTokensStats, parseModelWithStatsRecords, vModelTokensFields } from './model_tokens_v1'
 import { fetchModels, mergeModel, vModelFields } from './models_v1'
+import { getEpoch } from '../shared'
 
 export const run = internalAction({
   args: {
     epoch: v.number(),
   },
   handler: async (ctx, args) => {
-    const epoch = args.epoch || Date.now()
+    const epoch = args.epoch || getEpoch()
+    console.log('epoch:', epoch)
 
     // combined deduped apps
     const appsMap = new Map<number, Infer<AsObjectValidator<typeof vAppsFields>>>()
@@ -79,6 +81,7 @@ async function syncEndpointData(ctx: ActionCtx, model: Infer<AsObjectValidator<t
       ...result.endpoints.map((endpoint) => ({
         ...endpoint,
         model_slug: model.slug,
+        model_permaslug: model.permaslug,
         capabilities: {
           ...endpoint.capabilities,
           image_input: model.input_modalities.includes('image'),
@@ -114,6 +117,7 @@ async function syncEndpointData(ctx: ActionCtx, model: Infer<AsObjectValidator<t
         app_id,
         total_tokens,
         epoch: model.epoch,
+        model_slug: model.slug,
         model_permaslug: model.permaslug,
         model_variant: variant,
       })

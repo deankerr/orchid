@@ -4,10 +4,10 @@ import type { MutationCtx } from '../_generated/server'
 
 export const endpointStatsTable = defineTable({
   endpoint_uuid: v.string(),
-  epoch: v.number(),
   p50_latency: v.number(),
   p50_throughput: v.number(),
   request_count: v.number(),
+  epoch: v.number(),
 }).index('by_endpoint_uuid_epoch', ['endpoint_uuid', 'epoch'])
 
 export const vEndpointStatsFields = endpointStatsTable.validator.fields

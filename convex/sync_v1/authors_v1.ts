@@ -7,10 +7,12 @@ import type { MutationCtx } from '../_generated/server'
 export const authorsTable = defineTable({
   uuid: v.string(),
   slug: v.string(),
+
   name: v.string(),
   description: v.optional(v.string()),
   origin_created_at: v.string(),
   origin_updated_at: v.string(),
+
   epoch: v.number(),
 }).index('by_slug', ['slug'])
 

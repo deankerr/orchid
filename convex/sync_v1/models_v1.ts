@@ -9,8 +9,9 @@ import { diff } from 'json-diff-ts'
 export const modelsTable = defineTable({
   slug: v.string(),
   permaslug: v.string(),
+  variants: v.array(v.string()),
+
   author_slug: v.string(),
-  hugging_face_id: v.optional(v.string()),
 
   name: v.string(),
   short_name: v.string(),
@@ -20,11 +21,11 @@ export const modelsTable = defineTable({
   output_modalities: v.array(v.string()),
   tokenizer: v.string(),
   instruct_type: v.optional(v.string()),
+  hugging_face_id: v.optional(v.string()),
   warning_message: v.optional(v.string()),
   origin_created_at: v.number(),
   origin_updated_at: v.number(),
 
-  variants: v.array(v.string()),
   epoch: v.number(),
 })
   .index('by_slug', ['slug'])
@@ -66,7 +67,7 @@ export async function fetchModels() {
   const parsedRecords = result.data.map(parseModelRecord)
   const mapBySlug = Map.groupBy(parsedRecords, (r) => r.slug)
 
-  // consolidate variants
+  // models are duplicated per variant, consolidate them into the single entity with a variants list
   const models = [...mapBySlug.values()].map((records) => {
     // prefer 'standard' as base
     const { variant: baseVariant, ...baseRecord } =

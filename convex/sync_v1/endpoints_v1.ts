@@ -7,15 +7,15 @@ import { diff } from 'json-diff-ts'
 
 export const endpointsTable = defineTable({
   uuid: v.string(),
+  name: v.string(),
+
   model_slug: v.string(),
-  model_variant_slug: v.string(),
-  model_variant_permaslug: v.string(),
+  model_permaslug: v.string(),
+  model_variant: v.string(),
 
   provider_id: v.string(),
   provider_name: v.string(),
 
-  name: v.string(),
-  variant: v.string(),
   context_length: v.number(),
   quantization: v.optional(v.string()),
   supported_parameters: v.array(v.string()),
@@ -60,7 +60,7 @@ export const endpointsTable = defineTable({
     cache_write: v.optional(v.string()),
 
     // flat rate
-    request: v.optional(v.string()),
+    per_request: v.optional(v.string()),
   }),
 
   status: v.number(),
@@ -81,14 +81,12 @@ export function parseEndpointRecord(record: unknown) {
 
   const endpoint = {
     uuid: parsed.id,
-    model_variant_slug: parsed.model_variant_slug,
-    model_variant_permaslug: parsed.model_variant_permaslug,
+    model_variant: parsed.variant,
 
     provider_id: parsed.provider_slug,
     provider_name: parsed.provider_display_name,
 
     name: parsed.name,
-    variant: parsed.variant,
     context_length: parsed.context_length,
     quantization: parsed.quantization || undefined,
     supported_parameters: parsed.supported_parameters,
@@ -124,7 +122,7 @@ export function parseEndpointRecord(record: unknown) {
       reasoning_output: omitIf0(parsed.pricing.internal_reasoning),
       cache_read: omitIf0(parsed.pricing.input_cache_read),
       cache_write: omitIf0(parsed.pricing.input_cache_write),
-      request: omitIf0(parsed.pricing.request),
+      per_request: omitIf0(parsed.pricing.request),
     },
 
     status: parsed.status ?? 0,

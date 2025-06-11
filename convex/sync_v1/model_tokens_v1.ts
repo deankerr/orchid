@@ -4,8 +4,10 @@ import { z } from 'zod'
 import type { MutationCtx } from '../_generated/server'
 
 export const modelTokensTable = defineTable({
+  model_slug: v.string(),
   model_permaslug: v.string(),
   model_variant: v.string(),
+
   timestamp: v.number(),
   input_tokens: v.number(),
   output_tokens: v.number(),
@@ -18,6 +20,7 @@ export const vModelTokensFields = modelTokensTable.validator.fields
 const OpenRouterModelsWithStatsSchema = z.object({
   modelsWithStats: z
     .object({
+      slug: z.string(),
       stats: z
         .object({
           model_permaslug: z.string(),
@@ -38,6 +41,7 @@ export function parseModelWithStatsRecords(records: unknown) {
 
   return parsed.modelsWithStats.flatMap((model) =>
     model.stats.map((stat) => ({
+      model_slug: model.slug,
       model_permaslug: stat.model_permaslug,
       model_variant: stat.variant,
       timestamp: new Date(stat.date).getTime(),
@@ -80,20 +84,11 @@ export async function mergeModelTokensStats(
       .collect()
 
     for (const stat of stats) {
-      // there can only by 0 or 1
       const existingStat = existingStats.find((s) => s.timestamp === stat.timestamp)
 
       if (!existingStat) {
         // if no existing stat, insert and continue
-        await ctx.db.insert('model_tokens_v1', {
-          model_permaslug,
-          model_variant,
-          timestamp: stat.timestamp,
-          input_tokens: stat.input_tokens,
-          output_tokens: stat.output_tokens,
-          reasoning_tokens: stat.reasoning_tokens,
-          request_count: stat.request_count,
-        })
+        await ctx.db.insert('model_tokens_v1', stat)
         continue
       }
 
