@@ -38,7 +38,9 @@ export function BulkEndpoint({ endpoint }: { endpoint: Doc<'endpoints_v1'> }) {
       {/* Main info row */}
       <div className="flex items-start gap-2 mb-1 ml-32">
         <span className="font-semibold">{endpoint.name}</span>
-        {endpoint.variant !== 'standard' && <span className="text-blue-600">[{endpoint.variant}]</span>}
+        {endpoint.model_variant !== 'standard' && (
+          <span className="text-blue-600">[{endpoint.model_variant}]</span>
+        )}
         {endpoint.is_disabled && <span className="text-red-600">[disabled]</span>}
         {isDeranked && <span className="text-orange-600">[deranked]</span>}
       </div>

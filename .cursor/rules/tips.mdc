@@ -5,6 +5,13 @@ alwaysApply: true
 ---
 # Tips
 
+## Zod
+
+- Zod v4 has been released! The API is mainly the same but it's much faster, and more convenient native error formatting.
+- `z4.strictObject` and `z4.looseObject` should be used instead of `.strict()` and `.passthrough()`
+- We're using `z4` imported like `import z4 from 'zod/v4'` to make this clearer.
+- The `zod` package actually still contains Zod v3 imported from its regular location.
+
 ## OpenRouter Zod Schemas
 
 - When validating API artifacts, we utilise zod's characteristic of pruning properties from the result data if they are not specified in the schema, removing unnecessary values and duplicated/embedded entities from the source data.

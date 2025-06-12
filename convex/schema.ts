@@ -1,5 +1,7 @@
 import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
+import { ModelViews } from './models/table'
+import { Files } from './files'
 import { appTokensTable, appsTable } from './sync_v1/apps_v1'
 import { authorsTable } from './sync_v1/authors_v1'
 import { endpointStatsTable } from './sync_v1/endpoint_stats_v1'
@@ -18,6 +20,10 @@ export const schema = defineSchema(
     app_tokens_v1: appTokensTable,
     model_tokens_v1: modelTokensTable,
     authors_v1: authorsTable,
+
+    files_v1: Files.table,
+
+    model_views: ModelViews.table.index('by_slug', ['slug']),
 
     // version 0 archived data
     snapshots: defineTable({

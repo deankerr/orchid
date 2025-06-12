@@ -14,7 +14,11 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as crons from "../crons.js";
+import type * as files from "../files.js";
 import type * as frontend from "../frontend.js";
+import type * as models_snapshot from "../models/snapshot.js";
+import type * as models_table from "../models/table.js";
+import type * as models_validate from "../models/validate.js";
 import type * as openrouter_client from "../openrouter/client.js";
 import type * as openrouter_schemas_api_frontend_allProviders_strict from "../openrouter/schemas/api_frontend_allProviders_strict.js";
 import type * as openrouter_schemas_api_frontend_models from "../openrouter/schemas/api_frontend_models.js";
@@ -43,7 +47,11 @@ import type * as sync_v1_run from "../sync_v1/run.js";
  */
 declare const fullApi: ApiFromModules<{
   crons: typeof crons;
+  files: typeof files;
   frontend: typeof frontend;
+  "models/snapshot": typeof models_snapshot;
+  "models/table": typeof models_table;
+  "models/validate": typeof models_validate;
   "openrouter/client": typeof openrouter_client;
   "openrouter/schemas/api_frontend_allProviders_strict": typeof openrouter_schemas_api_frontend_allProviders_strict;
   "openrouter/schemas/api_frontend_models": typeof openrouter_schemas_api_frontend_models;

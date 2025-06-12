@@ -30,7 +30,7 @@ const DataArrayResultSchema = z
   })
   .or(ErrorResultSchema)
 
-const upFetch = up(fetch, () => ({
+export const orFetch = up(fetch, () => ({
   baseUrl: 'https://openrouter.ai',
   retry: {
     attempts: 3,
@@ -40,7 +40,7 @@ const upFetch = up(fetch, () => ({
 
 async function fetchDataArray(input: string, params: Record<string, unknown>): Promise<Result<unknown[]>> {
   try {
-    const result = await upFetch(input, {
+    const result = await orFetch(input, {
       schema: DataArrayResultSchema,
       params,
     })
@@ -67,7 +67,7 @@ async function fetchDataObject(
   params: Record<string, unknown>,
 ): Promise<Result<Record<string, unknown>>> {
   try {
-    const result = await upFetch(input, {
+    const result = await orFetch(input, {
       schema: DataObjectResultSchema,
       params,
     })
