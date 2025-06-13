@@ -14,11 +14,15 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as crons from "../crons.js";
+import type * as endpoint_stats_table from "../endpoint_stats/table.js";
+import type * as endpoint_views_schemas from "../endpoint_views/schemas.js";
+import type * as endpoint_views_snapshot from "../endpoint_views/snapshot.js";
+import type * as endpoint_views_table from "../endpoint_views/table.js";
 import type * as files from "../files.js";
 import type * as frontend from "../frontend.js";
-import type * as models_snapshot from "../models/snapshot.js";
-import type * as models_table from "../models/table.js";
-import type * as models_validate from "../models/validate.js";
+import type * as model_views_schemas from "../model_views/schemas.js";
+import type * as model_views_snapshot from "../model_views/snapshot.js";
+import type * as model_views_table from "../model_views/table.js";
 import type * as openrouter_client from "../openrouter/client.js";
 import type * as openrouter_schemas_api_frontend_allProviders_strict from "../openrouter/schemas/api_frontend_allProviders_strict.js";
 import type * as openrouter_schemas_api_frontend_models from "../openrouter/schemas/api_frontend_models.js";
@@ -47,11 +51,15 @@ import type * as sync_v1_run from "../sync_v1/run.js";
  */
 declare const fullApi: ApiFromModules<{
   crons: typeof crons;
+  "endpoint_stats/table": typeof endpoint_stats_table;
+  "endpoint_views/schemas": typeof endpoint_views_schemas;
+  "endpoint_views/snapshot": typeof endpoint_views_snapshot;
+  "endpoint_views/table": typeof endpoint_views_table;
   files: typeof files;
   frontend: typeof frontend;
-  "models/snapshot": typeof models_snapshot;
-  "models/table": typeof models_table;
-  "models/validate": typeof models_validate;
+  "model_views/schemas": typeof model_views_schemas;
+  "model_views/snapshot": typeof model_views_snapshot;
+  "model_views/table": typeof model_views_table;
   "openrouter/client": typeof openrouter_client;
   "openrouter/schemas/api_frontend_allProviders_strict": typeof openrouter_schemas_api_frontend_allProviders_strict;
   "openrouter/schemas/api_frontend_models": typeof openrouter_schemas_api_frontend_models;

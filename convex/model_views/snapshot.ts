@@ -1,12 +1,10 @@
 import * as R from 'remeda'
 import z4 from 'zod/v4'
-import { internalAction, type ActionCtx } from '../_generated/server'
-import { store } from '../files'
 import { orFetch } from '../openrouter/client'
 import type { ModelView } from './table'
-import { validateModelRecords } from './validate'
+import { ModelStrictSchema, ModelTransformSchema } from './schemas'
 
-async function snapshot(ctx: ActionCtx, { epoch }: { epoch: number }) {
+export async function snapshot({ epoch }: { epoch: number }) {
   const result = await orFetch('/api/frontend/models', {
     schema: z4.object({
       data: z4.unknown().array(),
@@ -15,16 +13,28 @@ async function snapshot(ctx: ActionCtx, { epoch }: { epoch: number }) {
 
   // store raw snapshot data
   // ? return raw result and store in caller
-  const file_id = await store(ctx, {
-    data: result.data,
-    key: `/api/frontend/models`,
-    timestamp: epoch,
-  })
+  // const file_id = await store(ctx, {
+  //   data: result.data,
+  //   key: `/api/frontend/models`,
+  //   timestamp: epoch,
+  // })
 
-  const { modelVariants, issues } = validateModelRecords(result.data)
+  const modelVariants: z4.infer<typeof ModelTransformSchema>[] = []
+  const transform: { index: number; error: z4.ZodError }[] = []
+  const strict: { index: number; error: z4.ZodError }[] = []
+
+  for (const [index, record] of result.data.entries()) {
+    const r1 = ModelTransformSchema.safeParse(record)
+    if (r1.success) modelVariants.push(r1.data)
+    else transform.push({ index, error: r1.error })
+
+    const r2 = ModelStrictSchema.safeParse(record)
+    if (r2.error) strict.push({ index, error: r2.error })
+  }
+
   const models = consolidateVariants(modelVariants).map(R.addProp('epoch', epoch))
 
-  return { models, issues, file_id }
+  return { models, issues: { transform, strict } }
 }
 
 type ModelVariant = Omit<ModelView, 'epoch' | 'variants'> & { variant?: string }
@@ -44,19 +54,3 @@ export function consolidateVariants(models: ModelVariant[]) {
     })
     .toArray()
 }
-
-export const snapnow = internalAction({
-  handler: async (ctx) => {
-    const { models, issues, file_id } = await snapshot(ctx, { epoch: 1 })
-    console.log(
-      'models:',
-      models.length,
-      'issues.transform',
-      issues.transform.length,
-      'issues.strict',
-      issues.strict.length,
-      'file_id:',
-      file_id,
-    )
-  },
-})

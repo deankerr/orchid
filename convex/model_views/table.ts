@@ -27,8 +27,8 @@ export const ModelViews = Table('model_views', {
   epoch: v.number(),
 })
 
-export type ModelViewDoc = Infer<typeof ModelViews.doc>
-export type ModelView = WithoutSystemFields<ModelViewDoc>
+export type ModelViewsDoc = Infer<typeof ModelViews.doc>
+export type ModelView = WithoutSystemFields<ModelViewsDoc>
 
 export const ModelsViewFn = {
   get: async (ctx: QueryCtx, { slug }: { slug: string }) => {
@@ -49,7 +49,7 @@ export const ModelsViewFn = {
     })
   },
 
-  merge: async (ctx: MutationCtx, { model }: { model: ModelViewDoc }) => {
+  merge: async (ctx: MutationCtx, { model }: { model: ModelViewsDoc }) => {
     const existing = await ModelsViewFn.get(ctx, { slug: model.slug })
     const diff = ModelsViewFn.diff(existing || {}, model)
 

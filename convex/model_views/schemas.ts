@@ -34,8 +34,8 @@ const fields = {
   endpoint: z4.object({ variant: z4.string() }).nullable(), // NOTE: OpenRouterFrontendEndpointRecordSchema object
 }
 
-const ModelStrict = z4.strictObject(fields)
-const ModelTransform = z4
+export const ModelStrictSchema = z4.strictObject(fields)
+export const ModelTransformSchema = z4
   .object(
     R.pick(fields, [
       'slug',
@@ -71,20 +71,3 @@ const ModelTransform = z4
       variant: endpoint?.variant,
     }
   })
-
-export function validateModelRecords(records: unknown[]) {
-  const modelVariants: z4.infer<typeof ModelTransform>[] = []
-  const transform: { index: number; error: z4.ZodError }[] = []
-  const strict: { index: number; error: z4.ZodError }[] = []
-
-  for (const [index, record] of records.entries()) {
-    const r1 = ModelTransform.safeParse(record)
-    if (r1.success) modelVariants.push(r1.data)
-    else transform.push({ index, error: r1.error })
-
-    const r2 = ModelStrict.safeParse(record)
-    if (r2.error) strict.push({ index, error: r2.error })
-  }
-
-  return { modelVariants, issues: { transform, strict } }
-}
