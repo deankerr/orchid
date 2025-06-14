@@ -1,6 +1,8 @@
 import { Table } from 'convex-helpers/server'
 import type { WithoutSystemFields } from 'convex/server'
 import { v, type Infer } from 'convex/values'
+import type { MutationCtx, QueryCtx } from '../_generated/server'
+import { diff } from 'json-diff-ts'
 
 export const EndpointViews = Table('endpoint_views', {
   uuid: v.string(),
@@ -73,3 +75,39 @@ export const EndpointViews = Table('endpoint_views', {
 
 export type EndpointViewsDoc = Infer<typeof EndpointViews.doc>
 export type EndpointView = WithoutSystemFields<EndpointViewsDoc>
+
+export const EndpointViewFn = {
+  get: async (ctx: QueryCtx, { uuid }: { uuid: string }) => {
+    return await ctx.db
+      .query(EndpointViews.name)
+      .withIndex('by_uuid', (q) => q.eq('uuid', uuid))
+      .first()
+  },
+
+  diff: <T extends object>(from: T, to: T) => {
+    return diff(from, to, {
+      keysToSkip: ['_id', '_creationTime', 'epoch'],
+    })
+  },
+
+  merge: async (ctx: MutationCtx, { endpoint }: { endpoint: EndpointViewsDoc }) => {
+    const existing = await EndpointViewFn.get(ctx, { uuid: endpoint.uuid })
+    const diff = EndpointViewFn.diff(existing || {}, endpoint)
+
+    if (existing) {
+      await ctx.db.replace(existing._id, endpoint)
+      return {
+        action: 'replace' as const,
+        _id: existing._id,
+        diff,
+      }
+    }
+
+    const _id = await ctx.db.insert(EndpointViews.name, endpoint)
+    return {
+      action: 'insert' as const,
+      _id,
+      diff,
+    }
+  },
+}
