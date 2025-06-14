@@ -11,6 +11,11 @@ import { modelTokensTable } from './sync_v1/model_tokens_v1'
 import { modelsTable } from './sync_v1/models_v1'
 import { EndpointViews } from './endpoint_views/table'
 import { EndpointStats } from './endpoint_stats/table'
+import { AppViews } from './app_views/table'
+import { AuthorViews } from './author_views/table'
+import { EndpointUptimeStats } from './endpoint_uptime_stats/table'
+import { ModelTokenStats } from './model_token_stats/table'
+import { AppTokenStats } from './app_token_stats/table'
 
 export const schema = defineSchema(
   {
@@ -27,7 +32,19 @@ export const schema = defineSchema(
 
     model_views: ModelViews.table.index('by_slug', ['slug']),
     endpoint_views: EndpointViews.table.index('by_uuid', ['uuid']),
+    author_views: AuthorViews.table.index('by_slug', ['slug']),
     endpoint_stats: EndpointStats.table.index('by_endpoint_uuid_epoch', ['endpoint_uuid', 'epoch']),
+    app_views: AppViews.table.index('by_app_id', ['app_id']),
+    app_token_stats: AppTokenStats.table.index('by_app_id_epoch', ['app_id', 'epoch']),
+    endpoint_uptime_stats: EndpointUptimeStats.table.index('by_endpoint_uuid_timestamp', [
+      'endpoint_uuid',
+      'timestamp',
+    ]),
+    model_token_stats: ModelTokenStats.table.index('by_model_permaslug_model_variant_timestamp', [
+      'model_permaslug',
+      'model_variant',
+      'timestamp',
+    ]),
 
     // version 0 archived data
     snapshots: defineTable({

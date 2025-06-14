@@ -11,4 +11,4 @@ export const EndpointStats = Table('endpoint_stats', {
 })
 
 export type EndpointStatsDoc = Infer<typeof EndpointStats.doc>
-export type EndpointStats = WithoutSystemFields<EndpointStatsDoc>
+export type EndpointStat = WithoutSystemFields<EndpointStatsDoc>

@@ -3,7 +3,7 @@ import type { ModelView } from '../model_views/table'
 import { orFetch } from '../openrouter/client'
 import { EndpointStrictSchema, EndpointTransformSchema } from './schemas'
 import type { EndpointView } from './table'
-import type { EndpointStats } from '../endpoint_stats/table'
+import type { EndpointStat } from '../endpoint_stats/table'
 
 export async function snapshot({ model }: { model: ModelView }) {
   const results: unknown[] = []
@@ -22,7 +22,7 @@ export async function snapshot({ model }: { model: ModelView }) {
   }
 
   const endpoints: EndpointView[] = []
-  const stats: EndpointStats[] = []
+  const stats: EndpointStat[] = []
 
   const transform: { index: number; error: z4.ZodError }[] = []
   const strict: { index: number; error: z4.ZodError }[] = []
