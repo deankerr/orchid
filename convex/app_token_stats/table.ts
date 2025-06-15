@@ -45,5 +45,12 @@ export const AppTokenStatsFn = {
         diff,
       }
     }
+
+    const _id = await ctx.db.insert(AppTokenStats.name, appTokenStats)
+    return {
+      action: 'insert' as const,
+      _id,
+      diff,
+    }
   },
 }

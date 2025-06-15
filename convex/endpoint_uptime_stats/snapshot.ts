@@ -4,7 +4,7 @@ import type { EndpointUptimeStats } from './table'
 import { EndpointUptimeStrictSchema, EndpointUptimeTransformSchema } from './schemas'
 
 export async function snapshot({ endpoint_uuid }: { endpoint_uuid: string }) {
-  const result = await orFetch('/api/frontend/stats/uptimeHourly', {
+  const result = await orFetch('/api/frontend/stats/uptime-hourly', {
     params: {
       id: endpoint_uuid,
     },

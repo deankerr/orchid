@@ -33,7 +33,7 @@ const DataArrayResultSchema = z
 export const orFetch = up(fetch, () => ({
   baseUrl: 'https://openrouter.ai',
   retry: {
-    attempts: 3,
+    attempts: 2,
     delay: (ctx) => ctx.attempt ** 2 * 1000,
   },
 }))

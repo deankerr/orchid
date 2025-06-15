@@ -53,7 +53,6 @@ export const ModelTransformSchema = z4
       'instruct_type',
       'warning_message',
       'permaslug',
-      'reasoning_config',
       'endpoint',
     ]),
   )

@@ -44,6 +44,9 @@ import type * as openrouter_schemas_api_frontend_stats_endpoint from "../openrou
 import type * as openrouter_schemas_api_frontend_stats_endpoint_strict from "../openrouter/schemas/api_frontend_stats_endpoint_strict.js";
 import type * as openrouter_schemas_api_v1_endpoints_strict from "../openrouter/schemas/api_v1_endpoints_strict.js";
 import type * as openrouter_schemas_api_v1_models_strict from "../openrouter/schemas/api_v1_models_strict.js";
+import type * as openrouter_sync from "../openrouter/sync.js";
+import type * as openrouter_utils from "../openrouter/utils.js";
+import type * as openrouter_validation from "../openrouter/validation.js";
 import type * as shared from "../shared.js";
 import type * as sync_v1_apps_v1 from "../sync_v1/apps_v1.js";
 import type * as sync_v1_authors_v1 from "../sync_v1/authors_v1.js";
@@ -94,6 +97,9 @@ declare const fullApi: ApiFromModules<{
   "openrouter/schemas/api_frontend_stats_endpoint_strict": typeof openrouter_schemas_api_frontend_stats_endpoint_strict;
   "openrouter/schemas/api_v1_endpoints_strict": typeof openrouter_schemas_api_v1_endpoints_strict;
   "openrouter/schemas/api_v1_models_strict": typeof openrouter_schemas_api_v1_models_strict;
+  "openrouter/sync": typeof openrouter_sync;
+  "openrouter/utils": typeof openrouter_utils;
+  "openrouter/validation": typeof openrouter_validation;
   shared: typeof shared;
   "sync_v1/apps_v1": typeof sync_v1_apps_v1;
   "sync_v1/authors_v1": typeof sync_v1_authors_v1;

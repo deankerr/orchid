@@ -18,14 +18,14 @@ export async function snapshot({ model }: { model: ModelView }) {
         data: z4.unknown().array(),
       }),
     })
-    results.push(result.data)
+    results.push(...result.data)
   }
 
   const endpoints: EndpointView[] = []
   const stats: EndpointStat[] = []
 
-  const transform: { index: number; error: z4.ZodError }[] = []
-  const strict: { index: number; error: z4.ZodError }[] = []
+  const transform: { index: number; error: z4.ZodError; ref?: string }[] = []
+  const strict: { index: number; error: z4.ZodError; ref?: string }[] = []
 
   for (const [index, d] of results.entries()) {
     const r1 = EndpointTransformSchema.safeParse(d)
@@ -49,12 +49,12 @@ export async function snapshot({ model }: { model: ModelView }) {
         epoch: model.epoch,
       })
     } else {
-      transform.push({ index, error: r1.error })
+      transform.push({ index, error: r1.error, ref: (d as any)?.permaslug })
     }
 
     const r2 = EndpointStrictSchema.safeParse(d)
     if (!r2.success) {
-      strict.push({ index, error: r2.error })
+      strict.push({ index, error: r2.error, ref: (d as any)?.permaslug })
     }
   }
 
