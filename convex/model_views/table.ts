@@ -3,6 +3,7 @@ import { v, type Infer } from 'convex/values'
 import { diff } from 'json-diff-ts'
 import { type MutationCtx, type QueryCtx } from '../_generated/server'
 import type { WithoutSystemFields } from 'convex/server'
+import type { MergeResult } from '../types'
 
 export const ModelViews = Table('model_views', {
   slug: v.string(),
@@ -27,8 +28,8 @@ export const ModelViews = Table('model_views', {
   epoch: v.number(),
 })
 
-export type ModelsViewDoc = Infer<typeof ModelViews.doc>
-export type ModelView = WithoutSystemFields<ModelsViewDoc>
+export type ModelViewsDoc = Infer<typeof ModelViews.doc>
+export type ModelView = WithoutSystemFields<ModelViewsDoc>
 
 export const ModelsViewFn = {
   get: async (ctx: QueryCtx, { slug }: { slug: string }) => {
@@ -40,7 +41,7 @@ export const ModelsViewFn = {
 
   diff: <T extends object>(from: T, to: T) => {
     return diff(from, to, {
-      keysToSkip: ['_id', '_creationTime', 'epoch'],
+      keysToSkip: ['_id', '_creationTime'],
       embeddedObjKeys: {
         input_modalities: '$value',
         output_modalities: '$value',
@@ -49,11 +50,19 @@ export const ModelsViewFn = {
     })
   },
 
-  merge: async (ctx: MutationCtx, { model }: { model: ModelsViewDoc }) => {
+  merge: async (ctx: MutationCtx, { model }: { model: ModelView }): Promise<MergeResult> => {
     const existing = await ModelsViewFn.get(ctx, { slug: model.slug })
     const diff = ModelsViewFn.diff(existing || {}, model)
 
     if (existing) {
+      if (diff.length === 0) {
+        return {
+          action: 'stable' as const,
+          _id: existing._id,
+          diff,
+        }
+      }
+
       await ctx.db.replace(existing._id, model)
       return {
         action: 'replace' as const,

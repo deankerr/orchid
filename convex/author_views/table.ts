@@ -17,7 +17,7 @@ export const AuthorViews = Table('author_views', {
 export type AuthorViewsDoc = Infer<typeof AuthorViews.doc>
 export type AuthorView = WithoutSystemFields<AuthorViewsDoc>
 
-export const AuthorViewFn = {
+export const AuthorViewsFn = {
   get: async (ctx: QueryCtx, { slug }: { slug: string }) => {
     return await ctx.db
       .query(AuthorViews.name)
@@ -27,15 +27,23 @@ export const AuthorViewFn = {
 
   diff: <T extends object>(from: T, to: T) => {
     return diff(from, to, {
-      keysToSkip: ['_id', '_creationTime', 'epoch'],
+      keysToSkip: ['_id', '_creationTime'],
     })
   },
 
-  merge: async (ctx: MutationCtx, { author }: { author: AuthorViewsDoc }) => {
-    const existing = await AuthorViewFn.get(ctx, { slug: author.slug })
-    const diff = AuthorViewFn.diff(existing || {}, author)
+  merge: async (ctx: MutationCtx, { author }: { author: AuthorView }) => {
+    const existing = await AuthorViewsFn.get(ctx, { slug: author.slug })
+    const diff = AuthorViewsFn.diff(existing || {}, author)
 
     if (existing) {
+      if (diff.length === 0) {
+        return {
+          action: 'stable' as const,
+          _id: existing._id,
+          diff,
+        }
+      }
+
       await ctx.db.replace(existing._id, author)
       return {
         action: 'replace' as const,

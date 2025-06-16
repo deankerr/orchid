@@ -3,6 +3,7 @@ import type { WithoutSystemFields } from 'convex/server'
 import { v, type Infer } from 'convex/values'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
 import { diff } from 'json-diff-ts'
+import type { MergeResult } from '../types'
 
 export const ModelTokenStats = Table('model_token_stats', {
   model_slug: v.string(),
@@ -45,7 +46,7 @@ export const ModelTokenStatsFn = {
     })
   },
 
-  merge: async (ctx: MutationCtx, { modelTokenStats }: { modelTokenStats: ModelTokenStatsDoc }) => {
+  merge: async (ctx: MutationCtx, { modelTokenStats }: { modelTokenStats: ModelTokenStats }) => {
     const existing = await ModelTokenStatsFn.get(ctx, {
       model_permaslug: modelTokenStats.model_permaslug,
       model_variant: modelTokenStats.model_variant,
@@ -54,6 +55,14 @@ export const ModelTokenStatsFn = {
     const diff = ModelTokenStatsFn.diff(existing || {}, modelTokenStats)
 
     if (existing) {
+      if (diff.length === 0) {
+        return {
+          action: 'stable' as const,
+          _id: existing._id,
+          diff,
+        }
+      }
+
       await ctx.db.replace(existing._id, modelTokenStats)
       return {
         action: 'replace' as const,
@@ -68,5 +77,32 @@ export const ModelTokenStatsFn = {
       _id,
       diff,
     }
+  },
+
+  mergeTimeSeries: async (ctx: MutationCtx, { modelTokenStats }: { modelTokenStats: ModelTokenStats[] }) => {
+    // stats come mixed up from the API, group them here
+    const byPermaslugVariant = Map.groupBy(
+      modelTokenStats,
+      (stat) => stat.model_permaslug + ' ' + stat.model_variant,
+    ).values()
+
+    const resultsByPermaslugVariant = await Promise.all(
+      byPermaslugVariant.map(async (modelTokenStats) => {
+        // latest -> earliest
+        modelTokenStats.sort((a, b) => a.timestamp - b.timestamp)
+
+        const results: MergeResult[] = []
+        for (const stat of modelTokenStats) {
+          const result = await ModelTokenStatsFn.merge(ctx, { modelTokenStats: stat })
+          results.push(result)
+
+          if (result.action === 'stable') break // we already have this + all earlier entries
+        }
+
+        return results
+      }),
+    )
+
+    return resultsByPermaslugVariant.flat()
   },
 }

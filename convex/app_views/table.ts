@@ -3,6 +3,7 @@ import { v, type Infer } from 'convex/values'
 import { diff } from 'json-diff-ts'
 import { type MutationCtx, type QueryCtx } from '../_generated/server'
 import type { WithoutSystemFields } from 'convex/server'
+import type { MergeResult } from '../types'
 
 export const AppViews = Table('app_views', {
   app_id: v.number(),
@@ -28,15 +29,23 @@ export const AppViewFn = {
 
   diff: <T extends object>(from: T, to: T) => {
     return diff(from, to, {
-      keysToSkip: ['_id', '_creationTime', 'epoch'],
+      keysToSkip: ['_id', '_creationTime'],
     })
   },
 
-  merge: async (ctx: MutationCtx, { app }: { app: AppViewsDoc }) => {
+  merge: async (ctx: MutationCtx, { app }: { app: AppView }): Promise<MergeResult> => {
     const existing = await AppViewFn.get(ctx, { app_id: app.app_id })
     const diff = AppViewFn.diff(existing || {}, app)
 
     if (existing) {
+      if (diff.length === 0) {
+        return {
+          action: 'stable' as const,
+          _id: existing._id,
+          diff,
+        }
+      }
+
       await ctx.db.replace(existing._id, app)
       return {
         action: 'replace' as const,

@@ -45,7 +45,6 @@ import type * as openrouter_schemas_api_frontend_stats_endpoint_strict from "../
 import type * as openrouter_schemas_api_v1_endpoints_strict from "../openrouter/schemas/api_v1_endpoints_strict.js";
 import type * as openrouter_schemas_api_v1_models_strict from "../openrouter/schemas/api_v1_models_strict.js";
 import type * as openrouter_sync from "../openrouter/sync.js";
-import type * as openrouter_utils from "../openrouter/utils.js";
 import type * as openrouter_validation from "../openrouter/validation.js";
 import type * as shared from "../shared.js";
 import type * as sync_v1_apps_v1 from "../sync_v1/apps_v1.js";
@@ -56,6 +55,7 @@ import type * as sync_v1_endpoints_v1 from "../sync_v1/endpoints_v1.js";
 import type * as sync_v1_model_tokens_v1 from "../sync_v1/model_tokens_v1.js";
 import type * as sync_v1_models_v1 from "../sync_v1/models_v1.js";
 import type * as sync_v1_run from "../sync_v1/run.js";
+import type * as types from "../types.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -98,7 +98,6 @@ declare const fullApi: ApiFromModules<{
   "openrouter/schemas/api_v1_endpoints_strict": typeof openrouter_schemas_api_v1_endpoints_strict;
   "openrouter/schemas/api_v1_models_strict": typeof openrouter_schemas_api_v1_models_strict;
   "openrouter/sync": typeof openrouter_sync;
-  "openrouter/utils": typeof openrouter_utils;
   "openrouter/validation": typeof openrouter_validation;
   shared: typeof shared;
   "sync_v1/apps_v1": typeof sync_v1_apps_v1;
@@ -109,6 +108,7 @@ declare const fullApi: ApiFromModules<{
   "sync_v1/model_tokens_v1": typeof sync_v1_model_tokens_v1;
   "sync_v1/models_v1": typeof sync_v1_models_v1;
   "sync_v1/run": typeof sync_v1_run;
+  types: typeof types;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

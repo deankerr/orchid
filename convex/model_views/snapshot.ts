@@ -1,6 +1,7 @@
 import * as R from 'remeda'
 import z4 from 'zod/v4'
 import { orFetch } from '../openrouter/client'
+import { validateArray } from '../openrouter/validation'
 import type { ModelView } from './table'
 import { ModelStrictSchema, ModelTransformSchema } from './schemas'
 
@@ -11,30 +12,11 @@ export async function snapshot({ epoch }: { epoch: number }) {
     }),
   })
 
-  // store raw snapshot data
-  // ? return raw result and store in caller
-  // const file_id = await store(ctx, {
-  //   data: result.data,
-  //   key: `/api/frontend/models`,
-  //   timestamp: epoch,
-  // })
+  const { items: modelVariants, issues } = validateArray(result.data, ModelTransformSchema, ModelStrictSchema)
 
-  const modelVariants: z4.infer<typeof ModelTransformSchema>[] = []
-  const transform: { index: number; error: z4.ZodError }[] = []
-  const strict: { index: number; error: z4.ZodError }[] = []
+  const models: ModelView[] = consolidateVariants(modelVariants).map(R.addProp('epoch', epoch))
 
-  for (const [index, record] of result.data.entries()) {
-    const r1 = ModelTransformSchema.safeParse(record)
-    if (r1.success) modelVariants.push(r1.data)
-    else transform.push({ index, error: r1.error })
-
-    const r2 = ModelStrictSchema.safeParse(record)
-    if (r2.error) strict.push({ index, error: r2.error })
-  }
-
-  const models = consolidateVariants(modelVariants).map(R.addProp('epoch', epoch))
-
-  return { models, issues: { transform, strict } }
+  return { models, issues }
 }
 
 type ModelVariant = Omit<ModelView, 'epoch' | 'variants'> & { variant?: string }

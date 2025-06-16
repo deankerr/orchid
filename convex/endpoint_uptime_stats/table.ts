@@ -3,6 +3,7 @@ import type { WithoutSystemFields } from 'convex/server'
 import { v, type Infer } from 'convex/values'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
 import { diff } from 'json-diff-ts'
+import type { MergeResult } from '../types'
 
 export const EndpointUptimeStats = Table('endpoint_uptime_stats', {
   endpoint_uuid: v.string(),
@@ -31,8 +32,8 @@ export const EndpointUptimeStatsFn = {
 
   merge: async (
     ctx: MutationCtx,
-    { endpointUptimeStats }: { endpointUptimeStats: EndpointUptimeStatsDoc },
-  ) => {
+    { endpointUptimeStats }: { endpointUptimeStats: EndpointUptimeStats },
+  ): Promise<MergeResult> => {
     const existing = await EndpointUptimeStatsFn.get(ctx, {
       endpoint_uuid: endpointUptimeStats.endpoint_uuid,
       timestamp: endpointUptimeStats.timestamp,
@@ -40,6 +41,14 @@ export const EndpointUptimeStatsFn = {
     const diff = EndpointUptimeStatsFn.diff(existing || {}, endpointUptimeStats)
 
     if (existing) {
+      if (diff.length === 0) {
+        return {
+          action: 'stable' as const,
+          _id: existing._id,
+          diff,
+        }
+      }
+
       await ctx.db.replace(existing._id, endpointUptimeStats)
       return {
         action: 'replace' as const,
@@ -54,5 +63,32 @@ export const EndpointUptimeStatsFn = {
       _id,
       diff,
     }
+  },
+
+  mergeTimeSeries: async (
+    ctx: MutationCtx,
+    { endpointUptimesSeries }: { endpointUptimesSeries: EndpointUptimeStats[] },
+  ) => {
+    const uptimesByUuid = [...Map.groupBy(endpointUptimesSeries, (u) => u.endpoint_uuid).values()]
+
+    const resultsByUuid = await Promise.all(
+      uptimesByUuid.map(async (uptimes) => {
+        // later -> earlier
+        uptimes.sort((a, b) => b.timestamp - a.timestamp)
+
+        const results: MergeResult[] = []
+        for (const uptime of uptimes) {
+          const result = await EndpointUptimeStatsFn.merge(ctx, {
+            endpointUptimeStats: uptime,
+          })
+          results.push(result)
+
+          if (result.action === 'stable') break // we already have this + all earlier entries
+        }
+
+        return results
+      }),
+    )
+    return resultsByUuid.flat()
   },
 }

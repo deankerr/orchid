@@ -1,3 +1,4 @@
+import * as R from 'remeda'
 import z4 from 'zod/v4'
 
 export const EndpointUptimeStrictSchema = z4.strictObject({
@@ -13,15 +14,16 @@ export const EndpointUptimeTransformSchema = z4
   .object({
     history: z4
       .object({
-        date: z4.string(),
+        date: z4.string().transform((date) => new Date(date).getTime()),
         uptime: z4.number().nullable(),
       })
+      .transform(R.pickBy(R.isNonNullish))
       .array(),
   })
   .transform((rec) => rec.history)
   .transform((history) =>
     history.map((item) => ({
-      timestamp: new Date(item.date).getTime(),
+      timestamp: item.date,
       uptime: item.uptime,
     })),
   )
