@@ -98,7 +98,7 @@ const fields = {
 export const EndpointStrictSchema = z4.strictObject({
   ...fields,
   data_policy: z4.strictObject(dataPolicyFields),
-  pricing: z4.strictObject(pricingFields),
+  pricing: z4.strictObject({ ...pricingFields, discount: z4.literal(0) }),
   stats: z4.strictObject(statsFields),
 })
 

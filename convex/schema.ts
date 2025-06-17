@@ -16,6 +16,7 @@ import { AuthorViews } from './author_views/table'
 import { EndpointUptimeStats } from './endpoint_uptime_stats/table'
 import { ModelTokenStats } from './model_token_stats/table'
 import { AppTokenStats } from './app_token_stats/table'
+import { ProviderViews } from './provider_views/table'
 
 export const schema = defineSchema(
   {
@@ -45,6 +46,7 @@ export const schema = defineSchema(
       'model_variant',
       'timestamp',
     ]),
+    provider_views: ProviderViews.table.index('by_slug', ['slug']),
 
     // version 0 archived data
     snapshots: defineTable({
