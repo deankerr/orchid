@@ -3,8 +3,8 @@ import { BulkEndpoint } from './BulkEndpoint'
 import Link from 'next/link'
 import { EpochDisplay } from '../EpochDisplay'
 
-type ModelWithEndpoints = Doc<'models_v1'> & {
-  endpoints: Doc<'endpoints_v1'>[]
+type ModelWithEndpoints = Doc<'model_views'> & {
+  endpoints: Doc<'endpoint_views'>[]
 }
 
 export function BulkModel({ model }: { model: ModelWithEndpoints }) {

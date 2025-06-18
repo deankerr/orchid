@@ -1,10 +1,12 @@
 import { query } from './_generated/server'
+import { EndpointViews } from './endpoint_views/table'
+import { ModelViews } from './model_views/table'
 
 export const getAll = query({
   args: {},
   handler: async (ctx) => {
-    const models = await ctx.db.query('models_v1').collect()
-    const endpoints = await ctx.db.query('endpoints_v1').collect()
+    const models = await ctx.db.query(ModelViews.name).collect()
+    const endpoints = await ctx.db.query(EndpointViews.name).collect()
 
     return models.map((model) => ({
       ...model,
@@ -17,7 +19,7 @@ export const getLatestProcessedEpoch = query({
   args: {},
   handler: async (ctx) => {
     // Find the latest epoch from processed models
-    const latestModel = await ctx.db.query('models_v1').order('desc').first()
+    const latestModel = await ctx.db.query(ModelViews.name).order('desc').first()
 
     if (!latestModel) {
       return null

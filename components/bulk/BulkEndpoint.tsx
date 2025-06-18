@@ -1,14 +1,17 @@
 import type { Doc } from '@/convex/_generated/dataModel'
 
-export function BulkEndpoint({ endpoint }: { endpoint: Doc<'endpoints_v1'> }) {
+export function BulkEndpoint({ endpoint }: { endpoint: Doc<'endpoint_views'> }) {
   // Format pricing for display
-  const formatPrice = (price: string, type: 'token' | 'request') => {
-    const num = parseFloat(price)
+  const formatPrice = (price: number, type: 'token' | 'request' | 'image') => {
     if (type === 'token') {
       // Convert to per million tokens
-      return `$${(num * 1000000).toFixed(2)}/M`
+      return `$${(price * 1000000).toFixed(2)}/M`
     }
-    return `$${num.toFixed(2)}/req`
+    if (type === 'image') {
+      // Convert to per thousand tokens
+      return `$${(price * 1000).toFixed(2)}/K`
+    }
+    return `$${price.toFixed(2)}/req`
   }
 
   const renderOptional = (value: string | number | boolean | undefined | null) => {
@@ -61,12 +64,13 @@ export function BulkEndpoint({ endpoint }: { endpoint: Doc<'endpoints_v1'> }) {
           </div>
           <div>
             <span className="text-muted-foreground">pricing:</span>{' '}
-            {formatPrice(endpoint.pricing.input, 'token')} / {formatPrice(endpoint.pricing.output, 'token')}
+            {formatPrice(endpoint.pricing.input ?? 0, 'token')} /{' '}
+            {formatPrice(endpoint.pricing.output ?? 0, 'token')}
           </div>
           <div>
-            <span className="text-muted-foreground">image_pricing:</span>{' '}
+            <span className="text-muted-foreground">image_input:</span>{' '}
             {endpoint.pricing.image_input
-              ? formatPrice(endpoint.pricing.image_input, 'token')
+              ? formatPrice(endpoint.pricing.image_input, 'image')
               : renderOptional(null)}
           </div>
           <div>
@@ -82,7 +86,7 @@ export function BulkEndpoint({ endpoint }: { endpoint: Doc<'endpoints_v1'> }) {
               : renderOptional(null)}
           </div>
           <div>
-            <span className="text-muted-foreground">reasoning:</span>{' '}
+            <span className="text-muted-foreground">reasoning_output:</span>{' '}
             {endpoint.pricing.reasoning_output
               ? formatPrice(endpoint.pricing.reasoning_output, 'token')
               : renderOptional(null)}
