@@ -38,23 +38,23 @@ const pricingFields = {
 }
 
 const statsFields = {
-  endpoint_id: z4.string(),
+  endpoint_id: z4.string(), // uuid (same as id)
   p50_throughput: z4.number(),
   p50_latency: z4.number(),
   request_count: z4.number(),
 }
 
 const fields = {
-  id: z4.string(),
-  name: z4.string(),
+  id: z4.string(), // primary key, uuid
+  name: z4.string(), // internal id, `{provider_name} | {model_variant_slug}`
   context_length: z4.number(),
-  model: z4.unknown(), // NOTE: OpenRouterFrontendModelRecordSchema object
-  model_variant_slug: z4.string(),
-  model_variant_permaslug: z4.string(),
-  provider_name: z4.string(),
-  provider_info: z4.unknown(), // NOTE: OpenRouterFrontendProviderRecordSchema object
+  model: z4.unknown(), // Model
+  model_variant_slug: z4.string(), // {slug}:{variant}
+  model_variant_permaslug: z4.string(), // {permaslug}:{variant}
+  provider_name: z4.string(), // foreign internal id
+  provider_info: z4.unknown(), // Provider
   provider_display_name: z4.string(),
-  provider_slug: z4.string(),
+  provider_slug: z4.string(), // foreign key
   provider_model_id: z4.string(),
   provider_region: z4.string().nullable(),
   quantization: z4.string().nullable(),
@@ -68,8 +68,8 @@ const fields = {
   supported_parameters: z4.array(z4.string()),
   is_byok: z4.boolean(),
   moderation_required: z4.boolean(),
-  variable_pricings: z4.array(z4.record(z4.string(), z4.unknown())),
-  is_hidden: z4.boolean(),
+  variable_pricings: z4.array(z4.record(z4.string(), z4.unknown())), // TODO
+  is_hidden: z4.boolean(), // always false
   is_deranked: z4.boolean(),
   is_disabled: z4.boolean(),
   supports_tool_parameters: z4.boolean(),
@@ -92,7 +92,7 @@ const fields = {
       supports_document_url: z4.null(),
     })
     .strict(),
-  status: z4.number().optional(),
+  status: z4.number().optional(), // values below 0 indicate deranked
 }
 
 export const EndpointStrictSchema = z4.strictObject({

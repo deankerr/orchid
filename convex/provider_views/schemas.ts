@@ -26,21 +26,21 @@ const iconFields = {
 }
 
 const fields = {
-  name: z4.string(),
+  name: z4.string(), // internal identifier
   displayName: z4.string(),
-  slug: z4.string(),
-  baseUrl: z4.string(),
-  headquarters: z4.string().optional(),
-  hasChatCompletions: z4.boolean(),
-  hasCompletions: z4.boolean(),
+  slug: z4.string(), // primary key
+  baseUrl: z4.string(), // always "url" (literal)
+  headquarters: z4.string().optional(), // two letter country/state code
+  hasChatCompletions: z4.boolean(), // chat endpoint
+  hasCompletions: z4.boolean(), // completion endpoint
   isAbortable: z4.boolean(),
   moderationRequired: z4.boolean(),
-  editors: z4.string().array(),
-  owners: z4.string().array(),
-  isMultipartSupported: z4.boolean(),
+  editors: z4.string().array(), // always ["{}" (literal)]
+  owners: z4.string().array(), // always ["{}" (literal)]
+  isMultipartSupported: z4.boolean(), // messages with text/image/file parts
   statusPageUrl: z4.url().nullable(),
   byokEnabled: z4.boolean(),
-  ignoredProviderModels: z4.string().array(),
+  ignoredProviderModels: z4.string().array(), // model slug?
 }
 
 export const ProviderStrictSchema = z4.strictObject({
