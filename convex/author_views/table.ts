@@ -52,11 +52,11 @@ export const AuthorViewsFn = {
 
     // new view
     if (!existing) {
-      const _id = await ctx.db.insert(AuthorViews.name, author)
+      const docId = await ctx.db.insert(AuthorViews.name, author)
       return {
         action: 'insert' as const,
-        _id,
-        diff: changes,
+        docId,
+        changes,
       }
     }
 
@@ -70,16 +70,16 @@ export const AuthorViewsFn = {
 
       return {
         action: 'stable' as const,
-        _id: existing._id,
-        diff: changes,
+        docId: existing._id,
+        changes,
       }
     }
 
     await ctx.db.replace(existing._id, author)
     return {
       action: 'replace' as const,
-      _id: existing._id,
-      diff: changes,
+      docId: existing._id,
+      changes,
     }
   },
 }

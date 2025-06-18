@@ -53,11 +53,11 @@ export const AppViewFn = {
 
     // new view
     if (!existing) {
-      const _id = await ctx.db.insert(AppViews.name, app)
+      const docId = await ctx.db.insert(AppViews.name, app)
       return {
         action: 'insert' as const,
-        _id,
-        diff: changes,
+        docId,
+        changes,
       }
     }
 
@@ -71,16 +71,16 @@ export const AppViewFn = {
 
       return {
         action: 'stable' as const,
-        _id: existing._id,
-        diff: changes,
+        docId: existing._id,
+        changes,
       }
     }
 
     await ctx.db.replace(existing._id, app)
     return {
       action: 'replace' as const,
-      _id: existing._id,
-      diff: changes,
+      docId: existing._id,
+      changes,
     }
   },
 }

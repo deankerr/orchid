@@ -44,11 +44,11 @@ export const AppTokenStatsFn = {
 
     // new stats
     if (!existing) {
-      const _id = await ctx.db.insert(AppTokenStats.name, appTokenStats)
+      const docId = await ctx.db.insert(AppTokenStats.name, appTokenStats)
       return {
         action: 'insert' as const,
-        _id,
-        diff: changes,
+        docId,
+        changes,
       }
     }
 
@@ -56,16 +56,16 @@ export const AppTokenStatsFn = {
     if (changes.length === 0) {
       return {
         action: 'stable' as const,
-        _id: existing._id,
-        diff: changes,
+        docId: existing._id,
+        changes,
       }
     }
 
     await ctx.db.replace(existing._id, appTokenStats)
     return {
       action: 'replace' as const,
-      _id: existing._id,
-      diff: changes,
+      docId: existing._id,
+      changes,
     }
   },
 }

@@ -42,11 +42,11 @@ export const EndpointUptimeStatsFn = {
 
     // new uptime stats
     if (!existing) {
-      const _id = await ctx.db.insert(EndpointUptimeStats.name, endpointUptimeStats)
+      const docId = await ctx.db.insert(EndpointUptimeStats.name, endpointUptimeStats)
       return {
         action: 'insert' as const,
-        _id,
-        diff: changes,
+        docId,
+        changes,
       }
     }
 
@@ -54,16 +54,16 @@ export const EndpointUptimeStatsFn = {
     if (changes.length === 0) {
       return {
         action: 'stable' as const,
-        _id: existing._id,
-        diff: changes,
+        docId: existing._id,
+        changes,
       }
     }
 
     await ctx.db.replace(existing._id, endpointUptimeStats)
     return {
       action: 'replace' as const,
-      _id: existing._id,
-      diff: changes,
+      docId: existing._id,
+      changes,
     }
   },
 
