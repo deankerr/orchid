@@ -1,8 +1,8 @@
 import { Table } from 'convex-helpers/server'
 import type { WithoutSystemFields } from 'convex/server'
 import { v, type Infer } from 'convex/values'
-import type { MutationCtx, QueryCtx } from '../_generated/server'
 import { diff } from 'json-diff-ts'
+import type { MutationCtx, QueryCtx } from '../_generated/server'
 import type { MergeResult } from '../types'
 
 export const ModelTokenStats = Table('model_token_stats', {
@@ -46,36 +46,41 @@ export const ModelTokenStatsFn = {
     })
   },
 
-  merge: async (ctx: MutationCtx, { modelTokenStats }: { modelTokenStats: ModelTokenStats }) => {
+  merge: async (
+    ctx: MutationCtx,
+    { modelTokenStats }: { modelTokenStats: ModelTokenStats },
+  ): Promise<MergeResult> => {
     const existing = await ModelTokenStatsFn.get(ctx, {
       model_permaslug: modelTokenStats.model_permaslug,
       model_variant: modelTokenStats.model_variant,
       timestamp: modelTokenStats.timestamp,
     })
-    const diff = ModelTokenStatsFn.diff(existing || {}, modelTokenStats)
+    const changes = ModelTokenStatsFn.diff(existing || {}, modelTokenStats)
 
-    if (existing) {
-      if (diff.length === 0) {
-        return {
-          action: 'stable' as const,
-          _id: existing._id,
-          diff,
-        }
-      }
-
-      await ctx.db.replace(existing._id, modelTokenStats)
+    // new token stats
+    if (!existing) {
+      const _id = await ctx.db.insert(ModelTokenStats.name, modelTokenStats)
       return {
-        action: 'replace' as const,
-        _id: existing._id,
-        diff,
+        action: 'insert' as const,
+        _id,
+        diff: changes,
       }
     }
 
-    const _id = await ctx.db.insert(ModelTokenStats.name, modelTokenStats)
+    // existing token stats
+    if (changes.length === 0) {
+      return {
+        action: 'stable' as const,
+        _id: existing._id,
+        diff: changes,
+      }
+    }
+
+    await ctx.db.replace(existing._id, modelTokenStats)
     return {
-      action: 'insert' as const,
-      _id,
-      diff,
+      action: 'replace' as const,
+      _id: existing._id,
+      diff: changes,
     }
   },
 

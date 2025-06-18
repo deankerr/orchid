@@ -1,9 +1,9 @@
 import { Table } from 'convex-helpers/server'
 import { v, type Infer } from 'convex/values'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
-import { diff } from 'json-diff-ts'
+import { diff, type IChange } from 'json-diff-ts'
 import type { WithoutSystemFields } from 'convex/server'
-import * as R from 'remeda'
+import type { MergeResult } from '../types'
 
 export const ProviderViews = Table('provider_views', {
   slug: v.string(),
@@ -61,48 +61,57 @@ export const ProviderViewFn = {
 
   diff: <T extends object>(from: T, to: T) => {
     return diff(from, to, {
-      keysToSkip: ['_id', '_creationTime'],
+      keysToSkip: ['_id', '_creationTime', 'epoch'],
     })
   },
 
-  merge: async (ctx: MutationCtx, { provider }: { provider: ProviderView }) => {
+  insertChanges: async (ctx: MutationCtx, args: { slug: string; epoch: number; changes: IChange[] }) => {
+    await ctx.db.insert('provider_views_changes', args)
+  },
+
+  merge: async (ctx: MutationCtx, { provider }: { provider: ProviderView }): Promise<MergeResult> => {
     const existing = await ProviderViewFn.get(ctx, { slug: provider.slug })
-    const diff = ProviderViewFn.diff(existing || {}, provider)
+    const changes = ProviderViewFn.diff(existing || {}, provider)
 
-    if (existing) {
-      if (diff.length === 0) {
-        return {
-          action: 'stable' as const,
-          _id: existing._id,
-          diff,
-        }
-      }
+    // changes
+    if (changes.length > 0) {
+      await ProviderViewFn.insertChanges(ctx, {
+        slug: provider.slug,
+        epoch: provider.epoch,
+        changes,
+      })
+    }
 
-      if (R.only(diff)?.key === 'epoch') {
-        await ctx.db.patch(existing._id, {
-          epoch: provider.epoch,
-        })
-
-        return {
-          action: 'stable' as const,
-          _id: existing._id,
-          diff,
-        }
-      }
-
-      await ctx.db.replace(existing._id, provider)
+    // new view
+    if (!existing) {
+      const _id = await ctx.db.insert(ProviderViews.name, provider)
       return {
-        action: 'replace' as const,
-        _id: existing._id,
-        diff,
+        action: 'insert' as const,
+        _id,
+        diff: changes,
       }
     }
 
-    const _id = await ctx.db.insert(ProviderViews.name, provider)
+    // existing view
+    if (changes.length === 0) {
+      if (existing.epoch < provider.epoch) {
+        await ctx.db.patch(existing._id, {
+          epoch: provider.epoch,
+        })
+      }
+
+      return {
+        action: 'stable' as const,
+        _id: existing._id,
+        diff: changes,
+      }
+    }
+
+    await ctx.db.replace(existing._id, provider)
     return {
-      action: 'insert' as const,
-      _id,
-      diff,
+      action: 'replace' as const,
+      _id: existing._id,
+      diff: changes,
     }
   },
 }

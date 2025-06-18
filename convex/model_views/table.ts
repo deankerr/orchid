@@ -1,10 +1,9 @@
 import { Table } from 'convex-helpers/server'
 import { v, type Infer } from 'convex/values'
-import { diff } from 'json-diff-ts'
+import { diff, type IChange } from 'json-diff-ts'
 import { type MutationCtx, type QueryCtx } from '../_generated/server'
 import type { WithoutSystemFields } from 'convex/server'
 import type { MergeResult } from '../types'
-import * as R from 'remeda'
 
 export const ModelViews = Table('model_views', {
   slug: v.string(),
@@ -42,7 +41,7 @@ export const ModelsViewFn = {
 
   diff: <T extends object>(from: T, to: T) => {
     return diff(from, to, {
-      keysToSkip: ['_id', '_creationTime'],
+      keysToSkip: ['_id', '_creationTime', 'epoch'],
       embeddedObjKeys: {
         input_modalities: '$value',
         output_modalities: '$value',
@@ -51,44 +50,53 @@ export const ModelsViewFn = {
     })
   },
 
+  insertChanges: async (ctx: MutationCtx, args: { slug: string; epoch: number; changes: IChange[] }) => {
+    await ctx.db.insert('model_views_changes', args)
+  },
+
   merge: async (ctx: MutationCtx, { model }: { model: ModelView }): Promise<MergeResult> => {
     const existing = await ModelsViewFn.get(ctx, { slug: model.slug })
-    const diff = ModelsViewFn.diff(existing || {}, model)
+    const changes = ModelsViewFn.diff(existing || {}, model)
 
-    if (existing) {
-      if (diff.length === 0) {
-        return {
-          action: 'stable' as const,
-          _id: existing._id,
-          diff,
-        }
-      }
+    // changes
+    if (changes.length > 0) {
+      await ModelsViewFn.insertChanges(ctx, {
+        slug: model.slug,
+        epoch: model.epoch,
+        changes,
+      })
+    }
 
-      if (R.only(diff)?.key === 'epoch') {
-        await ctx.db.patch(existing._id, {
-          epoch: model.epoch,
-        })
-
-        return {
-          action: 'stable' as const,
-          _id: existing._id,
-          diff,
-        }
-      }
-
-      await ctx.db.replace(existing._id, model)
+    // new view
+    if (!existing) {
+      const _id = await ctx.db.insert(ModelViews.name, model)
       return {
-        action: 'replace' as const,
-        _id: existing._id,
-        diff,
+        action: 'insert' as const,
+        _id,
+        diff: changes,
       }
     }
 
-    const _id = await ctx.db.insert(ModelViews.name, model)
+    // existing view
+    if (changes.length === 0) {
+      if (existing.epoch < model.epoch) {
+        await ctx.db.patch(existing._id, {
+          epoch: model.epoch,
+        })
+      }
+
+      return {
+        action: 'stable' as const,
+        _id: existing._id,
+        diff: changes,
+      }
+    }
+
+    await ctx.db.replace(existing._id, model)
     return {
-      action: 'insert' as const,
-      _id,
-      diff,
+      action: 'replace' as const,
+      _id: existing._id,
+      diff: changes,
     }
   },
 }

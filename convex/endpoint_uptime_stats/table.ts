@@ -1,8 +1,8 @@
 import { Table } from 'convex-helpers/server'
 import type { WithoutSystemFields } from 'convex/server'
 import { v, type Infer } from 'convex/values'
-import type { MutationCtx, QueryCtx } from '../_generated/server'
 import { diff } from 'json-diff-ts'
+import type { MutationCtx, QueryCtx } from '../_generated/server'
 import type { MergeResult } from '../types'
 
 export const EndpointUptimeStats = Table('endpoint_uptime_stats', {
@@ -38,30 +38,32 @@ export const EndpointUptimeStatsFn = {
       endpoint_uuid: endpointUptimeStats.endpoint_uuid,
       timestamp: endpointUptimeStats.timestamp,
     })
-    const diff = EndpointUptimeStatsFn.diff(existing || {}, endpointUptimeStats)
+    const changes = EndpointUptimeStatsFn.diff(existing || {}, endpointUptimeStats)
 
-    if (existing) {
-      if (diff.length === 0) {
-        return {
-          action: 'stable' as const,
-          _id: existing._id,
-          diff,
-        }
-      }
-
-      await ctx.db.replace(existing._id, endpointUptimeStats)
+    // new uptime stats
+    if (!existing) {
+      const _id = await ctx.db.insert(EndpointUptimeStats.name, endpointUptimeStats)
       return {
-        action: 'replace' as const,
-        _id: existing._id,
-        diff,
+        action: 'insert' as const,
+        _id,
+        diff: changes,
       }
     }
 
-    const _id = await ctx.db.insert(EndpointUptimeStats.name, endpointUptimeStats)
+    // existing uptime stats
+    if (changes.length === 0) {
+      return {
+        action: 'stable' as const,
+        _id: existing._id,
+        diff: changes,
+      }
+    }
+
+    await ctx.db.replace(existing._id, endpointUptimeStats)
     return {
-      action: 'insert' as const,
-      _id,
-      diff,
+      action: 'replace' as const,
+      _id: existing._id,
+      diff: changes,
     }
   },
 

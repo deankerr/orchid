@@ -2,9 +2,8 @@ import { Table } from 'convex-helpers/server'
 import type { WithoutSystemFields } from 'convex/server'
 import { v, type Infer } from 'convex/values'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
-import { diff } from 'json-diff-ts'
+import { diff, type IChange } from 'json-diff-ts'
 import type { MergeResult } from '../types'
-import * as R from 'remeda'
 
 export const EndpointViews = Table('endpoint_views', {
   uuid: v.string(),
@@ -88,48 +87,57 @@ export const EndpointViewFn = {
 
   diff: <T extends object>(from: T, to: T) => {
     return diff(from, to, {
-      keysToSkip: ['_id', '_creationTime'],
+      keysToSkip: ['_id', '_creationTime', 'epoch'],
     })
+  },
+
+  insertChanges: async (ctx: MutationCtx, args: { uuid: string; epoch: number; changes: IChange[] }) => {
+    await ctx.db.insert('endpoint_views_changes', args)
   },
 
   merge: async (ctx: MutationCtx, { endpoint }: { endpoint: EndpointView }): Promise<MergeResult> => {
     const existing = await EndpointViewFn.get(ctx, { uuid: endpoint.uuid })
-    const diff = EndpointViewFn.diff(existing || {}, endpoint)
+    const changes = EndpointViewFn.diff(existing || {}, endpoint)
 
-    if (existing) {
-      if (diff.length === 0) {
-        return {
-          action: 'stable' as const,
-          _id: existing._id,
-          diff,
-        }
-      }
+    // changes
+    if (changes.length > 0) {
+      await EndpointViewFn.insertChanges(ctx, {
+        uuid: endpoint.uuid,
+        epoch: endpoint.epoch,
+        changes,
+      })
+    }
 
-      if (R.only(diff)?.key === 'epoch') {
-        await ctx.db.patch(existing._id, {
-          epoch: endpoint.epoch,
-        })
-
-        return {
-          action: 'stable' as const,
-          _id: existing._id,
-          diff,
-        }
-      }
-
-      await ctx.db.replace(existing._id, endpoint)
+    // new view
+    if (!existing) {
+      const _id = await ctx.db.insert(EndpointViews.name, endpoint)
       return {
-        action: 'replace' as const,
-        _id: existing._id,
-        diff,
+        action: 'insert' as const,
+        _id,
+        diff: changes,
       }
     }
 
-    const _id = await ctx.db.insert(EndpointViews.name, endpoint)
+    // existing view
+    if (changes.length === 0) {
+      if (existing.epoch < endpoint.epoch) {
+        await ctx.db.patch(existing._id, {
+          epoch: endpoint.epoch,
+        })
+      }
+
+      return {
+        action: 'stable' as const,
+        _id: existing._id,
+        diff: changes,
+      }
+    }
+
+    await ctx.db.replace(existing._id, endpoint)
     return {
-      action: 'insert' as const,
-      _id,
-      diff,
+      action: 'replace' as const,
+      _id: existing._id,
+      diff: changes,
     }
   },
 }

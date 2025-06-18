@@ -17,7 +17,7 @@ export const schema = defineSchema(
 
     model_views: ModelViews.table.index('by_slug', ['slug']),
     endpoint_views: EndpointViews.table.index('by_uuid', ['uuid']),
-    author_views: AuthorViews.table.index('by_slug', ['slug']),
+    author_views: AuthorViews.table.index('by_uuid', ['uuid']),
     endpoint_stats: EndpointStats.table.index('by_endpoint_uuid_epoch', ['endpoint_uuid', 'epoch']),
     app_views: AppViews.table.index('by_app_id', ['app_id']),
     app_token_stats: AppTokenStats.table.index('by_app_id_epoch', ['app_id', 'epoch']),

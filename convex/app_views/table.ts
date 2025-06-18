@@ -1,10 +1,9 @@
 import { Table } from 'convex-helpers/server'
 import { v, type Infer } from 'convex/values'
-import { diff } from 'json-diff-ts'
+import { diff, type IChange } from 'json-diff-ts'
 import { type MutationCtx, type QueryCtx } from '../_generated/server'
 import type { WithoutSystemFields } from 'convex/server'
 import type { MergeResult } from '../types'
-import * as R from 'remeda'
 
 export const AppViews = Table('app_views', {
   app_id: v.number(),
@@ -31,48 +30,57 @@ export const AppViewFn = {
 
   diff: <T extends object>(from: T, to: T) => {
     return diff(from, to, {
-      keysToSkip: ['_id', '_creationTime'],
+      keysToSkip: ['_id', '_creationTime', 'epoch'],
     })
+  },
+
+  insertChanges: async (ctx: MutationCtx, args: { app_id: number; epoch: number; changes: IChange[] }) => {
+    await ctx.db.insert('app_views_changes', args)
   },
 
   merge: async (ctx: MutationCtx, { app }: { app: AppView }): Promise<MergeResult> => {
     const existing = await AppViewFn.get(ctx, { app_id: app.app_id })
-    const diff = AppViewFn.diff(existing || {}, app)
+    const changes = AppViewFn.diff(existing || {}, app)
 
-    if (existing) {
-      if (diff.length === 0) {
-        return {
-          action: 'stable' as const,
-          _id: existing._id,
-          diff,
-        }
-      }
+    // changes
+    if (changes.length > 0) {
+      await AppViewFn.insertChanges(ctx, {
+        app_id: app.app_id,
+        epoch: app.epoch,
+        changes,
+      })
+    }
 
-      if (R.only(diff)?.key === 'epoch') {
-        await ctx.db.patch(existing._id, {
-          epoch: app.epoch,
-        })
-
-        return {
-          action: 'stable' as const,
-          _id: existing._id,
-          diff,
-        }
-      }
-
-      await ctx.db.replace(existing._id, app)
+    // new view
+    if (!existing) {
+      const _id = await ctx.db.insert(AppViews.name, app)
       return {
-        action: 'replace' as const,
-        _id: existing._id,
-        diff,
+        action: 'insert' as const,
+        _id,
+        diff: changes,
       }
     }
 
-    const _id = await ctx.db.insert(AppViews.name, app)
+    // existing view
+    if (changes.length === 0) {
+      if (existing.epoch < app.epoch) {
+        await ctx.db.patch(existing._id, {
+          epoch: app.epoch,
+        })
+      }
+
+      return {
+        action: 'stable' as const,
+        _id: existing._id,
+        diff: changes,
+      }
+    }
+
+    await ctx.db.replace(existing._id, app)
     return {
-      action: 'insert' as const,
-      _id,
-      diff,
+      action: 'replace' as const,
+      _id: existing._id,
+      diff: changes,
     }
   },
 }
