@@ -4,6 +4,7 @@ import { diff } from 'json-diff-ts'
 import { type MutationCtx, type QueryCtx } from '../_generated/server'
 import type { WithoutSystemFields } from 'convex/server'
 import type { MergeResult } from '../types'
+import * as R from 'remeda'
 
 export const AppViews = Table('app_views', {
   app_id: v.number(),
@@ -13,6 +14,7 @@ export const AppViews = Table('app_views', {
   origin_url: v.string(),
   source_code_url: v.optional(v.string()),
   origin_created_at: v.number(),
+
   epoch: v.number(),
 })
 
@@ -39,6 +41,18 @@ export const AppViewFn = {
 
     if (existing) {
       if (diff.length === 0) {
+        return {
+          action: 'stable' as const,
+          _id: existing._id,
+          diff,
+        }
+      }
+
+      if (R.only(diff)?.key === 'epoch') {
+        await ctx.db.patch(existing._id, {
+          epoch: app.epoch,
+        })
+
         return {
           action: 'stable' as const,
           _id: existing._id,

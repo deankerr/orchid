@@ -4,6 +4,7 @@ import { v, type Infer } from 'convex/values'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
 import { diff } from 'json-diff-ts'
 import type { MergeResult } from '../types'
+import * as R from 'remeda'
 
 export const EndpointViews = Table('endpoint_views', {
   uuid: v.string(),
@@ -97,6 +98,18 @@ export const EndpointViewFn = {
 
     if (existing) {
       if (diff.length === 0) {
+        return {
+          action: 'stable' as const,
+          _id: existing._id,
+          diff,
+        }
+      }
+
+      if (R.only(diff)?.key === 'epoch') {
+        await ctx.db.patch(existing._id, {
+          epoch: endpoint.epoch,
+        })
+
         return {
           action: 'stable' as const,
           _id: existing._id,

@@ -4,12 +4,14 @@ import { v, type Infer } from 'convex/values'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
 import { diff } from 'json-diff-ts'
 import type { MergeResult } from '../types'
+import * as R from 'remeda'
 
 export const EndpointStats = Table('endpoint_stats', {
   endpoint_uuid: v.string(),
   p50_latency: v.number(),
   p50_throughput: v.number(),
   request_count: v.number(),
+
   epoch: v.number(),
 })
 
@@ -42,6 +44,18 @@ export const EndpointStatsFn = {
 
     if (existing) {
       if (diff.length === 0) {
+        return {
+          action: 'stable' as const,
+          _id: existing._id,
+          diff,
+        }
+      }
+
+      if (R.only(diff)?.key === 'epoch') {
+        await ctx.db.patch(existing._id, {
+          epoch: endpointStats.epoch,
+        })
+
         return {
           action: 'stable' as const,
           _id: existing._id,

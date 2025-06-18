@@ -3,6 +3,7 @@ import { v, type Infer } from 'convex/values'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
 import { diff } from 'json-diff-ts'
 import type { WithoutSystemFields } from 'convex/server'
+import * as R from 'remeda'
 
 export const ProviderViews = Table('provider_views', {
   slug: v.string(),
@@ -70,6 +71,18 @@ export const ProviderViewFn = {
 
     if (existing) {
       if (diff.length === 0) {
+        return {
+          action: 'stable' as const,
+          _id: existing._id,
+          diff,
+        }
+      }
+
+      if (R.only(diff)?.key === 'epoch') {
+        await ctx.db.patch(existing._id, {
+          epoch: provider.epoch,
+        })
+
         return {
           action: 'stable' as const,
           _id: existing._id,
