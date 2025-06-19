@@ -90,7 +90,7 @@ export function createEntityReport<T>(syncData: EntitySyncData<T>): EntityReport
 /**
  * Collector for building sync reports
  */
-export class SyncReportCollector {
+export class SnapshotReport {
   private epoch: number
   private startTime: number
   private entities: Map<string, EntityReport> = new Map()

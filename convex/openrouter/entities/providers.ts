@@ -2,7 +2,7 @@ import z4 from 'zod/v4'
 import { v } from 'convex/values'
 import { internalMutation, type ActionCtx, type MutationCtx } from '../../_generated/server'
 import { internal } from '../../_generated/api'
-import { orFetch } from '../../openrouter/client'
+import { orFetch } from '../client'
 import { ProviderViewFn, ProviderViews, type ProviderView } from '../../provider_views/table'
 import { ProviderStrictSchema, ProviderTransformSchema } from '../../provider_views/schemas'
 import { validateArray } from '../validation'
@@ -45,7 +45,7 @@ export async function syncProviders(
     }))
 
     // Merge providers into database
-    const mergeResults = await ctx.runMutation(internal.openrouter_beta.entities.providers.mergeProviders, {
+    const mergeResults = await ctx.runMutation(internal.openrouter.entities.providers.mergeProviders, {
       providers,
     })
 

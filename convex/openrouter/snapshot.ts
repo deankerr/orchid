@@ -2,7 +2,7 @@ import { v } from 'convex/values'
 import { internalAction, type ActionCtx } from '../_generated/server'
 import { getEpoch } from '../shared'
 import { storeJSON } from '../files'
-import { SyncReportCollector } from './report'
+import { SnapshotReport } from './report'
 import { syncProviders } from './entities/providers'
 import { syncModels } from './entities/models'
 import { syncAuthors } from './entities/authors'
@@ -11,7 +11,7 @@ import { syncApps } from './entities/apps'
 import type { SyncConfig } from './types'
 
 async function snapshot(ctx: ActionCtx, config: SyncConfig) {
-  const collector = new SyncReportCollector(config.epoch, config.snapshotStartTime)
+  const collector = new SnapshotReport(config.epoch, config.snapshotStartTime)
 
   console.log('Starting OpenRouter sync...', config)
 

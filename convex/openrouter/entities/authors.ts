@@ -2,7 +2,7 @@ import z4 from 'zod/v4'
 import { v } from 'convex/values'
 import { internalMutation, type ActionCtx, type MutationCtx } from '../../_generated/server'
 import { internal } from '../../_generated/api'
-import { orFetch } from '../../openrouter/client'
+import { orFetch } from '../client'
 import { AuthorViewsFn, AuthorViews, type AuthorView } from '../../author_views/table'
 import { AuthorStrictSchema, AuthorTransformSchema } from '../../author_views/schemas'
 import { ModelTokenStatsFn, ModelTokenStats } from '../../model_token_stats/table'
@@ -49,7 +49,7 @@ export async function syncAuthors(
 
   try {
     // Merge authors
-    const authorResults = await ctx.runMutation(internal.openrouter_beta.entities.authors.mergeAuthors, {
+    const authorResults = await ctx.runMutation(internal.openrouter.entities.authors.mergeAuthors, {
       authors: allAuthors,
     })
 
@@ -63,12 +63,9 @@ export async function syncAuthors(
         `Processing model token stats batch ${Math.floor(i / MODEL_TOKEN_STATS_BATCH_SIZE) + 1} (${batch.length} items)`,
       )
 
-      const batchResults = await ctx.runMutation(
-        internal.openrouter_beta.entities.authors.mergeModelTokenStats,
-        {
-          modelTokenStats: batch,
-        },
-      )
+      const batchResults = await ctx.runMutation(internal.openrouter.entities.authors.mergeModelTokenStats, {
+        modelTokenStats: batch,
+      })
       modelTokenStatsResults.push(...batchResults)
     }
 

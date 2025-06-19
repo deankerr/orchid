@@ -2,7 +2,7 @@ import z4 from 'zod/v4'
 import { v } from 'convex/values'
 import { internalMutation, type ActionCtx, type MutationCtx } from '../../_generated/server'
 import { internal } from '../../_generated/api'
-import { orFetch } from '../../openrouter/client'
+import { orFetch } from '../client'
 import { AppViewFn, AppViews, type AppView } from '../../app_views/table'
 import { AppTokenStatsFn, AppTokenStats } from '../../app_token_stats/table'
 import { AppStrictSchema, AppTransformSchema } from '../../app_views/schemas'
@@ -60,7 +60,7 @@ export async function syncApps(
 
   try {
     // Merge apps
-    const appResults = await ctx.runMutation(internal.openrouter_beta.entities.apps.mergeApps, {
+    const appResults = await ctx.runMutation(internal.openrouter.entities.apps.mergeApps, {
       apps,
     })
 
@@ -74,7 +74,7 @@ export async function syncApps(
         `Processing app token batch ${Math.floor(i / APP_TOKEN_BATCH_SIZE) + 1} (${batch.length} items)`,
       )
 
-      const batchResults = await ctx.runMutation(internal.openrouter_beta.entities.apps.mergeAppTokens, {
+      const batchResults = await ctx.runMutation(internal.openrouter.entities.apps.mergeAppTokens, {
         appTokens: batch,
       })
       appTokenResults.push(...batchResults)

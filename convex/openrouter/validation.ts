@@ -1,67 +1,53 @@
 import z4 from 'zod/v4'
-
-export type SyncValidationIssue = {
-  index: number
-  error: string
-}
-
-export type SyncIssues = {
-  transform: SyncValidationIssue[]
-  strict: SyncValidationIssue[]
-}
+import type { ValidationIssue } from './types'
 
 /**
- * Initialise an empty {@link SyncIssues} object.
+ * Validate an array of raw records with transform & strict schema pair
+ * Returns successfully parsed items and validation issues
  */
-export const initIssues = (): SyncIssues => ({ transform: [], strict: [] })
-
-/**
- * Validate an array of raw records with a transform & strict schema pair.
- *
- * @param data           Raw records returned from the OpenRouter API
- * @param transformSchema Schema used to coerce & prune data into the desired shape
- * @param strictSchema   Schema used to *strictly* validate we understand the full structure
- * @param map            Optional mapper applied to successfully parsed transform results
- *
- * @returns              Parsed items together with any validation issues encountered
- */
-export function validateArray<TParsed, TMapped = TParsed>(
+export function validateArray<TParsed>(
   data: unknown[],
   transformSchema: z4.ZodType<TParsed>,
   strictSchema: z4.ZodTypeAny,
-  map: (parsed: TParsed, index: number) => TMapped = (x) => x as unknown as TMapped,
 ) {
-  const items: TMapped[] = []
-  const issues: SyncIssues = initIssues()
+  const items: TParsed[] = []
+  const issues: ValidationIssue[] = []
 
   data.forEach((raw, index) => {
-    // --------------------------------------------------
-    // 1. Transform schema – relaxed, allows extra fields
-    // --------------------------------------------------
-    const t = transformSchema.safeParse(raw)
-    if (t.success) items.push(map(t.data, index))
-    else issues.transform.push({ index, error: z4.prettifyError(t.error) })
+    // Transform schema - used to extract and shape data
+    const transformResult = transformSchema.safeParse(raw)
+    if (transformResult.success) {
+      items.push(transformResult.data)
+    } else {
+      issues.push({
+        index,
+        type: 'transform',
+        message: z4.prettifyError(transformResult.error),
+      })
+    }
 
-    // --------------------------------------------------
-    // 2. Strict schema – full structure must match
-    // --------------------------------------------------
-    const s = strictSchema.safeParse(raw)
-    if (!s.success) issues.strict.push({ index, error: z4.prettifyError(s.error) })
+    // Strict schema - validates our understanding of the full structure
+    const strictResult = strictSchema.safeParse(raw)
+    if (!strictResult.success) {
+      issues.push({
+        index,
+        type: 'strict',
+        message: z4.prettifyError(strictResult.error),
+      })
+    }
   })
 
   return { items, issues }
 }
 
 /**
- * Validate a single record with transform & strict schemas.
- * Handy for endpoints that return an object rather than an array.
+ * Validate a single record with transform & strict schemas
  */
-export function validateRecord<TParsed, TMapped = TParsed>(
+export function validateRecord<TParsed>(
   raw: unknown,
   transformSchema: z4.ZodType<TParsed>,
   strictSchema: z4.ZodTypeAny,
-  map: (parsed: TParsed) => TMapped = (x) => x as unknown as TMapped,
 ) {
-  const { items, issues } = validateArray([raw], transformSchema, strictSchema, (d) => map(d))
+  const { items, issues } = validateArray([raw], transformSchema, strictSchema)
   return { item: items[0], issues }
 }
