@@ -89,11 +89,11 @@ export const run = internalAction({
     }
 
     const reportKey = `openrouter-sync-${tStart}`
-    await store(ctx, {
-      key: reportKey,
-      timestamp: epoch,
-      data: report,
-    })
+    // await store(ctx, {
+    //   key: reportKey,
+    //   epoch,
+    //   data: report,
+    // })
 
     const reportUrl = `${process.env.CONVEX_SITE_URL}/reports?key=${reportKey}`
     console.log(`Sync Report completed in ${duration}. View at: ${reportUrl}`)

@@ -13,7 +13,7 @@ import { ProviderViews } from './provider_views/table'
 
 export const schema = defineSchema(
   {
-    files_v1: Files.table.index('by_key', ['key']),
+    files_v2: Files.table.index('by_key', ['key']),
 
     model_views: ModelViews.table.index('by_slug', ['slug']),
     endpoint_views: EndpointViews.table.index('by_uuid', ['uuid']),

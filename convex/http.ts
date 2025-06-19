@@ -1,7 +1,7 @@
 import { httpRouter } from 'convex/server'
 import { httpAction } from './_generated/server'
 import { internal } from './_generated/api'
-import { retrieve } from './files'
+import { retrieveJSON } from './files'
 
 const http = httpRouter()
 
@@ -23,10 +23,10 @@ http.route({
         return new Response('Report not found', { status: 404 })
       }
 
-      // Retrieve the report data
-      const reportData = await retrieve(ctx, { file_id: fileRecord._id })
+      // Retrieve the report data (JSON)
+      const reportData = await retrieveJSON(ctx, fileRecord._id)
 
-      return new Response(reportData, {
+      return new Response(JSON.stringify(reportData), {
         status: 200,
         headers: {
           'Content-Type': 'application/json',
