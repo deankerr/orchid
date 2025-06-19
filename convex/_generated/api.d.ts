@@ -30,6 +30,7 @@ import type * as endpoint_views_snapshot from "../endpoint_views/snapshot.js";
 import type * as endpoint_views_table from "../endpoint_views/table.js";
 import type * as files from "../files.js";
 import type * as frontend from "../frontend.js";
+import type * as http from "../http.js";
 import type * as model_token_stats_schemas from "../model_token_stats/schemas.js";
 import type * as model_token_stats_snapshot from "../model_token_stats/snapshot.js";
 import type * as model_token_stats_table from "../model_token_stats/table.js";
@@ -70,6 +71,7 @@ declare const fullApi: ApiFromModules<{
   "endpoint_views/table": typeof endpoint_views_table;
   files: typeof files;
   frontend: typeof frontend;
+  http: typeof http;
   "model_token_stats/schemas": typeof model_token_stats_schemas;
   "model_token_stats/snapshot": typeof model_token_stats_snapshot;
   "model_token_stats/table": typeof model_token_stats_table;

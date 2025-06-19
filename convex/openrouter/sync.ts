@@ -4,9 +4,9 @@ import { v } from 'convex/values'
 import { internal } from '../_generated/api'
 import { internalAction, internalMutation, type ActionCtx, type MutationCtx } from '../_generated/server'
 import { getEpoch } from '../shared'
-import { orFetch } from './client'
-import { logIssues, validateArray, validateRecord } from './validation'
 import type { MergeResult } from '../types'
+import { orFetch } from './client'
+import { validateArray, validateRecord, type SyncIssues } from './validation'
 
 // snapshots
 import { snapshot as appSnapshot } from '../app_views/snapshot'
@@ -25,9 +25,9 @@ import { ModelTokenStats, ModelTokenStatsFn } from '../model_token_stats/table'
 import { ModelsViewFn, ModelViews } from '../model_views/table'
 
 import { AuthorStrictSchema, AuthorTransformSchema } from '../author_views/schemas'
+import { store } from '../files'
 import { ModelTokenStatsStrictSchema, ModelTokenStatsTransformSchema } from '../model_token_stats/schemas'
-import { ProviderStrictSchema } from '../provider_views/schemas'
-import { ProviderTransformSchema } from '../provider_views/schemas'
+import { ProviderStrictSchema, ProviderTransformSchema } from '../provider_views/schemas'
 import { ProviderViewFn, ProviderViews } from '../provider_views/table'
 
 const vModelViewAssembly = v.object({
@@ -43,26 +43,62 @@ export const run = internalAction({
     epoch: v.optional(v.number()),
   },
   handler: async (ctx, args): Promise<any> => {
+    const tStart = Date.now()
     const epoch = args.epoch || getEpoch()
     console.log('openrouter.sync epoch', epoch)
 
     // models / endpoints / apps
-    const { authorSlugs, appResults, modelAssemblyResults } = await syncModelsEndpointsApps(ctx, { epoch })
+    const { authorSlugs, appResults, modelAssemblyResults, modelIssues } = await syncModelsEndpointsApps(
+      ctx,
+      { epoch },
+    )
 
     // authors + model token stats
-    const { authorResults, modelTokenStatsResults } = await syncAuthorsModelTokens(ctx, {
+    const { authorResults, modelTokenStatsResults, authorIssues } = await syncAuthorsModelTokens(ctx, {
       authorSlugs,
       epoch,
     })
 
     // providers
-    const providerResults = await syncProviders(ctx, { epoch })
+    const { providerResults, providerIssues } = await syncProviders(ctx, { epoch })
 
-    console.log('providerResults', providerResults)
-    console.log('modelTokenStatsResults', modelTokenStatsResults)
-    console.log('appResults', appResults)
-    console.log('authorResults', authorResults)
-    console.log('modelAssemblyResults', modelAssemblyResults)
+    // * report
+    const tEnd = Date.now()
+    const totalSeconds = Math.round((tEnd - tStart) / 1000)
+    const minutes = Math.floor(totalSeconds / 60)
+    const seconds = totalSeconds % 60
+    const duration = `${minutes}m ${seconds}s`
+
+    const report = {
+      timeStarted: new Date(tStart).toISOString(),
+      timeEnded: new Date(tEnd).toISOString(),
+      duration,
+      epoch,
+      results: {
+        providers: providerResults,
+        modelTokenStats: modelTokenStatsResults,
+        apps: appResults,
+        authors: authorResults,
+        modelAssemblies: modelAssemblyResults,
+      },
+      issues: {
+        models: filterEmptyIssues(modelIssues),
+        authors: filterEmptyIssues(authorIssues),
+        providers: providerIssues,
+      },
+    }
+
+    const reportKey = `openrouter-sync-${tStart}`
+    await store(ctx, {
+      key: reportKey,
+      timestamp: epoch,
+      data: report,
+    })
+
+    const reportUrl = `${process.env.CONVEX_SITE_URL}/reports?key=${reportKey}`
+    console.log(`Sync Report completed in ${duration}. View at: ${reportUrl}`)
+
+    return { reportUrl, reportKey, ...report }
   },
 })
 
@@ -76,6 +112,16 @@ function consolidateResults(results: MergeResult[]): Record<string, number> {
   return actions
 }
 
+function hasIssues(issues: SyncIssues): boolean {
+  return issues.transform.length > 0 || issues.strict.length > 0
+}
+
+function filterEmptyIssues<T extends { issues: SyncIssues }>(issueEntries: T[]): T[] {
+  return issueEntries.filter((entry) => hasIssues(entry.issues))
+}
+
+type MergeResultsGroup = Record<string, string | Record<string, number>>
+
 /**
  * -----------------------------------------------------
  * Models / Endpoints / Apps
@@ -86,20 +132,26 @@ async function syncModelsEndpointsApps(ctx: ActionCtx, { epoch }: { epoch: numbe
   // deduped apps
   const apps = new Map<number, AppView>()
 
+  // collect all issues
+  const allModelIssues: any[] = []
+  const modelAssemblyResults: MergeResultsGroup[] = []
+
   // models
-  const { models } = await modelSnapshot({ epoch })
+  const { models, issues: modelIssues } = await modelSnapshot({ epoch })
+  allModelIssues.push({ source: 'models', issues: modelIssues })
   console.log('models:', models.length)
 
-  const modelAssemblyResults: any[] = []
   for (const model of models) {
     // endpoints (+stats)
     const endpointResult = await endpointSnapshot({ model })
+    allModelIssues.push({ source: 'endpoints', model: model.slug, issues: endpointResult.issues })
 
     // endpoint uptimes
     const endpointUptimes: EndpointUptimeStats[] = []
     for (const { uuid } of endpointResult.endpoints) {
       const res = await uptimeSnapshot({ endpoint_uuid: uuid })
       endpointUptimes.push(...res.uptimes)
+      allModelIssues.push({ source: 'uptime', endpoint_uuid: uuid, issues: res.issues })
     }
 
     // apps & app token stats
@@ -112,6 +164,7 @@ async function syncModelsEndpointsApps(ctx: ActionCtx, { epoch }: { epoch: numbe
         epoch,
       })
 
+      allModelIssues.push({ source: 'apps', model: model.slug, variant, issues: appRes.issues })
       appTokens.push(...appRes.appTokens)
 
       for (const app of appRes.apps) {
@@ -142,7 +195,7 @@ async function syncModelsEndpointsApps(ctx: ActionCtx, { epoch }: { epoch: numbe
 
   const authorSlugs = new Set(models.map((m) => m.author_slug))
 
-  return { appResults, authorSlugs, modelAssemblyResults }
+  return { appResults, authorSlugs, modelAssemblyResults, modelIssues: allModelIssues }
 }
 
 export const mergeModelViewAssembly = internalMutation({
@@ -203,7 +256,8 @@ async function syncAuthorsModelTokens(
   console.log('authorSlugs', authorSlugs.size)
 
   const authors: AuthorView[] = []
-  const modelTokenStatsResults: any[] = []
+  const modelTokenStatsResults: MergeResultsGroup[] = []
+  const allAuthorIssues: any[] = []
 
   for (const authorSlug of authorSlugs) {
     const result = await orFetch('/api/frontend/model-author', {
@@ -211,14 +265,20 @@ async function syncAuthorsModelTokens(
       schema: z4.object({ data: z4.unknown() }),
     })
 
-    const { item: author } = validateRecord(result.data, AuthorTransformSchema, AuthorStrictSchema)
+    const { item: author, issues: authorIssues } = validateRecord(
+      result.data,
+      AuthorTransformSchema,
+      AuthorStrictSchema,
+    )
     authors.push({ ...author, epoch })
+    allAuthorIssues.push({ source: 'authors', authorSlug, issues: authorIssues })
 
-    const { item: modelTokenStats } = validateRecord(
+    const { item: modelTokenStats, issues: tokenStatsIssues } = validateRecord(
       result.data,
       ModelTokenStatsTransformSchema,
       ModelTokenStatsStrictSchema,
     )
+    allAuthorIssues.push({ source: 'modelTokenStats', authorSlug, issues: tokenStatsIssues })
 
     const modelTokenStatsResult = await ctx.runMutation(internal.openrouter.sync.mergeModelTokenStats, {
       modelTokenStats,
@@ -231,7 +291,7 @@ async function syncAuthorsModelTokens(
     authors,
   })
 
-  return { authorResults, modelTokenStatsResults }
+  return { authorResults, modelTokenStatsResults, authorIssues: allAuthorIssues }
 }
 
 export const mergeModelTokenStats = internalMutation({
@@ -275,13 +335,11 @@ async function syncProviders(ctx: ActionCtx, { epoch }: { epoch: number }) {
     }),
   )
 
-  logIssues('providers', issues)
-
   const providerResults = await ctx.runMutation(internal.openrouter.sync.mergeProviders, {
     providers,
   })
 
-  return providerResults
+  return { providerResults, providerIssues: issues }
 }
 
 export const mergeProviders = internalMutation({
@@ -291,16 +349,5 @@ export const mergeProviders = internalMutation({
   handler: async (ctx: MutationCtx, { providers }) => {
     const results = await Promise.all(providers.map((provider) => ProviderViewFn.merge(ctx, { provider })))
     return consolidateResults(results)
-  },
-})
-
-export const runSyncProviders = internalAction({
-  args: {
-    epoch: v.optional(v.number()),
-  },
-  handler: async (ctx, args): Promise<any> => {
-    const epoch = args.epoch || getEpoch()
-    const result = await syncProviders(ctx, { epoch })
-    console.log('providerResults', result)
   },
 })

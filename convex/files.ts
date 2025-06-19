@@ -83,3 +83,15 @@ export const getFileRecord = internalQuery({
     return await ctx.db.get(args.file_id)
   },
 })
+
+export const getFileRecordByKey = internalQuery({
+  args: {
+    key: v.string(),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query('files_v1')
+      .withIndex('by_key', (q) => q.eq('key', args.key))
+      .first()
+  },
+})

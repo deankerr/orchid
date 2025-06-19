@@ -2,8 +2,7 @@ import z4 from 'zod/v4'
 
 export type SyncValidationIssue = {
   index: number
-  error: z4.ZodError
-  ref?: unknown
+  error: string
 }
 
 export type SyncIssues = {
@@ -41,13 +40,13 @@ export function validateArray<TParsed, TMapped = TParsed>(
     // --------------------------------------------------
     const t = transformSchema.safeParse(raw)
     if (t.success) items.push(map(t.data, index))
-    else issues.transform.push({ index, error: t.error, ref: (raw as any)?.permaslug })
+    else issues.transform.push({ index, error: z4.prettifyError(t.error) })
 
     // --------------------------------------------------
     // 2. Strict schema – full structure must match
     // --------------------------------------------------
     const s = strictSchema.safeParse(raw)
-    if (!s.success) issues.strict.push({ index, error: s.error, ref: (raw as any)?.permaslug })
+    if (!s.success) issues.strict.push({ index, error: z4.prettifyError(s.error) })
   })
 
   return { items, issues }
@@ -65,30 +64,4 @@ export function validateRecord<TParsed, TMapped = TParsed>(
 ) {
   const { items, issues } = validateArray([raw], transformSchema, strictSchema, (d) => map(d))
   return { item: items[0], issues }
-}
-
-/**
- * Utility for pretty printing validation issues.
- * Keeps the noisy Zod errors readable in logs and caps the output.
- */
-export const logIssues = (label: string, issues: SyncIssues, limit = 5) => {
-  if (issues.transform.length)
-    console.log(
-      label,
-      'transform',
-      issues.transform.length,
-      issues.transform
-        .map((i) => ({ index: i.index, ref: i.ref, msg: z4.prettifyError(i.error) }))
-        .slice(0, limit),
-    )
-
-  if (issues.strict.length)
-    console.log(
-      label,
-      'strict',
-      issues.strict.length,
-      issues.strict
-        .map((i) => ({ index: i.index, ref: i.ref, msg: z4.prettifyError(i.error) }))
-        .slice(0, limit),
-    )
 }
