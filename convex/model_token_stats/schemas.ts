@@ -12,11 +12,12 @@ const statsFields = {
 
 export const ModelTokenStatsStrictSchema = z4.strictObject({
   modelsWithStats: z4
-    .strictObject({
+    .object({
       slug: z4.string(),
       stats: z4.strictObject({ ...statsFields, variant_permaslug: z4.string() }).array(),
     })
     .array(),
+  author: z4.unknown(), // checked in author_views
 })
 
 export const ModelTokenStatsTransformSchema = z4

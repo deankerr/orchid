@@ -8,10 +8,12 @@ const fields = {
   description: z4.string().nullable(),
   created_at: z4.string(),
   updated_at: z4.string(),
+  icon_uri: z4.null(),
 }
 
 export const AuthorStrictSchema = z4.strictObject({
   author: z4.strictObject(fields),
+  modelsWithStats: z4.unknown(), // checked in model_token_stats
 })
 
 export const AuthorTransformSchema = z4

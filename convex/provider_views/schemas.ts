@@ -41,6 +41,7 @@ const fields = {
   statusPageUrl: z4.url().nullable(),
   byokEnabled: z4.boolean(),
   ignoredProviderModels: z4.string().array(), // model slug?
+  adapterName: z4.string(),
 }
 
 export const ProviderStrictSchema = z4.strictObject({

@@ -55,12 +55,16 @@ export const EndpointViews = Table('endpoint_views', {
     output: v.optional(v.number()),
     image_input: v.optional(v.number()),
     reasoning_output: v.optional(v.number()),
+    web_search: v.optional(v.number()),
 
     cache_read: v.optional(v.number()),
     cache_write: v.optional(v.number()),
 
     // flat rate
     per_request: v.optional(v.number()),
+
+    // e.g. 0.25, already applied to the other pricing fields
+    discount: v.optional(v.number()),
   }),
 
   status: v.number(),

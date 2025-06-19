@@ -29,12 +29,11 @@ const pricingFields = {
   completion: z4.string(),
   image: z4.string(),
   request: z4.string(),
+  web_search: z4.string(),
   input_cache_read: z4.string().optional(),
   input_cache_write: z4.string().optional(),
   internal_reasoning: z4.string().optional(),
-
-  web_search: z4.string(),
-  discount: z4.number(),
+  discount: z4.number(), // e.g. 0.25, already applied to the other pricing fields
 }
 
 const statsFields = {
@@ -80,26 +79,24 @@ const fields = {
   limit_rpm_cf: z4.number().nullable(),
   has_completions: z4.boolean(),
   has_chat_completions: z4.boolean(),
-  features: z4
-    .object({
-      supported_parameters: z4
-        .object({
-          response_format: z4.boolean().optional(),
-          structured_outputs: z4.boolean().optional(),
-        })
-        .strict()
-        .optional(),
-      supports_document_url: z4.null(),
-    })
-    .strict(),
+  features: z4.strictObject({
+    supported_parameters: z4
+      .strictObject({
+        response_format: z4.boolean().optional(),
+        structured_outputs: z4.boolean().optional(),
+      })
+      .optional(),
+    is_mandatory_reasoning: z4.boolean().optional(),
+    supports_document_url: z4.null(),
+  }),
   status: z4.number().optional(), // values below 0 indicate deranked
 }
 
 export const EndpointStrictSchema = z4.strictObject({
   ...fields,
   data_policy: z4.strictObject(dataPolicyFields),
-  pricing: z4.strictObject({ ...pricingFields, discount: z4.literal(0) }),
-  stats: z4.strictObject(statsFields),
+  pricing: z4.strictObject(pricingFields),
+  stats: z4.strictObject(statsFields).optional(),
 })
 
 export const EndpointTransformSchema = z4
@@ -125,12 +122,14 @@ export const EndpointTransformSchema = z4
         completion: z4.coerce.number(),
         image: z4.coerce.number(),
         request: z4.coerce.number(),
+        web_search: z4.coerce.number(),
         input_cache_read: z4.coerce.number().optional(),
         input_cache_write: z4.coerce.number().optional(),
         internal_reasoning: z4.coerce.number().optional(),
+        discount: z4.number(),
       })
       .transform(R.pickBy(R.isTruthy)),
-    stats: z4.object(statsFields),
+    stats: z4.object(statsFields).optional(),
   })
   .transform(R.pickBy(R.isNonNullish))
   .transform((r) => {
@@ -175,9 +174,11 @@ export const EndpointTransformSchema = z4
         output: r.pricing.completion,
         image_input: r.pricing.image,
         reasoning_output: r.pricing.internal_reasoning,
+        web_search: r.pricing.web_search,
         cache_read: r.pricing.input_cache_read,
         cache_write: r.pricing.input_cache_write,
         per_request: r.pricing.request,
+        discount: r.pricing.discount,
       },
 
       status: r.status ?? 0,
@@ -185,12 +186,14 @@ export const EndpointTransformSchema = z4
       is_moderated: r.moderation_required,
     }
 
-    const stats = {
-      endpoint_uuid: r.stats.endpoint_id,
-      p50_throughput: r.stats.p50_throughput,
-      p50_latency: r.stats.p50_latency,
-      request_count: r.stats.request_count,
-    }
+    const stats = r.stats
+      ? {
+          endpoint_uuid: r.stats.endpoint_id,
+          p50_throughput: r.stats.p50_throughput,
+          p50_latency: r.stats.p50_latency,
+          request_count: r.stats.request_count,
+        }
+      : undefined
 
     return { endpoint, stats }
   })
