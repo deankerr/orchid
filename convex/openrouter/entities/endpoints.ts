@@ -1,20 +1,21 @@
-import z4 from 'zod/v4'
 import { v } from 'convex/values'
-import { internalMutation, type ActionCtx, type MutationCtx } from '../../_generated/server'
+import z4 from 'zod/v4'
 import { internal } from '../../_generated/api'
-import { orFetch } from '../client'
-import { EndpointViewFn, EndpointViews, type EndpointView } from '../../endpoint_views/table'
-import { EndpointStatsFn, EndpointStats, type EndpointStat } from '../../endpoint_stats/table'
-import { EndpointUptimeStatsFn, EndpointUptimeStats } from '../../endpoint_uptime_stats/table'
-import { EndpointStrictSchema, EndpointTransformSchema } from '../../endpoint_views/schemas'
+import { internalMutation, type ActionCtx, type MutationCtx } from '../../_generated/server'
+import { EndpointStats, EndpointStatsFn, type EndpointStat } from '../../endpoint_stats/table'
 import {
   EndpointUptimeStrictSchema,
   EndpointUptimeTransformSchema,
 } from '../../endpoint_uptime_stats/schemas'
-import { validateArray, validateRecord } from '../validation'
-import type { EntitySyncData, SyncConfig, MergeResult, Issue } from '../types'
+import { EndpointUptimeStats, EndpointUptimeStatsFn } from '../../endpoint_uptime_stats/table'
+import { EndpointStrictSchema, EndpointTransformSchema } from '../../endpoint_views/schemas'
+import { EndpointViewFn, EndpointViews, type EndpointView } from '../../endpoint_views/table'
 import { storeJSON } from '../../files'
 import type { ModelView } from '../../model_views/table'
+import { orFetch } from '../client'
+import type { EntitySyncData, Issue, SyncConfig } from '../types'
+import { processBatchMutation } from '../utils'
+import { validateArray, validateRecord } from '../validation'
 
 // Batch size for large arrays to avoid Convex limits
 const ENDPOINT_UPTIME_BATCH_SIZE = 5000
@@ -65,20 +66,14 @@ export async function syncEndpoints(
   })
 
   // Merge endpoint uptimes in batches to avoid Convex array limits
-  console.log(`Batching ${allEndpointUptimes.length} endpoint uptimes...`)
-  const uptimeMergeResults: MergeResult[] = []
-
-  for (let i = 0; i < allEndpointUptimes.length; i += ENDPOINT_UPTIME_BATCH_SIZE) {
-    const batch = allEndpointUptimes.slice(i, i + ENDPOINT_UPTIME_BATCH_SIZE)
-    console.log(
-      `Processing endpoint uptime batch ${Math.floor(i / ENDPOINT_UPTIME_BATCH_SIZE) + 1} (${batch.length} items)`,
-    )
-
-    const batchResults = await ctx.runMutation(internal.openrouter.entities.endpoints.mergeEndpointUptimes, {
-      endpointUptimes: batch,
-    })
-    uptimeMergeResults.push(...batchResults)
-  }
+  const uptimeMergeResults = await processBatchMutation({
+    ctx,
+    items: allEndpointUptimes,
+    batchSize: ENDPOINT_UPTIME_BATCH_SIZE,
+    mutationRef: internal.openrouter.entities.endpoints.mergeEndpointUptimes,
+    mutationArgsKey: 'endpointUptimes',
+    label: 'endpoint uptime',
+  })
 
   return {
     endpoints: {

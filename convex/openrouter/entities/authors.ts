@@ -1,15 +1,16 @@
-import z4 from 'zod/v4'
 import { v } from 'convex/values'
-import { internalMutation, type ActionCtx, type MutationCtx } from '../../_generated/server'
+import z4 from 'zod/v4'
 import { internal } from '../../_generated/api'
-import { orFetch } from '../client'
-import { AuthorViewsFn, AuthorViews, type AuthorView } from '../../author_views/table'
+import { internalMutation, type ActionCtx, type MutationCtx } from '../../_generated/server'
 import { AuthorStrictSchema, AuthorTransformSchema } from '../../author_views/schemas'
-import { ModelTokenStatsFn, ModelTokenStats } from '../../model_token_stats/table'
-import { ModelTokenStatsStrictSchema, ModelTokenStatsTransformSchema } from '../../model_token_stats/schemas'
-import { validateRecord } from '../validation'
-import type { EntitySyncData, SyncConfig, MergeResult, Issue } from '../types'
+import { AuthorViews, AuthorViewsFn, type AuthorView } from '../../author_views/table'
 import { storeJSON } from '../../files'
+import { ModelTokenStatsStrictSchema, ModelTokenStatsTransformSchema } from '../../model_token_stats/schemas'
+import { ModelTokenStats, ModelTokenStatsFn } from '../../model_token_stats/table'
+import { orFetch } from '../client'
+import type { EntitySyncData, Issue, SyncConfig } from '../types'
+import { processBatchMutation } from '../utils'
+import { validateRecord } from '../validation'
 
 // Batch size for large arrays to avoid Convex limits
 const MODEL_TOKEN_STATS_BATCH_SIZE = 5000
@@ -47,20 +48,14 @@ export async function syncAuthors(
   })
 
   // Merge model token stats in batches to avoid Convex array limits
-  const modelTokenStatsResults: MergeResult[] = []
-  console.log(`Batching ${allModelTokenStats.length} model token stats...`)
-
-  for (let i = 0; i < allModelTokenStats.length; i += MODEL_TOKEN_STATS_BATCH_SIZE) {
-    const batch = allModelTokenStats.slice(i, i + MODEL_TOKEN_STATS_BATCH_SIZE)
-    console.log(
-      `Processing model token stats batch ${Math.floor(i / MODEL_TOKEN_STATS_BATCH_SIZE) + 1} (${batch.length} items)`,
-    )
-
-    const batchResults = await ctx.runMutation(internal.openrouter.entities.authors.mergeModelTokenStats, {
-      modelTokenStats: batch,
-    })
-    modelTokenStatsResults.push(...batchResults)
-  }
+  const modelTokenStatsResults = await processBatchMutation({
+    ctx,
+    items: allModelTokenStats,
+    batchSize: MODEL_TOKEN_STATS_BATCH_SIZE,
+    mutationRef: internal.openrouter.entities.authors.mergeModelTokenStats,
+    mutationArgsKey: 'modelTokenStats',
+    label: 'model token stats',
+  })
 
   return {
     authors: {

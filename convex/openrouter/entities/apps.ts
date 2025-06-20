@@ -8,7 +8,8 @@ import { AppViewFn, AppViews, type AppView } from '../../app_views/table'
 import { storeJSON } from '../../files'
 import type { ModelView } from '../../model_views/table'
 import { orFetch } from '../client'
-import type { EntitySyncData, Issue, MergeResult, SyncConfig } from '../types'
+import type { EntitySyncData, Issue, SyncConfig } from '../types'
+import { processBatchMutation } from '../utils'
 import { validateArray } from '../validation'
 
 // Batch size for large arrays to avoid Convex limits
@@ -55,20 +56,14 @@ export async function syncApps(
   })
 
   // Merge app tokens in batches to avoid Convex limits and timeouts
-  const appTokenResults: MergeResult[] = []
-  console.log(`Batching ${allAppTokens.length} app tokens...`)
-
-  for (let i = 0; i < allAppTokens.length; i += APP_TOKEN_BATCH_SIZE) {
-    const batch = allAppTokens.slice(i, i + APP_TOKEN_BATCH_SIZE)
-    console.log(
-      `Processing app token batch ${Math.floor(i / APP_TOKEN_BATCH_SIZE) + 1} (${batch.length} items)`,
-    )
-
-    const batchResults = await ctx.runMutation(internal.openrouter.entities.apps.mergeAppTokens, {
-      appTokens: batch,
-    })
-    appTokenResults.push(...batchResults)
-  }
+  const appTokenResults = await processBatchMutation({
+    ctx,
+    items: allAppTokens,
+    batchSize: APP_TOKEN_BATCH_SIZE,
+    mutationRef: internal.openrouter.entities.apps.mergeAppTokens,
+    mutationArgsKey: 'appTokens',
+    label: 'app token',
+  })
 
   return {
     apps: {

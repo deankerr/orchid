@@ -40,6 +40,7 @@ import type * as openrouter_entities_providers from "../openrouter/entities/prov
 import type * as openrouter_report from "../openrouter/report.js";
 import type * as openrouter_snapshot from "../openrouter/snapshot.js";
 import type * as openrouter_types from "../openrouter/types.js";
+import type * as openrouter_utils from "../openrouter/utils.js";
 import type * as openrouter_validation from "../openrouter/validation.js";
 import type * as provider_views_schemas from "../provider_views/schemas.js";
 import type * as provider_views_table from "../provider_views/table.js";
@@ -82,6 +83,7 @@ declare const fullApi: ApiFromModules<{
   "openrouter/report": typeof openrouter_report;
   "openrouter/snapshot": typeof openrouter_snapshot;
   "openrouter/types": typeof openrouter_types;
+  "openrouter/utils": typeof openrouter_utils;
   "openrouter/validation": typeof openrouter_validation;
   "provider_views/schemas": typeof provider_views_schemas;
   "provider_views/table": typeof provider_views_table;
