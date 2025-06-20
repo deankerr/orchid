@@ -20,7 +20,7 @@ import { processBatchMutation } from '../utils'
 import { validateRecord } from '../validation'
 
 // Batch size for large arrays to avoid Convex limits
-const MODEL_TOKEN_STATS_BATCH_SIZE = 5000
+const MODEL_TOKEN_METRICS_BATCH_SIZE = 4000
 
 /**
  * Sync authors and model token stats for given author slugs
@@ -31,10 +31,10 @@ export async function syncAuthors(
   authorSlugs: string[],
 ): Promise<{
   authors: EntitySyncData<OrAuthorFields>
-  modelTokenStats: EntitySyncData<OrModelTokenMetricsFields>
+  modelTokenMetrics: EntitySyncData<OrModelTokenMetricsFields>
 }> {
   const allAuthors: OrAuthorFields[] = []
-  const allModelTokenStats: OrModelTokenMetricsFields[] = []
+  const allModelTokenMetrics: OrModelTokenMetricsFields[] = []
   const allIssues: Issue[] = []
 
   console.log(`Processing ${authorSlugs.length} authors...`)
@@ -45,7 +45,7 @@ export async function syncAuthors(
       // Only push valid authors
       allAuthors.push(authorData.author)
     }
-    allModelTokenStats.push(...authorData.modelTokenStats)
+    allModelTokenMetrics.push(...authorData.modelTokenMetrics)
     allIssues.push(...authorData.issues)
   }
 
@@ -55,12 +55,12 @@ export async function syncAuthors(
   })
 
   // Merge model token stats in batches to avoid Convex array limits
-  const modelTokenStatsResults = await processBatchMutation({
+  const modelTokenMetricsResults = await processBatchMutation({
     ctx,
-    items: allModelTokenStats,
-    batchSize: MODEL_TOKEN_STATS_BATCH_SIZE,
-    mutationRef: internal.openrouter.entities.authors.mergeModelTokenStats,
-    mutationArgsKey: 'modelTokenStats',
+    items: allModelTokenMetrics,
+    batchSize: MODEL_TOKEN_METRICS_BATCH_SIZE,
+    mutationRef: internal.openrouter.entities.authors.mergeModelTokenMetrics,
+    mutationArgsKey: 'modelTokenMetrics',
   })
 
   console.log('Authors complete')
@@ -70,10 +70,10 @@ export async function syncAuthors(
       issues: allIssues.filter((issue) => !issue.identifier.includes('token-stats')),
       mergeResults: authorResults,
     },
-    modelTokenStats: {
-      items: allModelTokenStats,
+    modelTokenMetrics: {
+      items: allModelTokenMetrics,
       issues: allIssues.filter((issue) => issue.identifier.includes('token-stats')),
-      mergeResults: modelTokenStatsResults,
+      mergeResults: modelTokenMetricsResults,
     },
   }
 }
@@ -83,7 +83,7 @@ async function syncAuthor(
   ctx: ActionCtx,
   config: SyncConfig,
   authorSlug: string,
-): Promise<{ author: OrAuthorFields; modelTokenStats: OrModelTokenMetricsFields[]; issues: Issue[] }> {
+): Promise<{ author: OrAuthorFields; modelTokenMetrics: OrModelTokenMetricsFields[]; issues: Issue[] }> {
   try {
     const response = await orFetch('/api/frontend/model-author', {
       params: { authorSlug, shouldIncludeStats: true, shouldIncludeVariants: false },
@@ -105,7 +105,7 @@ async function syncAuthor(
       AuthorStrictSchema,
     )
 
-    const { item: modelTokenStats, issues: tokenStatsIssues } = validateRecord(
+    const { item: modelTokenMetrics, issues: tokenStatsIssues } = validateRecord(
       response.data,
       ModelTokenStatsTransformSchema,
       ModelTokenStatsStrictSchema,
@@ -125,13 +125,13 @@ async function syncAuthor(
 
     return {
       author: { ...author, snapshot_at: config.snapshotAt },
-      modelTokenStats,
+      modelTokenMetrics,
       issues,
     }
   } catch (error) {
     return {
       author: {} as OrAuthorFields, // Will be skipped
-      modelTokenStats: [],
+      modelTokenMetrics: [],
       issues: [
         {
           type: 'sync',
@@ -167,7 +167,7 @@ export const mergeAuthors = internalMutation({
 /**
  * Internal mutation to merge model token stats
  */
-export const mergeModelTokenStats = internalMutation({
+export const mergeModelTokenMetrics = internalMutation({
   args: {
     modelTokenMetrics: v.array(v.object(OrModelTokenMetrics.withoutSystemFields)),
   },

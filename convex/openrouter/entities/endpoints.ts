@@ -26,7 +26,7 @@ import { processBatchMutation } from '../utils'
 import { validateArray, validateRecord } from '../validation'
 
 // Batch size for large arrays to avoid Convex limits
-const ENDPOINT_UPTIME_BATCH_SIZE = 5000
+const ENDPOINT_UPTIME_BATCH_SIZE = 4000
 
 /**
  * Sync endpoints and related data for given models
@@ -37,12 +37,12 @@ export async function syncEndpoints(
   models: OrModelFields[],
 ): Promise<{
   endpoints: EntitySyncData<OrEndpointFields>
-  endpointStats: EntitySyncData<OrEndpointMetricsFields>
-  endpointUptimes: EntitySyncData<OrEndpointUptimeMetricsFields>
+  endpointMetrics: EntitySyncData<OrEndpointMetricsFields>
+  endpointUptimeMetrics: EntitySyncData<OrEndpointUptimeMetricsFields>
 }> {
   const allEndpoints: OrEndpointFields[] = []
-  const allEndpointStats: OrEndpointMetricsFields[] = []
-  const allEndpointUptimes: OrEndpointUptimeMetricsFields[] = []
+  const allEndpointMetrics: OrEndpointMetricsFields[] = []
+  const allEndpointUptimeMetrics: OrEndpointUptimeMetricsFields[] = []
   const allIssues: Issue[] = []
 
   console.log(`Processing endpoints for ${models.length} models...`)
@@ -52,13 +52,13 @@ export async function syncEndpoints(
     for (const variant of model.variants) {
       const endpointData = await syncModelEndpoints(ctx, config, model, variant)
       allEndpoints.push(...endpointData.endpoints)
-      allEndpointStats.push(...endpointData.endpointStats)
+      allEndpointMetrics.push(...endpointData.endpointMetrics)
       allIssues.push(...endpointData.issues)
 
       // Sync uptime data for each endpoint
       for (const endpoint of endpointData.endpoints) {
         const uptimeData = await syncEndpointUptimes(ctx, config, endpoint.uuid)
-        allEndpointUptimes.push(...uptimeData.uptimes)
+        allEndpointUptimeMetrics.push(...uptimeData.uptimeMetrics)
         allIssues.push(...uptimeData.issues)
       }
     }
@@ -69,17 +69,20 @@ export async function syncEndpoints(
     endpoints: allEndpoints,
   })
 
-  const statsMergeResults = await ctx.runMutation(internal.openrouter.entities.endpoints.mergeEndpointStats, {
-    endpointStats: allEndpointStats,
-  })
+  const metricsMergeResults = await ctx.runMutation(
+    internal.openrouter.entities.endpoints.mergeEndpointMetrics,
+    {
+      endpointMetrics: allEndpointMetrics,
+    },
+  )
 
-  // Merge endpoint uptimes in batches to avoid Convex array limits
-  const uptimeMergeResults = await processBatchMutation({
+  // Merge endpoint uptime metrics in batches to avoid Convex array limits
+  const uptimeMetricsMergeResults = await processBatchMutation({
     ctx,
-    items: allEndpointUptimes,
+    items: allEndpointUptimeMetrics,
     batchSize: ENDPOINT_UPTIME_BATCH_SIZE,
-    mutationRef: internal.openrouter.entities.endpoints.mergeEndpointUptimes,
-    mutationArgsKey: 'endpointUptimes',
+    mutationRef: internal.openrouter.entities.endpoints.mergeEndpointUptimeMetrics,
+    mutationArgsKey: 'endpointUptimeMetrics',
   })
 
   console.log('Endpoints complete')
@@ -91,15 +94,15 @@ export async function syncEndpoints(
       ),
       mergeResults: endpointMergeResults,
     },
-    endpointStats: {
-      items: allEndpointStats,
+    endpointMetrics: {
+      items: allEndpointMetrics,
       issues: allIssues.filter((issue) => issue.identifier.includes('stats')),
-      mergeResults: statsMergeResults,
+      mergeResults: metricsMergeResults,
     },
-    endpointUptimes: {
-      items: allEndpointUptimes,
+    endpointUptimeMetrics: {
+      items: allEndpointUptimeMetrics,
       issues: allIssues.filter((issue) => issue.identifier.includes('uptime')),
-      mergeResults: uptimeMergeResults,
+      mergeResults: uptimeMetricsMergeResults,
     },
   }
 }
@@ -110,7 +113,7 @@ async function syncModelEndpoints(
   config: SyncConfig,
   model: OrModelFields,
   variant: string,
-): Promise<{ endpoints: OrEndpointFields[]; endpointStats: OrEndpointMetricsFields[]; issues: Issue[] }> {
+): Promise<{ endpoints: OrEndpointFields[]; endpointMetrics: OrEndpointMetricsFields[]; issues: Issue[] }> {
   const modelVariantId = `${model.slug}-${variant}`
 
   try {
@@ -141,7 +144,7 @@ async function syncModelEndpoints(
     }))
 
     const endpoints: OrEndpointFields[] = []
-    const endpointStats: OrEndpointMetricsFields[] = []
+    const endpointMetrics: OrEndpointMetricsFields[] = []
 
     for (const item of items) {
       endpoints.push({
@@ -158,18 +161,18 @@ async function syncModelEndpoints(
       })
 
       if (item.stats) {
-        endpointStats.push({
+        endpointMetrics.push({
           ...item.stats,
           snapshot_at: config.snapshotAt,
         })
       }
     }
 
-    return { endpoints, endpointStats, issues }
+    return { endpoints, endpointMetrics, issues }
   } catch (error) {
     return {
       endpoints: [],
-      endpointStats: [],
+      endpointMetrics: [],
       issues: [
         {
           type: 'sync',
@@ -185,7 +188,7 @@ async function syncEndpointUptimes(
   ctx: ActionCtx,
   config: SyncConfig,
   endpointUuid: string,
-): Promise<{ uptimes: OrEndpointUptimeMetricsFields[]; issues: Issue[] }> {
+): Promise<{ uptimeMetrics: OrEndpointUptimeMetricsFields[]; issues: Issue[] }> {
   try {
     const response = await orFetch('/api/frontend/stats/uptime-hourly', {
       params: { id: endpointUuid },
@@ -204,16 +207,16 @@ async function syncEndpointUptimes(
       identifier: `uptime-${endpointUuid}`,
     }))
 
-    const uptimes = item.map((uptime) => ({
+    const uptimeMetrics = item.map((uptime) => ({
       endpoint_uuid: endpointUuid,
       timestamp: uptime.timestamp,
       uptime: uptime.uptime,
     }))
 
-    return { uptimes, issues }
+    return { uptimeMetrics, issues }
   } catch (error) {
     return {
-      uptimes: [],
+      uptimeMetrics: [],
       issues: [
         {
           type: 'sync',
@@ -242,14 +245,14 @@ export const mergeEndpoints = internalMutation({
   },
 })
 
-export const mergeEndpointStats = internalMutation({
-  args: { endpointStats: v.array(v.object(OrEndpointMetrics.withoutSystemFields)) },
-  handler: async (ctx: MutationCtx, { endpointStats }) => {
+export const mergeEndpointMetrics = internalMutation({
+  args: { endpointMetrics: v.array(v.object(OrEndpointMetrics.withoutSystemFields)) },
+  handler: async (ctx: MutationCtx, { endpointMetrics }) => {
     const results = await Promise.all(
-      endpointStats.map(async (stat) => {
-        const mergeResult = await OrEndpointMetricsFn.merge(ctx, { endpointMetrics: stat })
+      endpointMetrics.map(async (metric) => {
+        const mergeResult = await OrEndpointMetricsFn.merge(ctx, { endpointMetrics: metric })
         return {
-          identifier: stat.endpoint_uuid,
+          identifier: metric.endpoint_uuid,
           action: mergeResult.action,
         }
       }),
@@ -258,11 +261,11 @@ export const mergeEndpointStats = internalMutation({
   },
 })
 
-export const mergeEndpointUptimes = internalMutation({
-  args: { endpointUptimes: v.array(v.object(OrEndpointUptimeMetrics.withoutSystemFields)) },
-  handler: async (ctx: MutationCtx, { endpointUptimes }) => {
+export const mergeEndpointUptimeMetrics = internalMutation({
+  args: { endpointUptimeMetrics: v.array(v.object(OrEndpointUptimeMetrics.withoutSystemFields)) },
+  handler: async (ctx: MutationCtx, { endpointUptimeMetrics }) => {
     const results = await OrEndpointUptimeMetricsFn.mergeTimeSeries(ctx, {
-      endpointUptimesSeries: endpointUptimes,
+      endpointUptimesSeries: endpointUptimeMetrics,
     })
     return results.map((result) => ({
       identifier: result.action,

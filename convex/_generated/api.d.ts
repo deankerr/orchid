@@ -13,24 +13,10 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
-import type * as app_token_stats_table from "../app_token_stats/table.js";
-import type * as app_views_schemas from "../app_views/schemas.js";
-import type * as app_views_table from "../app_views/table.js";
-import type * as author_views_schemas from "../author_views/schemas.js";
-import type * as author_views_table from "../author_views/table.js";
 import type * as crons from "../crons.js";
-import type * as endpoint_stats_table from "../endpoint_stats/table.js";
-import type * as endpoint_uptime_stats_schemas from "../endpoint_uptime_stats/schemas.js";
-import type * as endpoint_uptime_stats_table from "../endpoint_uptime_stats/table.js";
-import type * as endpoint_views_schemas from "../endpoint_views/schemas.js";
-import type * as endpoint_views_table from "../endpoint_views/table.js";
 import type * as files from "../files.js";
 import type * as frontend from "../frontend.js";
 import type * as http from "../http.js";
-import type * as model_token_stats_schemas from "../model_token_stats/schemas.js";
-import type * as model_token_stats_table from "../model_token_stats/table.js";
-import type * as model_views_schemas from "../model_views/schemas.js";
-import type * as model_views_table from "../model_views/table.js";
 import type * as openrouter_client from "../openrouter/client.js";
 import type * as openrouter_entities_apps from "../openrouter/entities/apps.js";
 import type * as openrouter_entities_authors from "../openrouter/entities/authors.js";
@@ -58,8 +44,6 @@ import type * as or_or_models from "../or/or_models.js";
 import type * as or_or_models_validators from "../or/or_models_validators.js";
 import type * as or_or_providers from "../or/or_providers.js";
 import type * as or_or_providers_validators from "../or/or_providers_validators.js";
-import type * as provider_views_schemas from "../provider_views/schemas.js";
-import type * as provider_views_table from "../provider_views/table.js";
 import type * as shared from "../shared.js";
 import type * as types from "../types.js";
 
@@ -72,24 +56,10 @@ import type * as types from "../types.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
-  "app_token_stats/table": typeof app_token_stats_table;
-  "app_views/schemas": typeof app_views_schemas;
-  "app_views/table": typeof app_views_table;
-  "author_views/schemas": typeof author_views_schemas;
-  "author_views/table": typeof author_views_table;
   crons: typeof crons;
-  "endpoint_stats/table": typeof endpoint_stats_table;
-  "endpoint_uptime_stats/schemas": typeof endpoint_uptime_stats_schemas;
-  "endpoint_uptime_stats/table": typeof endpoint_uptime_stats_table;
-  "endpoint_views/schemas": typeof endpoint_views_schemas;
-  "endpoint_views/table": typeof endpoint_views_table;
   files: typeof files;
   frontend: typeof frontend;
   http: typeof http;
-  "model_token_stats/schemas": typeof model_token_stats_schemas;
-  "model_token_stats/table": typeof model_token_stats_table;
-  "model_views/schemas": typeof model_views_schemas;
-  "model_views/table": typeof model_views_table;
   "openrouter/client": typeof openrouter_client;
   "openrouter/entities/apps": typeof openrouter_entities_apps;
   "openrouter/entities/authors": typeof openrouter_entities_authors;
@@ -117,8 +87,6 @@ declare const fullApi: ApiFromModules<{
   "or/or_models_validators": typeof or_or_models_validators;
   "or/or_providers": typeof or_or_providers;
   "or/or_providers_validators": typeof or_or_providers_validators;
-  "provider_views/schemas": typeof provider_views_schemas;
-  "provider_views/table": typeof provider_views_table;
   shared: typeof shared;
   types: typeof types;
 }>;

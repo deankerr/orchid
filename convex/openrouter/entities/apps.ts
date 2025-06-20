@@ -28,10 +28,10 @@ export async function syncApps(
   models: OrModelFields[],
 ): Promise<{
   apps: EntitySyncData<OrAppFields>
-  appTokens: EntitySyncData<OrAppTokenMetricsFields>
+  appTokenMetrics: EntitySyncData<OrAppTokenMetricsFields>
 }> {
   const appsMap = new Map<number, OrAppFields>()
-  const allAppTokens: OrAppTokenMetricsFields[] = []
+  const allAppTokenMetrics: OrAppTokenMetricsFields[] = []
   const allIssues: Issue[] = []
 
   console.log(`Processing apps for ${models.length} models...`)
@@ -40,7 +40,7 @@ export async function syncApps(
     // Process each model variant
     for (const variant of model.variants) {
       const appData = await syncModelApps(ctx, config, model, variant)
-      allAppTokens.push(...appData.appTokens)
+      allAppTokenMetrics.push(...appData.appTokenMetrics)
       allIssues.push(...appData.issues)
 
       // Dedupe apps by app_id
@@ -59,13 +59,13 @@ export async function syncApps(
     apps,
   })
 
-  // Merge app tokens in batches to avoid Convex limits and timeouts
-  const appTokenResults = await processBatchMutation({
+  // Merge app token metrics in batches to avoid Convex limits and timeouts
+  const appTokenMetricsResults = await processBatchMutation({
     ctx,
-    items: allAppTokens,
+    items: allAppTokenMetrics,
     batchSize: APP_TOKEN_BATCH_SIZE,
-    mutationRef: internal.openrouter.entities.apps.mergeAppTokens,
-    mutationArgsKey: 'appTokens',
+    mutationRef: internal.openrouter.entities.apps.mergeAppTokenMetrics,
+    mutationArgsKey: 'appTokenMetrics',
   })
 
   console.log('Apps complete')
@@ -75,10 +75,10 @@ export async function syncApps(
       issues: allIssues.filter((issue) => !issue.identifier.includes('token')),
       mergeResults: appResults,
     },
-    appTokens: {
-      items: allAppTokens,
+    appTokenMetrics: {
+      items: allAppTokenMetrics,
       issues: allIssues.filter((issue) => issue.identifier.includes('token')),
-      mergeResults: appTokenResults,
+      mergeResults: appTokenMetricsResults,
     },
   }
 }
@@ -89,7 +89,7 @@ async function syncModelApps(
   config: SyncConfig,
   model: OrModelFields,
   variant: string,
-): Promise<{ apps: OrAppFields[]; appTokens: OrAppTokenMetricsFields[]; issues: Issue[] }> {
+): Promise<{ apps: OrAppFields[]; appTokenMetrics: OrAppTokenMetricsFields[]; issues: Issue[] }> {
   const modelVariantId = `${model.slug}-${variant}`
 
   try {
@@ -124,14 +124,14 @@ async function syncModelApps(
     }))
 
     const apps: OrAppFields[] = []
-    const appTokens: OrAppTokenMetricsFields[] = []
+    const appTokenMetrics: OrAppTokenMetricsFields[] = []
 
     for (const item of items) {
       apps.push({
         ...item.app,
         snapshot_at: config.snapshotAt,
       })
-      appTokens.push({
+      appTokenMetrics.push({
         ...item.appTokens,
         model_permaslug: model.permaslug,
         model_slug: model.slug,
@@ -140,11 +140,11 @@ async function syncModelApps(
       })
     }
 
-    return { apps, appTokens, issues }
+    return { apps, appTokenMetrics, issues }
   } catch (error) {
     return {
       apps: [],
-      appTokens: [],
+      appTokenMetrics: [],
       issues: [
         {
           type: 'sync',
@@ -172,11 +172,11 @@ export const mergeApps = internalMutation({
   },
 })
 
-export const mergeAppTokens = internalMutation({
-  args: { appTokens: v.array(v.object(OrAppTokenMetrics.withoutSystemFields)) },
-  handler: async (ctx: MutationCtx, { appTokens }) => {
+export const mergeAppTokenMetrics = internalMutation({
+  args: { appTokenMetrics: v.array(v.object(OrAppTokenMetrics.withoutSystemFields)) },
+  handler: async (ctx: MutationCtx, { appTokenMetrics }) => {
     const results = await Promise.all(
-      appTokens.map(async (token) => {
+      appTokenMetrics.map(async (token) => {
         const mergeResult = await OrAppTokenMetricsFn.merge(ctx, { appTokenMetrics: token })
         return {
           identifier: `${token.app_id}`,
