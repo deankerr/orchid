@@ -149,19 +149,15 @@ export const mergeAuthors = internalMutation({
     authors: v.array(v.object(AuthorViews.withoutSystemFields)),
   },
   handler: async (ctx: MutationCtx, { authors }) => {
-    const results: MergeResult[] = []
-
-    for (const author of authors) {
-      const mergeResult = await AuthorViewsFn.merge(ctx, { author })
-
-      results.push({
-        identifier: author.slug,
-        action: mergeResult.action,
-        docId: mergeResult.docId,
-        changes: mergeResult.changes,
-      })
-    }
-
+    const results = await Promise.all(
+      authors.map(async (author) => {
+        const mergeResult = await AuthorViewsFn.merge(ctx, { author })
+        return {
+          identifier: author.slug,
+          action: mergeResult.action,
+        }
+      }),
+    )
     return results
   },
 })
@@ -176,7 +172,7 @@ export const mergeModelTokenStats = internalMutation({
   handler: async (ctx: MutationCtx, { modelTokenStats }) => {
     const results = await ModelTokenStatsFn.mergeTimeSeries(ctx, { modelTokenStats })
     return results.map((result) => ({
-      identifier: result.action,
+      identifier: result.docId,
       action: result.action,
     }))
   },

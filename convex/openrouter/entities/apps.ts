@@ -160,18 +160,15 @@ async function syncModelApps(
 export const mergeApps = internalMutation({
   args: { apps: v.array(v.object(AppViews.withoutSystemFields)) },
   handler: async (ctx: MutationCtx, { apps }) => {
-    const results: MergeResult[] = []
-
-    for (const app of apps) {
-      const mergeResult = await AppViewFn.merge(ctx, { app })
-      results.push({
-        identifier: app.app_id.toString(),
-        action: mergeResult.action,
-        docId: mergeResult.docId,
-        changes: mergeResult.changes,
-      })
-    }
-
+    const results = await Promise.all(
+      apps.map(async (app) => {
+        const mergeResult = await AppViewFn.merge(ctx, { app })
+        return {
+          identifier: app.app_id.toString(),
+          action: mergeResult.action,
+        }
+      }),
+    )
     return results
   },
 })
@@ -179,18 +176,15 @@ export const mergeApps = internalMutation({
 export const mergeAppTokens = internalMutation({
   args: { appTokens: v.array(v.object(AppTokenStats.withoutSystemFields)) },
   handler: async (ctx: MutationCtx, { appTokens }) => {
-    const results: MergeResult[] = []
-
-    for (const token of appTokens) {
-      const mergeResult = await AppTokenStatsFn.merge(ctx, { appTokenStats: token })
-      results.push({
-        identifier: `token-${token.app_id}`,
-        action: mergeResult.action,
-        docId: mergeResult.docId,
-        changes: mergeResult.changes,
-      })
-    }
-
+    const results = await Promise.all(
+      appTokens.map(async (token) => {
+        const mergeResult = await AppTokenStatsFn.merge(ctx, { appTokenStats: token })
+        return {
+          identifier: `${token.app_id}`,
+          action: mergeResult.action,
+        }
+      }),
+    )
     return results
   },
 })

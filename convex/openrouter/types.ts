@@ -1,5 +1,3 @@
-import type { IChange } from 'json-diff-ts'
-
 // Unified issue structure for validation and sync errors
 export interface Issue {
   type: 'transform' | 'schema' | 'sync'
@@ -18,8 +16,6 @@ export interface ValidationIssue {
 export interface MergeResult {
   identifier: string // slug, uuid, etc.
   action: 'insert' | 'replace' | 'stable'
-  docId?: string
-  changes?: IChange[]
 }
 
 // What entity sync functions return

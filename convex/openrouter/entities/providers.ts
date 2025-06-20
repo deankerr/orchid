@@ -1,13 +1,13 @@
-import z4 from 'zod/v4'
 import { v } from 'convex/values'
-import { internalMutation, type ActionCtx, type MutationCtx } from '../../_generated/server'
+import z4 from 'zod/v4'
 import { internal } from '../../_generated/api'
-import { orFetch } from '../client'
-import { ProviderViewFn, ProviderViews, type ProviderView } from '../../provider_views/table'
-import { ProviderStrictSchema, ProviderTransformSchema } from '../../provider_views/schemas'
-import { validateArray } from '../validation'
-import type { EntitySyncData, SyncConfig, MergeResult, Issue } from '../types'
+import { internalMutation, type ActionCtx, type MutationCtx } from '../../_generated/server'
 import { storeJSON } from '../../files'
+import { ProviderStrictSchema, ProviderTransformSchema } from '../../provider_views/schemas'
+import { ProviderViewFn, ProviderViews, type ProviderView } from '../../provider_views/table'
+import { orFetch } from '../client'
+import type { EntitySyncData, Issue, SyncConfig } from '../types'
+import { validateArray } from '../validation'
 
 /**
  * Sync all providers from OpenRouter
@@ -83,17 +83,15 @@ export const mergeProviders = internalMutation({
     providers: v.array(v.object(ProviderViews.withoutSystemFields)),
   },
   handler: async (ctx: MutationCtx, { providers }) => {
-    const results: MergeResult[] = []
-
-    for (const provider of providers) {
-      const mergeResult = await ProviderViewFn.merge(ctx, { provider })
-
-      results.push({
-        identifier: provider.slug,
-        action: mergeResult.action,
-      })
-    }
-
+    const results = await Promise.all(
+      providers.map(async (provider) => {
+        const mergeResult = await ProviderViewFn.merge(ctx, { provider })
+        return {
+          identifier: provider.slug,
+          action: mergeResult.action,
+        }
+      }),
+    )
     return results
   },
 })

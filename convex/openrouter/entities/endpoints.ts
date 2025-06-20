@@ -227,16 +227,15 @@ async function syncEndpointUptimes(
 export const mergeEndpoints = internalMutation({
   args: { endpoints: v.array(v.object(EndpointViews.withoutSystemFields)) },
   handler: async (ctx: MutationCtx, { endpoints }) => {
-    const results: MergeResult[] = []
-
-    for (const endpoint of endpoints) {
-      const mergeResult = await EndpointViewFn.merge(ctx, { endpoint })
-      results.push({
-        identifier: endpoint.uuid,
-        action: mergeResult.action,
-      })
-    }
-
+    const results = await Promise.all(
+      endpoints.map(async (endpoint) => {
+        const mergeResult = await EndpointViewFn.merge(ctx, { endpoint })
+        return {
+          identifier: endpoint.uuid,
+          action: mergeResult.action,
+        }
+      }),
+    )
     return results
   },
 })
@@ -244,16 +243,15 @@ export const mergeEndpoints = internalMutation({
 export const mergeEndpointStats = internalMutation({
   args: { endpointStats: v.array(v.object(EndpointStats.withoutSystemFields)) },
   handler: async (ctx: MutationCtx, { endpointStats }) => {
-    const results: MergeResult[] = []
-
-    for (const stat of endpointStats) {
-      const mergeResult = await EndpointStatsFn.merge(ctx, { endpointStats: stat })
-      results.push({
-        identifier: `stats-${stat.endpoint_uuid}`,
-        action: mergeResult.action,
-      })
-    }
-
+    const results = await Promise.all(
+      endpointStats.map(async (stat) => {
+        const mergeResult = await EndpointStatsFn.merge(ctx, { endpointStats: stat })
+        return {
+          identifier: stat.endpoint_uuid,
+          action: mergeResult.action,
+        }
+      }),
+    )
     return results
   },
 })
@@ -264,7 +262,6 @@ export const mergeEndpointUptimes = internalMutation({
     const results = await EndpointUptimeStatsFn.mergeTimeSeries(ctx, {
       endpointUptimesSeries: endpointUptimes,
     })
-
     return results.map((result) => ({
       identifier: result.action,
       action: result.action,

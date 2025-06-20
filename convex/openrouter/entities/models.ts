@@ -1,14 +1,14 @@
-import z4 from 'zod/v4'
 import { v } from 'convex/values'
-import { internalMutation, type ActionCtx, type MutationCtx } from '../../_generated/server'
-import { internal } from '../../_generated/api'
-import { orFetch } from '../client'
-import { ModelsViewFn, ModelViews, type ModelView } from '../../model_views/table'
-import { ModelStrictSchema, ModelTransformSchema } from '../../model_views/schemas'
-import { validateArray } from '../validation'
-import type { EntitySyncData, SyncConfig, MergeResult, Issue } from '../types'
-import { storeJSON } from '../../files'
 import * as R from 'remeda'
+import z4 from 'zod/v4'
+import { internal } from '../../_generated/api'
+import { internalMutation, type ActionCtx, type MutationCtx } from '../../_generated/server'
+import { storeJSON } from '../../files'
+import { ModelStrictSchema, ModelTransformSchema } from '../../model_views/schemas'
+import { ModelsViewFn, ModelViews, type ModelView } from '../../model_views/table'
+import { orFetch } from '../client'
+import type { EntitySyncData, Issue, SyncConfig } from '../types'
+import { validateArray } from '../validation'
 
 /**
  * Sync all models from OpenRouter
@@ -97,17 +97,15 @@ export const mergeModels = internalMutation({
     models: v.array(v.object(ModelViews.withoutSystemFields)),
   },
   handler: async (ctx: MutationCtx, { models }) => {
-    const results: MergeResult[] = []
-
-    for (const model of models) {
-      const mergeResult = await ModelsViewFn.merge(ctx, { model })
-
-      results.push({
-        identifier: model.slug,
-        action: mergeResult.action,
-      })
-    }
-
+    const results = await Promise.all(
+      models.map(async (model) => {
+        const mergeResult = await ModelsViewFn.merge(ctx, { model })
+        return {
+          identifier: model.slug,
+          action: mergeResult.action,
+        }
+      }),
+    )
     return results
   },
 })
