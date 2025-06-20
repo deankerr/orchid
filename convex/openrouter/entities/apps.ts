@@ -62,9 +62,9 @@ export async function syncApps(
     batchSize: APP_TOKEN_BATCH_SIZE,
     mutationRef: internal.openrouter.entities.apps.mergeAppTokens,
     mutationArgsKey: 'appTokens',
-    label: 'app token',
   })
 
+  console.log('Apps complete')
   return {
     apps: {
       items: apps,

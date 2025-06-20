@@ -64,15 +64,15 @@ export interface SyncReport {
   epoch: number
   startTime: number
   endTime: number
-  duration: string
   summary: {
-    totalEntities: number
-    totalItems: number
-    totalInserted: number
-    totalUpdated: number
-    totalStable: number
-    totalErrors: number
-    totalWarnings: number
+    duration: string
+    entities: string[]
+    items: number
+    inserted: number
+    updated: number
+    stable: number
+    errors: number
+    warnings: number
   }
   entities: {
     [key: string]: EntityReport

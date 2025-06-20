@@ -13,7 +13,10 @@ import { validateArray } from '../validation'
 /**
  * Sync all models from OpenRouter
  */
-export async function syncModels(ctx: ActionCtx, config: SyncConfig): Promise<EntitySyncData<ModelView>> {
+export async function syncModels(
+  ctx: ActionCtx,
+  config: SyncConfig,
+): Promise<{ models: EntitySyncData<ModelView> }> {
   try {
     // Fetch models data
     const response = await orFetch('/api/frontend/models', {
@@ -53,22 +56,27 @@ export async function syncModels(ctx: ActionCtx, config: SyncConfig): Promise<En
       models,
     })
 
+    console.log('Models complete')
     return {
-      items: models,
-      issues,
-      mergeResults,
+      models: {
+        items: models,
+        issues,
+        mergeResults,
+      },
     }
   } catch (error) {
     return {
-      items: [],
-      issues: [
-        {
-          type: 'sync',
-          identifier: 'models',
-          message: error instanceof Error ? error.message : 'Unknown error during models fetch',
-        },
-      ],
-      mergeResults: [],
+      models: {
+        items: [],
+        issues: [
+          {
+            type: 'sync',
+            identifier: 'models',
+            message: error instanceof Error ? error.message : 'Unknown error during models fetch',
+          },
+        ],
+        mergeResults: [],
+      },
     }
   }
 }

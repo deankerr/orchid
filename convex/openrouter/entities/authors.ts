@@ -54,9 +54,9 @@ export async function syncAuthors(
     batchSize: MODEL_TOKEN_STATS_BATCH_SIZE,
     mutationRef: internal.openrouter.entities.authors.mergeModelTokenStats,
     mutationArgsKey: 'modelTokenStats',
-    label: 'model token stats',
   })
 
+  console.log('Authors complete')
   return {
     authors: {
       items: allAuthors,

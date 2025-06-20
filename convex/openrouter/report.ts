@@ -51,9 +51,9 @@ export function createEntityReport<T>(syncData: EntitySyncData<T>): EntityReport
   }
 
   return {
+    summary,
     results,
     issues,
-    summary,
   }
 }
 
@@ -83,37 +83,37 @@ export class SnapshotReport {
     const duration = `${minutes}m ${seconds}s`
 
     // Calculate summary
-    let totalItems = 0
-    let totalInserted = 0
-    let totalUpdated = 0
-    let totalStable = 0
-    let totalErrors = 0
-    let totalWarnings = 0
+    let items = 0
+    let inserted = 0
+    let updated = 0
+    let stable = 0
+    let errors = 0
+    let warnings = 0
 
     for (const [, report] of this.entities) {
-      totalItems += report.summary.total
-      totalInserted += report.summary.inserted
-      totalUpdated += report.summary.updated
-      totalStable += report.summary.stable
-      totalErrors += report.summary.errors
-      totalWarnings += report.summary.warnings
+      items += report.summary.total
+      inserted += report.summary.inserted
+      updated += report.summary.updated
+      stable += report.summary.stable
+      errors += report.summary.errors
+      warnings += report.summary.warnings
     }
 
     const summary = {
-      totalEntities: this.entities.size,
-      totalItems,
-      totalInserted,
-      totalUpdated,
-      totalStable,
-      totalErrors,
-      totalWarnings,
+      duration,
+      entities: [...this.entities.keys()],
+      items,
+      inserted,
+      updated,
+      stable,
+      errors,
+      warnings,
     }
 
     const report: SyncReport = {
       epoch: this.epoch,
       startTime: this.startTime,
       endTime,
-      duration,
       summary,
       entities: Object.fromEntries(this.entities),
     }

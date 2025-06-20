@@ -15,7 +15,7 @@ import { validateArray } from '../validation'
 export async function syncProviders(
   ctx: ActionCtx,
   config: SyncConfig,
-): Promise<EntitySyncData<ProviderView>> {
+): Promise<{ providers: EntitySyncData<ProviderView> }> {
   try {
     // Fetch provider data
     const response = await orFetch('/api/frontend/all-providers', {
@@ -54,23 +54,28 @@ export async function syncProviders(
       providers,
     })
 
+    console.log('Providers complete')
     return {
-      items: providers,
-      issues,
-      mergeResults,
+      providers: {
+        items: providers,
+        issues,
+        mergeResults,
+      },
     }
   } catch (error) {
     // Return empty data with sync error
     return {
-      items: [],
-      issues: [
-        {
-          type: 'sync',
-          identifier: 'providers',
-          message: error instanceof Error ? error.message : 'Unknown error during provider fetch',
-        },
-      ],
-      mergeResults: [],
+      providers: {
+        items: [],
+        issues: [
+          {
+            type: 'sync',
+            identifier: 'providers',
+            message: error instanceof Error ? error.message : 'Unknown error during provider fetch',
+          },
+        ],
+        mergeResults: [],
+      },
     }
   }
 }

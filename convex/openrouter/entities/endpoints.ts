@@ -72,9 +72,9 @@ export async function syncEndpoints(
     batchSize: ENDPOINT_UPTIME_BATCH_SIZE,
     mutationRef: internal.openrouter.entities.endpoints.mergeEndpointUptimes,
     mutationArgsKey: 'endpointUptimes',
-    label: 'endpoint uptime',
   })
 
+  console.log('Endpoints complete')
   return {
     endpoints: {
       items: allEndpoints,
