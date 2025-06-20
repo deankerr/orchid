@@ -1,6 +1,6 @@
 import { v } from 'convex/values'
 import { internalAction, type ActionCtx } from '../_generated/server'
-import { getEpoch } from '../shared'
+import { getHourAlignedTimestamp } from '../shared'
 import { storeJSON } from '../files'
 import { SnapshotReport } from './report'
 import { syncProviders } from './entities/providers'
@@ -12,7 +12,7 @@ import type { SyncConfig } from './types'
 import { runParallelSync, flattenSyncResults } from './utils'
 
 async function snapshot(ctx: ActionCtx, config: SyncConfig) {
-  const collector = new SnapshotReport(config.epoch, config.snapshotStartTime)
+  const collector = new SnapshotReport(config.snapshotAt, config.startedAt)
 
   console.log('Starting OpenRouter sync...', config)
 
@@ -35,10 +35,10 @@ async function snapshot(ctx: ActionCtx, config: SyncConfig) {
 
     // Create final report with partial data
     const { report, summary } = collector.create()
-    const reportKey = `openrouter-sync-report-${config.snapshotStartTime}`
+    const reportKey = `openrouter-sync-report-${config.startedAt}`
     await storeJSON(ctx, {
       key: reportKey,
-      epoch: config.epoch,
+      snapshot_at: config.snapshotAt,
       data: report,
       compress: config.compress,
     })
@@ -68,10 +68,10 @@ async function snapshot(ctx: ActionCtx, config: SyncConfig) {
   const { report, summary } = collector.create()
 
   // Store report
-  const reportKey = `openrouter-sync-report-${config.snapshotStartTime}`
+  const reportKey = `openrouter-sync-report-${config.startedAt}`
   await storeJSON(ctx, {
     key: reportKey,
-    epoch: config.epoch,
+    snapshot_at: config.snapshotAt,
     data: report,
     compress: config.compress,
   })
@@ -87,14 +87,13 @@ async function snapshot(ctx: ActionCtx, config: SyncConfig) {
 
 export const startSnapshot = internalAction({
   args: {
-    epoch: v.optional(v.number()),
+    snapshotAt: v.optional(v.number()),
     compress: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const snapshotStartTime = Date.now()
     const config: SyncConfig = {
-      epoch: args.epoch || getEpoch(),
-      snapshotStartTime,
+      snapshotAt: args.snapshotAt || getHourAlignedTimestamp(),
+      startedAt: Date.now(),
       compress: args.compress ?? true,
     }
 

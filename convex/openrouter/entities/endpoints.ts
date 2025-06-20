@@ -2,16 +2,24 @@ import { v } from 'convex/values'
 import z4 from 'zod/v4'
 import { internal } from '../../_generated/api'
 import { internalMutation, type ActionCtx, type MutationCtx } from '../../_generated/server'
-import { EndpointStats, EndpointStatsFn, type EndpointStat } from '../../endpoint_stats/table'
+import {
+  OrEndpointMetrics,
+  OrEndpointMetricsFn,
+  type OrEndpointMetricsFields,
+} from '../../or/or_endpoint_metrics'
 import {
   EndpointUptimeStrictSchema,
   EndpointUptimeTransformSchema,
-} from '../../endpoint_uptime_stats/schemas'
-import { EndpointUptimeStats, EndpointUptimeStatsFn } from '../../endpoint_uptime_stats/table'
-import { EndpointStrictSchema, EndpointTransformSchema } from '../../endpoint_views/schemas'
-import { EndpointViewFn, EndpointViews, type EndpointView } from '../../endpoint_views/table'
+} from '../../or/or_endpoint_uptime_metrics_validators'
+import {
+  OrEndpointUptimeMetrics,
+  OrEndpointUptimeMetricsFn,
+  type OrEndpointUptimeMetricsFields,
+} from '../../or/or_endpoint_uptime_metrics'
+import { EndpointStrictSchema, EndpointTransformSchema } from '../../or/or_endpoints_validators'
+import { OrEndpointsFn, OrEndpoints, type OrEndpointFields } from '../../or/or_endpoints'
 import { storeJSON } from '../../files'
-import type { ModelView } from '../../model_views/table'
+import type { OrModelFields } from '../../or/or_models'
 import { orFetch } from '../client'
 import type { EntitySyncData, Issue, SyncConfig } from '../types'
 import { processBatchMutation } from '../utils'
@@ -26,15 +34,15 @@ const ENDPOINT_UPTIME_BATCH_SIZE = 5000
 export async function syncEndpoints(
   ctx: ActionCtx,
   config: SyncConfig,
-  models: ModelView[],
+  models: OrModelFields[],
 ): Promise<{
-  endpoints: EntitySyncData<EndpointView>
-  endpointStats: EntitySyncData<EndpointStat>
-  endpointUptimes: EntitySyncData<EndpointUptimeStats>
+  endpoints: EntitySyncData<OrEndpointFields>
+  endpointStats: EntitySyncData<OrEndpointMetricsFields>
+  endpointUptimes: EntitySyncData<OrEndpointUptimeMetricsFields>
 }> {
-  const allEndpoints: EndpointView[] = []
-  const allEndpointStats: EndpointStat[] = []
-  const allEndpointUptimes: EndpointUptimeStats[] = []
+  const allEndpoints: OrEndpointFields[] = []
+  const allEndpointStats: OrEndpointMetricsFields[] = []
+  const allEndpointUptimes: OrEndpointUptimeMetricsFields[] = []
   const allIssues: Issue[] = []
 
   console.log(`Processing endpoints for ${models.length} models...`)
@@ -100,9 +108,9 @@ export async function syncEndpoints(
 async function syncModelEndpoints(
   ctx: ActionCtx,
   config: SyncConfig,
-  model: ModelView,
+  model: OrModelFields,
   variant: string,
-): Promise<{ endpoints: EndpointView[]; endpointStats: EndpointStat[]; issues: Issue[] }> {
+): Promise<{ endpoints: OrEndpointFields[]; endpointStats: OrEndpointMetricsFields[]; issues: Issue[] }> {
   const modelVariantId = `${model.slug}-${variant}`
 
   try {
@@ -112,10 +120,10 @@ async function syncModelEndpoints(
     })
 
     // Store raw response
-    const snapshotKey = `openrouter-endpoints-${model.slug}-${variant}-snapshot-${config.snapshotStartTime}`
+    const snapshotKey = `openrouter-endpoints-${model.slug}-${variant}-snapshot-${config.startedAt}`
     await storeJSON(ctx, {
       key: snapshotKey,
-      epoch: config.epoch,
+      snapshot_at: config.snapshotAt,
       compress: config.compress,
       data: response,
     })
@@ -132,8 +140,8 @@ async function syncModelEndpoints(
       identifier: `${modelVariantId}:${issue.index}`,
     }))
 
-    const endpoints: EndpointView[] = []
-    const endpointStats: EndpointStat[] = []
+    const endpoints: OrEndpointFields[] = []
+    const endpointStats: OrEndpointMetricsFields[] = []
 
     for (const item of items) {
       endpoints.push({
@@ -145,15 +153,14 @@ async function syncModelEndpoints(
           image_input: model.input_modalities.includes('image'),
           file_input: model.input_modalities.includes('file'),
         },
-        origin_model_created_at: model.origin_created_at,
-        origin_model_updated_at: model.origin_updated_at,
-        epoch: config.epoch,
+        or_model_created_at: model.or_created_at,
+        snapshot_at: config.snapshotAt,
       })
 
       if (item.stats) {
         endpointStats.push({
           ...item.stats,
-          epoch: config.epoch,
+          snapshot_at: config.snapshotAt,
         })
       }
     }
@@ -178,7 +185,7 @@ async function syncEndpointUptimes(
   ctx: ActionCtx,
   config: SyncConfig,
   endpointUuid: string,
-): Promise<{ uptimes: EndpointUptimeStats[]; issues: Issue[] }> {
+): Promise<{ uptimes: OrEndpointUptimeMetricsFields[]; issues: Issue[] }> {
   try {
     const response = await orFetch('/api/frontend/stats/uptime-hourly', {
       params: { id: endpointUuid },
@@ -220,11 +227,11 @@ async function syncEndpointUptimes(
 
 // Merge mutations
 export const mergeEndpoints = internalMutation({
-  args: { endpoints: v.array(v.object(EndpointViews.withoutSystemFields)) },
+  args: { endpoints: v.array(v.object(OrEndpoints.withoutSystemFields)) },
   handler: async (ctx: MutationCtx, { endpoints }) => {
     const results = await Promise.all(
       endpoints.map(async (endpoint) => {
-        const mergeResult = await EndpointViewFn.merge(ctx, { endpoint })
+        const mergeResult = await OrEndpointsFn.merge(ctx, { endpoint })
         return {
           identifier: endpoint.uuid,
           action: mergeResult.action,
@@ -236,11 +243,11 @@ export const mergeEndpoints = internalMutation({
 })
 
 export const mergeEndpointStats = internalMutation({
-  args: { endpointStats: v.array(v.object(EndpointStats.withoutSystemFields)) },
+  args: { endpointStats: v.array(v.object(OrEndpointMetrics.withoutSystemFields)) },
   handler: async (ctx: MutationCtx, { endpointStats }) => {
     const results = await Promise.all(
       endpointStats.map(async (stat) => {
-        const mergeResult = await EndpointStatsFn.merge(ctx, { endpointStats: stat })
+        const mergeResult = await OrEndpointMetricsFn.merge(ctx, { endpointMetrics: stat })
         return {
           identifier: stat.endpoint_uuid,
           action: mergeResult.action,
@@ -252,9 +259,9 @@ export const mergeEndpointStats = internalMutation({
 })
 
 export const mergeEndpointUptimes = internalMutation({
-  args: { endpointUptimes: v.array(v.object(EndpointUptimeStats.withoutSystemFields)) },
+  args: { endpointUptimes: v.array(v.object(OrEndpointUptimeMetrics.withoutSystemFields)) },
   handler: async (ctx: MutationCtx, { endpointUptimes }) => {
-    const results = await EndpointUptimeStatsFn.mergeTimeSeries(ctx, {
+    const results = await OrEndpointUptimeMetricsFn.mergeTimeSeries(ctx, {
       endpointUptimesSeries: endpointUptimes,
     })
     return results.map((result) => ({

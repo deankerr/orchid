@@ -2,11 +2,18 @@ import { v } from 'convex/values'
 import z4 from 'zod/v4'
 import { internal } from '../../_generated/api'
 import { internalMutation, type ActionCtx, type MutationCtx } from '../../_generated/server'
-import { AuthorStrictSchema, AuthorTransformSchema } from '../../author_views/schemas'
-import { AuthorViews, AuthorViewsFn, type AuthorView } from '../../author_views/table'
+import { AuthorStrictSchema, AuthorTransformSchema } from '../../or/or_authors_validators'
+import { OrAuthors, OrAuthorsFn, type OrAuthorFields } from '../../or/or_authors'
 import { storeJSON } from '../../files'
-import { ModelTokenStatsStrictSchema, ModelTokenStatsTransformSchema } from '../../model_token_stats/schemas'
-import { ModelTokenStats, ModelTokenStatsFn } from '../../model_token_stats/table'
+import {
+  ModelTokenStatsStrictSchema,
+  ModelTokenStatsTransformSchema,
+} from '../../or/or_model_token_metrics_validators'
+import {
+  OrModelTokenMetrics,
+  OrModelTokenMetricsFn,
+  type OrModelTokenMetricsFields,
+} from '../../or/or_model_token_metrics'
 import { orFetch } from '../client'
 import type { EntitySyncData, Issue, SyncConfig } from '../types'
 import { processBatchMutation } from '../utils'
@@ -23,11 +30,11 @@ export async function syncAuthors(
   config: SyncConfig,
   authorSlugs: string[],
 ): Promise<{
-  authors: EntitySyncData<AuthorView>
-  modelTokenStats: EntitySyncData<ModelTokenStats>
+  authors: EntitySyncData<OrAuthorFields>
+  modelTokenStats: EntitySyncData<OrModelTokenMetricsFields>
 }> {
-  const allAuthors: AuthorView[] = []
-  const allModelTokenStats: ModelTokenStats[] = []
+  const allAuthors: OrAuthorFields[] = []
+  const allModelTokenStats: OrModelTokenMetricsFields[] = []
   const allIssues: Issue[] = []
 
   console.log(`Processing ${authorSlugs.length} authors...`)
@@ -76,7 +83,7 @@ async function syncAuthor(
   ctx: ActionCtx,
   config: SyncConfig,
   authorSlug: string,
-): Promise<{ author: AuthorView; modelTokenStats: ModelTokenStats[]; issues: Issue[] }> {
+): Promise<{ author: OrAuthorFields; modelTokenStats: OrModelTokenMetricsFields[]; issues: Issue[] }> {
   try {
     const response = await orFetch('/api/frontend/model-author', {
       params: { authorSlug, shouldIncludeStats: true, shouldIncludeVariants: false },
@@ -84,10 +91,10 @@ async function syncAuthor(
     })
 
     // Store raw response
-    const snapshotKey = `openrouter-author-${authorSlug}-snapshot-${config.snapshotStartTime}`
+    const snapshotKey = `openrouter-author-${authorSlug}-snapshot-${config.startedAt}`
     await storeJSON(ctx, {
       key: snapshotKey,
-      epoch: config.epoch,
+      snapshot_at: config.snapshotAt,
       compress: config.compress,
       data: response,
     })
@@ -117,13 +124,13 @@ async function syncAuthor(
     ]
 
     return {
-      author: { ...author, epoch: config.epoch },
+      author: { ...author, snapshot_at: config.snapshotAt },
       modelTokenStats,
       issues,
     }
   } catch (error) {
     return {
-      author: {} as AuthorView, // Will be skipped
+      author: {} as OrAuthorFields, // Will be skipped
       modelTokenStats: [],
       issues: [
         {
@@ -141,12 +148,12 @@ async function syncAuthor(
  */
 export const mergeAuthors = internalMutation({
   args: {
-    authors: v.array(v.object(AuthorViews.withoutSystemFields)),
+    authors: v.array(v.object(OrAuthors.withoutSystemFields)),
   },
   handler: async (ctx: MutationCtx, { authors }) => {
     const results = await Promise.all(
       authors.map(async (author) => {
-        const mergeResult = await AuthorViewsFn.merge(ctx, { author })
+        const mergeResult = await OrAuthorsFn.merge(ctx, { author })
         return {
           identifier: author.slug,
           action: mergeResult.action,
@@ -162,10 +169,10 @@ export const mergeAuthors = internalMutation({
  */
 export const mergeModelTokenStats = internalMutation({
   args: {
-    modelTokenStats: v.array(v.object(ModelTokenStats.withoutSystemFields)),
+    modelTokenMetrics: v.array(v.object(OrModelTokenMetrics.withoutSystemFields)),
   },
-  handler: async (ctx: MutationCtx, { modelTokenStats }) => {
-    const results = await ModelTokenStatsFn.mergeTimeSeries(ctx, { modelTokenStats })
+  handler: async (ctx: MutationCtx, { modelTokenMetrics }) => {
+    const results = await OrModelTokenMetricsFn.mergeTimeSeries(ctx, { modelTokenMetrics })
     return results.map((result) => ({
       identifier: result.docId,
       action: result.action,

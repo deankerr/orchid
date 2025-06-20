@@ -4,8 +4,8 @@ import z4 from 'zod/v4'
 import { internal } from '../../_generated/api'
 import { internalMutation, type ActionCtx, type MutationCtx } from '../../_generated/server'
 import { storeJSON } from '../../files'
-import { ModelStrictSchema, ModelTransformSchema } from '../../model_views/schemas'
-import { ModelsViewFn, ModelViews, type ModelView } from '../../model_views/table'
+import { ModelStrictSchema, ModelTransformSchema } from '../../or/or_models_validators'
+import { OrModelsFn, OrModels, type OrModelFields } from '../../or/or_models'
 import { orFetch } from '../client'
 import type { EntitySyncData, Issue, SyncConfig } from '../types'
 import { validateArray } from '../validation'
@@ -16,7 +16,7 @@ import { validateArray } from '../validation'
 export async function syncModels(
   ctx: ActionCtx,
   config: SyncConfig,
-): Promise<{ models: EntitySyncData<ModelView> }> {
+): Promise<{ models: EntitySyncData<OrModelFields> }> {
   try {
     // Fetch models data
     const response = await orFetch('/api/frontend/models', {
@@ -24,10 +24,10 @@ export async function syncModels(
     })
 
     // Store raw response
-    const snapshotKey = `openrouter-models-snapshot-${config.snapshotStartTime}`
+    const snapshotKey = `openrouter-models-snapshot-${config.startedAt}`
     await storeJSON(ctx, {
       key: snapshotKey,
-      epoch: config.epoch,
+      snapshot_at: config.snapshotAt,
       compress: config.compress,
       data: response,
     })
@@ -48,7 +48,7 @@ export async function syncModels(
     // Consolidate variants into models (following original logic)
     const models = consolidateVariants(modelVariants).map((model) => ({
       ...model,
-      epoch: config.epoch,
+      snapshot_at: config.snapshotAt,
     }))
 
     // Merge models into database
@@ -102,12 +102,12 @@ function consolidateVariants(models: z4.infer<typeof ModelTransformSchema>[]) {
  */
 export const mergeModels = internalMutation({
   args: {
-    models: v.array(v.object(ModelViews.withoutSystemFields)),
+    models: v.array(v.object(OrModels.withoutSystemFields)),
   },
   handler: async (ctx: MutationCtx, { models }) => {
     const results = await Promise.all(
       models.map(async (model) => {
-        const mergeResult = await ModelsViewFn.merge(ctx, { model })
+        const mergeResult = await OrModelsFn.merge(ctx, { model })
         return {
           identifier: model.slug,
           action: mergeResult.action,

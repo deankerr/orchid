@@ -27,8 +27,8 @@ export interface EntitySyncData<T> {
 
 // Configuration for sync operations
 export interface SyncConfig {
-  epoch: number
-  snapshotStartTime: number // Used as secondary ID for file storage
+  snapshotAt: number
+  startedAt: number // Used as secondary ID for file storage
   compress: boolean // Whether to compress snapshots (default: true)
 }
 
@@ -61,9 +61,9 @@ export interface EntityReport {
 }
 
 export interface SyncReport {
-  epoch: number
-  startTime: number
-  endTime: number
+  snapshotAt: number
+  startedAt: number
+  endedAt: number
   summary: {
     duration: string
     entities: string[]

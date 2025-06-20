@@ -3,8 +3,8 @@ import z4 from 'zod/v4'
 import { internal } from '../../_generated/api'
 import { internalMutation, type ActionCtx, type MutationCtx } from '../../_generated/server'
 import { storeJSON } from '../../files'
-import { ProviderStrictSchema, ProviderTransformSchema } from '../../provider_views/schemas'
-import { ProviderViewFn, ProviderViews, type ProviderView } from '../../provider_views/table'
+import { ProviderStrictSchema, ProviderTransformSchema } from '../../or/or_providers_validators'
+import { OrProvidersFn, OrProviders, type OrProviderFields } from '../../or/or_providers'
 import { orFetch } from '../client'
 import type { EntitySyncData, Issue, SyncConfig } from '../types'
 import { validateArray } from '../validation'
@@ -15,17 +15,17 @@ import { validateArray } from '../validation'
 export async function syncProviders(
   ctx: ActionCtx,
   config: SyncConfig,
-): Promise<{ providers: EntitySyncData<ProviderView> }> {
+): Promise<{ providers: EntitySyncData<OrProviderFields> }> {
   try {
     // Fetch provider data
     const response = await orFetch('/api/frontend/all-providers', {
       schema: z4.object({ data: z4.unknown().array() }),
     })
 
-    const snapshotKey = `openrouter-providers-snapshot-${config.snapshotStartTime}`
+    const snapshotKey = `openrouter-providers-snapshot-${config.startedAt}`
     await storeJSON(ctx, {
       key: snapshotKey,
-      epoch: config.epoch,
+      snapshot_at: config.snapshotAt,
       compress: config.compress,
       data: response,
     })
@@ -43,10 +43,10 @@ export async function syncProviders(
       identifier: `providers:${issue.index}`,
     }))
 
-    // Add epoch to each provider
+    // Add snapshot_at to each provider
     const providers = providerData.map((provider) => ({
       ...provider,
-      epoch: config.epoch,
+      snapshot_at: config.snapshotAt,
     }))
 
     // Merge providers into database
@@ -85,12 +85,12 @@ export async function syncProviders(
  */
 export const mergeProviders = internalMutation({
   args: {
-    providers: v.array(v.object(ProviderViews.withoutSystemFields)),
+    providers: v.array(v.object(OrProviders.withoutSystemFields)),
   },
   handler: async (ctx: MutationCtx, { providers }) => {
     const results = await Promise.all(
       providers.map(async (provider) => {
-        const mergeResult = await ProviderViewFn.merge(ctx, { provider })
+        const mergeResult = await OrProvidersFn.merge(ctx, { provider })
         return {
           identifier: provider.slug,
           action: mergeResult.action,

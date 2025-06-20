@@ -61,13 +61,13 @@ export function createEntityReport<T>(syncData: EntitySyncData<T>): EntityReport
  * Collector for building sync reports
  */
 export class SnapshotReport {
-  private epoch: number
-  private startTime: number
+  private snapshotAt: number
+  private startedAt: number
   private entities: Map<string, EntityReport> = new Map()
 
-  constructor(epoch: number, startTime: number) {
-    this.epoch = epoch
-    this.startTime = startTime
+  constructor(snapshotAt: number, startedAt: number) {
+    this.snapshotAt = snapshotAt
+    this.startedAt = startedAt
   }
 
   add<T>(entity: string, syncData: EntitySyncData<T>) {
@@ -77,7 +77,7 @@ export class SnapshotReport {
 
   create(): { report: SyncReport; summary: SyncReport['summary'] } {
     const endTime = Date.now()
-    const totalSeconds = Math.round((endTime - this.startTime) / 1000)
+    const totalSeconds = Math.round((endTime - this.startedAt) / 1000)
     const minutes = Math.floor(totalSeconds / 60)
     const seconds = totalSeconds % 60
     const duration = `${minutes}m ${seconds}s`
@@ -111,9 +111,9 @@ export class SnapshotReport {
     }
 
     const report: SyncReport = {
-      epoch: this.epoch,
-      startTime: this.startTime,
-      endTime,
+      snapshotAt: this.snapshotAt,
+      startedAt: this.startedAt,
+      endedAt: endTime,
       summary,
       entities: Object.fromEntries(this.entities),
     }

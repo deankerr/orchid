@@ -10,8 +10,7 @@ export const Files = Table('files_v2', {
   // Unique identifier for the file
   key: v.string(),
 
-  // Epoch timestamp when file was stored
-  epoch: v.number(),
+  snapshot_at: v.number(),
 
   // Storage reference
   storage_id: v.id('_storage'),
@@ -35,12 +34,12 @@ export async function store(
   ctx: ActionCtx,
   args: {
     key: string
-    epoch: number
+    snapshot_at: number
     data: Uint8Array
     metadata?: Record<string, unknown>
   },
 ): Promise<Id<'files_v2'>> {
-  const { key, epoch, data, metadata } = args
+  const { key, snapshot_at, data, metadata } = args
 
   // Create blob and store
   const blob = new Blob([data])
@@ -50,7 +49,7 @@ export async function store(
   return await ctx.runMutation(internal.files.insertFileRecord, {
     storage_id,
     key,
-    epoch,
+    snapshot_at,
     size_original: data.length,
     metadata,
   })
@@ -83,7 +82,7 @@ export const insertFileRecord = internalMutation({
   args: {
     storage_id: v.id('_storage'),
     key: v.string(),
-    epoch: v.number(),
+    snapshot_at: v.number(),
     size_original: v.number(),
     compression: v.optional(v.string()),
     metadata: v.optional(v.any()),
@@ -95,7 +94,7 @@ export const insertFileRecord = internalMutation({
 
     return await ctx.db.insert('files_v2', {
       key: args.key,
-      epoch: args.epoch,
+      snapshot_at: args.snapshot_at,
       storage_id: args.storage_id,
       size_original: args.size_original,
       size_stored: storageMetadata.size,
@@ -155,13 +154,13 @@ export async function storeJSON(
   ctx: ActionCtx,
   args: {
     key: string
-    epoch: number
+    snapshot_at: number
     data: unknown
     compress?: boolean // For snapshot system
     metadata?: Record<string, unknown>
   },
 ): Promise<Id<'files_v2'>> {
-  const { key, epoch, data, compress = false, metadata } = args
+  const { key, snapshot_at, data, compress = false, metadata } = args
 
   // Convert to JSON bytes
   const jsonString = JSON.stringify(data)
@@ -184,7 +183,7 @@ export async function storeJSON(
   return await ctx.runMutation(internal.files.insertFileRecord, {
     storage_id,
     key,
-    epoch,
+    snapshot_at,
     size_original: originalSize,
     compression,
     metadata,

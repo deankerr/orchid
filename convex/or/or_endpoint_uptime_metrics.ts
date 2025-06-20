@@ -1,24 +1,24 @@
 import { Table } from 'convex-helpers/server'
-import type { WithoutSystemFields } from 'convex/server'
-import { v, type Infer } from 'convex/values'
+import { v, type AsObjectValidator, type Infer } from 'convex/values'
 import { diff } from 'json-diff-ts'
-import type { MutationCtx, QueryCtx } from '../_generated/server'
+import { type MutationCtx, type QueryCtx } from '../_generated/server'
 import type { MergeResult } from '../types'
 
-export const EndpointUptimeStats = Table('endpoint_uptime_stats', {
+export const OrEndpointUptimeMetrics = Table('or_endpoint_uptime_metrics', {
   endpoint_uuid: v.string(),
   uptime: v.optional(v.number()),
 
   timestamp: v.number(),
 })
 
-export type EndpointUptimeStatsDoc = Infer<typeof EndpointUptimeStats.doc>
-export type EndpointUptimeStats = WithoutSystemFields<EndpointUptimeStatsDoc>
+export type OrEndpointUptimeMetricsFields = Infer<
+  AsObjectValidator<typeof OrEndpointUptimeMetrics.withoutSystemFields>
+>
 
-export const EndpointUptimeStatsFn = {
+export const OrEndpointUptimeMetricsFn = {
   get: async (ctx: QueryCtx, { endpoint_uuid, timestamp }: { endpoint_uuid: string; timestamp: number }) => {
     return await ctx.db
-      .query(EndpointUptimeStats.name)
+      .query(OrEndpointUptimeMetrics.name)
       .withIndex('by_endpoint_uuid_timestamp', (q) =>
         q.eq('endpoint_uuid', endpoint_uuid).eq('timestamp', timestamp),
       )
@@ -33,17 +33,17 @@ export const EndpointUptimeStatsFn = {
 
   merge: async (
     ctx: MutationCtx,
-    { endpointUptimeStats }: { endpointUptimeStats: EndpointUptimeStats },
+    { endpointUptimeMetrics }: { endpointUptimeMetrics: OrEndpointUptimeMetricsFields },
   ): Promise<MergeResult> => {
-    const existing = await EndpointUptimeStatsFn.get(ctx, {
-      endpoint_uuid: endpointUptimeStats.endpoint_uuid,
-      timestamp: endpointUptimeStats.timestamp,
+    const existing = await OrEndpointUptimeMetricsFn.get(ctx, {
+      endpoint_uuid: endpointUptimeMetrics.endpoint_uuid,
+      timestamp: endpointUptimeMetrics.timestamp,
     })
-    const changes = EndpointUptimeStatsFn.diff(existing || {}, endpointUptimeStats)
+    const changes = OrEndpointUptimeMetricsFn.diff(existing || {}, endpointUptimeMetrics)
 
     // new uptime stats
     if (!existing) {
-      const docId = await ctx.db.insert(EndpointUptimeStats.name, endpointUptimeStats)
+      const docId = await ctx.db.insert(OrEndpointUptimeMetrics.name, endpointUptimeMetrics)
       return {
         action: 'insert' as const,
         docId,
@@ -60,7 +60,7 @@ export const EndpointUptimeStatsFn = {
       }
     }
 
-    await ctx.db.replace(existing._id, endpointUptimeStats)
+    await ctx.db.replace(existing._id, endpointUptimeMetrics)
     return {
       action: 'replace' as const,
       docId: existing._id,
@@ -70,7 +70,7 @@ export const EndpointUptimeStatsFn = {
 
   mergeTimeSeries: async (
     ctx: MutationCtx,
-    { endpointUptimesSeries }: { endpointUptimesSeries: EndpointUptimeStats[] },
+    { endpointUptimesSeries }: { endpointUptimesSeries: OrEndpointUptimeMetricsFields[] },
   ) => {
     const uptimesByUuid = [...Map.groupBy(endpointUptimesSeries, (u) => u.endpoint_uuid).values()]
 
@@ -81,8 +81,8 @@ export const EndpointUptimeStatsFn = {
 
         const results: MergeResult[] = []
         for (const uptime of uptimes) {
-          const result = await EndpointUptimeStatsFn.merge(ctx, {
-            endpointUptimeStats: uptime,
+          const result = await OrEndpointUptimeMetricsFn.merge(ctx, {
+            endpointUptimeMetrics: uptime,
           })
           results.push(result)
 

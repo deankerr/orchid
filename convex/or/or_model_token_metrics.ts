@@ -1,11 +1,10 @@
 import { Table } from 'convex-helpers/server'
-import type { WithoutSystemFields } from 'convex/server'
-import { v, type Infer } from 'convex/values'
+import { v, type AsObjectValidator, type Infer } from 'convex/values'
 import { diff } from 'json-diff-ts'
-import type { MutationCtx, QueryCtx } from '../_generated/server'
+import { type MutationCtx, type QueryCtx } from '../_generated/server'
 import type { MergeResult } from '../types'
 
-export const ModelTokenStats = Table('model_token_stats', {
+export const OrModelTokenMetrics = Table('or_model_token_metrics', {
   model_slug: v.string(),
   model_permaslug: v.string(),
   model_variant: v.string(),
@@ -18,10 +17,11 @@ export const ModelTokenStats = Table('model_token_stats', {
   timestamp: v.number(),
 })
 
-export type ModelTokenStatsDoc = Infer<typeof ModelTokenStats.doc>
-export type ModelTokenStats = WithoutSystemFields<ModelTokenStatsDoc>
+export type OrModelTokenMetricsFields = Infer<
+  AsObjectValidator<typeof OrModelTokenMetrics.withoutSystemFields>
+>
 
-export const ModelTokenStatsFn = {
+export const OrModelTokenMetricsFn = {
   get: async (
     ctx: QueryCtx,
     {
@@ -31,7 +31,7 @@ export const ModelTokenStatsFn = {
     }: { model_permaslug: string; model_variant: string; timestamp: number },
   ) => {
     return await ctx.db
-      .query(ModelTokenStats.name)
+      .query(OrModelTokenMetrics.name)
       .withIndex('by_model_permaslug_model_variant_timestamp', (q) =>
         q
           .eq('model_permaslug', model_permaslug)
@@ -49,18 +49,18 @@ export const ModelTokenStatsFn = {
 
   merge: async (
     ctx: MutationCtx,
-    { modelTokenStats }: { modelTokenStats: ModelTokenStats },
+    { modelTokenMetrics }: { modelTokenMetrics: OrModelTokenMetricsFields },
   ): Promise<MergeResult> => {
-    const existing = await ModelTokenStatsFn.get(ctx, {
-      model_permaslug: modelTokenStats.model_permaslug,
-      model_variant: modelTokenStats.model_variant,
-      timestamp: modelTokenStats.timestamp,
+    const existing = await OrModelTokenMetricsFn.get(ctx, {
+      model_permaslug: modelTokenMetrics.model_permaslug,
+      model_variant: modelTokenMetrics.model_variant,
+      timestamp: modelTokenMetrics.timestamp,
     })
-    const changes = ModelTokenStatsFn.diff(existing || {}, modelTokenStats)
+    const changes = OrModelTokenMetricsFn.diff(existing || {}, modelTokenMetrics)
 
     // new token stats
     if (!existing) {
-      const docId = await ctx.db.insert(ModelTokenStats.name, modelTokenStats)
+      const docId = await ctx.db.insert(OrModelTokenMetrics.name, modelTokenMetrics)
       return {
         action: 'insert' as const,
         docId,
@@ -77,7 +77,7 @@ export const ModelTokenStatsFn = {
       }
     }
 
-    await ctx.db.replace(existing._id, modelTokenStats)
+    await ctx.db.replace(existing._id, modelTokenMetrics)
     return {
       action: 'replace' as const,
       docId: existing._id,
@@ -85,21 +85,24 @@ export const ModelTokenStatsFn = {
     }
   },
 
-  mergeTimeSeries: async (ctx: MutationCtx, { modelTokenStats }: { modelTokenStats: ModelTokenStats[] }) => {
+  mergeTimeSeries: async (
+    ctx: MutationCtx,
+    { modelTokenMetrics }: { modelTokenMetrics: OrModelTokenMetricsFields[] },
+  ) => {
     // stats come mixed up from the API, group them here
     const byPermaslugVariant = Map.groupBy(
-      modelTokenStats,
+      modelTokenMetrics,
       (stat) => stat.model_permaslug + ' ' + stat.model_variant,
     ).values()
 
     const resultsByPermaslugVariant = await Promise.all(
-      byPermaslugVariant.map(async (modelTokenStats) => {
+      byPermaslugVariant.map(async (modelTokenMetrics) => {
         // latest -> earliest
-        modelTokenStats.sort((a, b) => a.timestamp - b.timestamp)
+        modelTokenMetrics.sort((a, b) => a.timestamp - b.timestamp)
 
         const results: MergeResult[] = []
-        for (const stat of modelTokenStats) {
-          const result = await ModelTokenStatsFn.merge(ctx, { modelTokenStats: stat })
+        for (const stat of modelTokenMetrics) {
+          const result = await OrModelTokenMetricsFn.merge(ctx, { modelTokenMetrics: stat })
           results.push(result)
 
           if (result.action === 'stable') break // we already have this + all earlier entries

@@ -2,11 +2,15 @@ import { v } from 'convex/values'
 import z4 from 'zod/v4'
 import { internal } from '../../_generated/api'
 import { internalMutation, type ActionCtx, type MutationCtx } from '../../_generated/server'
-import { AppTokenStats, AppTokenStatsFn } from '../../app_token_stats/table'
-import { AppStrictSchema, AppTransformSchema } from '../../app_views/schemas'
-import { AppViewFn, AppViews, type AppView } from '../../app_views/table'
+import {
+  OrAppTokenMetrics,
+  OrAppTokenMetricsFn,
+  type OrAppTokenMetricsFields,
+} from '../../or/or_app_token_metrics'
+import { AppStrictSchema, AppTransformSchema } from '../../or/or_apps_validators'
+import { OrAppsFn, OrApps, type OrAppFields } from '../../or/or_apps'
 import { storeJSON } from '../../files'
-import type { ModelView } from '../../model_views/table'
+import type { OrModelFields } from '../../or/or_models'
 import { orFetch } from '../client'
 import type { EntitySyncData, Issue, SyncConfig } from '../types'
 import { processBatchMutation } from '../utils'
@@ -21,13 +25,13 @@ const APP_TOKEN_BATCH_SIZE = 2000
 export async function syncApps(
   ctx: ActionCtx,
   config: SyncConfig,
-  models: ModelView[],
+  models: OrModelFields[],
 ): Promise<{
-  apps: EntitySyncData<AppView>
-  appTokens: EntitySyncData<AppTokenStats>
+  apps: EntitySyncData<OrAppFields>
+  appTokens: EntitySyncData<OrAppTokenMetricsFields>
 }> {
-  const appsMap = new Map<number, AppView>()
-  const allAppTokens: AppTokenStats[] = []
+  const appsMap = new Map<number, OrAppFields>()
+  const allAppTokens: OrAppTokenMetricsFields[] = []
   const allIssues: Issue[] = []
 
   console.log(`Processing apps for ${models.length} models...`)
@@ -83,9 +87,9 @@ export async function syncApps(
 async function syncModelApps(
   ctx: ActionCtx,
   config: SyncConfig,
-  model: ModelView,
+  model: OrModelFields,
   variant: string,
-): Promise<{ apps: AppView[]; appTokens: AppTokenStats[]; issues: Issue[] }> {
+): Promise<{ apps: OrAppFields[]; appTokens: OrAppTokenMetricsFields[]; issues: Issue[] }> {
   const modelVariantId = `${model.slug}-${variant}`
 
   try {
@@ -99,10 +103,10 @@ async function syncModelApps(
     })
 
     // Store raw response
-    const snapshotKey = `openrouter-apps-${model.slug}-${variant}-snapshot-${config.snapshotStartTime}`
+    const snapshotKey = `openrouter-apps-${model.slug}-${variant}-snapshot-${config.startedAt}`
     await storeJSON(ctx, {
       key: snapshotKey,
-      epoch: config.epoch,
+      snapshot_at: config.snapshotAt,
       compress: config.compress,
       data: response,
     })
@@ -119,20 +123,20 @@ async function syncModelApps(
       identifier: `${modelVariantId}:${issue.index}`,
     }))
 
-    const apps: AppView[] = []
-    const appTokens: AppTokenStats[] = []
+    const apps: OrAppFields[] = []
+    const appTokens: OrAppTokenMetricsFields[] = []
 
     for (const item of items) {
       apps.push({
         ...item.app,
-        epoch: config.epoch,
+        snapshot_at: config.snapshotAt,
       })
       appTokens.push({
         ...item.appTokens,
         model_permaslug: model.permaslug,
         model_slug: model.slug,
         model_variant: variant,
-        epoch: config.epoch,
+        snapshot_at: config.snapshotAt,
       })
     }
 
@@ -153,11 +157,11 @@ async function syncModelApps(
 }
 
 export const mergeApps = internalMutation({
-  args: { apps: v.array(v.object(AppViews.withoutSystemFields)) },
+  args: { apps: v.array(v.object(OrApps.withoutSystemFields)) },
   handler: async (ctx: MutationCtx, { apps }) => {
     const results = await Promise.all(
       apps.map(async (app) => {
-        const mergeResult = await AppViewFn.merge(ctx, { app })
+        const mergeResult = await OrAppsFn.merge(ctx, { app })
         return {
           identifier: app.app_id.toString(),
           action: mergeResult.action,
@@ -169,11 +173,11 @@ export const mergeApps = internalMutation({
 })
 
 export const mergeAppTokens = internalMutation({
-  args: { appTokens: v.array(v.object(AppTokenStats.withoutSystemFields)) },
+  args: { appTokens: v.array(v.object(OrAppTokenMetrics.withoutSystemFields)) },
   handler: async (ctx: MutationCtx, { appTokens }) => {
     const results = await Promise.all(
       appTokens.map(async (token) => {
-        const mergeResult = await AppTokenStatsFn.merge(ctx, { appTokenStats: token })
+        const mergeResult = await OrAppTokenMetricsFn.merge(ctx, { appTokenMetrics: token })
         return {
           identifier: `${token.app_id}`,
           action: mergeResult.action,
