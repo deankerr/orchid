@@ -29,12 +29,12 @@ The AI model ecosystem is rapidly evolving, and external APIs will change withou
 
 ### 3. Temporal Awareness
 
-Everything in ORCHID exists within a temporal context defined by snapshot epochs:
+Everything in ORCHID exists within a temporal context defined by snapshots:
 
-- **Data has validity periods**: Each piece of information is valid from one epoch until superseded
-- **Missing data is meaningful**: Absence of data in an epoch indicates unavailability
+- **Data has validity periods**: Each piece of information is valid from one snapshot until superseded
+- **Missing data is meaningful**: Absence of data in an snapshot indicates unavailability
 - **Entities may disappear and return**: Models/endpoints can leave OpenRouter and come back
-- **Historical reconstruction**: Any point-in-time state can be rebuilt from epoch data
+- **Historical reconstruction**: Any point-in-time state can be rebuilt from snapshot data
 
 ### 4. Graceful Degradation
 
@@ -59,9 +59,6 @@ Data structures are optimized for read performance and query convenience:
 All user-facing data comes from "projections" of the underlying snapshot data:
 
 - **Multiple views of the same data**: Different projections serve different query patterns
-- **Incremental updates**: Process only what has changed between epochs
-- **Epoch-aware queries**: Filter by validity periods to show current vs. historical data
-- **Missing epoch handling**: Gracefully handle gaps in temporal data
 
 ### 7. Adaptive Implementation
 
@@ -76,8 +73,6 @@ Plans and implementations evolve based on real-world data and experience:
 
 ### Schema Design
 
-- Use optional fields liberally to handle missing data
-- Include `epoch` timestamps on all processed data
 - Design for flat, denormalized query structures
 - Validate strictly but continue processing on failures
 
@@ -97,9 +92,7 @@ Plans and implementations evolve based on real-world data and experience:
 
 ### API Design
 
-- Return meaningful results even with incomplete data
 - Include metadata about data freshness and completeness
-- Design for pagination and incremental loading
 - Provide clear indicators when data is stale or missing
 
 ## Long-Term Perspective

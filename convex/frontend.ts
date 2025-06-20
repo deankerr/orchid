@@ -1,12 +1,12 @@
 import { query } from './_generated/server'
-import { EndpointViews } from './endpoint_views/table'
-import { ModelViews } from './model_views/table'
+import { OrEndpoints } from './or/or_endpoints'
+import { OrModels } from './or/or_models'
 
 export const getAll = query({
   args: {},
   handler: async (ctx) => {
-    const models = await ctx.db.query(ModelViews.name).collect()
-    const endpoints = await ctx.db.query(EndpointViews.name).collect()
+    const models = await ctx.db.query(OrModels.name).collect()
+    const endpoints = await ctx.db.query(OrEndpoints.name).collect()
 
     return models.map((model) => ({
       ...model,
@@ -15,16 +15,16 @@ export const getAll = query({
   },
 })
 
-export const getLatestProcessedEpoch = query({
+export const getLatestProcessedSnapshotAt = query({
   args: {},
   handler: async (ctx) => {
     // Find the latest epoch from processed models
-    const latestModel = await ctx.db.query(ModelViews.name).order('desc').first()
+    const latestModel = await ctx.db.query(OrModels.name).order('desc').first()
 
     if (!latestModel) {
       return null
     }
 
-    return latestModel.epoch
+    return latestModel.snapshot_at
   },
 })
