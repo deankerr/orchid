@@ -6,7 +6,7 @@ import { orFetch } from '../client'
 import { ProviderViewFn, ProviderViews, type ProviderView } from '../../provider_views/table'
 import { ProviderStrictSchema, ProviderTransformSchema } from '../../provider_views/schemas'
 import { validateArray } from '../validation'
-import type { EntitySyncData, SyncConfig, MergeResult } from '../types'
+import type { EntitySyncData, SyncConfig, MergeResult, Issue } from '../types'
 import { storeJSON } from '../../files'
 
 /**
@@ -22,7 +22,6 @@ export async function syncProviders(
       schema: z4.object({ data: z4.unknown().array() }),
     })
 
-    // Store raw response (with compression control)
     const snapshotKey = `openrouter-providers-snapshot-${config.snapshotStartTime}`
     await storeJSON(ctx, {
       key: snapshotKey,
@@ -38,6 +37,12 @@ export async function syncProviders(
       ProviderStrictSchema,
     )
 
+    // Convert validation issues to Issue format
+    const issues: Issue[] = validationIssues.map((issue) => ({
+      ...issue,
+      identifier: `providers:${issue.index}`,
+    }))
+
     // Add epoch to each provider
     const providers = providerData.map((provider) => ({
       ...provider,
@@ -51,16 +56,21 @@ export async function syncProviders(
 
     return {
       items: providers,
-      validationIssues,
+      issues,
       mergeResults,
     }
   } catch (error) {
-    // Return empty data with fetch error
+    // Return empty data with sync error
     return {
       items: [],
-      validationIssues: [],
+      issues: [
+        {
+          type: 'sync',
+          identifier: 'providers',
+          message: error instanceof Error ? error.message : 'Unknown error during provider fetch',
+        },
+      ],
       mergeResults: [],
-      fetchError: error instanceof Error ? error.message : 'Unknown error during provider fetch',
     }
   }
 }
@@ -76,22 +86,12 @@ export const mergeProviders = internalMutation({
     const results: MergeResult[] = []
 
     for (const provider of providers) {
-      try {
-        const mergeResult = await ProviderViewFn.merge(ctx, { provider })
+      const mergeResult = await ProviderViewFn.merge(ctx, { provider })
 
-        results.push({
-          identifier: provider.slug,
-          action: mergeResult.action,
-          docId: mergeResult.docId,
-          changes: mergeResult.changes,
-        })
-      } catch (error) {
-        results.push({
-          identifier: provider.slug,
-          action: 'error',
-          error: error instanceof Error ? error.message : 'Unknown merge error',
-        })
-      }
+      results.push({
+        identifier: provider.slug,
+        action: mergeResult.action,
+      })
     }
 
     return results

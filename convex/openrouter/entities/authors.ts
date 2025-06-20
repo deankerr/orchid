@@ -8,7 +8,7 @@ import { AuthorStrictSchema, AuthorTransformSchema } from '../../author_views/sc
 import { ModelTokenStatsFn, ModelTokenStats } from '../../model_token_stats/table'
 import { ModelTokenStatsStrictSchema, ModelTokenStatsTransformSchema } from '../../model_token_stats/schemas'
 import { validateRecord } from '../validation'
-import type { EntitySyncData, SyncConfig, MergeResult } from '../types'
+import type { EntitySyncData, SyncConfig, MergeResult, Issue } from '../types'
 import { storeJSON } from '../../files'
 
 // Batch size for large arrays to avoid Convex limits
@@ -27,74 +27,52 @@ export async function syncAuthors(
 }> {
   const allAuthors: AuthorView[] = []
   const allModelTokenStats: ModelTokenStats[] = []
-  const allValidationIssues: any[] = []
-  const allMergeResults: MergeResult[] = []
+  const allIssues: Issue[] = []
 
   console.log(`Processing ${authorSlugs.length} authors...`)
 
   for (const authorSlug of authorSlugs) {
-    try {
-      const authorData = await syncAuthor(ctx, config, authorSlug)
+    const authorData = await syncAuthor(ctx, config, authorSlug)
+    if (authorData.author.uuid) {
+      // Only push valid authors
       allAuthors.push(authorData.author)
-      allModelTokenStats.push(...authorData.modelTokenStats)
-      allValidationIssues.push(...authorData.validationIssues)
-    } catch (error) {
-      allMergeResults.push({
-        identifier: authorSlug,
-        action: 'error',
-        error: error instanceof Error ? error.message : 'Unknown author processing error',
-      })
     }
+    allModelTokenStats.push(...authorData.modelTokenStats)
+    allIssues.push(...authorData.issues)
   }
 
-  try {
-    // Merge authors
-    const authorResults = await ctx.runMutation(internal.openrouter.entities.authors.mergeAuthors, {
-      authors: allAuthors,
+  // Merge authors
+  const authorResults = await ctx.runMutation(internal.openrouter.entities.authors.mergeAuthors, {
+    authors: allAuthors,
+  })
+
+  // Merge model token stats in batches to avoid Convex array limits
+  const modelTokenStatsResults: MergeResult[] = []
+  console.log(`Batching ${allModelTokenStats.length} model token stats...`)
+
+  for (let i = 0; i < allModelTokenStats.length; i += MODEL_TOKEN_STATS_BATCH_SIZE) {
+    const batch = allModelTokenStats.slice(i, i + MODEL_TOKEN_STATS_BATCH_SIZE)
+    console.log(
+      `Processing model token stats batch ${Math.floor(i / MODEL_TOKEN_STATS_BATCH_SIZE) + 1} (${batch.length} items)`,
+    )
+
+    const batchResults = await ctx.runMutation(internal.openrouter.entities.authors.mergeModelTokenStats, {
+      modelTokenStats: batch,
     })
+    modelTokenStatsResults.push(...batchResults)
+  }
 
-    // Merge model token stats in batches to avoid Convex array limits
-    const modelTokenStatsResults: MergeResult[] = []
-    console.log(`Batching ${allModelTokenStats.length} model token stats...`)
-
-    for (let i = 0; i < allModelTokenStats.length; i += MODEL_TOKEN_STATS_BATCH_SIZE) {
-      const batch = allModelTokenStats.slice(i, i + MODEL_TOKEN_STATS_BATCH_SIZE)
-      console.log(
-        `Processing model token stats batch ${Math.floor(i / MODEL_TOKEN_STATS_BATCH_SIZE) + 1} (${batch.length} items)`,
-      )
-
-      const batchResults = await ctx.runMutation(internal.openrouter.entities.authors.mergeModelTokenStats, {
-        modelTokenStats: batch,
-      })
-      modelTokenStatsResults.push(...batchResults)
-    }
-
-    return {
-      authors: {
-        items: allAuthors,
-        validationIssues: allValidationIssues,
-        mergeResults: authorResults,
-      },
-      modelTokenStats: {
-        items: allModelTokenStats,
-        validationIssues: [],
-        mergeResults: modelTokenStatsResults,
-      },
-    }
-  } catch (error) {
-    return {
-      authors: {
-        items: [],
-        validationIssues: allValidationIssues,
-        mergeResults: allMergeResults,
-        fetchError: error instanceof Error ? error.message : 'Unknown error during authors merge',
-      },
-      modelTokenStats: {
-        items: [],
-        validationIssues: [],
-        mergeResults: [],
-      },
-    }
+  return {
+    authors: {
+      items: allAuthors,
+      issues: allIssues.filter((issue) => !issue.identifier.includes('token-stats')),
+      mergeResults: authorResults,
+    },
+    modelTokenStats: {
+      items: allModelTokenStats,
+      issues: allIssues.filter((issue) => issue.identifier.includes('token-stats')),
+      mergeResults: modelTokenStatsResults,
+    },
   }
 }
 
@@ -103,7 +81,7 @@ async function syncAuthor(
   ctx: ActionCtx,
   config: SyncConfig,
   authorSlug: string,
-): Promise<{ author: AuthorView; modelTokenStats: ModelTokenStats[]; validationIssues: any[] }> {
+): Promise<{ author: AuthorView; modelTokenStats: ModelTokenStats[]; issues: Issue[] }> {
   try {
     const response = await orFetch('/api/frontend/model-author', {
       params: { authorSlug, shouldIncludeStats: true, shouldIncludeVariants: false },
@@ -131,20 +109,32 @@ async function syncAuthor(
       ModelTokenStatsStrictSchema,
     )
 
+    // Convert validation issues to Issue format
+    const issues: Issue[] = [
+      ...authorIssues.map((issue) => ({
+        ...issue,
+        identifier: `author-${authorSlug}:${issue.index}`,
+      })),
+      ...tokenStatsIssues.map((issue) => ({
+        ...issue,
+        identifier: `token-stats-${authorSlug}:${issue.index}`,
+      })),
+    ]
+
     return {
       author: { ...author, epoch: config.epoch },
       modelTokenStats,
-      validationIssues: [...authorIssues, ...tokenStatsIssues],
+      issues,
     }
   } catch (error) {
     return {
-      author: {} as AuthorView, // This will cause merge to fail appropriately
+      author: {} as AuthorView, // Will be skipped
       modelTokenStats: [],
-      validationIssues: [
+      issues: [
         {
-          type: 'fetch_error',
+          type: 'sync',
+          identifier: `author-${authorSlug}`,
           message: error instanceof Error ? error.message : 'Unknown author fetch error',
-          authorSlug,
         },
       ],
     }
@@ -162,22 +152,14 @@ export const mergeAuthors = internalMutation({
     const results: MergeResult[] = []
 
     for (const author of authors) {
-      try {
-        const mergeResult = await AuthorViewsFn.merge(ctx, { author })
+      const mergeResult = await AuthorViewsFn.merge(ctx, { author })
 
-        results.push({
-          identifier: author.slug,
-          action: mergeResult.action,
-          docId: mergeResult.docId,
-          changes: mergeResult.changes,
-        })
-      } catch (error) {
-        results.push({
-          identifier: author.slug,
-          action: 'error',
-          error: error instanceof Error ? error.message : 'Unknown author merge error',
-        })
-      }
+      results.push({
+        identifier: author.slug,
+        action: mergeResult.action,
+        docId: mergeResult.docId,
+        changes: mergeResult.changes,
+      })
     }
 
     return results
@@ -192,22 +174,10 @@ export const mergeModelTokenStats = internalMutation({
     modelTokenStats: v.array(v.object(ModelTokenStats.withoutSystemFields)),
   },
   handler: async (ctx: MutationCtx, { modelTokenStats }) => {
-    try {
-      const results = await ModelTokenStatsFn.mergeTimeSeries(ctx, { modelTokenStats })
-      return results.map((result) => ({
-        identifier: result.action,
-        action: result.action,
-        docId: result.docId,
-        changes: result.changes,
-      }))
-    } catch (error) {
-      return [
-        {
-          identifier: 'all',
-          action: 'error' as const,
-          error: error instanceof Error ? error.message : 'Unknown model token stats merge error',
-        },
-      ]
-    }
+    const results = await ModelTokenStatsFn.mergeTimeSeries(ctx, { modelTokenStats })
+    return results.map((result) => ({
+      identifier: result.action,
+      action: result.action,
+    }))
   },
 })

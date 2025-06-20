@@ -31,7 +31,7 @@ export function validateArray<TParsed>(
     if (!strictResult.success) {
       issues.push({
         index,
-        type: 'strict',
+        type: 'schema',
         message: z4.prettifyError(strictResult.error),
       })
     }

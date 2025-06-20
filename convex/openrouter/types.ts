@@ -1,27 +1,32 @@
 import type { IChange } from 'json-diff-ts'
 
-// Raw validation issue from schema parsing
+// Unified issue structure for validation and sync errors
+export interface Issue {
+  type: 'transform' | 'schema' | 'sync'
+  identifier: string // Contextual identifier for the item (e.g., "openai/gpt-4-free", "openai/gpt-4-free:0")
+  message: string
+  index?: number // Optional, for validation issues from arrays
+}
+
 export interface ValidationIssue {
   index: number
-  type: 'transform' | 'strict'
+  type: 'transform' | 'schema'
   message: string
 }
 
 // Raw merge result from database operations
 export interface MergeResult {
   identifier: string // slug, uuid, etc.
-  action: 'insert' | 'replace' | 'stable' | 'error'
+  action: 'insert' | 'replace' | 'stable'
   docId?: string
   changes?: IChange[]
-  error?: string // Error message if action is 'error'
 }
 
 // What entity sync functions return
 export interface EntitySyncData<T> {
   items: T[]
-  validationIssues: ValidationIssue[]
+  issues: Issue[]
   mergeResults: MergeResult[]
-  fetchError?: string // If the entire fetch failed
 }
 
 // Configuration for sync operations
@@ -36,6 +41,7 @@ export interface ProcessedIssue {
   identifier: string
   type: string
   message: string
+  index?: number // Optional, carried through from Issue
 }
 
 // Processed result for reporting

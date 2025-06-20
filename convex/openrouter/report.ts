@@ -3,72 +3,42 @@ import type {
   ProcessedIssue,
   ProcessedResult,
   SyncReport,
-  ValidationIssue,
+  Issue,
   MergeResult,
   EntitySyncData,
 } from './types'
 
 /**
- * Process validation issues into report format
+ * Process issues into report format
  */
-function processValidationIssues(issues: ValidationIssue[]): ProcessedIssue[] {
+function processIssues(issues: Issue[]): ProcessedIssue[] {
   return issues.map((issue) => ({
-    identifier: `index:${issue.index}`,
-    type: issue.type === 'transform' ? 'transform_error' : 'schema_warning',
+    identifier: issue.identifier,
+    type: issue.type,
     message: issue.message,
+    index: issue.index,
   }))
 }
 
 /**
  * Process merge results into report format
  */
-function processMergeResults(results: MergeResult[]): {
-  results: ProcessedResult[]
-  issues: ProcessedIssue[]
-} {
-  const processedResults: ProcessedResult[] = []
-  const processedIssues: ProcessedIssue[] = []
-
-  for (const result of results) {
-    if (result.action === 'error') {
-      // Convert errors to issues
-      processedIssues.push({
-        identifier: result.identifier,
-        type: 'merge_error',
-        message: result.error || 'Unknown merge error',
-      })
-    } else {
-      processedResults.push({
-        identifier: result.identifier,
-        action: result.action,
-      })
-    }
-  }
-
-  return { results: processedResults, issues: processedIssues }
+function processMergeResults(results: MergeResult[]): ProcessedResult[] {
+  return results.map((result) => ({
+    identifier: result.identifier,
+    action: result.action,
+  }))
 }
 
 /**
  * Create an entity report from sync data
  */
 export function createEntityReport<T>(syncData: EntitySyncData<T>): EntityReport {
-  const issues: ProcessedIssue[] = []
-
-  // Add fetch error if present
-  if (syncData.fetchError) {
-    issues.push({
-      identifier: 'all',
-      type: 'fetch_error',
-      message: syncData.fetchError,
-    })
-  }
-
-  // Process validation issues
-  issues.push(...processValidationIssues(syncData.validationIssues))
+  // Process issues
+  const issues = processIssues(syncData.issues)
 
   // Process merge results
-  const { results, issues: mergeIssues } = processMergeResults(syncData.mergeResults)
-  issues.push(...mergeIssues)
+  const results = processMergeResults(syncData.mergeResults)
 
   // Calculate summary
   const summary = {
@@ -76,8 +46,8 @@ export function createEntityReport<T>(syncData: EntitySyncData<T>): EntityReport
     inserted: results.filter((r) => r.action === 'insert').length,
     updated: results.filter((r) => r.action === 'replace').length,
     stable: results.filter((r) => r.action === 'stable').length,
-    errors: issues.filter((i) => i.type.includes('error')).length,
-    warnings: issues.filter((i) => i.type.includes('warning')).length,
+    errors: issues.filter((i) => i.type !== 'schema').length,
+    warnings: issues.filter((i) => i.type === 'schema').length,
   }
 
   return {

@@ -11,8 +11,8 @@ import {
   EndpointUptimeStrictSchema,
   EndpointUptimeTransformSchema,
 } from '../../endpoint_uptime_stats/schemas'
-import { validateArray } from '../validation'
-import type { EntitySyncData, SyncConfig, MergeResult } from '../types'
+import { validateArray, validateRecord } from '../validation'
+import type { EntitySyncData, SyncConfig, MergeResult, Issue } from '../types'
 import { storeJSON } from '../../files'
 import type { ModelView } from '../../model_views/table'
 
@@ -34,110 +34,70 @@ export async function syncEndpoints(
   const allEndpoints: EndpointView[] = []
   const allEndpointStats: EndpointStat[] = []
   const allEndpointUptimes: EndpointUptimeStats[] = []
-  const allValidationIssues: any[] = []
-  const errorMergeResults: MergeResult[] = []
+  const allIssues: Issue[] = []
 
   console.log(`Processing endpoints for ${models.length} models...`)
 
   for (const model of models) {
-    try {
-      // Sync endpoints and stats for each model variant
-      for (const variant of model.variants) {
-        const endpointData = await syncModelEndpoints(ctx, config, model, variant)
-        allEndpoints.push(...endpointData.endpoints)
-        allEndpointStats.push(...endpointData.endpointStats)
-        allValidationIssues.push(...endpointData.validationIssues)
+    // Sync endpoints and stats for each model variant
+    for (const variant of model.variants) {
+      const endpointData = await syncModelEndpoints(ctx, config, model, variant)
+      allEndpoints.push(...endpointData.endpoints)
+      allEndpointStats.push(...endpointData.endpointStats)
+      allIssues.push(...endpointData.issues)
 
-        // Sync uptime data for each endpoint
-        for (const endpoint of endpointData.endpoints) {
-          const uptimeData = await syncEndpointUptimes(ctx, config, endpoint.uuid)
-          allEndpointUptimes.push(...uptimeData.uptimes)
-          allValidationIssues.push(...uptimeData.validationIssues)
-        }
+      // Sync uptime data for each endpoint
+      for (const endpoint of endpointData.endpoints) {
+        const uptimeData = await syncEndpointUptimes(ctx, config, endpoint.uuid)
+        allEndpointUptimes.push(...uptimeData.uptimes)
+        allIssues.push(...uptimeData.issues)
       }
-    } catch (error) {
-      errorMergeResults.push({
-        identifier: model.slug,
-        action: 'error',
-        error: error instanceof Error ? error.message : 'Unknown endpoint processing error',
-      })
     }
   }
 
-  try {
-    // Merge all data and track results separately
-    const endpointMergeResults = await ctx.runMutation(
-      internal.openrouter.entities.endpoints.mergeEndpoints,
-      {
-        endpoints: allEndpoints,
-      },
+  // Merge all data and track results separately
+  const endpointMergeResults = await ctx.runMutation(internal.openrouter.entities.endpoints.mergeEndpoints, {
+    endpoints: allEndpoints,
+  })
+
+  const statsMergeResults = await ctx.runMutation(internal.openrouter.entities.endpoints.mergeEndpointStats, {
+    endpointStats: allEndpointStats,
+  })
+
+  // Merge endpoint uptimes in batches to avoid Convex array limits
+  console.log(`Batching ${allEndpointUptimes.length} endpoint uptimes...`)
+  const uptimeMergeResults: MergeResult[] = []
+
+  for (let i = 0; i < allEndpointUptimes.length; i += ENDPOINT_UPTIME_BATCH_SIZE) {
+    const batch = allEndpointUptimes.slice(i, i + ENDPOINT_UPTIME_BATCH_SIZE)
+    console.log(
+      `Processing endpoint uptime batch ${Math.floor(i / ENDPOINT_UPTIME_BATCH_SIZE) + 1} (${batch.length} items)`,
     )
 
-    const statsMergeResults = await ctx.runMutation(
-      internal.openrouter.entities.endpoints.mergeEndpointStats,
-      {
-        endpointStats: allEndpointStats,
-      },
-    )
+    const batchResults = await ctx.runMutation(internal.openrouter.entities.endpoints.mergeEndpointUptimes, {
+      endpointUptimes: batch,
+    })
+    uptimeMergeResults.push(...batchResults)
+  }
 
-    // Merge endpoint uptimes in batches to avoid Convex array limits
-    console.log(`Batching ${allEndpointUptimes.length} endpoint uptimes...`)
-    const uptimeMergeResults: MergeResult[] = []
-
-    for (let i = 0; i < allEndpointUptimes.length; i += ENDPOINT_UPTIME_BATCH_SIZE) {
-      const batch = allEndpointUptimes.slice(i, i + ENDPOINT_UPTIME_BATCH_SIZE)
-      console.log(
-        `Processing endpoint uptime batch ${Math.floor(i / ENDPOINT_UPTIME_BATCH_SIZE) + 1} (${batch.length} items)`,
-      )
-
-      const batchResults = await ctx.runMutation(
-        internal.openrouter.entities.endpoints.mergeEndpointUptimes,
-        {
-          endpointUptimes: batch,
-        },
-      )
-      uptimeMergeResults.push(...batchResults)
-    }
-
-    return {
-      endpoints: {
-        items: allEndpoints,
-        validationIssues: allValidationIssues.filter(
-          (i) => i.type !== 'fetch_error' || i.endpoint_uuid === undefined,
-        ),
-        mergeResults: endpointMergeResults,
-      },
-      endpointStats: {
-        items: allEndpointStats,
-        validationIssues: [],
-        mergeResults: statsMergeResults,
-      },
-      endpointUptimes: {
-        items: allEndpointUptimes,
-        validationIssues: allValidationIssues.filter((i) => i.endpoint_uuid !== undefined),
-        mergeResults: uptimeMergeResults,
-      },
-    }
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error during endpoints merge'
-    return {
-      endpoints: {
-        items: [],
-        validationIssues: allValidationIssues,
-        mergeResults: errorMergeResults,
-        fetchError: errorMessage,
-      },
-      endpointStats: {
-        items: [],
-        validationIssues: [],
-        mergeResults: [],
-      },
-      endpointUptimes: {
-        items: [],
-        validationIssues: [],
-        mergeResults: [],
-      },
-    }
+  return {
+    endpoints: {
+      items: allEndpoints,
+      issues: allIssues.filter(
+        (issue) => !issue.identifier.includes('stats') && !issue.identifier.includes('uptime'),
+      ),
+      mergeResults: endpointMergeResults,
+    },
+    endpointStats: {
+      items: allEndpointStats,
+      issues: allIssues.filter((issue) => issue.identifier.includes('stats')),
+      mergeResults: statsMergeResults,
+    },
+    endpointUptimes: {
+      items: allEndpointUptimes,
+      issues: allIssues.filter((issue) => issue.identifier.includes('uptime')),
+      mergeResults: uptimeMergeResults,
+    },
   }
 }
 
@@ -147,7 +107,9 @@ async function syncModelEndpoints(
   config: SyncConfig,
   model: ModelView,
   variant: string,
-): Promise<{ endpoints: EndpointView[]; endpointStats: EndpointStat[]; validationIssues: any[] }> {
+): Promise<{ endpoints: EndpointView[]; endpointStats: EndpointStat[]; issues: Issue[] }> {
+  const modelVariantId = `${model.slug}-${variant}`
+
   try {
     const response = await orFetch('/api/frontend/stats/endpoint', {
       params: { permaslug: model.permaslug, variant },
@@ -163,7 +125,17 @@ async function syncModelEndpoints(
       data: response,
     })
 
-    const { items, issues } = validateArray(response.data, EndpointTransformSchema, EndpointStrictSchema)
+    const { items, issues: validationIssues } = validateArray(
+      response.data,
+      EndpointTransformSchema,
+      EndpointStrictSchema,
+    )
+
+    // Convert validation issues to Issue format
+    const issues: Issue[] = validationIssues.map((issue) => ({
+      ...issue,
+      identifier: `${modelVariantId}:${issue.index}`,
+    }))
 
     const endpoints: EndpointView[] = []
     const endpointStats: EndpointStat[] = []
@@ -182,23 +154,25 @@ async function syncModelEndpoints(
         origin_model_updated_at: model.origin_updated_at,
         epoch: config.epoch,
       })
-      endpointStats.push({
-        ...item.stats,
-        epoch: config.epoch,
-      })
+
+      if (item.stats) {
+        endpointStats.push({
+          ...item.stats,
+          epoch: config.epoch,
+        })
+      }
     }
 
-    return { endpoints, endpointStats, validationIssues: issues }
+    return { endpoints, endpointStats, issues }
   } catch (error) {
     return {
       endpoints: [],
       endpointStats: [],
-      validationIssues: [
+      issues: [
         {
-          type: 'fetch_error',
+          type: 'sync',
+          identifier: modelVariantId,
           message: error instanceof Error ? error.message : 'Unknown endpoint fetch error',
-          model: model.slug,
-          variant,
         },
       ],
     }
@@ -209,35 +183,40 @@ async function syncEndpointUptimes(
   ctx: ActionCtx,
   config: SyncConfig,
   endpointUuid: string,
-): Promise<{ uptimes: EndpointUptimeStats[]; validationIssues: any[] }> {
+): Promise<{ uptimes: EndpointUptimeStats[]; issues: Issue[] }> {
   try {
     const response = await orFetch('/api/frontend/stats/uptime-hourly', {
       params: { id: endpointUuid },
       schema: z4.object({ data: z4.unknown() }),
     })
 
-    const { items, issues } = validateArray(
-      [response.data],
+    const { item, issues: validationIssues } = validateRecord(
+      response.data,
       EndpointUptimeTransformSchema,
       EndpointUptimeStrictSchema,
     )
 
-    const uptimes =
-      items[0]?.map((uptime: any) => ({
-        endpoint_uuid: endpointUuid,
-        timestamp: uptime.timestamp,
-        uptime: uptime.uptime,
-      })) || []
+    // Convert validation issues to Issue format
+    const issues: Issue[] = validationIssues.map((issue) => ({
+      ...issue,
+      identifier: `uptime-${endpointUuid}`,
+    }))
 
-    return { uptimes, validationIssues: issues }
+    const uptimes = item.map((uptime) => ({
+      endpoint_uuid: endpointUuid,
+      timestamp: uptime.timestamp,
+      uptime: uptime.uptime,
+    }))
+
+    return { uptimes, issues }
   } catch (error) {
     return {
       uptimes: [],
-      validationIssues: [
+      issues: [
         {
-          type: 'fetch_error',
+          type: 'sync',
+          identifier: `uptime-${endpointUuid}`,
           message: error instanceof Error ? error.message : 'Unknown uptime fetch error',
-          endpoint_uuid: endpointUuid,
         },
       ],
     }
@@ -249,23 +228,15 @@ export const mergeEndpoints = internalMutation({
   args: { endpoints: v.array(v.object(EndpointViews.withoutSystemFields)) },
   handler: async (ctx: MutationCtx, { endpoints }) => {
     const results: MergeResult[] = []
+
     for (const endpoint of endpoints) {
-      try {
-        const mergeResult = await EndpointViewFn.merge(ctx, { endpoint })
-        results.push({
-          identifier: endpoint.uuid,
-          action: mergeResult.action,
-          docId: mergeResult.docId,
-          changes: mergeResult.changes,
-        })
-      } catch (error) {
-        results.push({
-          identifier: endpoint.uuid,
-          action: 'error',
-          error: error instanceof Error ? error.message : 'Unknown endpoint merge error',
-        })
-      }
+      const mergeResult = await EndpointViewFn.merge(ctx, { endpoint })
+      results.push({
+        identifier: endpoint.uuid,
+        action: mergeResult.action,
+      })
     }
+
     return results
   },
 })
@@ -274,23 +245,15 @@ export const mergeEndpointStats = internalMutation({
   args: { endpointStats: v.array(v.object(EndpointStats.withoutSystemFields)) },
   handler: async (ctx: MutationCtx, { endpointStats }) => {
     const results: MergeResult[] = []
+
     for (const stat of endpointStats) {
-      try {
-        const mergeResult = await EndpointStatsFn.merge(ctx, { endpointStats: stat })
-        results.push({
-          identifier: stat.endpoint_uuid,
-          action: mergeResult.action,
-          docId: mergeResult.docId,
-          changes: mergeResult.changes,
-        })
-      } catch (error) {
-        results.push({
-          identifier: stat.endpoint_uuid,
-          action: 'error',
-          error: error instanceof Error ? error.message : 'Unknown stat merge error',
-        })
-      }
+      const mergeResult = await EndpointStatsFn.merge(ctx, { endpointStats: stat })
+      results.push({
+        identifier: `stats-${stat.endpoint_uuid}`,
+        action: mergeResult.action,
+      })
     }
+
     return results
   },
 })
@@ -298,24 +261,13 @@ export const mergeEndpointStats = internalMutation({
 export const mergeEndpointUptimes = internalMutation({
   args: { endpointUptimes: v.array(v.object(EndpointUptimeStats.withoutSystemFields)) },
   handler: async (ctx: MutationCtx, { endpointUptimes }) => {
-    try {
-      const results = await EndpointUptimeStatsFn.mergeTimeSeries(ctx, {
-        endpointUptimesSeries: endpointUptimes,
-      })
-      return results.map((result) => ({
-        identifier: result.action,
-        action: result.action,
-        docId: result.docId,
-        changes: result.changes,
-      }))
-    } catch (error) {
-      return [
-        {
-          identifier: 'all',
-          action: 'error' as const,
-          error: error instanceof Error ? error.message : 'Unknown endpoint uptime merge error',
-        },
-      ]
-    }
+    const results = await EndpointUptimeStatsFn.mergeTimeSeries(ctx, {
+      endpointUptimesSeries: endpointUptimes,
+    })
+
+    return results.map((result) => ({
+      identifier: result.action,
+      action: result.action,
+    }))
   },
 })

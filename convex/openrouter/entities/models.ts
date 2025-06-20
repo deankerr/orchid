@@ -6,7 +6,7 @@ import { orFetch } from '../client'
 import { ModelsViewFn, ModelViews, type ModelView } from '../../model_views/table'
 import { ModelStrictSchema, ModelTransformSchema } from '../../model_views/schemas'
 import { validateArray } from '../validation'
-import type { EntitySyncData, SyncConfig, MergeResult } from '../types'
+import type { EntitySyncData, SyncConfig, MergeResult, Issue } from '../types'
 import { storeJSON } from '../../files'
 import * as R from 'remeda'
 
@@ -36,6 +36,12 @@ export async function syncModels(ctx: ActionCtx, config: SyncConfig): Promise<En
       ModelStrictSchema,
     )
 
+    // Convert validation issues to Issue format
+    const issues: Issue[] = validationIssues.map((issue) => ({
+      ...issue,
+      identifier: `models:${issue.index}`,
+    }))
+
     // Consolidate variants into models (following original logic)
     const models = consolidateVariants(modelVariants).map((model) => ({
       ...model,
@@ -49,15 +55,20 @@ export async function syncModels(ctx: ActionCtx, config: SyncConfig): Promise<En
 
     return {
       items: models,
-      validationIssues,
+      issues,
       mergeResults,
     }
   } catch (error) {
     return {
       items: [],
-      validationIssues: [],
+      issues: [
+        {
+          type: 'sync',
+          identifier: 'models',
+          message: error instanceof Error ? error.message : 'Unknown error during models fetch',
+        },
+      ],
       mergeResults: [],
-      fetchError: error instanceof Error ? error.message : 'Unknown error during models fetch',
     }
   }
 }
@@ -89,22 +100,12 @@ export const mergeModels = internalMutation({
     const results: MergeResult[] = []
 
     for (const model of models) {
-      try {
-        const mergeResult = await ModelsViewFn.merge(ctx, { model })
+      const mergeResult = await ModelsViewFn.merge(ctx, { model })
 
-        results.push({
-          identifier: model.slug,
-          action: mergeResult.action,
-          docId: mergeResult.docId,
-          changes: mergeResult.changes,
-        })
-      } catch (error) {
-        results.push({
-          identifier: model.slug,
-          action: 'error',
-          error: error instanceof Error ? error.message : 'Unknown merge error',
-        })
-      }
+      results.push({
+        identifier: model.slug,
+        action: mergeResult.action,
+      })
     }
 
     return results
