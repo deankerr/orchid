@@ -4,22 +4,31 @@ import { v } from 'convex/values'
 import { SnapshotArchives } from './openrouter/archives'
 import { SnapshotConfig } from './openrouter/snapshot'
 import { OrAppTokenMetrics } from './or/or_app_token_metrics'
-import { OrApps } from './or/or_apps'
-import { OrAuthors } from './or/or_authors'
+import { OrApps, OrAppsChanges } from './or/or_apps'
+import { OrAuthors, OrAuthorsChanges } from './or/or_authors'
 import { OrEndpointMetrics } from './or/or_endpoint_metrics'
 import { OrEndpointUptimeMetrics } from './or/or_endpoint_uptime_metrics'
-import { OrEndpoints } from './or/or_endpoints'
+import { OrEndpoints, OrEndpointsChanges } from './or/or_endpoints'
 import { OrModelTokenMetrics } from './or/or_model_token_metrics'
-import { OrModels } from './or/or_models'
-import { OrProviders } from './or/or_providers'
+import { OrModels, OrModelsChanges } from './or/or_models'
+import { OrProviders, OrProvidersChanges } from './or/or_providers'
 
 export const schema = defineSchema(
   {
     or_apps: OrApps.table.index('by_app_id', ['app_id']),
+    or_apps_changes: OrAppsChanges.table,
+
     or_authors: OrAuthors.table.index('by_uuid', ['uuid']),
+    or_authors_changes: OrAuthorsChanges.table,
+
     or_endpoints: OrEndpoints.table.index('by_uuid', ['uuid']),
+    or_endpoints_changes: OrEndpointsChanges.table,
+
     or_models: OrModels.table.index('by_slug', ['slug']),
+    or_models_changes: OrModelsChanges.table,
+
     or_providers: OrProviders.table.index('by_slug', ['slug']),
+    or_providers_changes: OrProvidersChanges.table,
 
     or_app_token_metrics: OrAppTokenMetrics.table.index('by_app_id_snapshot_at', [
       'app_id',
@@ -55,7 +64,7 @@ export const schema = defineSchema(
       .index('by_epoch_resourceType_resourceId', ['epoch', 'resourceType', 'resourceId']),
   },
   {
-    strictTableNameTypes: false,
+    strictTableNameTypes: true,
   },
 )
 

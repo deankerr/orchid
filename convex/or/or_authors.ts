@@ -18,6 +18,12 @@ export const OrAuthors = Table('or_authors', {
   snapshot_at: v.number(),
 })
 
+export const OrAuthorsChanges = Table('or_authors_changes', {
+  uuid: v.string(),
+  snapshot_at: v.number(),
+  changes: v.array(v.record(v.string(), v.any())),
+})
+
 export type OrAuthorFields = Infer<AsObjectValidator<typeof OrAuthors.withoutSystemFields>>
 
 export const OrAuthorsFn = {
@@ -38,7 +44,7 @@ export const OrAuthorsFn = {
     ctx: MutationCtx,
     args: { uuid: string; snapshot_at: number; changes: IChange[] },
   ) => {
-    await ctx.db.insert('or_authors_changes', args)
+    await ctx.db.insert(OrAuthorsChanges.name, args)
   },
 
   merge: async (ctx: MutationCtx, { author }: { author: OrAuthorFields }): Promise<MergeResult> => {

@@ -88,6 +88,12 @@ export const OrEndpoints = Table('or_endpoints', {
 
 export type OrEndpointFields = Infer<AsObjectValidator<typeof OrEndpoints.withoutSystemFields>>
 
+export const OrEndpointsChanges = Table('or_endpoints_changes', {
+  uuid: v.string(),
+  snapshot_at: v.number(),
+  changes: v.array(v.record(v.string(), v.any())),
+})
+
 export const OrEndpointsFn = {
   get: async (ctx: QueryCtx, { uuid }: { uuid: string }) => {
     return await ctx.db
@@ -109,7 +115,7 @@ export const OrEndpointsFn = {
     ctx: MutationCtx,
     args: { uuid: string; snapshot_at: number; changes: IChange[] },
   ) => {
-    await ctx.db.insert('or_endpoints_changes', args)
+    await ctx.db.insert(OrEndpointsChanges.name, args)
   },
 
   merge: async (

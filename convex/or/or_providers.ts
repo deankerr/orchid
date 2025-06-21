@@ -54,6 +54,12 @@ export const OrProviders = Table('or_providers', {
 
 export type OrProviderFields = Infer<AsObjectValidator<typeof OrProviders.withoutSystemFields>>
 
+export const OrProvidersChanges = Table('or_providers_changes', {
+  slug: v.string(),
+  snapshot_at: v.number(),
+  changes: v.array(v.record(v.string(), v.any())),
+})
+
 export const OrProvidersFn = {
   get: async (ctx: QueryCtx, { slug }: { slug: string }) => {
     return await ctx.db
@@ -72,7 +78,7 @@ export const OrProvidersFn = {
     ctx: MutationCtx,
     args: { slug: string; snapshot_at: number; changes: IChange[] },
   ) => {
-    await ctx.db.insert('or_providers_changes', args)
+    await ctx.db.insert(OrProvidersChanges.name, args)
   },
 
   merge: async (

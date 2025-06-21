@@ -32,6 +32,12 @@ export const OrModels = Table('or_models', {
 
 export type OrModelFields = Infer<AsObjectValidator<typeof OrModels.withoutSystemFields>>
 
+export const OrModelsChanges = Table('or_models_changes', {
+  slug: v.string(),
+  snapshot_at: v.number(),
+  changes: v.array(v.record(v.string(), v.any())),
+})
+
 export const OrModelsFn = {
   get: async (ctx: QueryCtx, { slug }: { slug: string }) => {
     return await ctx.db
@@ -55,7 +61,7 @@ export const OrModelsFn = {
     ctx: MutationCtx,
     args: { slug: string; snapshot_at: number; changes: IChange[] },
   ) => {
-    await ctx.db.insert('or_models_changes', args)
+    await ctx.db.insert(OrModelsChanges.name, args)
   },
 
   merge: async (ctx: MutationCtx, { model }: { model: OrModelFields }): Promise<MergeResult> => {

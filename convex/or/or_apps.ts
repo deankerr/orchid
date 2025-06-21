@@ -20,6 +20,12 @@ export const OrApps = Table('or_apps', {
 
 export type OrAppFields = Infer<AsObjectValidator<typeof OrApps.withoutSystemFields>>
 
+export const OrAppsChanges = Table('or_apps_changes', {
+  app_id: v.number(),
+  snapshot_at: v.number(),
+  changes: v.array(v.record(v.string(), v.any())),
+})
+
 export const OrAppsFn = {
   get: async (ctx: QueryCtx, { app_id }: { app_id: number }) => {
     return await ctx.db
@@ -38,7 +44,7 @@ export const OrAppsFn = {
     ctx: MutationCtx,
     args: { app_id: number; snapshot_at: number; changes: IChange[] },
   ) => {
-    await ctx.db.insert('or_apps_changes', args)
+    await ctx.db.insert(OrAppsChanges.name, args)
   },
 
   merge: async (ctx: MutationCtx, { app }: { app: OrAppFields }): Promise<MergeResult> => {
