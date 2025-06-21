@@ -1,8 +1,9 @@
 'use client'
 
+import { use } from 'react'
+
 import { BulkModel } from '@/components/bulk/BulkModel'
 import { useBulkModels } from '@/hooks/api'
-import { use } from 'react'
 
 export default function ModelPage({ params }: { params: Promise<{ slug: string[] }> }) {
   const slug = use(params).slug.join('/')

@@ -1,11 +1,11 @@
 import type {
   EntityReport,
+  EntitySyncData,
+  Issue,
+  MergeResult,
   ProcessedIssue,
   ProcessedResult,
   SyncReport,
-  Issue,
-  MergeResult,
-  EntitySyncData,
 } from './types'
 
 /**

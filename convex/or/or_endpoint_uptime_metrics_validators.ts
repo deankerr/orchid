@@ -1,5 +1,6 @@
-import * as R from 'remeda'
 import z4 from 'zod/v4'
+
+import * as R from 'remeda'
 
 export const EndpointUptimeStrictSchema = z4.strictObject({
   history: z4

@@ -1,15 +1,16 @@
 import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
-import { OrModels } from './or/or_models'
+
+import { SnapshotArchives } from './openrouter/archives'
+import { OrAppTokenMetrics } from './or/or_app_token_metrics'
 import { OrApps } from './or/or_apps'
 import { OrAuthors } from './or/or_authors'
-import { OrEndpoints } from './or/or_endpoints'
-import { OrProviders } from './or/or_providers'
-import { OrAppTokenMetrics } from './or/or_app_token_metrics'
 import { OrEndpointMetrics } from './or/or_endpoint_metrics'
 import { OrEndpointUptimeMetrics } from './or/or_endpoint_uptime_metrics'
+import { OrEndpoints } from './or/or_endpoints'
 import { OrModelTokenMetrics } from './or/or_model_token_metrics'
-import { SnapshotArchives } from './openrouter/archives'
+import { OrModels } from './or/or_models'
+import { OrProviders } from './or/or_providers'
 
 export const schema = defineSchema(
   {

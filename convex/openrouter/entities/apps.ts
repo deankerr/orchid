@@ -1,5 +1,6 @@
 import { v } from 'convex/values'
 import z4 from 'zod/v4'
+
 import { internal } from '../../_generated/api'
 import { internalMutation, type ActionCtx, type MutationCtx } from '../../_generated/server'
 import {
@@ -7,14 +8,14 @@ import {
   OrAppTokenMetricsFn,
   type OrAppTokenMetricsFields,
 } from '../../or/or_app_token_metrics'
+import { OrApps, OrAppsFn, type OrAppFields } from '../../or/or_apps'
 import { AppStrictSchema, AppTransformSchema } from '../../or/or_apps_validators'
-import { OrAppsFn, OrApps, type OrAppFields } from '../../or/or_apps'
 import type { OrModelFields } from '../../or/or_models'
+import { storeSnapshotData } from '../archives'
 import { orFetch } from '../client'
 import type { EntitySyncData, Issue, SyncConfig } from '../types'
 import { processBatchMutation } from '../utils'
 import { validateArray } from '../validation'
-import { storeSnapshotData } from '../archives'
 
 // Batch size for large arrays to avoid Convex limits
 const APP_TOKEN_BATCH_SIZE = 2000

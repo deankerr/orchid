@@ -1,7 +1,9 @@
-import * as R from 'remeda'
-import type { ActionCtx } from '../_generated/server'
 import type { FunctionReference } from 'convex/server'
-import type { MergeResult, EntitySyncData } from './types'
+
+import * as R from 'remeda'
+
+import type { ActionCtx } from '../_generated/server'
+import type { EntitySyncData, MergeResult } from './types'
 
 interface BatchMutationOptions<T> {
   ctx: ActionCtx

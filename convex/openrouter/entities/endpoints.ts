@@ -1,5 +1,6 @@
 import { v } from 'convex/values'
 import z4 from 'zod/v4'
+
 import { internal } from '../../_generated/api'
 import { internalMutation, type ActionCtx, type MutationCtx } from '../../_generated/server'
 import {
@@ -8,22 +9,22 @@ import {
   type OrEndpointMetricsFields,
 } from '../../or/or_endpoint_metrics'
 import {
-  EndpointUptimeStrictSchema,
-  EndpointUptimeTransformSchema,
-} from '../../or/or_endpoint_uptime_metrics_validators'
-import {
   OrEndpointUptimeMetrics,
   OrEndpointUptimeMetricsFn,
   type OrEndpointUptimeMetricsFields,
 } from '../../or/or_endpoint_uptime_metrics'
+import {
+  EndpointUptimeStrictSchema,
+  EndpointUptimeTransformSchema,
+} from '../../or/or_endpoint_uptime_metrics_validators'
+import { OrEndpoints, OrEndpointsFn, type OrEndpointFields } from '../../or/or_endpoints'
 import { EndpointStrictSchema, EndpointTransformSchema } from '../../or/or_endpoints_validators'
-import { OrEndpointsFn, OrEndpoints, type OrEndpointFields } from '../../or/or_endpoints'
 import type { OrModelFields } from '../../or/or_models'
+import { storeSnapshotData } from '../archives'
 import { orFetch } from '../client'
 import type { EntitySyncData, Issue, SyncConfig } from '../types'
 import { processBatchMutation } from '../utils'
 import { validateArray, validateRecord } from '../validation'
-import { storeSnapshotData } from '../archives'
 
 // Batch size for large arrays to avoid Convex limits
 const ENDPOINT_UPTIME_BATCH_SIZE = 4000

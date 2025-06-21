@@ -1,14 +1,16 @@
 import { v } from 'convex/values'
-import * as R from 'remeda'
 import z4 from 'zod/v4'
+
+import * as R from 'remeda'
+
 import { internal } from '../../_generated/api'
 import { internalMutation, type ActionCtx, type MutationCtx } from '../../_generated/server'
+import { OrModels, OrModelsFn, type OrModelFields } from '../../or/or_models'
 import { ModelStrictSchema, ModelTransformSchema } from '../../or/or_models_validators'
-import { OrModelsFn, OrModels, type OrModelFields } from '../../or/or_models'
+import { storeSnapshotData } from '../archives'
 import { orFetch } from '../client'
 import type { EntitySyncData, Issue, SyncConfig } from '../types'
 import { validateArray } from '../validation'
-import { storeSnapshotData } from '../archives'
 
 /**
  * Sync all models from OpenRouter

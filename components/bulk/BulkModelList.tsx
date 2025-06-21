@@ -1,6 +1,7 @@
 'use client'
 
 import { useBulkModels } from '@/hooks/api'
+
 import { BulkModel } from './BulkModel'
 
 export function BulkModelList() {

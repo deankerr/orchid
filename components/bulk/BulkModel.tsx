@@ -1,6 +1,8 @@
-import type { Doc } from '@/convex/_generated/dataModel'
-import { BulkEndpoint } from './BulkEndpoint'
 import Link from 'next/link'
+
+import type { Doc } from '@/convex/_generated/dataModel'
+
+import { BulkEndpoint } from './BulkEndpoint'
 
 type ModelWithEndpoints = Doc<'or_models'> & {
   endpoints: Doc<'or_endpoints'>[]
