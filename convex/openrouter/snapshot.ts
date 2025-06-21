@@ -1,6 +1,8 @@
+import { Table } from 'convex-helpers/server'
 import { v } from 'convex/values'
 
-import { internalAction, type ActionCtx } from '../_generated/server'
+import { internal } from '../_generated/api'
+import { internalAction, internalMutation, type ActionCtx } from '../_generated/server'
 import { getHourAlignedTimestamp } from '../shared'
 import { storeSnapshotData } from './archives'
 import { syncApps } from './entities/apps'
@@ -12,10 +14,69 @@ import { SnapshotReport } from './report'
 import type { SyncConfig } from './types'
 import { flattenSyncResults, runParallelSync } from './utils'
 
+export const SnapshotConfig = Table('snapshot_config', {
+  enabled: v.boolean(),
+  interval_hours: v.number(),
+  delay_minutes: v.number(),
+  jitter_minutes: v.number(),
+})
+
+export const schedule = internalMutation({
+  handler: async (ctx) => {
+    const config = await ctx.db.query('snapshot_config').order('desc').first()
+    if (!config) {
+      console.log('No snapshot config found.')
+      return
+    }
+
+    if (!config.enabled) {
+      console.log('Snapshot disabled.')
+      return
+    }
+
+    const hour = new Date().getHours()
+
+    // Check if this is the right hour based on interval
+    if (hour % config.interval_hours !== 0) {
+      const nextHour = hour + (config.interval_hours - (hour % config.interval_hours))
+      console.log(
+        `Skipping this hour. Next snapshot hour: ${nextHour % 24}:00 (interval: ${config.interval_hours}h)`,
+      )
+      return
+    }
+
+    // Calculate delay with jitter
+    const jitterMs = Math.floor(Math.random() * config.jitter_minutes * 60 * 1000)
+    const delayMs = Math.max(0, config.delay_minutes * 60 * 1000 + jitterMs)
+
+    await ctx.scheduler.runAfter(delayMs, internal.openrouter.snapshot.start)
+
+    const delayMinutes = Math.round(delayMs / (60 * 1000))
+    console.log(
+      `Snapshot scheduled to start in ${delayMinutes} minutes (${config.delay_minutes}min delay + ${Math.round(jitterMs / (60 * 1000))}min jitter)`,
+    )
+  },
+})
+
+export const start = internalAction({
+  handler: async (ctx) => {
+    const startedAt = Date.now()
+    const snapshotAt = getHourAlignedTimestamp(startedAt)
+
+    const config: SyncConfig = {
+      startedAt,
+      snapshotAt,
+      runId: startedAt.toString(),
+    }
+
+    return await snapshot(ctx, config)
+  },
+})
+
 async function snapshot(ctx: ActionCtx, config: SyncConfig) {
   const collector = new SnapshotReport(config.snapshotAt, config.startedAt)
 
-  console.log('Starting OpenRouter sync...', config)
+  console.log('snapshot', config)
 
   // Phase 1 & 2: Run providers and models in parallel (both are independent)
   console.log('Syncing providers and models in parallel...')
@@ -81,20 +142,3 @@ async function snapshot(ctx: ActionCtx, config: SyncConfig) {
 
   console.log({ reportUrl, ...summary })
 }
-
-export const start = internalAction({
-  args: {
-    snapshotAt: v.optional(v.number()),
-  },
-  handler: async (ctx, args) => {
-    const startedAt = Date.now()
-
-    const config: SyncConfig = {
-      snapshotAt: args.snapshotAt || getHourAlignedTimestamp(),
-      startedAt,
-      runId: startedAt.toString(),
-    }
-
-    return await snapshot(ctx, config)
-  },
-})

@@ -2,6 +2,7 @@ import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
 import { SnapshotArchives } from './openrouter/archives'
+import { SnapshotConfig } from './openrouter/snapshot'
 import { OrAppTokenMetrics } from './or/or_app_token_metrics'
 import { OrApps } from './or/or_apps'
 import { OrAuthors } from './or/or_authors'
@@ -37,6 +38,7 @@ export const schema = defineSchema(
       ['model_permaslug', 'model_variant', 'timestamp'],
     ),
 
+    snapshot_config: SnapshotConfig.table,
     snapshot_archives: SnapshotArchives.table.index('by_snapshot_at', ['snapshot_at']),
 
     // version 0 archived data

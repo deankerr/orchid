@@ -4,13 +4,12 @@ import { internal } from './_generated/api'
 
 const crons = cronJobs()
 
-// TODO: will start regular syncs when ready to go live
-// crons.hourly(
-//   'start sync',
-//   {
-//     minuteUTC: 10,
-//   },
-//   internal.sync.process.start,
-// )
+crons.hourly(
+  'snapshot',
+  {
+    minuteUTC: 0,
+  },
+  internal.openrouter.snapshot.schedule,
+)
 
 export default crons
