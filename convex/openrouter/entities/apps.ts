@@ -34,7 +34,7 @@ export async function syncApps(
   const appsMap = new Map<number, OrAppFields>()
   const allAppTokenMetrics: OrAppTokenMetricsFields[] = []
   const allIssues: Issue[] = []
-  const rawAppResponses: Record<string, unknown> = {}
+  const rawAppResponses: [string, unknown][] = []
 
   console.log(`Processing apps for ${models.length} models...`)
 
@@ -47,7 +47,7 @@ export async function syncApps(
 
       // Collect raw response for archival
       if (appData.rawResponse) {
-        rawAppResponses[`${model.slug}-${variant}`] = appData.rawResponse
+        rawAppResponses.push([`${model.slug}:${variant}`, appData.rawResponse])
       }
 
       // Dedupe apps by app_id
@@ -60,14 +60,12 @@ export async function syncApps(
   }
 
   // Store batched app responses
-  if (Object.keys(rawAppResponses).length > 0) {
-    await storeSnapshotData(ctx, {
-      run_id: config.runId,
-      snapshot_at: config.snapshotAt,
-      type: 'apps',
-      data: rawAppResponses,
-    })
-  }
+  await storeSnapshotData(ctx, {
+    run_id: config.runId,
+    snapshot_at: config.snapshotAt,
+    type: 'apps',
+    data: rawAppResponses,
+  })
 
   const apps = Array.from(appsMap.values())
 

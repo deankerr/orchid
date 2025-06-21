@@ -79,16 +79,12 @@ async function snapshot(ctx: ActionCtx, config: SyncConfig) {
 
   const reportUrl = `${process.env.CONVEX_SITE_URL}/archives?snapshot_at=${config.snapshotAt}`
 
-  return {
-    reportUrl,
-    summary,
-  }
+  console.log({ reportUrl, ...summary })
 }
 
-export const startSnapshot = internalAction({
+export const start = internalAction({
   args: {
     snapshotAt: v.optional(v.number()),
-    compress: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const startedAt = Date.now()
@@ -97,7 +93,6 @@ export const startSnapshot = internalAction({
       snapshotAt: args.snapshotAt || getHourAlignedTimestamp(),
       startedAt,
       runId: startedAt.toString(),
-      compress: args.compress ?? true,
     }
 
     return await snapshot(ctx, config)

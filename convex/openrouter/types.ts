@@ -30,27 +30,11 @@ export interface SyncConfig {
   snapshotAt: number
   startedAt: number
   runId: string
-  compress: boolean
-}
-
-// Processed issue for reporting
-export interface ProcessedIssue {
-  identifier: string
-  type: string
-  message: string
-  index?: number // Optional, carried through from Issue
-}
-
-// Processed result for reporting
-export interface ProcessedResult {
-  identifier: string
-  action: string
 }
 
 // Report structures
 export interface EntityReport {
-  results: ProcessedResult[]
-  issues: ProcessedIssue[]
+  issues: Issue[]
   summary: {
     total: number
     inserted: number

@@ -45,7 +45,7 @@ export async function syncEndpoints(
   const allEndpointMetrics: OrEndpointMetricsFields[] = []
   const allEndpointUptimeMetrics: OrEndpointUptimeMetricsFields[] = []
   const allIssues: Issue[] = []
-  const rawEndpointResponses: Record<string, unknown> = {}
+  const rawEndpointResponses: [string, unknown][] = []
 
   console.log(`Processing endpoints for ${models.length} models...`)
 
@@ -59,7 +59,7 @@ export async function syncEndpoints(
 
       // Collect raw response for archival
       if (endpointData.rawResponse) {
-        rawEndpointResponses[`${model.slug}-${variant}`] = endpointData.rawResponse
+        rawEndpointResponses.push([`${model.slug}:${variant}`, endpointData.rawResponse])
       }
 
       // Sync uptime data for each endpoint (but don't archive - low value)
@@ -72,14 +72,12 @@ export async function syncEndpoints(
   }
 
   // Store batched endpoint responses
-  if (Object.keys(rawEndpointResponses).length > 0) {
-    await storeSnapshotData(ctx, {
-      run_id: config.runId,
-      snapshot_at: config.snapshotAt,
-      type: 'endpoints',
-      data: rawEndpointResponses,
-    })
-  }
+  await storeSnapshotData(ctx, {
+    run_id: config.runId,
+    snapshot_at: config.snapshotAt,
+    type: 'endpoints',
+    data: rawEndpointResponses,
+  })
 
   // Merge all data and track results separately
   const endpointMergeResults = await ctx.runMutation(

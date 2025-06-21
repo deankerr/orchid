@@ -1,58 +1,22 @@
-import type {
-  EntityReport,
-  EntitySyncData,
-  Issue,
-  MergeResult,
-  ProcessedIssue,
-  ProcessedResult,
-  SyncReport,
-} from './types'
-
-/**
- * Process issues into report format
- */
-function processIssues(issues: Issue[]): ProcessedIssue[] {
-  return issues.map((issue) => ({
-    identifier: issue.identifier,
-    type: issue.type,
-    message: issue.message,
-    index: issue.index,
-  }))
-}
-
-/**
- * Process merge results into report format
- */
-function processMergeResults(results: MergeResult[]): ProcessedResult[] {
-  return results.map((result) => ({
-    identifier: result.identifier,
-    action: result.action,
-  }))
-}
+import type { EntityReport, EntitySyncData, SyncReport } from './types'
 
 /**
  * Create an entity report from sync data
  */
 export function createEntityReport<T>(syncData: EntitySyncData<T>): EntityReport {
-  // Process issues
-  const issues = processIssues(syncData.issues)
+  const issues = syncData.issues
 
-  // Process merge results
-  const results = processMergeResults(syncData.mergeResults)
-
-  // Calculate summary
   const summary = {
     total: syncData.items.length,
-    inserted: results.filter((r) => r.action === 'insert').length,
-    updated: results.filter((r) => r.action === 'replace').length,
-    stable: results.filter((r) => r.action === 'stable').length,
+    inserted: syncData.mergeResults.filter((r) => r.action === 'insert').length,
+    updated: syncData.mergeResults.filter((r) => r.action === 'replace').length,
+    stable: syncData.mergeResults.filter((r) => r.action === 'stable').length,
     errors: issues.filter((i) => i.type !== 'schema').length,
     warnings: issues.filter((i) => i.type === 'schema').length,
   }
 
   return {
     summary,
-    results,
     issues,
   }
 }
