@@ -68,6 +68,10 @@ export const OrEndpoints = Table('or_endpoints', {
     discount: v.optional(v.number()),
   }),
 
+  variable_pricings: v.optional(
+    v.array(v.record(v.string(), v.union(v.string(), v.number(), v.boolean()))),
+  ),
+
   status: v.number(),
 
   is_disabled: v.boolean(),

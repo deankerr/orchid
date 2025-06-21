@@ -36,6 +36,10 @@ const pricingFields = {
   discount: z4.number(), // e.g. 0.25, already applied to the other pricing fields
 }
 
+const variablePricingsFields = z4.array(
+  z4.record(z4.string(), z4.union([z4.string(), z4.number(), z4.boolean()])),
+)
+
 const statsFields = {
   endpoint_id: z4.string(), // uuid (same as id)
   p50_throughput: z4.number(),
@@ -67,16 +71,15 @@ const fields = {
   supported_parameters: z4.array(z4.string()),
   is_byok: z4.boolean(),
   moderation_required: z4.boolean(),
-  variable_pricings: z4.array(z4.record(z4.string(), z4.unknown())), // TODO
-  is_hidden: z4.boolean(), // always false
+  is_hidden: z4.literal(false),
   is_deranked: z4.boolean(),
   is_disabled: z4.boolean(),
   supports_tool_parameters: z4.boolean(),
   supports_reasoning: z4.boolean(),
   supports_multipart: z4.boolean(),
-  limit_rpm: z4.number().nullable(),
-  limit_rpd: z4.number().nullable(),
-  limit_rpm_cf: z4.number().nullable(),
+  limit_rpm: z4.null(),
+  limit_rpd: z4.null(),
+  limit_rpm_cf: z4.null(),
   has_completions: z4.boolean(),
   has_chat_completions: z4.boolean(),
   features: z4.strictObject({
@@ -96,6 +99,7 @@ export const EndpointStrictSchema = z4.strictObject({
   ...fields,
   data_policy: z4.strictObject(dataPolicyFields),
   pricing: z4.strictObject(pricingFields),
+  variable_pricings: variablePricingsFields,
   stats: z4.strictObject(statsFields).optional(),
 })
 
@@ -112,6 +116,7 @@ export const EndpointTransformSchema = z4
       'features',
       'is_deranked',
       'is_hidden',
+      'is_free',
     ]),
     data_policy: z4.object(
       R.pick(dataPolicyFields, ['training', 'retainsPrompts', 'retentionDays', 'requiresUserIDs']),
@@ -129,6 +134,9 @@ export const EndpointTransformSchema = z4
         discount: z4.number(),
       })
       .transform(R.pickBy(R.isTruthy)),
+    variable_pricings: variablePricingsFields.transform((arr) =>
+      R.hasAtLeast(arr, 1) ? arr : undefined,
+    ),
     stats: z4.object(statsFields).optional(),
   })
   .transform(R.pickBy(R.isNonNullish))
@@ -180,6 +188,8 @@ export const EndpointTransformSchema = z4
         per_request: r.pricing.request,
         discount: r.pricing.discount,
       },
+
+      variable_pricings: r.variable_pricings,
 
       status: r.status ?? 0,
       is_disabled: r.is_disabled,
