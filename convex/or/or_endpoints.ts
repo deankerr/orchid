@@ -41,6 +41,9 @@ export const OrEndpoints = Table('or_endpoints', {
 
     images_per_prompt: v.optional(v.number()),
     tokens_per_image: v.optional(v.number()),
+
+    rpm: v.optional(v.number()),
+    rpd: v.optional(v.number()),
   }),
 
   data_policy: v.object({
@@ -48,6 +51,7 @@ export const OrEndpoints = Table('or_endpoints', {
     retains_prompts: v.optional(v.boolean()),
     retention_days: v.optional(v.number()),
     requires_user_ids: v.optional(v.boolean()),
+    can_publish: v.optional(v.boolean()),
   }),
 
   pricing: v.object({

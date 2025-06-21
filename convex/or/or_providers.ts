@@ -10,6 +10,7 @@ export const OrProviders = Table('or_providers', {
   slug: v.string(),
   name: v.string(),
   headquarters: v.optional(v.string()),
+  datacenters: v.optional(v.array(v.string())),
   icon: v.object({
     url: v.string(),
     invertRequired: v.optional(v.boolean()),
@@ -35,6 +36,7 @@ export const OrProviders = Table('or_providers', {
       training: v.boolean(),
       retains_prompts: v.optional(v.boolean()),
       retention_days: v.optional(v.number()),
+      can_publish: v.optional(v.boolean()),
     }),
 
     free_models: v.optional(
@@ -42,6 +44,7 @@ export const OrProviders = Table('or_providers', {
         training: v.boolean(),
         retains_prompts: v.boolean(),
         retention_days: v.optional(v.number()),
+        can_publish: v.optional(v.boolean()),
       }),
     ),
   }),

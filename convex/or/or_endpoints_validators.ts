@@ -10,6 +10,7 @@ const dataPolicyFields = {
       training: z4.boolean(),
       retainsPrompts: z4.boolean(),
       retentionDays: z4.number().optional(),
+      canPublish: z4.boolean().optional(),
     })
     .optional(),
   paidModels: z4.object({
@@ -17,11 +18,13 @@ const dataPolicyFields = {
     retainsPrompts: z4.boolean().optional(),
     retentionDays: z4.number().optional(),
     requiresUserIDs: z4.boolean().optional(),
+    canPublish: z4.boolean().optional(),
   }),
   training: z4.boolean().optional(),
   retainsPrompts: z4.boolean().optional(),
   retentionDays: z4.number().optional(),
   requiresUserIDs: z4.boolean().optional(),
+  canPublish: z4.boolean().optional(),
 }
 
 const pricingFields = {
@@ -77,8 +80,8 @@ const fields = {
   supports_tool_parameters: z4.boolean(),
   supports_reasoning: z4.boolean(),
   supports_multipart: z4.boolean(),
-  limit_rpm: z4.null(),
-  limit_rpd: z4.null(),
+  limit_rpm: z4.number().nullable(),
+  limit_rpd: z4.number().nullable(),
   limit_rpm_cf: z4.null(),
   has_completions: z4.boolean(),
   has_chat_completions: z4.boolean(),
@@ -110,8 +113,6 @@ export const EndpointTransformSchema = z4
       'provider_info',
       'provider_model_id',
       'provider_region',
-      'limit_rpm',
-      'limit_rpd',
       'limit_rpm_cf',
       'features',
       'is_deranked',
@@ -119,7 +120,13 @@ export const EndpointTransformSchema = z4
       'is_free',
     ]),
     data_policy: z4.object(
-      R.pick(dataPolicyFields, ['training', 'retainsPrompts', 'retentionDays', 'requiresUserIDs']),
+      R.pick(dataPolicyFields, [
+        'training',
+        'retainsPrompts',
+        'retentionDays',
+        'requiresUserIDs',
+        'canPublish',
+      ]),
     ),
     pricing: z4
       .object({
@@ -168,6 +175,8 @@ export const EndpointTransformSchema = z4
         output_tokens: r.max_completion_tokens,
         images_per_prompt: r.max_prompt_images,
         tokens_per_image: r.max_tokens_per_image,
+        rpm: r.limit_rpm,
+        rpd: r.limit_rpd,
       },
 
       data_policy: {
@@ -175,6 +184,7 @@ export const EndpointTransformSchema = z4
         retains_prompts: r.data_policy.retainsPrompts,
         retention_days: r.data_policy.retentionDays,
         requires_user_ids: r.data_policy.requiresUserIDs,
+        can_publish: r.data_policy.canPublish,
       },
 
       pricing: {

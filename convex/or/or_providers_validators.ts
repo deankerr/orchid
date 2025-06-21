@@ -5,12 +5,14 @@ const paidModelFields = {
   training: z4.boolean(),
   retainsPrompts: z4.boolean().optional(),
   retentionDays: z4.number().optional(),
+  canPublish: z4.boolean().optional(),
 }
 
 const freeModelFIelds = {
   training: z4.boolean(),
   retainsPrompts: z4.boolean(),
   retentionDays: z4.number().optional(),
+  canPublish: z4.boolean().optional(),
 }
 
 const dataPolicyFields = {
@@ -31,6 +33,7 @@ const fields = {
   slug: z4.string(), // primary key
   baseUrl: z4.string(), // always "url" (literal)
   headquarters: z4.string().optional(), // two letter country/state code
+  datacenters: z4.string().array().optional(),
   hasChatCompletions: z4.boolean(), // chat endpoint
   hasCompletions: z4.boolean(), // completion endpoint
   isAbortable: z4.boolean(),
@@ -70,6 +73,7 @@ export const ProviderTransformSchema = z4
       slug,
       displayName,
       headquarters,
+      datacenters,
       hasChatCompletions,
       hasCompletions,
       isAbortable,
@@ -85,6 +89,7 @@ export const ProviderTransformSchema = z4
       slug,
       name: displayName,
       headquarters,
+      datacenters,
       icon,
       status_page_url: statusPageUrl,
       moderation_required: moderationRequired,
@@ -107,6 +112,7 @@ export const ProviderTransformSchema = z4
           training: dataPolicy.paidModels.training,
           retains_prompts: dataPolicy.paidModels.retainsPrompts,
           retention_days: dataPolicy.paidModels.retentionDays,
+          can_publish: dataPolicy.paidModels.canPublish,
         },
 
         free_models: dataPolicy.freeModels
@@ -114,6 +120,7 @@ export const ProviderTransformSchema = z4
               training: dataPolicy.freeModels.training,
               retains_prompts: dataPolicy.freeModels.retainsPrompts,
               retention_days: dataPolicy.freeModels.retentionDays,
+              can_publish: dataPolicy.freeModels.canPublish,
             }
           : undefined,
       },
