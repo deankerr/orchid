@@ -1,7 +1,7 @@
 import { httpRouter } from 'convex/server'
 
 import { httpAction } from './_generated/server'
-import { getLatestSnapshot, getSnapshotArchive, getSnapshotArchives } from './openrouter/archives'
+import { getSnapshotArchives } from './openrouter/archives'
 
 const http = httpRouter()
 
@@ -11,59 +11,41 @@ http.route({
   handler: httpAction(async (ctx, request) => {
     const url = new URL(request.url)
     const snapshotAtParam = url.searchParams.get('snapshot_at')
-    const type = url.searchParams.get('type')
-    const showIndex = url.searchParams.get('index') === 'true'
+    const type = url.searchParams.get('type') || 'report'
 
     try {
-      // If no snapshot_at specified, get the latest
-      let snapshot_at: number
-      if (snapshotAtParam) {
-        snapshot_at = parseInt(snapshotAtParam, 10)
-        if (isNaN(snapshot_at)) {
-          return new Response("Invalid 'snapshot_at' parameter", { status: 400 })
-        }
-      } else {
-        const latestSnapshot = await getLatestSnapshot(ctx)
-        if (!latestSnapshot) {
-          return new Response('No archives found', { status: 404 })
-        }
-        snapshot_at = latestSnapshot
+      // snapshot_at is now required
+      if (!snapshotAtParam) {
+        return new Response("'snapshot_at' parameter is required", { status: 400 })
       }
 
-      // If showing index, return all archives for this snapshot
-      if (showIndex) {
-        const archives = await getSnapshotArchives(ctx, snapshot_at)
-        const indexData = {
-          snapshot_at,
-          archives: archives.map((archive) => ({
-            type: archive.type,
-            run_id: archive.run_id,
-            size: archive.size,
-            sha256: archive.sha256,
-            _creationTime: archive._creationTime,
-          })),
-        }
-
-        return new Response(JSON.stringify(indexData, null, 2), {
-          status: 200,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*',
-          },
-        })
+      const snapshot_at = parseInt(snapshotAtParam, 10)
+      if (isNaN(snapshot_at)) {
+        return new Response("Invalid 'snapshot_at' parameter", { status: 400 })
       }
 
-      // Get specific archive (default to 'report' if no type specified)
-      const archiveType = type || 'report'
-      const result = await getSnapshotArchive(ctx, snapshot_at, archiveType)
+      // Get all archives for this snapshot_at and type, sorted latest first
+      const results = await getSnapshotArchives(ctx, snapshot_at, type)
 
-      if (!result) {
-        return new Response(`Archive not found: ${archiveType} for snapshot ${snapshot_at}`, {
+      if (results.length === 0) {
+        return new Response(`No archives found: ${type} for snapshot ${snapshot_at}`, {
           status: 404,
         })
       }
 
-      return new Response(JSON.stringify(result.data, null, 2), {
+      // Return all results as an array
+      const responseData = results.map((result) => ({
+        archive: {
+          type: result.archive.type,
+          run_id: result.archive.run_id,
+          size: result.archive.size,
+          sha256: result.archive.sha256,
+          _creationTime: result.archive._creationTime,
+        },
+        data: result.data,
+      }))
+
+      return new Response(JSON.stringify(responseData, null, 2), {
         status: 200,
         headers: {
           'Content-Type': 'application/json',

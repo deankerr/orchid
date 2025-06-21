@@ -76,34 +76,25 @@ export async function retrieveArchive(ctx: ActionCtx, storage_id: string) {
 }
 
 /**
- * Get the latest snapshot timestamp
+ * Get all archives for a specific snapshot_at and type, sorted by creation time (latest first)
  */
-export async function getLatestSnapshot(ctx: ActionCtx) {
-  return await ctx.runQuery(internal.openrouter.archives.queryLatestSnapshot)
-}
-
-/**
- * Get all archives for a specific snapshot
- */
-export async function getSnapshotArchives(ctx: ActionCtx, snapshot_at: number) {
-  return await ctx.runQuery(internal.openrouter.archives.querySnapshotArchives, { snapshot_at })
-}
-
-/**
- * Get a specific archive by snapshot_at and type
- */
-export async function getSnapshotArchive(ctx: ActionCtx, snapshot_at: number, type: string) {
-  const archive = await ctx.runQuery(internal.openrouter.archives.querySnapshotArchive, {
+export async function getSnapshotArchives(ctx: ActionCtx, snapshot_at: number, type: string) {
+  const archives = await ctx.runQuery(internal.openrouter.archives.querySnapshotArchives, {
     snapshot_at,
     type,
   })
 
-  if (!archive) {
-    return null
+  // Sort by creation time, latest first
+  const sortedArchives = archives.sort((a, b) => b._creationTime - a._creationTime)
+
+  // Retrieve data for all archives
+  const results = []
+  for (const archive of sortedArchives) {
+    const data = await retrieveArchive(ctx, archive.storage_id)
+    results.push({ archive, data })
   }
 
-  const data = await retrieveArchive(ctx, archive.storage_id)
-  return { archive, data }
+  return results
 }
 
 /**
@@ -117,38 +108,9 @@ export const insertArchiveRecord = internalMutation({
 })
 
 /**
- * Get the latest snapshot timestamp
- */
-export const queryLatestSnapshot = internalQuery({
-  args: {},
-  handler: async (ctx) => {
-    const latest = await ctx.db
-      .query('snapshot_archives')
-      .withIndex('by_snapshot_at')
-      .order('desc')
-      .first()
-
-    return latest?.snapshot_at || null
-  },
-})
-
-/**
- * Get all archives for a specific snapshot
+ * Get all archives for a specific snapshot_at and type
  */
 export const querySnapshotArchives = internalQuery({
-  args: { snapshot_at: v.number() },
-  handler: async (ctx, { snapshot_at }) => {
-    return await ctx.db
-      .query('snapshot_archives')
-      .withIndex('by_snapshot_at', (q) => q.eq('snapshot_at', snapshot_at))
-      .collect()
-  },
-})
-
-/**
- * Get a specific archive by snapshot_at and type
- */
-export const querySnapshotArchive = internalQuery({
   args: {
     snapshot_at: v.number(),
     type: v.string(),
@@ -158,6 +120,6 @@ export const querySnapshotArchive = internalQuery({
       .query('snapshot_archives')
       .withIndex('by_snapshot_at', (q) => q.eq('snapshot_at', snapshot_at))
       .filter((q) => q.eq(q.field('type'), type))
-      .first()
+      .collect()
   },
 })
