@@ -1,10 +1,9 @@
 import type { Doc } from '@/convex/_generated/dataModel'
 import { BulkEndpoint } from './BulkEndpoint'
 import Link from 'next/link'
-import { EpochDisplay } from '../EpochDisplay'
 
-type ModelWithEndpoints = Doc<'model_views'> & {
-  endpoints: Doc<'endpoint_views'>[]
+type ModelWithEndpoints = Doc<'or_models'> & {
+  endpoints: Doc<'or_endpoints'>[]
 }
 
 export function BulkModel({ model }: { model: ModelWithEndpoints }) {
@@ -80,17 +79,15 @@ export function BulkModel({ model }: { model: ModelWithEndpoints }) {
             </tr>
             <tr className="border-b">
               <td className="py-1 pr-4 text-muted-foreground">created</td>
-              <td className="py-1">{formatDate(model.origin_created_at)}</td>
+              <td className="py-1">{formatDate(model.or_created_at)}</td>
             </tr>
             <tr className="border-b">
               <td className="py-1 pr-4 text-muted-foreground">updated</td>
-              <td className="py-1">{formatDate(model.origin_updated_at)}</td>
+              <td className="py-1">{formatDate(model.or_updated_at)}</td>
             </tr>
             <tr className="border-b">
-              <td className="py-1 pr-4 text-muted-foreground">epoch</td>
-              <td className="py-1">
-                <EpochDisplay epoch={model.epoch} />
-              </td>
+              <td className="py-1 pr-4 text-muted-foreground">snapshot_at</td>
+              <td className="py-1">{model.snapshot_at}</td>
             </tr>
           </tbody>
         </table>

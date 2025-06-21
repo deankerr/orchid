@@ -1,6 +1,6 @@
 import type { Doc } from '@/convex/_generated/dataModel'
 
-export function BulkEndpoint({ endpoint }: { endpoint: Doc<'endpoint_views'> }) {
+export function BulkEndpoint({ endpoint }: { endpoint: Doc<'or_endpoints'> }) {
   // Format pricing for display
   const formatPrice = (price: number, type: 'token' | 'request' | 'image') => {
     if (type === 'token') {
