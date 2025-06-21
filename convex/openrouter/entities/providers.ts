@@ -51,9 +51,12 @@ export async function syncProviders(
     }))
 
     // Merge providers into database
-    const mergeResults = await ctx.runMutation(internal.openrouter.entities.providers.mergeProviders, {
-      providers,
-    })
+    const mergeResults = await ctx.runMutation(
+      internal.openrouter.entities.providers.mergeProviders,
+      {
+        providers,
+      },
+    )
 
     console.log('Providers complete')
     return {

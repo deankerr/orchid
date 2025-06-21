@@ -1,6 +1,5 @@
-import z4 from 'zod/v4'
-
 import * as R from 'remeda'
+import z4 from 'zod/v4'
 
 const paidModelFields = {
   training: z4.boolean(),

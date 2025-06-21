@@ -18,7 +18,10 @@ export type OrEndpointUptimeMetricsFields = Infer<
 >
 
 export const OrEndpointUptimeMetricsFn = {
-  get: async (ctx: QueryCtx, { endpoint_uuid, timestamp }: { endpoint_uuid: string; timestamp: number }) => {
+  get: async (
+    ctx: QueryCtx,
+    { endpoint_uuid, timestamp }: { endpoint_uuid: string; timestamp: number },
+  ) => {
     return await ctx.db
       .query(OrEndpointUptimeMetrics.name)
       .withIndex('by_endpoint_uuid_timestamp', (q) =>

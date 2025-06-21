@@ -83,7 +83,11 @@ async function syncAuthor(
   ctx: ActionCtx,
   config: SyncConfig,
   authorSlug: string,
-): Promise<{ author: OrAuthorFields; modelTokenMetrics: OrModelTokenMetricsFields[]; issues: Issue[] }> {
+): Promise<{
+  author: OrAuthorFields
+  modelTokenMetrics: OrModelTokenMetricsFields[]
+  issues: Issue[]
+}> {
   try {
     const response = await orFetch('/api/frontend/model-author', {
       params: { authorSlug, shouldIncludeStats: true, shouldIncludeVariants: false },

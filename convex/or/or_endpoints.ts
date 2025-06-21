@@ -104,7 +104,10 @@ export const OrEndpointsFn = {
     await ctx.db.insert('or_endpoints_changes', args)
   },
 
-  merge: async (ctx: MutationCtx, { endpoint }: { endpoint: OrEndpointFields }): Promise<MergeResult> => {
+  merge: async (
+    ctx: MutationCtx,
+    { endpoint }: { endpoint: OrEndpointFields },
+  ): Promise<MergeResult> => {
     const existing = await OrEndpointsFn.get(ctx, { uuid: endpoint.uuid })
     const changes = OrEndpointsFn.diff(existing || {}, endpoint)
 

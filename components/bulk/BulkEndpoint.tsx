@@ -56,7 +56,8 @@ export function BulkEndpoint({ endpoint }: { endpoint: Doc<'or_endpoints'> }) {
             <span className="text-muted-foreground">provider:</span> {endpoint.provider_name}
           </div>
           <div>
-            <span className="text-muted-foreground">context:</span> {endpoint.context_length.toLocaleString()}
+            <span className="text-muted-foreground">context:</span>{' '}
+            {endpoint.context_length.toLocaleString()}
           </div>
           <div>
             <span className="text-muted-foreground">quantization:</span>{' '}
@@ -134,7 +135,8 @@ export function BulkEndpoint({ endpoint }: { endpoint: Doc<'or_endpoints'> }) {
 
       {/* Supported parameters if any */}
       <div className="mt-1 text-xs ml-32">
-        <span className="text-muted-foreground">params:</span> {endpoint.supported_parameters.join(', ')}
+        <span className="text-muted-foreground">params:</span>{' '}
+        {endpoint.supported_parameters.join(', ')}
       </div>
 
       {/* UUID */}

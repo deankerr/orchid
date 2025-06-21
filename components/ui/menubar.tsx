@@ -11,7 +11,10 @@ function Menubar({ className, ...props }: React.ComponentProps<typeof MenubarPri
   return (
     <MenubarPrimitive.Root
       data-slot="menubar"
-      className={cn('bg-background flex h-9 items-center gap-1 rounded-md border p-1 shadow-xs', className)}
+      className={cn(
+        'bg-background flex h-9 items-center gap-1 rounded-md border p-1 shadow-xs',
+        className,
+      )}
       {...props}
     />
   )
@@ -33,7 +36,10 @@ function MenubarRadioGroup({ ...props }: React.ComponentProps<typeof MenubarPrim
   return <MenubarPrimitive.RadioGroup data-slot="menubar-radio-group" {...props} />
 }
 
-function MenubarTrigger({ className, ...props }: React.ComponentProps<typeof MenubarPrimitive.Trigger>) {
+function MenubarTrigger({
+  className,
+  ...props
+}: React.ComponentProps<typeof MenubarPrimitive.Trigger>) {
   return (
     <MenubarPrimitive.Trigger
       data-slot="menubar-trigger"
@@ -160,7 +166,10 @@ function MenubarLabel({
   )
 }
 
-function MenubarSeparator({ className, ...props }: React.ComponentProps<typeof MenubarPrimitive.Separator>) {
+function MenubarSeparator({
+  className,
+  ...props
+}: React.ComponentProps<typeof MenubarPrimitive.Separator>) {
   return (
     <MenubarPrimitive.Separator
       data-slot="menubar-separator"

@@ -16,13 +16,17 @@ export const OrAppTokenMetrics = Table('or_app_token_metrics', {
   snapshot_at: v.number(),
 })
 
-export type OrAppTokenMetricsFields = Infer<AsObjectValidator<typeof OrAppTokenMetrics.withoutSystemFields>>
+export type OrAppTokenMetricsFields = Infer<
+  AsObjectValidator<typeof OrAppTokenMetrics.withoutSystemFields>
+>
 
 export const OrAppTokenMetricsFn = {
   get: async (ctx: QueryCtx, { app_id, snapshot_at }: { app_id: number; snapshot_at: number }) => {
     return await ctx.db
       .query(OrAppTokenMetrics.name)
-      .withIndex('by_app_id_snapshot_at', (q) => q.eq('app_id', app_id).eq('snapshot_at', snapshot_at))
+      .withIndex('by_app_id_snapshot_at', (q) =>
+        q.eq('app_id', app_id).eq('snapshot_at', snapshot_at),
+      )
       .first()
   },
 

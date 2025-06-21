@@ -1,6 +1,5 @@
-import z4 from 'zod/v4'
-
 import * as R from 'remeda'
+import z4 from 'zod/v4'
 
 const fields = {
   id: z4.string(),

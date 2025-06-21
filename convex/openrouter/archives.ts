@@ -122,7 +122,11 @@ export const insertArchiveRecord = internalMutation({
 export const queryLatestSnapshot = internalQuery({
   args: {},
   handler: async (ctx) => {
-    const latest = await ctx.db.query('snapshot_archives').withIndex('by_snapshot_at').order('desc').first()
+    const latest = await ctx.db
+      .query('snapshot_archives')
+      .withIndex('by_snapshot_at')
+      .order('desc')
+      .first()
 
     return latest?.snapshot_at || null
   },

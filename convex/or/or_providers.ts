@@ -72,7 +72,10 @@ export const OrProvidersFn = {
     await ctx.db.insert('or_providers_changes', args)
   },
 
-  merge: async (ctx: MutationCtx, { provider }: { provider: OrProviderFields }): Promise<MergeResult> => {
+  merge: async (
+    ctx: MutationCtx,
+    { provider }: { provider: OrProviderFields },
+  ): Promise<MergeResult> => {
     const existing = await OrProvidersFn.get(ctx, { slug: provider.slug })
     const changes = OrProvidersFn.diff(existing || {}, provider)
 

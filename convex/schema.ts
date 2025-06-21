@@ -20,7 +20,10 @@ export const schema = defineSchema(
     or_models: OrModels.table.index('by_slug', ['slug']),
     or_providers: OrProviders.table.index('by_slug', ['slug']),
 
-    or_app_token_metrics: OrAppTokenMetrics.table.index('by_app_id_snapshot_at', ['app_id', 'snapshot_at']),
+    or_app_token_metrics: OrAppTokenMetrics.table.index('by_app_id_snapshot_at', [
+      'app_id',
+      'snapshot_at',
+    ]),
     or_endpoint_metrics: OrEndpointMetrics.table.index('by_endpoint_uuid_snapshot_at', [
       'endpoint_uuid',
       'snapshot_at',
@@ -29,11 +32,10 @@ export const schema = defineSchema(
       'endpoint_uuid',
       'timestamp',
     ]),
-    or_model_token_metrics: OrModelTokenMetrics.table.index('by_model_permaslug_model_variant_timestamp', [
-      'model_permaslug',
-      'model_variant',
-      'timestamp',
-    ]),
+    or_model_token_metrics: OrModelTokenMetrics.table.index(
+      'by_model_permaslug_model_variant_timestamp',
+      ['model_permaslug', 'model_variant', 'timestamp'],
+    ),
 
     snapshot_archives: SnapshotArchives.table.index('by_snapshot_at', ['snapshot_at']),
 

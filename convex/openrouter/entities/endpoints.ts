@@ -82,9 +82,12 @@ export async function syncEndpoints(
   }
 
   // Merge all data and track results separately
-  const endpointMergeResults = await ctx.runMutation(internal.openrouter.entities.endpoints.mergeEndpoints, {
-    endpoints: allEndpoints,
-  })
+  const endpointMergeResults = await ctx.runMutation(
+    internal.openrouter.entities.endpoints.mergeEndpoints,
+    {
+      endpoints: allEndpoints,
+    },
+  )
 
   const metricsMergeResults = await ctx.runMutation(
     internal.openrouter.entities.endpoints.mergeEndpointMetrics,

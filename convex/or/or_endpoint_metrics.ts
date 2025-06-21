@@ -15,7 +15,9 @@ export const OrEndpointMetrics = Table('or_endpoint_metrics', {
   snapshot_at: v.number(),
 })
 
-export type OrEndpointMetricsFields = Infer<AsObjectValidator<typeof OrEndpointMetrics.withoutSystemFields>>
+export type OrEndpointMetricsFields = Infer<
+  AsObjectValidator<typeof OrEndpointMetrics.withoutSystemFields>
+>
 
 export const OrEndpointMetricsFn = {
   get: async (

@@ -1,7 +1,7 @@
 {
   "semi": false,
   "singleQuote": true,
-  "printWidth": 110,
+  "printWidth": 100,
   "plugins": ["@ianvs/prettier-plugin-sort-imports"],
   "importOrder": [
     "<BUILTIN_MODULES>",
@@ -10,19 +10,18 @@
     "^next(/.*)?$",
     "",
     "^(convex|convex-helpers)(/.*)?$",
-    "^zod(/.*)?$",
+    "^(zod|remeda)(/.*)?$",
     "",
     "<THIRD_PARTY_MODULES>",
     "",
     "^@/convex/_generated/(.*)$",
-    "",
     "^@/convex/(.*)$",
     "",
     "^@/(hooks|lib|components)/(.*)$",
     "",
     "^[./]"
   ],
-  "importOrderParserPlugins": ["typescript", "jsx", "decorators-legacy"],
+  "importOrderParserPlugins": ["typescript", "jsx"],
   "importOrderTypeScriptVersion": "5.0.0",
   "importOrderCaseSensitive": false
 }
