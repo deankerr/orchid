@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { ThemeButton } from './ui/theme-button'
 
 export function Header() {
   return (
@@ -16,49 +17,9 @@ export function Header() {
           </Link>
         </div>
 
-        {/* Right side - Dev controls */}
+        {/* Right side - controls */}
         <div className="flex items-center gap-4">
-          {/* Epoch status */}
-          <div className="flex items-center gap-3 font-mono text-xs">
-            {/* <div className="flex items-center gap-1">
-              <span className="">Last:</span>
-              <EpochDisplay epoch={currentEpoch} />
-            </div>
-            {latestProcessedEpoch && (
-              <div className="flex items-center gap-1">
-                <span className="">Data:</span>
-                <EpochDisplay epoch={latestProcessedEpoch} />
-              </div>
-            )} */}
-          </div>
-
-          {/* Sync status indicator */}
-          {/* <div className="flex items-center gap-2 font-mono text-xs">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-            <span className="text-muted-foreground">Sync Active</span>
-          </div> */}
-
-          {/* Dev buttons */}
-          {/* <div className="flex items-center gap-2">
-            <button
-              className="px-3 py-1 text-xs font-mono border rounded hover:bg-muted/50 transition-colors"
-              onClick={() => console.log('Trigger sync')}
-            >
-              Sync Now
-            </button>
-            <button
-              className="px-3 py-1 text-xs font-mono border rounded hover:bg-muted/50 transition-colors"
-              onClick={() => console.log('Process projections')}
-            >
-              Process
-            </button>
-            <button
-              className="px-3 py-1 text-xs font-mono border rounded hover:bg-muted/50 transition-colors"
-              onClick={() => console.log('View logs')}
-            >
-              Logs
-            </button>
-          </div> */}
+          <ThemeButton />
         </div>
       </div>
     </header>

@@ -1,8 +1,9 @@
+import './globals.css'
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
-import './globals.css'
-import { ConvexClientProvider } from './ConvexClientProvider'
-import { Header } from '@/components/Header'
+import { ConvexClientProvider } from './convex-client-provider'
+import { Header } from '@/components/header'
+import { ThemeProvider } from '@/app/theme-provider'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -25,13 +26,15 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ConvexClientProvider>
-          <div className="min-h-screen bg-background">
-            <Header />
-            <main className="relative">{children}</main>
-          </div>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+            <div className="min-h-screen bg-background">
+              <Header />
+              <main className="relative">{children}</main>
+            </div>
+          </ThemeProvider>
         </ConvexClientProvider>
       </body>
     </html>
