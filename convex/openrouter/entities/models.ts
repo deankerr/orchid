@@ -3,12 +3,12 @@ import * as R from 'remeda'
 import z4 from 'zod/v4'
 import { internal } from '../../_generated/api'
 import { internalMutation, type ActionCtx, type MutationCtx } from '../../_generated/server'
-import { storeJSON } from '../../files'
 import { ModelStrictSchema, ModelTransformSchema } from '../../or/or_models_validators'
 import { OrModelsFn, OrModels, type OrModelFields } from '../../or/or_models'
 import { orFetch } from '../client'
 import type { EntitySyncData, Issue, SyncConfig } from '../types'
 import { validateArray } from '../validation'
+import { storeSnapshotData } from '../archives'
 
 /**
  * Sync all models from OpenRouter
@@ -23,12 +23,11 @@ export async function syncModels(
       schema: z4.object({ data: z4.unknown().array() }),
     })
 
-    // Store raw response
-    const snapshotKey = `openrouter-models-snapshot-${config.startedAt}`
-    await storeJSON(ctx, {
-      key: snapshotKey,
+    // Store raw response in archives
+    await storeSnapshotData(ctx, {
+      run_id: config.runId,
       snapshot_at: config.snapshotAt,
-      compress: config.compress,
+      type: 'models',
       data: response,
     })
 

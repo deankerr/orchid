@@ -28,8 +28,9 @@ export interface EntitySyncData<T> {
 // Configuration for sync operations
 export interface SyncConfig {
   snapshotAt: number
-  startedAt: number // Used as secondary ID for file storage
-  compress: boolean // Whether to compress snapshots (default: true)
+  startedAt: number
+  runId: string
+  compress: boolean
 }
 
 // Processed issue for reporting

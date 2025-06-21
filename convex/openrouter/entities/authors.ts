@@ -2,18 +2,17 @@ import { v } from 'convex/values'
 import z4 from 'zod/v4'
 import { internal } from '../../_generated/api'
 import { internalMutation, type ActionCtx, type MutationCtx } from '../../_generated/server'
-import { AuthorStrictSchema, AuthorTransformSchema } from '../../or/or_authors_validators'
 import { OrAuthors, OrAuthorsFn, type OrAuthorFields } from '../../or/or_authors'
-import { storeJSON } from '../../files'
-import {
-  ModelTokenStatsStrictSchema,
-  ModelTokenStatsTransformSchema,
-} from '../../or/or_model_token_metrics_validators'
+import { AuthorStrictSchema, AuthorTransformSchema } from '../../or/or_authors_validators'
 import {
   OrModelTokenMetrics,
   OrModelTokenMetricsFn,
   type OrModelTokenMetricsFields,
 } from '../../or/or_model_token_metrics'
+import {
+  ModelTokenStatsStrictSchema,
+  ModelTokenStatsTransformSchema,
+} from '../../or/or_model_token_metrics_validators'
 import { orFetch } from '../client'
 import type { EntitySyncData, Issue, SyncConfig } from '../types'
 import { processBatchMutation } from '../utils'
@@ -88,15 +87,6 @@ async function syncAuthor(
     const response = await orFetch('/api/frontend/model-author', {
       params: { authorSlug, shouldIncludeStats: true, shouldIncludeVariants: false },
       schema: z4.object({ data: z4.unknown() }),
-    })
-
-    // Store raw response
-    const snapshotKey = `openrouter-author-${authorSlug}-snapshot-${config.startedAt}`
-    await storeJSON(ctx, {
-      key: snapshotKey,
-      snapshot_at: config.snapshotAt,
-      compress: config.compress,
-      data: response,
     })
 
     const { item: author, issues: authorIssues } = validateRecord(

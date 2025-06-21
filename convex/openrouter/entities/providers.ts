@@ -2,12 +2,12 @@ import { v } from 'convex/values'
 import z4 from 'zod/v4'
 import { internal } from '../../_generated/api'
 import { internalMutation, type ActionCtx, type MutationCtx } from '../../_generated/server'
-import { storeJSON } from '../../files'
 import { ProviderStrictSchema, ProviderTransformSchema } from '../../or/or_providers_validators'
 import { OrProvidersFn, OrProviders, type OrProviderFields } from '../../or/or_providers'
 import { orFetch } from '../client'
 import type { EntitySyncData, Issue, SyncConfig } from '../types'
 import { validateArray } from '../validation'
+import { storeSnapshotData } from '../archives'
 
 /**
  * Sync all providers from OpenRouter
@@ -22,11 +22,11 @@ export async function syncProviders(
       schema: z4.object({ data: z4.unknown().array() }),
     })
 
-    const snapshotKey = `openrouter-providers-snapshot-${config.startedAt}`
-    await storeJSON(ctx, {
-      key: snapshotKey,
+    // Store raw response in archives
+    await storeSnapshotData(ctx, {
+      run_id: config.runId,
       snapshot_at: config.snapshotAt,
-      compress: config.compress,
+      type: 'providers',
       data: response,
     })
 

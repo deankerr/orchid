@@ -1,7 +1,6 @@
 import { v } from 'convex/values'
 import { internalAction, type ActionCtx } from '../_generated/server'
 import { getHourAlignedTimestamp } from '../shared'
-import { storeJSON } from '../files'
 import { SnapshotReport } from './report'
 import { syncProviders } from './entities/providers'
 import { syncModels } from './entities/models'
@@ -10,6 +9,7 @@ import { syncEndpoints } from './entities/endpoints'
 import { syncApps } from './entities/apps'
 import type { SyncConfig } from './types'
 import { runParallelSync, flattenSyncResults } from './utils'
+import { storeSnapshotData } from './archives'
 
 async function snapshot(ctx: ActionCtx, config: SyncConfig) {
   const collector = new SnapshotReport(config.snapshotAt, config.startedAt)
@@ -35,16 +35,17 @@ async function snapshot(ctx: ActionCtx, config: SyncConfig) {
 
     // Create final report with partial data
     const { report, summary } = collector.create()
-    const reportKey = `openrouter-sync-report-${config.startedAt}`
-    await storeJSON(ctx, {
-      key: reportKey,
+
+    // Store report in archives
+    await storeSnapshotData(ctx, {
+      run_id: config.runId,
       snapshot_at: config.snapshotAt,
+      type: 'report',
       data: report,
-      compress: config.compress,
     })
 
-    const reportUrl = `${process.env.CONVEX_SITE_URL}/reports?key=${reportKey}`
-    return { reportKey, reportUrl, summary }
+    const reportUrl = `${process.env.CONVEX_SITE_URL}/archives?snapshot_at=${config.snapshotAt}`
+    return { reportUrl, summary }
   }
 
   // Phase 3, 4, 5: Run endpoints, apps, and authors in parallel (all depend on models)
@@ -67,19 +68,17 @@ async function snapshot(ctx: ActionCtx, config: SyncConfig) {
   // Create final report
   const { report, summary } = collector.create()
 
-  // Store report
-  const reportKey = `openrouter-sync-report-${config.startedAt}`
-  await storeJSON(ctx, {
-    key: reportKey,
+  // Store report in archives
+  await storeSnapshotData(ctx, {
+    run_id: config.runId,
     snapshot_at: config.snapshotAt,
+    type: 'report',
     data: report,
-    compress: config.compress,
   })
 
-  const reportUrl = `${process.env.CONVEX_SITE_URL}/reports?key=${reportKey}`
+  const reportUrl = `${process.env.CONVEX_SITE_URL}/archives?snapshot_at=${config.snapshotAt}`
 
   return {
-    reportKey,
     reportUrl,
     summary,
   }
@@ -91,9 +90,12 @@ export const startSnapshot = internalAction({
     compress: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
+    const startedAt = Date.now()
+
     const config: SyncConfig = {
       snapshotAt: args.snapshotAt || getHourAlignedTimestamp(),
-      startedAt: Date.now(),
+      startedAt,
+      runId: startedAt.toString(),
       compress: args.compress ?? true,
     }
 

@@ -18,12 +18,12 @@ import {
 } from '../../or/or_endpoint_uptime_metrics'
 import { EndpointStrictSchema, EndpointTransformSchema } from '../../or/or_endpoints_validators'
 import { OrEndpointsFn, OrEndpoints, type OrEndpointFields } from '../../or/or_endpoints'
-import { storeJSON } from '../../files'
 import type { OrModelFields } from '../../or/or_models'
 import { orFetch } from '../client'
 import type { EntitySyncData, Issue, SyncConfig } from '../types'
 import { processBatchMutation } from '../utils'
 import { validateArray, validateRecord } from '../validation'
+import { storeSnapshotData } from '../archives'
 
 // Batch size for large arrays to avoid Convex limits
 const ENDPOINT_UPTIME_BATCH_SIZE = 4000
@@ -44,6 +44,7 @@ export async function syncEndpoints(
   const allEndpointMetrics: OrEndpointMetricsFields[] = []
   const allEndpointUptimeMetrics: OrEndpointUptimeMetricsFields[] = []
   const allIssues: Issue[] = []
+  const rawEndpointResponses: Record<string, unknown> = {}
 
   console.log(`Processing endpoints for ${models.length} models...`)
 
@@ -55,13 +56,28 @@ export async function syncEndpoints(
       allEndpointMetrics.push(...endpointData.endpointMetrics)
       allIssues.push(...endpointData.issues)
 
-      // Sync uptime data for each endpoint
+      // Collect raw response for archival
+      if (endpointData.rawResponse) {
+        rawEndpointResponses[`${model.slug}-${variant}`] = endpointData.rawResponse
+      }
+
+      // Sync uptime data for each endpoint (but don't archive - low value)
       for (const endpoint of endpointData.endpoints) {
         const uptimeData = await syncEndpointUptimes(ctx, config, endpoint.uuid)
         allEndpointUptimeMetrics.push(...uptimeData.uptimeMetrics)
         allIssues.push(...uptimeData.issues)
       }
     }
+  }
+
+  // Store batched endpoint responses
+  if (Object.keys(rawEndpointResponses).length > 0) {
+    await storeSnapshotData(ctx, {
+      run_id: config.runId,
+      snapshot_at: config.snapshotAt,
+      type: 'endpoints',
+      data: rawEndpointResponses,
+    })
   }
 
   // Merge all data and track results separately
@@ -113,22 +129,18 @@ async function syncModelEndpoints(
   config: SyncConfig,
   model: OrModelFields,
   variant: string,
-): Promise<{ endpoints: OrEndpointFields[]; endpointMetrics: OrEndpointMetricsFields[]; issues: Issue[] }> {
+): Promise<{
+  endpoints: OrEndpointFields[]
+  endpointMetrics: OrEndpointMetricsFields[]
+  issues: Issue[]
+  rawResponse?: unknown
+}> {
   const modelVariantId = `${model.slug}-${variant}`
 
   try {
     const response = await orFetch('/api/frontend/stats/endpoint', {
       params: { permaslug: model.permaslug, variant },
       schema: z4.object({ data: z4.unknown().array() }),
-    })
-
-    // Store raw response
-    const snapshotKey = `openrouter-endpoints-${model.slug}-${variant}-snapshot-${config.startedAt}`
-    await storeJSON(ctx, {
-      key: snapshotKey,
-      snapshot_at: config.snapshotAt,
-      compress: config.compress,
-      data: response,
     })
 
     const { items, issues: validationIssues } = validateArray(
@@ -168,7 +180,7 @@ async function syncModelEndpoints(
       }
     }
 
-    return { endpoints, endpointMetrics, issues }
+    return { endpoints, endpointMetrics, issues, rawResponse: response }
   } catch (error) {
     return {
       endpoints: [],

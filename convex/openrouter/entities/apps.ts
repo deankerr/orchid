@@ -9,12 +9,12 @@ import {
 } from '../../or/or_app_token_metrics'
 import { AppStrictSchema, AppTransformSchema } from '../../or/or_apps_validators'
 import { OrAppsFn, OrApps, type OrAppFields } from '../../or/or_apps'
-import { storeJSON } from '../../files'
 import type { OrModelFields } from '../../or/or_models'
 import { orFetch } from '../client'
 import type { EntitySyncData, Issue, SyncConfig } from '../types'
 import { processBatchMutation } from '../utils'
 import { validateArray } from '../validation'
+import { storeSnapshotData } from '../archives'
 
 // Batch size for large arrays to avoid Convex limits
 const APP_TOKEN_BATCH_SIZE = 2000
@@ -33,6 +33,7 @@ export async function syncApps(
   const appsMap = new Map<number, OrAppFields>()
   const allAppTokenMetrics: OrAppTokenMetricsFields[] = []
   const allIssues: Issue[] = []
+  const rawAppResponses: Record<string, unknown> = {}
 
   console.log(`Processing apps for ${models.length} models...`)
 
@@ -43,6 +44,11 @@ export async function syncApps(
       allAppTokenMetrics.push(...appData.appTokenMetrics)
       allIssues.push(...appData.issues)
 
+      // Collect raw response for archival
+      if (appData.rawResponse) {
+        rawAppResponses[`${model.slug}-${variant}`] = appData.rawResponse
+      }
+
       // Dedupe apps by app_id
       for (const app of appData.apps) {
         if (!appsMap.has(app.app_id)) {
@@ -50,6 +56,16 @@ export async function syncApps(
         }
       }
     }
+  }
+
+  // Store batched app responses
+  if (Object.keys(rawAppResponses).length > 0) {
+    await storeSnapshotData(ctx, {
+      run_id: config.runId,
+      snapshot_at: config.snapshotAt,
+      type: 'apps',
+      data: rawAppResponses,
+    })
   }
 
   const apps = Array.from(appsMap.values())
@@ -89,7 +105,12 @@ async function syncModelApps(
   config: SyncConfig,
   model: OrModelFields,
   variant: string,
-): Promise<{ apps: OrAppFields[]; appTokenMetrics: OrAppTokenMetricsFields[]; issues: Issue[] }> {
+): Promise<{
+  apps: OrAppFields[]
+  appTokenMetrics: OrAppTokenMetricsFields[]
+  issues: Issue[]
+  rawResponse?: unknown
+}> {
   const modelVariantId = `${model.slug}-${variant}`
 
   try {
@@ -100,15 +121,6 @@ async function syncModelApps(
         limit: 20,
       },
       schema: z4.object({ data: z4.unknown().array() }),
-    })
-
-    // Store raw response
-    const snapshotKey = `openrouter-apps-${model.slug}-${variant}-snapshot-${config.startedAt}`
-    await storeJSON(ctx, {
-      key: snapshotKey,
-      snapshot_at: config.snapshotAt,
-      compress: config.compress,
-      data: response,
     })
 
     const { items, issues: validationIssues } = validateArray(
@@ -140,7 +152,7 @@ async function syncModelApps(
       })
     }
 
-    return { apps, appTokenMetrics, issues }
+    return { apps, appTokenMetrics, issues, rawResponse: response }
   } catch (error) {
     return {
       apps: [],

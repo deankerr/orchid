@@ -1,6 +1,5 @@
 import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
-import { Files } from './files'
 import { OrModels } from './or/or_models'
 import { OrApps } from './or/or_apps'
 import { OrAuthors } from './or/or_authors'
@@ -10,11 +9,10 @@ import { OrAppTokenMetrics } from './or/or_app_token_metrics'
 import { OrEndpointMetrics } from './or/or_endpoint_metrics'
 import { OrEndpointUptimeMetrics } from './or/or_endpoint_uptime_metrics'
 import { OrModelTokenMetrics } from './or/or_model_token_metrics'
+import { SnapshotArchives } from './openrouter/archives'
 
 export const schema = defineSchema(
   {
-    files_v2: Files.table.index('by_key', ['key']),
-
     or_apps: OrApps.table.index('by_app_id', ['app_id']),
     or_authors: OrAuthors.table.index('by_uuid', ['uuid']),
     or_endpoints: OrEndpoints.table.index('by_uuid', ['uuid']),
@@ -35,6 +33,8 @@ export const schema = defineSchema(
       'model_variant',
       'timestamp',
     ]),
+
+    snapshot_archives: SnapshotArchives.table.index('by_snapshot_at', ['snapshot_at']),
 
     // version 0 archived data
     snapshots: defineTable({

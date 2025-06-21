@@ -1,32 +1,69 @@
 import { httpRouter } from 'convex/server'
 import { httpAction } from './_generated/server'
-import { internal } from './_generated/api'
-import { retrieveJSON } from './files'
+
+import { getLatestSnapshot, getSnapshotArchive, getSnapshotArchives } from './openrouter/archives'
 
 const http = httpRouter()
 
 http.route({
-  path: '/reports',
+  path: '/archives',
   method: 'GET',
   handler: httpAction(async (ctx, request) => {
     const url = new URL(request.url)
-    const key = url.searchParams.get('key')
-
-    if (!key) {
-      return new Response("Missing 'key' parameter", { status: 400 })
-    }
+    const snapshotAtParam = url.searchParams.get('snapshot_at')
+    const type = url.searchParams.get('type')
+    const showIndex = url.searchParams.get('index') === 'true'
 
     try {
-      // Get the file record by key
-      const fileRecord = await ctx.runQuery(internal.files.getFileRecordByKey, { key })
-      if (!fileRecord) {
-        return new Response('Report not found', { status: 404 })
+      // If no snapshot_at specified, get the latest
+      let snapshot_at: number
+      if (snapshotAtParam) {
+        snapshot_at = parseInt(snapshotAtParam, 10)
+        if (isNaN(snapshot_at)) {
+          return new Response("Invalid 'snapshot_at' parameter", { status: 400 })
+        }
+      } else {
+        const latestSnapshot = await getLatestSnapshot(ctx)
+        if (!latestSnapshot) {
+          return new Response('No archives found', { status: 404 })
+        }
+        snapshot_at = latestSnapshot
       }
 
-      // Retrieve the report data (JSON)
-      const reportData = await retrieveJSON(ctx, fileRecord._id)
+      // If showing index, return all archives for this snapshot
+      if (showIndex) {
+        const archives = await getSnapshotArchives(ctx, snapshot_at)
+        const indexData = {
+          snapshot_at,
+          archives: archives.map((archive) => ({
+            type: archive.type,
+            run_id: archive.run_id,
+            size: archive.size,
+            sha256: archive.sha256,
+            _creationTime: archive._creationTime,
+          })),
+        }
 
-      return new Response(JSON.stringify(reportData), {
+        return new Response(JSON.stringify(indexData, null, 2), {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+          },
+        })
+      }
+
+      // Get specific archive (default to 'report' if no type specified)
+      const archiveType = type || 'report'
+      const result = await getSnapshotArchive(ctx, snapshot_at, archiveType)
+
+      if (!result) {
+        return new Response(`Archive not found: ${archiveType} for snapshot ${snapshot_at}`, {
+          status: 404,
+        })
+      }
+
+      return new Response(JSON.stringify(result.data, null, 2), {
         status: 200,
         headers: {
           'Content-Type': 'application/json',
@@ -34,7 +71,7 @@ http.route({
         },
       })
     } catch (error) {
-      console.error('Error retrieving report:', error)
+      console.error('Error retrieving archive:', error)
       return new Response('Internal server error', { status: 500 })
     }
   }),
