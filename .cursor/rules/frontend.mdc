@@ -1,0 +1,33 @@
+---
+description: 
+globs: app/**/*,components/**/*,hooks/**/*,lib/**/*
+alwaysApply: false
+---
+# Frontend Guide
+
+- Our audience is highly technical and knowledgable about working with OpenRouter and LLMs in general.
+- They know what variables, parameters, context lengths, quantization etc. are.
+- They're interested in the all of the details of pricing - cache reads, reasoning tokens, etc.
+- We don't need to try to make this information seem "friendly", in fact the opposite is kinda cool.
+- We can make it easily accessible, comparable, grokable.
+- It is appropriate to show raw variable names/object keys at times - these values could be copied and pasted by users into their own code, e.g. `response_format`, `structured_outputs`.
+- This most importantly includes model slugs, which are used directly by programmers.
+
+## Style
+
+- We're going for a stark, technical, functional look at this stage. Monospace fonts, monochromatic colors, pointy corners, less padding.
+- Think "modern terminal interface". shadcn/ui will naturally lend to this with little customization.
+- Text is a good place to feature some color, e.g. status, variant labels.
+- Icons can be used where appropriate.
+
+## Libraries/Components
+
+- All shadcn/ui components are installed.
+- We use Tailwind v4 - much is the same, but there is no longer a javscript config file. It is all defined in [globals.css](mdc:app/globals.css).
+- Use the standard shadcn/ui theme variables. Do not add custom colors, background colors, border radius, etc.
+- We can and should add more colors to our theme as needed - e.g. "success", "warning", etc. (but more specific to our needs). Always refer to [globals.css](mdc:app/globals.css) when considering breaking from the basic theme.
+- Do not add components to the components/ui folder - leave this for shadcn/ui.
+- Add components to the root components folder for now.
+
+## Notes
+

@@ -1,0 +1,195 @@
+---
+description: 
+globs: convex/**/*
+alwaysApply: false
+---
+# ORCHID Snapshot System Overview
+
+## Introduction
+
+The ORCHID snapshot system is our solution for reliably capturing and storing the constantly evolving state of AI models available through OpenRouter. This document explains the architecture, rationale, and operation of this critical subsystem.
+
+## Core Challenges
+
+### Fragmented Data Sources
+OpenRouter's API evolved organically in a rapidly changing landscape. A complete picture of a "model" requires:
+- Multiple API calls to different endpoints
+- Assembling data from various sources (model info, endpoints, usage stats)
+- Handling inconsistent data structures across endpoints
+- Managing duplicate and embedded data
+
+### Unreliable External APIs
+- Endpoints fail intermittently or return partial data
+- API structures change without notice
+- Response formats vary between endpoints
+- Rate limits and timeouts affect data collection
+
+### Temporal Coherence
+When collecting data across multiple API calls:
+- Some calls may fail initially but succeed on retry
+- Data collected at different times may represent inconsistent states
+- We need a logical boundary for what constitutes a "snapshot"
+
+## Architecture Overview
+
+### Hour-Aligned Snapshots
+All data collection aligns to hour boundaries (e.g., 3:45 PM data is marked as 3:00 PM). This provides:
+- **Logical coherence**: All data within an hour belongs to the same collection attempt
+- **Retry semantics**: Failed calls retried within the hour remain part of the same snapshot
+- **Query efficiency**: Exact timestamp matching performs better than range queries
+- **Appropriate granularity**: Hour-level precision suits the rate of change in model availability
+
+### Dual Validation Strategy
+Every API response undergoes two validation passes:
+
+1. **Transform Schema**: Extracts only needed data, allows unknown fields
+2. **Strict Schema**: Validates complete structure, detects API changes
+
+This approach ensures operational reliability while alerting us to API evolution.
+
+### Compressed Archive Storage
+Each API response is:
+- Compressed using gzip
+- Stored as an immutable blob
+- Indexed by snapshot time and data type
+- Preserved for historical reconstruction
+
+### Materialized Views
+Raw snapshots serve as the source of truth, while materialized views provide:
+- Optimized query performance
+- Denormalized data for common access patterns
+- Point-in-time reconstruction capability
+- Change tracking between snapshots
+
+## OpenRouter API Endpoints
+
+The snapshot system collects data from these OpenRouter endpoints:
+
+### Independent Endpoints
+
+**`/api/frontend/models`**
+- Returns: Array of all available models (duplicated per variant)
+- Contains: Model metadata, capabilities, context length, modalities
+- Note: Requires consolidation of variants into single model entities
+
+**`/api/frontend/all-providers`**
+- Returns: Array of all infrastructure providers
+- Contains: Provider metadata, data policies, capabilities
+- Note: Relatively static, small dataset
+
+### Model-Dependent Endpoints
+
+**`/api/frontend/stats/endpoint?permaslug={model}&variant={variant}`**
+- Returns: Array of endpoints for specific model variant
+- Contains: Provider deployments, pricing, performance stats
+- Note: Must be called for each model variant
+
+**`/api/frontend/stats/app?permaslug={model}&variant={variant}&limit=20`**
+- Returns: Array of applications using the model
+- Contains: App metadata, token usage statistics
+- Note: Discovers apps through usage patterns
+
+**`/api/frontend/model-author?authorSlug={slug}`**
+- Returns: Author organization details
+- Contains: Author metadata, aggregated model token statistics
+- Note: Includes daily token usage for all author's models
+
+**`/api/frontend/stats/uptime-hourly?id={endpoint_uuid}`**
+- Returns: Hourly uptime percentages
+- Contains: Historical availability data
+- Note: Must be called for each endpoint individually
+
+## Data Collection Flow
+
+### Phased Processing
+Dependencies between data types require ordered collection:
+
+**Independent Phase**:
+- Models and Providers (fetched in parallel)
+
+**Dependent Phase** (requires model data):
+- Endpoints (per model variant)
+- Applications (per model variant)
+- Authors (extracted from model data)
+- Uptime metrics (per endpoint)
+
+### Graceful Degradation
+The system continues despite failures:
+- Individual API failures don't stop other collections
+- Missing data is logged but doesn't cascade
+- Partial snapshots are better than none
+- Each phase can fail independently
+
+### Batch Processing
+Large datasets are processed in batches to avoid:
+- Memory limits
+- Database transaction size limits
+- Timeout issues
+
+## Storage Architecture
+
+### Raw Snapshots
+- **Purpose**: Immutable source of truth
+- **Format**: Compressed JSON blobs
+- **Retention**: Permanent
+- **Usage**: Debugging, reprocessing, historical analysis
+
+### Processed Views
+- **Purpose**: Query-optimized current state
+- **Format**: Normalized database records
+- **Updates**: Regenerated from snapshots
+- **Denormalization**: Strategic duplication for performance
+
+### Time-Series Metrics
+All metrics maintain historical data:
+- Model token usage (daily granularity)
+- Endpoint performance (point-in-time)
+- Uptime tracking (hourly)
+- Application usage (cumulative)
+
+## Scheduling System
+
+### Configurable Intervals
+- Collection frequency (typically every few hours)
+- Delay after hour boundary (avoid thundering herd)
+- Random jitter (distribute load)
+- Enable/disable flag
+
+### Automatic Retries
+- Failed API calls retry with exponential backoff
+- Failures logged but don't block progress
+- Partial data preferred over no data
+
+## Benefits of This Architecture
+
+### Resilience
+- Survives API changes through validation detection
+- Continues operating despite partial failures
+- Preserves all historical data
+
+### Flexibility
+- Schema evolution without data loss
+- Reprocess historical data with new logic
+- Add new derived views without touching source data
+
+### Performance
+- Sub-second queries through denormalized views
+- Efficient exact-match timestamp queries
+- Batched processing prevents timeouts
+
+### Observability
+- Complete audit trail of API responses
+- Change detection between snapshots
+- Clear failure attribution
+
+## Key Design Principles
+
+1. **Source data is sacred**: Never modify raw snapshots
+2. **Fail gracefully**: Partial data beats no data
+3. **Embrace eventual consistency**: Perfect synchronization is impossible
+4. **Optimize for queries**: Denormalize aggressively in views
+5. **Plan for change**: External APIs will evolve
+
+## Summary
+
+The ORCHID snapshot system transforms unreliable, fragmented external APIs into a reliable, queryable database of AI model availability. By accepting the chaotic nature of external data sources and building resilience at every level, we create order from disorder while preserving the flexibility to adapt as the ecosystem evolves. 
