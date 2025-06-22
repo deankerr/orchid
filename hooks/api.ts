@@ -10,6 +10,10 @@ export function useOrModels() {
   return useQuery(api.frontend.listOrModels)
 }
 
+export function useOrEndpoints(slug: string) {
+  return useQuery(api.frontend.listOrEndpoints, { slug })
+}
+
 // * dev queries
 export function useBulkModels() {
   return useQuery(api.frontend.getAll)

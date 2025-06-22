@@ -29,6 +29,3 @@ alwaysApply: false
 - We can and should add more colors to our theme as needed - e.g. "success", "warning", etc. (but more specific to our needs). Always refer to [globals.css](mdc:app/globals.css) when considering breaking from the basic theme.
 - Do not add components to the components/ui folder - leave this for shadcn/ui.
 - Add components to the root components folder for now.
-
-## Notes
-

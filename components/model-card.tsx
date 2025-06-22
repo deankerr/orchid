@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 import { FileIcon, ImageIcon } from 'lucide-react'
 
 import type { OrModel } from '@/convex/types'
@@ -52,7 +54,9 @@ export function ModelCard({ model }: { model: OrModel }) {
   return (
     <Card className="bg-background rounded-sm shadow-none">
       <CardHeader>
-        <CardTitle>{model.name}</CardTitle>
+        <CardTitle>
+          <Link href={`/models/${model.slug}`}>{model.name}</Link>
+        </CardTitle>
         <CardDescription>{model.slug}</CardDescription>
       </CardHeader>
 

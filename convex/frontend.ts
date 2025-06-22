@@ -23,6 +23,18 @@ export const listOrModels = query({
   },
 })
 
+export const listOrEndpoints = query({
+  args: {
+    slug: v.string(),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query(OrEndpoints.name)
+      .withIndex('by_model_slug', (q) => q.eq('model_slug', args.slug))
+      .collect()
+  },
+})
+
 // * dev queries
 export const getAll = query({
   args: {},

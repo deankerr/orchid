@@ -21,7 +21,9 @@ export const schema = defineSchema(
     or_authors: OrAuthors.table.index('by_uuid', ['uuid']),
     or_authors_changes: OrAuthorsChanges.table,
 
-    or_endpoints: OrEndpoints.table.index('by_uuid', ['uuid']),
+    or_endpoints: OrEndpoints.table
+      .index('by_uuid', ['uuid'])
+      .index('by_model_slug', ['model_slug']),
     or_endpoints_changes: OrEndpointsChanges.table,
 
     or_models: OrModels.table.index('by_slug', ['slug']),
