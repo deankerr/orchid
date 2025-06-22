@@ -5,8 +5,6 @@ import { Geist, Geist_Mono } from 'next/font/google'
 
 import { ThemeProvider } from '@/app/theme-provider'
 
-import { Header } from '@/components/header'
-
 import { ConvexClientProvider } from './convex-client-provider'
 
 const geistSans = Geist({
@@ -39,10 +37,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <div className="min-h-screen bg-background">
-              <Header />
-              <main className="relative">{children}</main>
-            </div>
+            {children}
           </ThemeProvider>
         </ConvexClientProvider>
       </body>

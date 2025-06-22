@@ -19,6 +19,7 @@ alwaysApply: false
 - Think "modern terminal interface". shadcn/ui will naturally lend to this with little customization.
 - Text is a good place to feature some color, e.g. status, variant labels.
 - Icons can be used where appropriate.
+- Avoid shadows.
 
 ## Libraries/Components
 

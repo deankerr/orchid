@@ -2,7 +2,8 @@
 
 import { use } from 'react'
 
-import { BulkModel } from '@/components/bulk/BulkModel'
+import { BulkModel } from '@/app/bulk/bulk-model'
+
 import { useBulkModels } from '@/hooks/api'
 
 export default function ModelPage({ params }: { params: Promise<{ slug: string[] }> }) {

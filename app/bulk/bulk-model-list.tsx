@@ -2,7 +2,7 @@
 
 import { useBulkModels } from '@/hooks/api'
 
-import { BulkModel } from './BulkModel'
+import { BulkModel } from './bulk-model'
 
 export function BulkModelList() {
   const models = useBulkModels()

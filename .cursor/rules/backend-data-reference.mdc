@@ -188,7 +188,7 @@ Understanding how models are identified is crucial for working with ORCHID data.
 - **Count**: ~30-40 organizations
 - **Identifiers**: Both UUID (primary key) and slug (e.g., `openai`, `anthropic`)
 - **Usage**: Grouping models by creator
-- **Note**: Author data includes aggregated token usage for all their models
+- **Note**: This data is practically useless because there's no information stored by OpenRouter apart from the author display name.
 
 #### or_apps
 - **Purpose**: Applications using models through OpenRouter

@@ -42,10 +42,13 @@ export const schema = defineSchema(
       'endpoint_uuid',
       'timestamp',
     ]),
-    or_model_token_metrics: OrModelTokenMetrics.table.index(
-      'by_model_permaslug_model_variant_timestamp',
-      ['model_permaslug', 'model_variant', 'timestamp'],
-    ),
+    or_model_token_metrics: OrModelTokenMetrics.table
+      .index('by_model_permaslug_model_variant_timestamp', [
+        'model_permaslug',
+        'model_variant',
+        'timestamp',
+      ])
+      .index('by_timestamp', ['timestamp']),
 
     snapshot_config: SnapshotConfig.table,
     snapshot_archives: SnapshotArchives.table.index('by_snapshot_at', ['snapshot_at']),
