@@ -14,48 +14,51 @@ export function EndpointCard({
   const { output_tokens, ...limits } = endpoint.limits
 
   return (
-    <div className="border rounded-sm flex flex-col gap-6 py-6 px-6">
-      <div className="font-medium flex flex-wrap gap-2">
+    <div className="border rounded-sm flex flex-col gap-6 py-6 px-6 font-mono">
+      <div className="flex flex-wrap items-center gap-2 text-sm">
         {endpoint.provider_name}
 
         {endpoint.model_variant !== 'standard' && (
-          <Badge variant="default" className="font-mono">
-            {endpoint.model_variant}
-          </Badge>
+          <Badge variant="default">{endpoint.model_variant}</Badge>
         )}
 
-        {endpoint.status < 0 ? (
-          <Badge variant="destructive" className="font-mono">
-            deranked
-          </Badge>
-        ) : null}
+        {endpoint.status < 0 ? <Badge variant="destructive">deranked</Badge> : null}
       </div>
 
-      <div className="flex flex-wrap gap-4 font-mono">
-        <DataField label="context_length" value={endpoint.context_length.toLocaleString()} />
+      <div className="flex flex-wrap gap-6">
+        <DataField label="context_length">{endpoint.context_length.toLocaleString()}</DataField>
 
-        <DataField
-          label="max_output"
-          value={(output_tokens ?? endpoint.context_length).toLocaleString()}
-        />
+        <DataField label="max_output">
+          {(output_tokens ?? endpoint.context_length).toLocaleString()}
+        </DataField>
 
         {Object.entries(pricingMap).map(([key, formatter]) => {
           const value = endpoint.pricing[key as keyof typeof endpoint.pricing]
 
           if (value === undefined) return null
 
-          return <DataField key={key} label={key} value={formatter(value)} />
+          return (
+            <DataField key={key} label={key}>
+              {formatter(value)}
+            </DataField>
+          )
         })}
 
         {Object.entries(limits).map(([key, value]) => (
-          <DataField key={key} label={key} value={value.toLocaleString()} />
+          <DataField key={key} label={key}>
+            {value.toLocaleString()}
+          </DataField>
         ))}
+
+        {endpoint.quantization && (
+          <DataField label="quantization">{endpoint.quantization}</DataField>
+        )}
       </div>
 
       <div className="space-y-1.5">
-        <div className="text-sm font-medium text-muted-foreground font-mono">attributes</div>
+        <div className="text-sm font-medium text-muted-foreground">attributes</div>
 
-        <div className="flex flex-wrap gap-2 font-mono">
+        <div className="flex flex-wrap gap-2">
           {Object.entries(endpoint.capabilities).map(([key, value]) =>
             value ? (
               <Badge variant="secondary" key={key}>
@@ -77,10 +80,8 @@ export function EndpointCard({
       </div>
 
       <div className="space-y-1.5">
-        <div className="text-sm font-medium text-muted-foreground font-mono">
-          supported_parameters
-        </div>
-        <div className="flex flex-wrap gap-2 font-mono">
+        <div className="text-sm font-medium text-muted-foreground">supported_parameters</div>
+        <div className="flex flex-wrap gap-2">
           {endpoint.supported_parameters.map((parameter) => (
             <Badge key={parameter} variant="secondary">
               {parameter}
@@ -90,23 +91,20 @@ export function EndpointCard({
       </div>
 
       <div className="space-y-1.5">
-        <div className="text-sm font-medium text-muted-foreground font-mono">metrics</div>
+        <div className="text-sm font-medium text-muted-foreground">metrics</div>
 
-        <div className="flex flex-wrap gap-4 font-mono">
-          <DataField
-            label="p50_latency"
-            value={`${endpoint.metrics[0]?.p50_latency.toLocaleString()} ms`}
-          />
+        <div className="flex flex-wrap gap-4">
+          <DataField label="p50_latency">
+            {`${endpoint.metrics[0]?.p50_latency.toLocaleString()} ms`}
+          </DataField>
 
-          <DataField
-            label="p50_throughput"
-            value={`${endpoint.metrics[0]?.p50_throughput.toFixed(2)} tps`}
-          />
+          <DataField label="p50_throughput">
+            {`${endpoint.metrics[0]?.p50_throughput.toFixed(2)} tps`}
+          </DataField>
 
-          <DataField
-            label="request_count"
-            value={endpoint.metrics[0]?.request_count.toLocaleString()}
-          />
+          <DataField label="request_count">
+            {endpoint.metrics[0]?.request_count.toLocaleString()}
+          </DataField>
         </div>
       </div>
 

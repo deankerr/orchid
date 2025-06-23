@@ -12,7 +12,7 @@ export function UptimeTracker({ uptimes }: { uptimes: OrEndpointUptimeMetric[] }
 
   const getColor = (value?: number) => {
     if (value === undefined) return
-    if (value === 100) return 'bg-emerald-500'
+    if (value >= 99) return 'bg-emerald-500'
     if (value >= 85) return 'bg-amber-500'
     return 'bg-rose-500'
   }
@@ -22,7 +22,7 @@ export function UptimeTracker({ uptimes }: { uptimes: OrEndpointUptimeMetric[] }
       const timestamp = now - hourMs * i
       const uptime = uptimes.find((m) => m.timestamp === timestamp)?.uptime
       const timeString = formatTimestampToYMDHM(timestamp)
-      const tooltip = `${timeString} - ${uptime === undefined ? 'no data' : uptime.toFixed(1) + '%'}`
+      const tooltip = `${timeString} - ${uptime === undefined ? 'no data' : uptime.toFixed(2) + '%'}`
 
       return {
         key: timestamp,
@@ -41,7 +41,7 @@ export function UptimeTracker({ uptimes }: { uptimes: OrEndpointUptimeMetric[] }
       <div className="flex items-center justify-between">
         <div className="text-sm font-medium text-muted-foreground font-mono">uptime</div>
         {validMetrics.length > 0 && (
-          <div className="text-sm font-mono">{overallUptime.toFixed(1)}%</div>
+          <div className="text-sm font-mono">{overallUptime.toFixed(2)}%</div>
         )}
       </div>
 
