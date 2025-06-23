@@ -1,10 +1,66 @@
-import type { OrEndpoint } from '@/convex/types'
+import { getHourAlignedTimestamp } from '@/convex/shared'
+import type { OrEndpoint, OrEndpointMetric, OrEndpointUptimeMetric } from '@/convex/types'
 
-import { formatTokenPriceToK, formatTokenPriceToM } from '@/lib/utils'
+import { formatTimestampToYMDHM, formatTokenPriceToK, formatTokenPriceToM } from '@/lib/utils'
 
+import { Tracker } from './tracker'
 import { Badge } from './ui/badge'
 
-export function EndpointCard({ endpoint }: { endpoint: OrEndpoint }) {
+function UptimeTracker({ uptimes }: { uptimes: OrEndpointUptimeMetric[] }) {
+  const hours = 72
+  const hourMs = 60 * 60 * 1000
+  const now = getHourAlignedTimestamp()
+
+  const getColor = (value?: number) => {
+    if (value === undefined) return
+    if (value === 100) return 'bg-emerald-500'
+    if (value >= 85) return 'bg-amber-500'
+    return 'bg-rose-500'
+  }
+
+  const slots = [...Array(hours)]
+    .map((_, i) => {
+      const timestamp = now - hourMs * i
+      const uptime = uptimes.find((m) => m.timestamp === timestamp)?.uptime
+      const timeString = formatTimestampToYMDHM(timestamp)
+      const tooltip = `${timeString} - ${uptime === undefined ? 'no data' : uptime.toFixed(1) + '%'}`
+
+      return {
+        key: timestamp,
+        color: getColor(uptime),
+        tooltip,
+      }
+    })
+    .reverse()
+
+  // Calculate overall uptime percentage
+  const validMetrics = uptimes.map((m) => m.uptime).filter((m) => m !== undefined)
+  const overallUptime = validMetrics.reduce((sum, m) => sum + m, 0) / validMetrics.length
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <div className="text-sm font-medium text-muted-foreground font-mono">uptime</div>
+        {validMetrics.length > 0 && (
+          <div className="text-sm font-mono">{overallUptime.toFixed(1)}%</div>
+        )}
+      </div>
+
+      <Tracker data={slots} defaultBackgroundColor="bg-muted" />
+
+      <div className="flex justify-between text-xs text-muted-foreground font-mono">
+        <span>48h ago</span>
+        <span>now</span>
+      </div>
+    </div>
+  )
+}
+
+export function EndpointCard({
+  endpoint,
+}: {
+  endpoint: OrEndpoint & { metrics: OrEndpointMetric[]; uptime: OrEndpointUptimeMetric[] }
+}) {
   const { output_tokens, ...limits } = endpoint.limits
 
   return (
@@ -93,6 +149,33 @@ export function EndpointCard({ endpoint }: { endpoint: OrEndpoint }) {
           ))}
         </div>
       </div>
+
+      <div className="space-y-1.5">
+        <div className="text-sm font-medium text-muted-foreground font-mono">metrics</div>
+
+        <div className="flex flex-wrap gap-4 font-mono">
+          <div className="flex flex-col gap-1">
+            <div className="text-sm text-muted-foreground">p50_latency</div>
+            <div>{endpoint.metrics[0]?.p50_latency.toLocaleString()} ms</div>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <div className="text-sm text-muted-foreground">p50_throughput</div>
+            <div>{endpoint.metrics[0]?.p50_throughput.toFixed(2)} tps</div>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <div className="text-sm text-muted-foreground">request_count</div>
+            <div>{endpoint.metrics[0]?.request_count.toLocaleString()}</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-xl">
+        <UptimeTracker uptimes={endpoint.uptime} />
+      </div>
+
+      {/* <pre className="text-xs text-muted-foreground">{JSON.stringify(endpoint, null, 2)}</pre> */}
     </div>
   )
 }
