@@ -96,6 +96,7 @@ const fields = {
     supports_document_url: z4.null(),
   }),
   status: z4.number().optional(), // values below 0 indicate deranked
+  adapter_name: z4.string(), // e.g. "OpenAIAdapter", "AnthropicMessageAdapter", "ChutesAdapter"
 }
 
 export const EndpointStrictSchema = z4.strictObject({
@@ -118,6 +119,7 @@ export const EndpointTransformSchema = z4
       'is_deranked',
       'is_hidden',
       'is_free',
+      'adapter_name',
     ]),
     data_policy: z4.object(
       R.pick(dataPolicyFields, [
