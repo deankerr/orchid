@@ -1,60 +1,10 @@
-import { getHourAlignedTimestamp } from '@/convex/shared'
 import type { OrEndpoint, OrEndpointMetric, OrEndpointUptimeMetric } from '@/convex/types'
 
-import { formatTimestampToYMDHM, formatTokenPriceToK, formatTokenPriceToM } from '@/lib/utils'
+import { formatTokenPriceToK, formatTokenPriceToM } from '@/lib/utils'
 
-import { Tracker } from './tracker'
+import { DataField } from './data-field'
 import { Badge } from './ui/badge'
-
-function UptimeTracker({ uptimes }: { uptimes: OrEndpointUptimeMetric[] }) {
-  const hours = 72
-  const hourMs = 60 * 60 * 1000
-  const now = getHourAlignedTimestamp()
-
-  const getColor = (value?: number) => {
-    if (value === undefined) return
-    if (value === 100) return 'bg-emerald-500'
-    if (value >= 85) return 'bg-amber-500'
-    return 'bg-rose-500'
-  }
-
-  const slots = [...Array(hours)]
-    .map((_, i) => {
-      const timestamp = now - hourMs * i
-      const uptime = uptimes.find((m) => m.timestamp === timestamp)?.uptime
-      const timeString = formatTimestampToYMDHM(timestamp)
-      const tooltip = `${timeString} - ${uptime === undefined ? 'no data' : uptime.toFixed(1) + '%'}`
-
-      return {
-        key: timestamp,
-        color: getColor(uptime),
-        tooltip,
-      }
-    })
-    .reverse()
-
-  // Calculate overall uptime percentage
-  const validMetrics = uptimes.map((m) => m.uptime).filter((m) => m !== undefined)
-  const overallUptime = validMetrics.reduce((sum, m) => sum + m, 0) / validMetrics.length
-
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <div className="text-sm font-medium text-muted-foreground font-mono">uptime</div>
-        {validMetrics.length > 0 && (
-          <div className="text-sm font-mono">{overallUptime.toFixed(1)}%</div>
-        )}
-      </div>
-
-      <Tracker data={slots} defaultBackgroundColor="bg-muted" />
-
-      <div className="flex justify-between text-xs text-muted-foreground font-mono">
-        <span>48h ago</span>
-        <span>now</span>
-      </div>
-    </div>
-  )
-}
+import { UptimeTracker } from './uptime-tracker'
 
 export function EndpointCard({
   endpoint,
@@ -82,34 +32,23 @@ export function EndpointCard({
       </div>
 
       <div className="flex flex-wrap gap-4 font-mono">
-        <div className="flex flex-col gap-1">
-          <div className="text-sm text-muted-foreground">context_length</div>
-          <div>{endpoint.context_length.toLocaleString()}</div>
-        </div>
+        <DataField label="context_length" value={endpoint.context_length.toLocaleString()} />
 
-        <div className="flex flex-col gap-1">
-          <div className="text-sm text-muted-foreground">max_output</div>
-          <div>{(output_tokens ?? endpoint.context_length).toLocaleString()}</div>
-        </div>
+        <DataField
+          label="max_output"
+          value={(output_tokens ?? endpoint.context_length).toLocaleString()}
+        />
 
         {Object.entries(pricingMap).map(([key, formatter]) => {
           const value = endpoint.pricing[key as keyof typeof endpoint.pricing]
 
           if (value === undefined) return null
 
-          return (
-            <div key={key} className="flex flex-col gap-1">
-              <div className="text-sm text-muted-foreground">{key}</div>
-              <div>{formatter(value)}</div>
-            </div>
-          )
+          return <DataField key={key} label={key} value={formatter(value)} />
         })}
 
         {Object.entries(limits).map(([key, value]) => (
-          <div key={key} className="flex flex-col gap-1">
-            <div className="text-sm text-muted-foreground">{key}</div>
-            <div>{value.toLocaleString()}</div>
-          </div>
+          <DataField key={key} label={key} value={value.toLocaleString()} />
         ))}
       </div>
 
@@ -154,24 +93,24 @@ export function EndpointCard({
         <div className="text-sm font-medium text-muted-foreground font-mono">metrics</div>
 
         <div className="flex flex-wrap gap-4 font-mono">
-          <div className="flex flex-col gap-1">
-            <div className="text-sm text-muted-foreground">p50_latency</div>
-            <div>{endpoint.metrics[0]?.p50_latency.toLocaleString()} ms</div>
-          </div>
+          <DataField
+            label="p50_latency"
+            value={`${endpoint.metrics[0]?.p50_latency.toLocaleString()} ms`}
+          />
 
-          <div className="flex flex-col gap-1">
-            <div className="text-sm text-muted-foreground">p50_throughput</div>
-            <div>{endpoint.metrics[0]?.p50_throughput.toFixed(2)} tps</div>
-          </div>
+          <DataField
+            label="p50_throughput"
+            value={`${endpoint.metrics[0]?.p50_throughput.toFixed(2)} tps`}
+          />
 
-          <div className="flex flex-col gap-1">
-            <div className="text-sm text-muted-foreground">request_count</div>
-            <div>{endpoint.metrics[0]?.request_count.toLocaleString()}</div>
-          </div>
+          <DataField
+            label="request_count"
+            value={endpoint.metrics[0]?.request_count.toLocaleString()}
+          />
         </div>
       </div>
 
-      <div className="max-w-xl">
+      <div className="max-w-lg">
         <UptimeTracker uptimes={endpoint.uptime} />
       </div>
 
