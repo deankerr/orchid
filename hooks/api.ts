@@ -1,4 +1,4 @@
-import { useQuery } from 'convex/react'
+import { useQuery } from 'convex-helpers/react/cache/hooks'
 
 import { api } from '@/convex/_generated/api'
 
@@ -12,9 +12,4 @@ export function useOrModels() {
 
 export function useOrEndpoints(slug: string) {
   return useQuery(api.frontend.listOrEndpoints, { slug })
-}
-
-// * dev queries
-export function useBulkModels() {
-  return useQuery(api.frontend.getAll)
 }
