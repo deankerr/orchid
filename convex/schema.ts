@@ -15,27 +15,22 @@ import { OrProviders, OrProvidersChanges } from './or/or_providers'
 
 export const schema = defineSchema(
   {
+    or_app_token_metrics: OrAppTokenMetrics.table
+      .index('by_app_id_snapshot_at', ['app_id', 'snapshot_at'])
+      .index('by_model_slug_variant_snapshot_at', ['model_slug', 'model_variant', 'snapshot_at'])
+      .index('by_model_permaslug_variant_snapshot_at', [
+        'model_permaslug',
+        'model_variant',
+        'snapshot_at',
+      ])
+      .index('by_snapshot_at', ['snapshot_at']),
+
     or_apps: OrApps.table.index('by_app_id', ['app_id']),
     or_apps_changes: OrAppsChanges.table,
 
     or_authors: OrAuthors.table.index('by_uuid', ['uuid']),
     or_authors_changes: OrAuthorsChanges.table,
 
-    or_endpoints: OrEndpoints.table
-      .index('by_uuid', ['uuid'])
-      .index('by_model_slug', ['model_slug']),
-    or_endpoints_changes: OrEndpointsChanges.table,
-
-    or_models: OrModels.table.index('by_slug', ['slug']),
-    or_models_changes: OrModelsChanges.table,
-
-    or_providers: OrProviders.table.index('by_slug', ['slug']),
-    or_providers_changes: OrProvidersChanges.table,
-
-    or_app_token_metrics: OrAppTokenMetrics.table.index('by_app_id_snapshot_at', [
-      'app_id',
-      'snapshot_at',
-    ]),
     or_endpoint_metrics: OrEndpointMetrics.table.index('by_endpoint_uuid_snapshot_at', [
       'endpoint_uuid',
       'snapshot_at',
@@ -44,6 +39,12 @@ export const schema = defineSchema(
       'endpoint_uuid',
       'timestamp',
     ]),
+
+    or_endpoints: OrEndpoints.table
+      .index('by_uuid', ['uuid'])
+      .index('by_model_slug', ['model_slug']),
+    or_endpoints_changes: OrEndpointsChanges.table,
+
     or_model_token_metrics: OrModelTokenMetrics.table
       .index('by_model_permaslug_model_variant_timestamp', [
         'model_permaslug',
@@ -51,6 +52,12 @@ export const schema = defineSchema(
         'timestamp',
       ])
       .index('by_timestamp', ['timestamp']),
+
+    or_models: OrModels.table.index('by_slug', ['slug']),
+    or_models_changes: OrModelsChanges.table,
+
+    or_providers: OrProviders.table.index('by_slug', ['slug']),
+    or_providers_changes: OrProvidersChanges.table,
 
     snapshot_config: SnapshotConfig.table,
     snapshot_archives: SnapshotArchives.table.index('by_snapshot_at', ['snapshot_at']),

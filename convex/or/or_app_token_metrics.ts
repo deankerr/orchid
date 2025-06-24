@@ -11,7 +11,7 @@ export const OrAppTokenMetrics = Table('or_app_token_metrics', {
   total_tokens: v.number(),
   model_slug: v.string(),
   model_permaslug: v.string(),
-  model_variant: v.optional(v.string()),
+  model_variant: v.string(),
 
   snapshot_at: v.number(),
 })
