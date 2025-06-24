@@ -1,12 +1,9 @@
 'use client'
 
-import { use } from 'react'
-
 import { EndpointCard } from '@/components/endpoint-card'
 import { ModelCard } from '@/components/model-card'
 import { ModelTokenChart } from '@/components/model-token-chart'
 import { ModelTopApps } from '@/components/model-top-apps'
-import { PageContainer } from '@/components/page-container'
 import {
   useOrEndpoints,
   useOrModel,
@@ -14,8 +11,11 @@ import {
   useOrTopAppsForModel,
 } from '@/hooks/api'
 
-export default function ModelPage({ params }: { params: Promise<{ slug: string[] }> }) {
-  const slug = use(params).slug.join('/')
+interface ModelPageProps {
+  slug: string
+}
+
+export function ModelPage({ slug }: ModelPageProps) {
   const model = useOrModel(slug)
   const endpoints = useOrEndpoints(slug)
   const apps = useOrTopAppsForModel(slug)
@@ -26,22 +26,14 @@ export default function ModelPage({ params }: { params: Promise<{ slug: string[]
 
   if (!model) {
     if (model === null) {
-      return (
-        <PageContainer>
-          <div className="font-mono">Model not found</div>
-        </PageContainer>
-      )
+      return <div className="font-mono">Model not found</div>
     } else {
-      return (
-        <PageContainer>
-          <div className="font-mono">Loading...</div>
-        </PageContainer>
-      )
+      return <div className="font-mono">Loading...</div>
     }
   }
 
   return (
-    <PageContainer>
+    <>
       <ModelCard model={model} />
       {Array.from(appsByVariant.entries()).map(([variant, variantApps]) => (
         <ModelTopApps
@@ -54,6 +46,6 @@ export default function ModelPage({ params }: { params: Promise<{ slug: string[]
         <ModelTokenChart key={variant} data={metrics} variant={variant} />
       ))}
       {endpoints?.map((endpoint) => <EndpointCard key={endpoint._id} endpoint={endpoint} />)}
-    </PageContainer>
+    </>
   )
 }

@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 
 import { AlertTriangleIcon, FileIcon, ImageIcon } from 'lucide-react'
@@ -17,7 +19,7 @@ export function ModelCard({ model }: { model: OrModel }) {
     <Card className="bg-background rounded-sm shadow-none font-mono">
       <CardHeader>
         <CardTitle>
-          <Link href={`/models/${model.slug}`} className="hover:underline underline-offset-2">
+          <Link href={`/?model=${model.slug}`} className="hover:underline underline-offset-2">
             {model.name}
           </Link>
         </CardTitle>
