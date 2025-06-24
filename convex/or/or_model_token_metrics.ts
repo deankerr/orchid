@@ -34,7 +34,7 @@ export const OrModelTokenMetricsFn = {
   ) => {
     return await ctx.db
       .query(OrModelTokenMetrics.name)
-      .withIndex('by_model_permaslug_model_variant_timestamp', (q) =>
+      .withIndex('by_model_permaslug_variant_timestamp', (q) =>
         q
           .eq('model_permaslug', model_permaslug)
           .eq('model_variant', model_variant)

@@ -17,3 +17,7 @@ export function useOrEndpoints(slug: string) {
 export function useOrTopAppsForModel(slug: string, variant: string) {
   return useQuery(api.frontend.getOrTopAppsForModel, { slug, variant })
 }
+
+export function useOrModelTokenMetrics(slug: string) {
+  return useQuery(api.frontend.getOrModelTokenMetrics, { slug })
+}

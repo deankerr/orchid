@@ -5,6 +5,7 @@ import { query } from './_generated/server'
 import { OrAppTokenMetrics } from './or/or_app_token_metrics'
 import { OrApps } from './or/or_apps'
 import { OrEndpoints } from './or/or_endpoints'
+import { OrModelTokenMetrics } from './or/or_model_token_metrics'
 import { OrModels } from './or/or_models'
 
 export const getOrModel = query({
@@ -112,5 +113,25 @@ export const getOrTopAppsForModel = query({
     })
 
     return apps.sort((a, b) => b.metric.total_tokens - a.metric.total_tokens)
+  },
+})
+
+export const getOrModelTokenMetrics = query({
+  args: {
+    slug: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const models = await ctx.db.query(OrModels.name).collect()
+    const model = models.find((m) => m.slug === args.slug)
+
+    console.log('model', model?.permaslug)
+    if (!model) return []
+
+    const n = model.variants.length * 72
+    return await ctx.db
+      .query(OrModelTokenMetrics.name)
+      .withIndex('by_permaslug_timestamp', (q) => q.eq('model_permaslug', model.permaslug))
+      .order('desc')
+      .take(n)
   },
 })

@@ -4,9 +4,15 @@ import { use } from 'react'
 
 import { EndpointCard } from '@/components/endpoint-card'
 import { ModelCard } from '@/components/model-card'
+import { ModelTokenChart } from '@/components/model-token-chart'
 import { ModelTopApps } from '@/components/model-top-apps'
 import { PageContainer } from '@/components/page-container'
-import { useOrEndpoints, useOrModel, useOrTopAppsForModel } from '@/hooks/api'
+import {
+  useOrEndpoints,
+  useOrModel,
+  useOrModelTokenMetrics,
+  useOrTopAppsForModel,
+} from '@/hooks/api'
 
 export default function ModelPage({ params }: { params: Promise<{ slug: string[] }> }) {
   const slug = use(params).slug.join('/')
@@ -14,6 +20,9 @@ export default function ModelPage({ params }: { params: Promise<{ slug: string[]
   const endpoints = useOrEndpoints(slug)
   const apps = useOrTopAppsForModel(slug, 'standard')
   const appsFree = useOrTopAppsForModel(slug, 'free')
+
+  const modelTokenMetrics = useOrModelTokenMetrics(slug)
+  const tokenMetricsByVariant = Map.groupBy(modelTokenMetrics ?? [], (m) => m.model_variant)
 
   if (!model) {
     if (model === null) {
@@ -36,6 +45,9 @@ export default function ModelPage({ params }: { params: Promise<{ slug: string[]
       <ModelCard model={model} />
       {apps && <ModelTopApps apps={apps} title="Top Apps" />}
       {appsFree && <ModelTopApps apps={appsFree} title="Top Apps (Free)" />}
+      {Array.from(tokenMetricsByVariant.entries()).map(([variant, metrics]) => (
+        <ModelTokenChart key={variant} data={metrics} variant={variant} />
+      ))}
       {endpoints?.map((endpoint) => <EndpointCard key={endpoint._id} endpoint={endpoint} />)}
     </PageContainer>
   )

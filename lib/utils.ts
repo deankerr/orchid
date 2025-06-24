@@ -5,7 +5,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function formatIsoDate(timestamp: number) {
+export function formatIsoDate(timestamp: number | string) {
   return new Date(timestamp).toISOString().split('T')[0]
 }
 

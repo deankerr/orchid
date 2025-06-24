@@ -46,12 +46,12 @@ export const schema = defineSchema(
     or_endpoints_changes: OrEndpointsChanges.table,
 
     or_model_token_metrics: OrModelTokenMetrics.table
-      .index('by_model_permaslug_model_variant_timestamp', [
+      .index('by_model_permaslug_variant_timestamp', [
         'model_permaslug',
         'model_variant',
         'timestamp',
       ])
-      .index('by_timestamp', ['timestamp']),
+      .index('by_permaslug_timestamp', ['model_permaslug', 'timestamp']),
 
     or_models: OrModels.table.index('by_slug', ['slug']),
     or_models_changes: OrModelsChanges.table,
