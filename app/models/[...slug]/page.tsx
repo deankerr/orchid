@@ -18,11 +18,11 @@ export default function ModelPage({ params }: { params: Promise<{ slug: string[]
   const slug = use(params).slug.join('/')
   const model = useOrModel(slug)
   const endpoints = useOrEndpoints(slug)
-  const apps = useOrTopAppsForModel(slug, 'standard')
-  const appsFree = useOrTopAppsForModel(slug, 'free')
+  const apps = useOrTopAppsForModel(slug)
 
   const modelTokenMetrics = useOrModelTokenMetrics(slug)
   const tokenMetricsByVariant = Map.groupBy(modelTokenMetrics ?? [], (m) => m.model_variant)
+  const appsByVariant = Map.groupBy(apps ?? [], (app) => app.metric.model_variant)
 
   if (!model) {
     if (model === null) {
@@ -43,8 +43,13 @@ export default function ModelPage({ params }: { params: Promise<{ slug: string[]
   return (
     <PageContainer>
       <ModelCard model={model} />
-      {apps && <ModelTopApps apps={apps} title="Top Apps" />}
-      {appsFree && <ModelTopApps apps={appsFree} title="Top Apps (Free)" />}
+      {Array.from(appsByVariant.entries()).map(([variant, variantApps]) => (
+        <ModelTopApps
+          key={variant}
+          apps={variantApps}
+          title={variant === 'standard' ? 'Top Apps' : `Top Apps (${variant})`}
+        />
+      ))}
       {Array.from(tokenMetricsByVariant.entries()).map(([variant, metrics]) => (
         <ModelTokenChart key={variant} data={metrics} variant={variant} />
       ))}

@@ -23,7 +23,8 @@ export const schema = defineSchema(
         'model_variant',
         'snapshot_at',
       ])
-      .index('by_snapshot_at', ['snapshot_at']),
+      .index('by_snapshot_at', ['snapshot_at'])
+      .index('by_permaslug_snapshot_at', ['model_permaslug', 'snapshot_at']),
 
     or_apps: OrApps.table.index('by_app_id', ['app_id']),
     or_apps_changes: OrAppsChanges.table,

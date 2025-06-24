@@ -14,8 +14,8 @@ export function useOrEndpoints(slug: string) {
   return useQuery(api.frontend.listOrEndpoints, { slug })
 }
 
-export function useOrTopAppsForModel(slug: string, variant: string) {
-  return useQuery(api.frontend.getOrTopAppsForModel, { slug, variant })
+export function useOrTopAppsForModel(slug: string) {
+  return useQuery(api.frontend.getOrTopAppsForModel, { slug })
 }
 
 export function useOrModelTokenMetrics(slug: string) {
