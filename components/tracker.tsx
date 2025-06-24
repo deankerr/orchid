@@ -43,7 +43,7 @@ const Block = ({ color, tooltip, defaultBackgroundColor, hoverEffect }: TrackerB
           avoidCollisions
           className={cn(
             // base
-            'w-auto rounded-md px-2 py-1 text-xs font-mono',
+            'w-auto rounded-md px-2 py-1 font-mono text-xs',
             // text color
             'text-white dark:text-gray-900',
             // background color

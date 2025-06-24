@@ -14,7 +14,7 @@ export function EndpointCard({
   const { output_tokens, ...limits } = endpoint.limits
 
   return (
-    <div className="border rounded-sm flex flex-col gap-6 py-6 px-6 font-mono">
+    <div className="flex flex-col gap-6 rounded-sm border px-6 py-6 font-mono">
       <div className="flex flex-wrap items-center gap-2 text-sm">
         {endpoint.provider_name}
 

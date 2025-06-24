@@ -57,8 +57,8 @@ function CustomTooltipContent({
   const total = payload.reduce((sum, item) => sum + (item.value || 0), 0)
 
   return (
-    <div className="rounded-lg border bg-background p-2.5 text-xs shadow-xl font-mono">
-      <div className="font-medium mb-1.5">{formattedDate}</div>
+    <div className="rounded-lg border bg-background p-2.5 font-mono text-xs shadow-xl">
+      <div className="mb-1.5 font-medium">{formattedDate}</div>
       <div className="grid gap-1.5">
         {sortedPayload.map((item) => {
           const config = chartConfig[item.dataKey as keyof typeof chartConfig]
@@ -123,7 +123,7 @@ export function ModelTokenChart({ data, variant, title }: ModelTokenChartProps) 
           <CardTitle className="font-mono text-sm">{getTitle()}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-muted-foreground text-sm font-mono">No data available</div>
+          <div className="font-mono text-sm text-muted-foreground">No data available</div>
         </CardContent>
       </Card>
     )

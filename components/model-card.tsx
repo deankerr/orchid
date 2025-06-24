@@ -16,10 +16,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 
 export function ModelCard({ model }: { model: OrModel }) {
   return (
-    <Card className="bg-background rounded-sm shadow-none font-mono">
+    <Card className="rounded-sm bg-background font-mono shadow-none">
       <CardHeader>
         <CardTitle>
-          <Link href={`/?model=${model.slug}`} className="hover:underline underline-offset-2">
+          <Link href={`/?model=${model.slug}`} className="underline-offset-2 hover:underline">
             {model.name}
           </Link>
         </CardTitle>
@@ -27,7 +27,7 @@ export function ModelCard({ model }: { model: OrModel }) {
       </CardHeader>
 
       <CardContent className="space-y-6">
-        <div className="flex gap-2 flex-wrap font-mono">
+        <div className="flex flex-wrap gap-2 font-mono">
           {model.input_modalities.includes('image') && (
             <Badge variant="secondary">
               <ImageIcon />
@@ -53,18 +53,18 @@ export function ModelCard({ model }: { model: OrModel }) {
           </Pill>
         </div>
 
-        <div className="text-sm text-muted-foreground leading-normal line-clamp-4">
+        <div className="line-clamp-4 text-sm leading-normal text-muted-foreground">
           <MarkdownLinks>{model.description}</MarkdownLinks>
         </div>
 
         {model.warning_message && (
-          <div className="border border-warning py-2.5 px-3 rounded text-warning text-sm flex items-center gap-2">
+          <div className="flex items-center gap-2 rounded border border-warning px-3 py-2.5 text-sm text-warning">
             <AlertTriangleIcon className="size-5" />
             <MarkdownLinks>{model.warning_message}</MarkdownLinks>
           </div>
         )}
 
-        <div className="text-sm flex gap-4">
+        <div className="flex gap-4 text-sm">
           <ExternalLink href={`https://openrouter.ai/${model.slug}`}>OpenRouter</ExternalLink>
           {model.hugging_face_id && (
             <ExternalLink href={`https://huggingface.co/${model.hugging_face_id}`}>

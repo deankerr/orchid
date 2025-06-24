@@ -39,15 +39,15 @@ export function UptimeTracker({ uptimes }: { uptimes: OrEndpointUptimeMetric[] }
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <div className="text-sm font-medium text-muted-foreground font-mono">uptime</div>
+        <div className="font-mono text-sm font-medium text-muted-foreground">uptime</div>
         {validMetrics.length > 0 && (
-          <div className="text-sm font-mono">{overallUptime.toFixed(2)}%</div>
+          <div className="font-mono text-sm">{overallUptime.toFixed(2)}%</div>
         )}
       </div>
 
       <Tracker data={slots} defaultBackgroundColor="bg-muted" />
 
-      <div className="flex justify-between text-xs text-muted-foreground font-mono">
+      <div className="flex justify-between font-mono text-xs text-muted-foreground">
         <span>{hours}h ago</span>
         <span>now</span>
       </div>
