@@ -1,6 +1,7 @@
 'use client'
 
 import { EndpointCard } from '@/components/endpoint-card'
+import { DataStreamLoader, EmptyState } from '@/components/loading'
 import { ModelCard } from '@/components/model-card'
 import { ModelTokenChart } from '@/components/model-token-chart'
 import { ModelTopApps } from '@/components/model-top-apps'
@@ -26,26 +27,48 @@ export function ModelPage({ slug }: ModelPageProps) {
 
   if (!model) {
     if (model === null) {
-      return <div className="font-mono">Model not found</div>
+      return <EmptyState message="Model not found" icon="404" />
     } else {
-      return <div className="font-mono">Loading...</div>
+      return <DataStreamLoader label="Loading model data" />
     }
   }
 
   return (
-    <>
+    <div className="space-y-6">
       <ModelCard model={model} />
-      {Array.from(appsByVariant.entries()).map(([variant, variantApps]) => (
-        <ModelTopApps
-          key={variant}
-          apps={variantApps}
-          title={variant === 'standard' ? 'Top Apps' : `Top Apps (${variant})`}
-        />
-      ))}
-      {Array.from(tokenMetricsByVariant.entries()).map(([variant, metrics]) => (
-        <ModelTokenChart key={variant} data={metrics} variant={variant} />
-      ))}
-      {endpoints?.map((endpoint) => <EndpointCard key={endpoint._id} endpoint={endpoint} />)}
-    </>
+
+      {/* Endpoints Section */}
+      <div className="space-y-4">
+        {endpoints === undefined ? (
+          <DataStreamLoader label="Loading endpoints..." />
+        ) : endpoints.length > 0 ? (
+          endpoints.map((endpoint) => <EndpointCard key={endpoint._id} endpoint={endpoint} />)
+        ) : (
+          <EmptyState message="No endpoints available" icon="⚡" />
+        )}
+      </div>
+
+      {/* Apps Section */}
+      {apps === undefined ? (
+        <DataStreamLoader label="Loading applications..." />
+      ) : (
+        Array.from(appsByVariant.entries()).map(([variant, variantApps]) => (
+          <ModelTopApps
+            key={variant}
+            apps={variantApps}
+            title={variant === 'standard' ? 'Top Apps' : `Top Apps (${variant})`}
+          />
+        ))
+      )}
+
+      {/* Token Metrics Section */}
+      {modelTokenMetrics === undefined ? (
+        <DataStreamLoader label="Loading metrics..." />
+      ) : (
+        Array.from(tokenMetricsByVariant.entries()).map(([variant, metrics]) => (
+          <ModelTokenChart key={variant} data={metrics} variant={variant} />
+        ))
+      )}
+    </div>
   )
 }

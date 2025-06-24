@@ -13,7 +13,7 @@ export function Header() {
 
   return (
     <header className="border-b bg-background">
-      <div className="mx-auto max-w-7xl px-4 py-3">
+      <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           <Link href="/">
             <h1 className="font-mono text-lg font-medium">ORCHID</h1>

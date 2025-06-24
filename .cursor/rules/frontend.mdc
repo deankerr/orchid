@@ -12,11 +12,12 @@ alwaysApply: false
 - We can make it easily accessible, comparable, grokable.
 - It is appropriate to show raw variable names/object keys at times - these values could be copied and pasted by users into their own code, e.g. `response_format`, `structured_outputs`.
 - This most importantly includes model slugs, which are used directly by programmers.
+- Mobile use isn't a focus right now, while we establish more data-heavy patterns.
 
 ## Style
 
 - We're going for a stark, technical, functional look at this stage. Monospace fonts, monochromatic colors, pointy corners, less padding.
-- Think "modern terminal interface". shadcn/ui will naturally lend to this with little customization.
+- Think "modern terminal aesthetic", (but not literal shell character etc.). shadcn/ui will naturally lend to this with little customization.
 - Text is a good place to feature some color, e.g. status, variant labels.
 - Icons can be used where appropriate.
 - Avoid shadows.
