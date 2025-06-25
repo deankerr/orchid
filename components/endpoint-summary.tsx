@@ -41,7 +41,6 @@ type ProcessedEndpoint = {
   traffic: number | null
 }
 
-// Extract data processing logic
 function processEndpoints(endpoints: OrEndpointData[]): ProcessedEndpoint[] {
   // Calculate total request count for traffic percentages
   const totalRequests = endpoints.reduce((total, ep) => {
@@ -73,7 +72,6 @@ function processEndpoints(endpoints: OrEndpointData[]): ProcessedEndpoint[] {
   })
 }
 
-// Extract sorting logic
 function sortEndpoints(
   endpoints: ProcessedEndpoint[],
   sortKey: SortKey,
@@ -98,9 +96,8 @@ function sortEndpoints(
   })
 }
 
-// Extract sort button component
 function SortButton({
-  sortKey: key,
+  sortKey,
   currentSortKey,
   sortDirection,
   onSort,
@@ -114,39 +111,28 @@ function SortButton({
   children: React.ReactNode
   className?: string
 }) {
-  const sortIndicator =
-    currentSortKey === key ? (
-      sortDirection === 'asc' ? (
-        <ChevronUp className="h-3 w-3" />
-      ) : (
-        <ChevronDown className="h-3 w-3" />
-      )
-    ) : (
-      <div className="h-3 w-3" />
-    )
-
   return (
     <button
-      onClick={() => onSort(key)}
+      onClick={() => onSort(sortKey)}
       className={cn(
-        'flex h-full w-full items-center gap-1 py-1 text-xs font-medium text-muted-foreground',
+        'flex h-full w-full items-center gap-0.5 py-1 text-xs font-medium text-muted-foreground',
         className,
       )}
     >
       <span>{children}</span>
-      {sortIndicator}
+      <div className="size-3">
+        {currentSortKey === sortKey && sortDirection === 'asc' ? (
+          <ChevronUp className="size-3" />
+        ) : currentSortKey === sortKey && sortDirection === 'desc' ? (
+          <ChevronDown className="size-3" />
+        ) : null}
+      </div>
     </button>
   )
 }
 
-export function EndpointSummary({
-  model,
-  endpoints,
-}: {
-  model: OrModel
-  endpoints: OrEndpointData[]
-}) {
-  const [sortKey, setSortKey] = useState<SortKey>('throughput')
+function EndpointTable({ endpoints }: { endpoints: OrEndpointData[] }) {
+  const [sortKey, setSortKey] = useState<SortKey>('traffic')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
 
   const processedEndpoints = processEndpoints(endpoints)
@@ -163,119 +149,154 @@ export function EndpointSummary({
   const sortedEndpoints = sortEndpoints(processedEndpoints, sortKey, sortDirection)
 
   return (
-    <Card className="rounded font-mono">
-      <CardHeader>
-        <CardTitle>Endpoints ({endpoints.length})</CardTitle>
-        <CardDescription>
-          <Badge variant="secondary">{model.slug}</Badge>
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {/* Data Table */}
-        <Table className="text-xs">
-          <TableHeader>
-            <TableRow>
-              <TableHead>
-                <SortButton
-                  sortKey="provider"
-                  currentSortKey={sortKey}
-                  sortDirection={sortDirection}
-                  onSort={handleSort}
-                >
-                  provider
-                </SortButton>
-              </TableHead>
-              <TableHead>
-                <SortButton
-                  sortKey="throughput"
-                  currentSortKey={sortKey}
-                  sortDirection={sortDirection}
-                  onSort={handleSort}
-                  className="justify-end"
-                >
-                  throughput
-                </SortButton>
-              </TableHead>
-              <TableHead>
-                <SortButton
-                  sortKey="latency"
-                  currentSortKey={sortKey}
-                  sortDirection={sortDirection}
-                  onSort={handleSort}
-                  className="justify-end"
-                >
-                  latency
-                </SortButton>
-              </TableHead>
+    <Table className="table-fixed text-xs">
+      <TableHeader>
+        <TableRow>
+          <TableHead className="w-36">
+            <SortButton
+              sortKey="provider"
+              currentSortKey={sortKey}
+              sortDirection={sortDirection}
+              onSort={handleSort}
+            >
+              provider
+            </SortButton>
+          </TableHead>
+          <TableHead className="w-20">
+            <SortButton
+              sortKey="throughput"
+              currentSortKey={sortKey}
+              sortDirection={sortDirection}
+              onSort={handleSort}
+              className="flex-row-reverse justify-start"
+            >
+              throughput
+            </SortButton>
+          </TableHead>
+          <TableHead className="w-20">
+            <SortButton
+              sortKey="latency"
+              currentSortKey={sortKey}
+              sortDirection={sortDirection}
+              onSort={handleSort}
+              className="flex-row-reverse justify-start"
+            >
+              latency
+            </SortButton>
+          </TableHead>
 
-              <TableHead>
-                <SortButton
-                  sortKey="uptime"
-                  currentSortKey={sortKey}
-                  sortDirection={sortDirection}
-                  onSort={handleSort}
-                  className="justify-end"
-                >
-                  uptime
-                </SortButton>
-              </TableHead>
-              <TableHead>
-                <SortButton
-                  sortKey="input_price"
-                  currentSortKey={sortKey}
-                  sortDirection={sortDirection}
-                  onSort={handleSort}
-                  className="justify-end"
-                >
-                  input_price
-                </SortButton>
-              </TableHead>
-              <TableHead>
-                <SortButton
-                  sortKey="output_price"
-                  currentSortKey={sortKey}
-                  sortDirection={sortDirection}
-                  onSort={handleSort}
-                  className="justify-end"
-                >
-                  output_price
-                </SortButton>
-              </TableHead>
-              <TableHead>
-                <SortButton
-                  sortKey="traffic"
-                  currentSortKey={sortKey}
-                  sortDirection={sortDirection}
-                  onSort={handleSort}
-                  className="justify-end"
-                >
-                  traffic
-                </SortButton>
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {sortedEndpoints.map((ep) => (
-              <TableRow key={ep.id} className="border-b-transparent">
-                <TableCell className="font-medium">{ep.provider}</TableCell>
-                <TableCell className="text-right">
-                  {ep.throughput !== null ? Math.round(ep.throughput).toLocaleString() : '—'} tok/s
-                </TableCell>
-                <TableCell className="text-right">
-                  {ep.latency !== null ? Math.round(ep.latency).toLocaleString() : '—'} ms
-                </TableCell>
-                <TableCell className="text-right">
-                  {ep.uptime !== null ? ep.uptime.toFixed(1) : '—'}%
-                </TableCell>
-                <TableCell className="text-right">{formatTokenPriceToM(ep.input_price)}</TableCell>
-                <TableCell className="text-right">{formatTokenPriceToM(ep.output_price)}</TableCell>
-                <TableCell className="text-right">
-                  {ep.traffic !== null ? ep.traffic.toFixed(1) : '—'}%
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+          <TableHead className="w-20">
+            <SortButton
+              sortKey="uptime"
+              currentSortKey={sortKey}
+              sortDirection={sortDirection}
+              onSort={handleSort}
+              className="flex-row-reverse justify-start"
+            >
+              uptime
+            </SortButton>
+          </TableHead>
+          <TableHead className="w-28">
+            <SortButton
+              sortKey="input_price"
+              currentSortKey={sortKey}
+              sortDirection={sortDirection}
+              onSort={handleSort}
+              className="flex-row-reverse justify-start"
+            >
+              input_price
+            </SortButton>
+          </TableHead>
+          <TableHead className="w-28">
+            <SortButton
+              sortKey="output_price"
+              currentSortKey={sortKey}
+              sortDirection={sortDirection}
+              onSort={handleSort}
+              className="flex-row-reverse justify-start"
+            >
+              output_price
+            </SortButton>
+          </TableHead>
+          <TableHead className="w-20">
+            <SortButton
+              sortKey="traffic"
+              currentSortKey={sortKey}
+              sortDirection={sortDirection}
+              onSort={handleSort}
+              className="flex-row-reverse justify-start"
+            >
+              traffic
+            </SortButton>
+          </TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {sortedEndpoints.map((ep) => (
+          <TableRow key={ep.id} className="border-b-transparent">
+            <TableCell className="truncate font-medium">{ep.provider}</TableCell>
+            <TableCell className="text-right">
+              {ep.throughput !== null ? Math.round(ep.throughput).toLocaleString() : '—'} tok/s
+            </TableCell>
+            <TableCell className="text-right">
+              {ep.latency !== null ? Math.round(ep.latency).toLocaleString() : '—'} ms
+            </TableCell>
+            <TableCell className="text-right">
+              {ep.uptime !== null ? ep.uptime.toFixed(1) : '— '}%
+            </TableCell>
+            <TableCell className="text-right">{formatTokenPriceToM(ep.input_price)}</TableCell>
+            <TableCell className="text-right">{formatTokenPriceToM(ep.output_price)}</TableCell>
+            <TableCell className="text-right">
+              {ep.traffic !== null ? ep.traffic.toFixed(1) : '— '}%
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  )
+}
+
+export function EndpointSummary({
+  model,
+  endpoints,
+}: {
+  model: OrModel
+  endpoints: OrEndpointData[]
+}) {
+  // Group endpoints by variant
+  const endpointsByVariant = Map.groupBy(endpoints, (endpoint) => endpoint.model_variant)
+
+  // Sort variants with 'standard' first, then alphabetically
+  const sortedVariants = [...endpointsByVariant.keys()].sort((a, b) => {
+    if (a === 'standard') return -1
+    if (b === 'standard') return 1
+    return a.localeCompare(b)
+  })
+
+  return (
+    <Card className="rounded font-mono">
+      <CardHeader className="border-b">
+        <CardTitle>Endpoints</CardTitle>
+        <CardDescription>Compare endpoint performance</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {sortedVariants.map((variant) => {
+          const variantEndpoints = endpointsByVariant.get(variant)!
+          const title = variant === 'standard' ? model.slug : `${model.slug}:${variant}`
+
+          return (
+            <div key={variant} className="space-y-1">
+              <div className="flex items-center justify-between">
+                <div className="text-sm font-medium">{title}</div>
+                <Badge variant="outline">
+                  {variantEndpoints.length} endpoint{variantEndpoints.length === 1 ? '' : 's'}
+                </Badge>
+              </div>
+
+              <EndpointTable endpoints={variantEndpoints} />
+            </div>
+          )
+        })}
       </CardContent>
     </Card>
   )
