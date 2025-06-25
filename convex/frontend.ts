@@ -123,7 +123,6 @@ export const getOrModelTokenMetrics = query({
     const models = await ctx.db.query(OrModels.name).collect()
     const model = models.find((m) => m.slug === args.slug)
 
-    console.log('model', model?.permaslug)
     if (!model) return []
 
     const n = model.variants.length * 72

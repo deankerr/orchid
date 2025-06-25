@@ -17,3 +17,10 @@ alwaysApply: true
 - When validating API artifacts, we utilise zod's characteristic of pruning properties from the result data if they are not specified in the schema, removing unnecessary values and duplicated/embedded entities from the source data.
 - 'Strict' schemas intend to validate the full structure of each major entity, existing to confirm that our understanding of the structure of each artifact is correct and up to date.
 - Do not export subcomponent schemas, ie. nested objects, unless there is a specific reason to do so (there usually is not).
+
+## Project Commands
+
+- We use bun as a package manager, and script runner.
+- `bun typecheck && bun lint` to check your work.
+- If you have done significant work in the convex folder, `bun convex dev --once`
+- Don't try to start the dev server. It's already running in my terminal.

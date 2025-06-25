@@ -12,6 +12,8 @@ import {
   useOrTopAppsForModel,
 } from '@/hooks/api'
 
+import { EndpointSummary } from './endpoint-summary'
+
 interface ModelPageProps {
   slug: string
 }
@@ -42,7 +44,12 @@ export function ModelPage({ slug }: ModelPageProps) {
         {endpoints === undefined ? (
           <DataStreamLoader label="Loading endpoints..." />
         ) : endpoints.length > 0 ? (
-          endpoints.map((endpoint) => <EndpointCard key={endpoint._id} endpoint={endpoint} />)
+          <>
+            <EndpointSummary model={model} endpoints={endpoints} />
+            {endpoints.map((endpoint) => (
+              <EndpointCard key={endpoint._id} endpoint={endpoint} />
+            ))}
+          </>
         ) : (
           <EmptyState message="No endpoints available" icon="⚡" />
         )}
