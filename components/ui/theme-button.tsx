@@ -8,7 +8,12 @@ import { useTheme } from 'next-themes'
 import { Button } from '@/components/ui/button'
 
 export function ThemeButton() {
+  const [isMounted, setIsMounted] = React.useState(false)
   const { theme, setTheme } = useTheme()
+
+  React.useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   const cycleTheme = () => {
     switch (theme) {
@@ -37,7 +42,7 @@ export function ThemeButton() {
 
   return (
     <Button variant="ghost" size="icon" className="rounded-xl" onClick={cycleTheme}>
-      {getIcon()}
+      {isMounted && getIcon()}
       <span className="sr-only">Toggle theme</span>
     </Button>
   )
