@@ -276,7 +276,7 @@ export function EndpointSummary({
   return (
     <Card className="rounded font-mono">
       <CardHeader className="border-b">
-        <CardTitle>Endpoints</CardTitle>
+        <CardTitle className="text-sm">Endpoints</CardTitle>
         <CardDescription>Compare endpoint performance</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">

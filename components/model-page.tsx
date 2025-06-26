@@ -7,7 +7,7 @@ import { ModelTokenChart } from '@/components/model-token-chart'
 import { ModelTopApps } from '@/components/model-top-apps'
 import {
   useOrEndpoints,
-  useOrModel,
+  useOrModels,
   useOrModelTokenMetrics,
   useOrTopAppsForModel,
 } from '@/hooks/api'
@@ -19,7 +19,9 @@ interface ModelPageProps {
 }
 
 export function ModelPage({ slug }: ModelPageProps) {
-  const model = useOrModel(slug)
+  const models = useOrModels()
+  const model = models?.find((m) => m.slug === slug)
+
   const endpoints = useOrEndpoints(slug)
   const apps = useOrTopAppsForModel(slug)
 
@@ -27,12 +29,12 @@ export function ModelPage({ slug }: ModelPageProps) {
   const tokenMetricsByVariant = Map.groupBy(modelTokenMetrics ?? [], (m) => m.model_variant)
   const appsByVariant = Map.groupBy(apps ?? [], (app) => app.metric.model_variant)
 
+  if (!models) {
+    return <DataStreamLoader label="Loading models..." />
+  }
+
   if (!model) {
-    if (model === null) {
-      return <EmptyState message="Model not found" icon="404" />
-    } else {
-      return <DataStreamLoader label="Loading model data" />
-    }
+    return <EmptyState message="Model not found" icon="404" />
   }
 
   return (

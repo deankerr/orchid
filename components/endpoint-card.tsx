@@ -23,6 +23,7 @@ export function EndpointCard({
         )}
 
         {endpoint.status < 0 ? <Badge variant="destructive">deranked</Badge> : null}
+        {endpoint.is_disabled ? <Badge variant="destructive">disabled</Badge> : null}
       </div>
 
       <div className="flex flex-wrap gap-6">
@@ -95,15 +96,15 @@ export function EndpointCard({
 
         <div className="flex flex-wrap gap-4">
           <DataField label="p50_latency">
-            {`${endpoint.metrics[0]?.p50_latency.toLocaleString()} ms`}
+            {`${endpoint.metrics[0]?.p50_latency.toLocaleString() ?? '—'} ms`}
           </DataField>
 
           <DataField label="p50_throughput">
-            {`${endpoint.metrics[0]?.p50_throughput.toFixed(2)} tps`}
+            {`${endpoint.metrics[0]?.p50_throughput.toFixed(2) ?? '—'} tps`}
           </DataField>
 
           <DataField label="request_count">
-            {endpoint.metrics[0]?.request_count.toLocaleString()}
+            {endpoint.metrics[0]?.request_count.toLocaleString() ?? '—'}
           </DataField>
         </div>
       </div>
@@ -111,6 +112,8 @@ export function EndpointCard({
       <div className="max-w-lg">
         <UptimeTracker uptimes={endpoint.uptime} />
       </div>
+
+      <code className="text-xs text-muted-foreground">{endpoint.uuid}</code>
 
       {/* <pre className="text-xs text-muted-foreground">{JSON.stringify(endpoint, null, 2)}</pre> */}
     </div>

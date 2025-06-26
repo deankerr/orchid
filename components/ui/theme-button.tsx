@@ -2,34 +2,43 @@
 
 import * as React from 'react'
 
-import { Moon, Sun } from 'lucide-react'
+import { Moon, Sun, SunMoon } from 'lucide-react'
 import { useTheme } from 'next-themes'
 
 import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 
 export function ThemeButton() {
-  const { setTheme } = useTheme()
+  const { theme, setTheme } = useTheme()
+
+  const cycleTheme = () => {
+    switch (theme) {
+      case 'light':
+        setTheme('dark')
+        break
+      case 'dark':
+        setTheme('system')
+        break
+      default:
+        setTheme('light')
+        break
+    }
+  }
+
+  const getIcon = () => {
+    switch (theme) {
+      case 'light':
+        return <Sun className="h-[1.2rem] w-[1.2rem]" />
+      case 'dark':
+        return <Moon className="h-[1.2rem] w-[1.2rem]" />
+      default:
+        return <SunMoon className="h-[1.2rem] w-[1.2rem]" />
+    }
+  }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon">
-          <Sun className="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
-          <Moon className="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
-          <span className="sr-only">Toggle theme</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme('light')}>Light</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme('dark')}>Dark</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme('system')}>System</DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <Button variant="ghost" size="icon" className="rounded-xl" onClick={cycleTheme}>
+      {getIcon()}
+      <span className="sr-only">Toggle theme</span>
+    </Button>
   )
 }

@@ -16,7 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 
 export function ModelCard({ model }: { model: OrModel }) {
   return (
-    <Card className="rounded-sm bg-background font-mono shadow-none">
+    <Card className="font-mono">
       <CardHeader>
         <CardTitle>
           <Link href={`/?model=${model.slug}`} className="underline-offset-2 hover:underline">
@@ -60,7 +60,9 @@ export function ModelCard({ model }: { model: OrModel }) {
         {model.warning_message && (
           <div className="flex items-center gap-2 rounded border border-warning px-3 py-2.5 text-sm text-warning">
             <AlertTriangleIcon className="size-5" />
-            <MarkdownLinks>{model.warning_message}</MarkdownLinks>
+            <div>
+              <MarkdownLinks>{model.warning_message}</MarkdownLinks>
+            </div>
           </div>
         )}
 
