@@ -39,6 +39,7 @@ type ProcessedEndpoint = {
   output_price: number
   uptime: number | null
   traffic: number | null
+  snapshot_at: number
 }
 
 function processEndpoints(endpoints: OrEndpointData[]): ProcessedEndpoint[] {
@@ -68,6 +69,7 @@ function processEndpoints(endpoints: OrEndpointData[]): ProcessedEndpoint[] {
       output_price: ep.pricing.output ?? 0,
       uptime: avgUptime,
       traffic: trafficPercentage,
+      snapshot_at: ep.snapshot_at,
     }
   })
 }
@@ -131,7 +133,13 @@ function SortButton({
   )
 }
 
-function EndpointTable({ endpoints }: { endpoints: OrEndpointData[] }) {
+export function EndpointTable({
+  endpoints,
+  modelSnapshotTime,
+}: {
+  endpoints: OrEndpointData[]
+  modelSnapshotTime: number
+}) {
   const [sortKey, setSortKey] = useState<SortKey>('traffic')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
 
@@ -232,25 +240,28 @@ function EndpointTable({ endpoints }: { endpoints: OrEndpointData[] }) {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {sortedEndpoints.map((ep) => (
-          <TableRow key={ep.id} className="border-b-transparent">
-            <TableCell className="truncate font-medium">{ep.provider}</TableCell>
-            <TableCell className="text-right">
-              {ep.throughput !== null ? Math.round(ep.throughput).toLocaleString() : '—'} tok/s
-            </TableCell>
-            <TableCell className="text-right">
-              {ep.latency !== null ? Math.round(ep.latency).toLocaleString() : '—'} ms
-            </TableCell>
-            <TableCell className="text-right">
-              {ep.uptime !== null ? ep.uptime.toFixed(1) : '— '}%
-            </TableCell>
-            <TableCell className="text-right">{formatTokenPriceToM(ep.input_price)}</TableCell>
-            <TableCell className="text-right">{formatTokenPriceToM(ep.output_price)}</TableCell>
-            <TableCell className="text-right">
-              {ep.traffic !== null ? ep.traffic.toFixed(1) : '— '}%
-            </TableCell>
-          </TableRow>
-        ))}
+        {sortedEndpoints.map((ep) => {
+          const isStale = ep.snapshot_at < modelSnapshotTime
+          return (
+            <TableRow key={ep.id} className={cn('border-b-transparent', isStale && 'opacity-50')}>
+              <TableCell className="truncate font-medium">{ep.provider}</TableCell>
+              <TableCell className="text-right">
+                {ep.throughput !== null ? Math.round(ep.throughput).toLocaleString() : '—'} tok/s
+              </TableCell>
+              <TableCell className="text-right">
+                {ep.latency !== null ? Math.round(ep.latency).toLocaleString() : '—'} ms
+              </TableCell>
+              <TableCell className="text-right">
+                {ep.uptime !== null ? ep.uptime.toFixed(1) : '— '}%
+              </TableCell>
+              <TableCell className="text-right">{formatTokenPriceToM(ep.input_price)}</TableCell>
+              <TableCell className="text-right">{formatTokenPriceToM(ep.output_price)}</TableCell>
+              <TableCell className="text-right">
+                {ep.traffic !== null ? ep.traffic.toFixed(1) : '— '}%
+              </TableCell>
+            </TableRow>
+          )
+        })}
       </TableBody>
     </Table>
   )
@@ -293,7 +304,7 @@ export function EndpointSummary({
                 </Badge>
               </div>
 
-              <EndpointTable endpoints={variantEndpoints} />
+              <EndpointTable endpoints={variantEndpoints} modelSnapshotTime={model.snapshot_at} />
             </div>
           )
         })}
