@@ -1,4 +1,3 @@
-import { internal } from '../../_generated/api'
 import type { ActionCtx } from '../../_generated/server'
 import { output } from '../output'
 import type { Entities } from '../registry'
@@ -13,7 +12,6 @@ export async function modelTokenMetricsPipeline(
   ctx: ActionCtx,
   {
     snapshot_at,
-    run_id,
     models,
     source,
   }: {
@@ -25,6 +23,7 @@ export async function modelTokenMetricsPipeline(
     }
   },
 ) {
+  const started_at = Date.now()
   const modelTokenMetrics: (typeof Entities.modelTokenMetrics.table.$content)[] = []
   const authors: (typeof Entities.authors.table.$content)[] = []
   const issues: Issue[] = []
@@ -62,11 +61,13 @@ export async function modelTokenMetricsPipeline(
     ],
   })
 
-  await ctx.runMutation(internal.openrouter.snapshot.insertResult, {
-    snapshot_at,
-    run_id,
-    pipeline: 'modelTokenMetrics',
-    results,
-    issues,
-  })
+  return {
+    data: undefined,
+    metrics: {
+      entities: results,
+      issues,
+      started_at,
+      ended_at: Date.now(),
+    },
+  }
 }

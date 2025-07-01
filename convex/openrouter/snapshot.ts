@@ -4,21 +4,6 @@ import { internalAction, internalMutation } from '../_generated/server'
 import { Table2 } from '../table2'
 import { orchestrator } from './orchestrator'
 
-export const SnapshotResults = Table2('snapshot_results', {
-  run_id: v.string(),
-  snapshot_at: v.number(),
-  pipeline: v.string(),
-  results: v.array(v.record(v.string(), v.any())),
-  issues: v.array(v.record(v.string(), v.any())),
-})
-
-export const insertResult = internalMutation({
-  args: SnapshotResults.content,
-  handler: async (ctx, args) => {
-    await ctx.db.insert(SnapshotResults.name, args)
-  },
-})
-
 export const SnapshotRuns = Table2('snapshot_runs', {
   snapshot_at: v.number(),
   started_at: v.number(),
@@ -29,6 +14,7 @@ export const SnapshotRuns = Table2('snapshot_runs', {
       name: v.string(),
       ok: v.boolean(),
       error: v.optional(v.string()),
+      metrics: v.optional(v.any()),
     }),
   ),
 })
@@ -57,6 +43,7 @@ export const updateRun = internalMutation({
         name: v.string(),
         ok: v.boolean(),
         error: v.optional(v.string()),
+        metrics: v.optional(v.any()),
       }),
     ),
   },

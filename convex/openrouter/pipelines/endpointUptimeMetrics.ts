@@ -1,4 +1,3 @@
-import { internal } from '../../_generated/api'
 import type { ActionCtx } from '../../_generated/server'
 import { output } from '../output'
 import type { Entities } from '../registry'
@@ -11,8 +10,6 @@ import {
 export async function endpointUptimeMetricsPipeline(
   ctx: ActionCtx,
   {
-    snapshot_at,
-    run_id,
     endpoints,
     source,
   }: {
@@ -24,6 +21,7 @@ export async function endpointUptimeMetricsPipeline(
     }
   },
 ) {
+  const started_at = Date.now()
   const endpointUptimes: (typeof Entities.endpointUptimeMetrics.table.$content)[] = []
   const issues: Issue[] = []
 
@@ -54,11 +52,13 @@ export async function endpointUptimeMetricsPipeline(
     ],
   })
 
-  await ctx.runMutation(internal.openrouter.snapshot.insertResult, {
-    snapshot_at,
-    run_id,
-    pipeline: 'endpointUptimeMetrics',
-    results,
-    issues,
-  })
+  return {
+    data: undefined,
+    metrics: {
+      entities: results,
+      issues,
+      started_at,
+      ended_at: Date.now(),
+    },
+  }
 }

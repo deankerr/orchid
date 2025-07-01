@@ -1,4 +1,3 @@
-import { internal } from '../../_generated/api'
 import type { ActionCtx } from '../../_generated/server'
 import { storeSnapshotData } from '../archive'
 import { output } from '../output'
@@ -22,6 +21,7 @@ export async function endpointsPipeline(
     }
   },
 ) {
+  const started_at = Date.now()
   const endpoints: (typeof Entities.endpoints.table.$content)[] = []
   const endpointMetrics: (typeof Entities.endpointMetrics.table.$content)[] = []
   const issues: Issue[] = []
@@ -89,13 +89,13 @@ export async function endpointsPipeline(
     ],
   })
 
-  await ctx.runMutation(internal.openrouter.snapshot.insertResult, {
-    snapshot_at,
-    run_id,
-    pipeline: 'endpoints',
-    results,
-    issues,
-  })
-
-  return endpoints
+  return {
+    data: endpoints,
+    metrics: {
+      entities: results,
+      issues,
+      started_at,
+      ended_at: Date.now(),
+    },
+  }
 }

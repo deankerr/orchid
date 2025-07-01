@@ -1,7 +1,6 @@
 import * as R from 'remeda'
 import type z4 from 'zod/v4'
 
-import { internal } from '../../_generated/api'
 import type { ActionCtx } from '../../_generated/server'
 import { storeSnapshotData } from '../archive'
 import { output } from '../output'
@@ -20,9 +19,8 @@ export async function modelsPipeline(
     source: { models: () => Promise<unknown[]> }
   },
 ) {
+  const started_at = Date.now()
   const data = await source.models()
-
-  // Store raw response for archival
   await storeSnapshotData(ctx, {
     run_id,
     snapshot_at,
@@ -50,15 +48,15 @@ export async function modelsPipeline(
     ],
   })
 
-  await ctx.runMutation(internal.openrouter.snapshot.insertResult, {
-    snapshot_at,
-    run_id,
-    pipeline: 'models',
-    results,
-    issues,
-  })
-
-  return models
+  return {
+    data: models,
+    metrics: {
+      entities: results,
+      issues,
+      started_at,
+      ended_at: Date.now(),
+    },
+  }
 }
 
 function consolidateVariants(models: z4.infer<typeof ModelTransformSchema>[]) {

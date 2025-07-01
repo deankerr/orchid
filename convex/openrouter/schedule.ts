@@ -28,10 +28,6 @@ export default internalMutation({
 
     // Check if this is the right hour based on interval
     if (hour % config.interval_hours !== 0) {
-      const nextHour = hour + (config.interval_hours - (hour % config.interval_hours))
-      console.log(
-        `Skipping this hour. Next snapshot hour: ${nextHour % 24}:00 (interval: ${config.interval_hours}h)`,
-      )
       return
     }
 

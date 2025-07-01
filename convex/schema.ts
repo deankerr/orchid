@@ -12,7 +12,7 @@ import { OrModels, OrModelsChanges } from './openrouter/entities/models'
 import { OrModelTokenMetrics } from './openrouter/entities/modelTokenMetrics'
 import { OrProviders, OrProvidersChanges } from './openrouter/entities/providers'
 import { SnapshotSchedule } from './openrouter/schedule'
-import { SnapshotResults, SnapshotRuns } from './openrouter/snapshot'
+import { SnapshotRuns } from './openrouter/snapshot'
 
 export const schema = defineSchema(
   {
@@ -62,7 +62,6 @@ export const schema = defineSchema(
     or_providers_changes: OrProvidersChanges.table,
 
     snapshot_archives: SnapshotArchives.table.index('by_snapshot_at', ['snapshot_at']),
-    snapshot_results: SnapshotResults.table,
     snapshot_runs: SnapshotRuns.table,
     snapshot_schedule: SnapshotSchedule.table,
 

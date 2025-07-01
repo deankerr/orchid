@@ -97,8 +97,8 @@ export async function output(
     }
 
     return {
-      entity: entity.name,
-      results: R.countBy(results, (v) => v.action),
+      ...R.countBy(results, (v) => v.action),
+      name: entity.name,
     }
   })
 

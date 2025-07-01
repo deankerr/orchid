@@ -43,7 +43,8 @@ export async function orchestrator(ctx: ActionCtx) {
     name,
     ok: res.ok,
     error: res.ok ? undefined : res.error,
-  })) as { name: string; ok: boolean; error?: string }[]
+    metrics: res.ok ? res.value.metrics : undefined,
+  })) as { name: string; ok: boolean; error?: string; metrics?: any }[]
 
   // If models failed, abort the run early.
   if (!stage1.models.ok) {
@@ -56,7 +57,7 @@ export async function orchestrator(ctx: ActionCtx) {
     return
   }
 
-  const models = stage1.models.value
+  const models = stage1.models.value.data
 
   // ------------------------------------------------------------
   // Stage 2 – parallel pipelines that depend on models
@@ -70,12 +71,14 @@ export async function orchestrator(ctx: ActionCtx) {
         models,
         source: { endpoints: OpenRouter.fetch.endpoints },
       })
-      await endpointUptimeMetricsPipeline(ctx, {
+      const uptimes = await endpointUptimeMetricsPipeline(ctx, {
         snapshot_at,
         run_id,
-        endpoints,
+        endpoints: endpoints.data,
         source: { endpointUptimes: OpenRouter.fetch.uptimes },
       })
+
+      return { data: undefined, metrics: [endpoints.metrics, uptimes.metrics] }
     },
     apps: () =>
       appsPipeline(ctx, {
@@ -97,7 +100,8 @@ export async function orchestrator(ctx: ActionCtx) {
     name,
     ok: res.ok,
     error: res.ok ? undefined : res.error,
-  })) as { name: string; ok: boolean; error?: string }[]
+    metrics: res.ok ? res.value.metrics : undefined,
+  })) as { name: string; ok: boolean; error?: string; metrics?: any }[]
 
   const allPipelines = [...stage1Pipelines, ...stage2Pipelines]
   const ok = allPipelines.every((p) => p.ok)
