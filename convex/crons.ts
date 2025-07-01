@@ -9,7 +9,7 @@ crons.hourly(
   {
     minuteUTC: 0,
   },
-  internal.openrouter.snapshot.schedule,
+  internal.openrouter.schedule.default,
 )
 
 export default crons

@@ -24,3 +24,9 @@ alwaysApply: true
 - `bun typecheck && bun lint` to check your work.
 - If you have done significant work in the convex folder, `bun convex dev --once`
 - Don't try to start the dev server. It's already running in my terminal.
+
+## Convex
+
+- Convex uses their own V8 runtime, similar to Cloudflare Workers, but with better support for language features.
+- Map.groupBy is supported, and it is an incredible way to group then iterate through items.
+- bun is used as a package manager only. We don't use the bun runtime.

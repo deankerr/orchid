@@ -2,11 +2,7 @@ import { asyncMap } from 'convex-helpers'
 import { v } from 'convex/values'
 
 import { query } from './_generated/server'
-import { OrAppTokenMetrics } from './or/or_app_token_metrics'
-import { OrApps } from './or/or_apps'
-import { OrEndpoints } from './or/or_endpoints'
-import { OrModelTokenMetrics } from './or/or_model_token_metrics'
-import { OrModels } from './or/or_models'
+import { Entities } from './openrouter/registry'
 
 export const getOrModel = query({
   args: {
@@ -14,7 +10,7 @@ export const getOrModel = query({
   },
   handler: async (ctx, args) => {
     return await ctx.db
-      .query(OrModels.name)
+      .query(Entities.models.table.name)
       .withIndex('by_slug', (q) => q.eq('slug', args.slug))
       .first()
   },
@@ -23,7 +19,7 @@ export const getOrModel = query({
 export const listOrModels = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query(OrModels.name).collect()
+    return await ctx.db.query(Entities.models.table.name).collect()
   },
 })
 
@@ -33,14 +29,14 @@ export const listOrEndpoints = query({
   },
   handler: async (ctx, args) => {
     const endpoints = await ctx.db
-      .query(OrEndpoints.name)
+      .query(Entities.endpoints.table.name)
       .withIndex('by_model_slug', (q) => q.eq('model_slug', args.slug))
       .collect()
 
     return asyncMap(endpoints, async (endpoint) => {
       // Find the latest snapshot_at for endpoint metrics
       const latestEndpointMetric = await ctx.db
-        .query('or_endpoint_metrics')
+        .query(Entities.endpointMetrics.table.name)
         .withIndex('by_endpoint_uuid_snapshot_at', (q) => q.eq('endpoint_uuid', endpoint.uuid))
         .order('desc')
         .first()
@@ -48,7 +44,7 @@ export const listOrEndpoints = query({
       // Get metrics from latest snapshot only
       const metrics = latestEndpointMetric
         ? await ctx.db
-            .query('or_endpoint_metrics')
+            .query(Entities.endpointMetrics.table.name)
             .withIndex('by_endpoint_uuid_snapshot_at', (q) =>
               q
                 .eq('endpoint_uuid', endpoint.uuid)
@@ -61,7 +57,7 @@ export const listOrEndpoints = query({
         ...endpoint,
         metrics,
         uptime: await ctx.db
-          .query('or_endpoint_uptime_metrics')
+          .query(Entities.endpointUptimeMetrics.table.name)
           .withIndex('by_endpoint_uuid_timestamp', (q) => q.eq('endpoint_uuid', endpoint.uuid))
           .order('desc')
           .take(72),
@@ -75,14 +71,14 @@ export const getOrTopAppsForModel = query({
     slug: v.string(),
   },
   handler: async (ctx, args) => {
-    const models = await ctx.db.query(OrModels.name).collect()
+    const models = await ctx.db.query(Entities.models.table.name).collect()
     const model = models.find((m) => m.slug === args.slug)
 
     if (!model) return []
 
     // Find the latest snapshot_at for this model (across all variants)
     const latestMetric = await ctx.db
-      .query(OrAppTokenMetrics.name)
+      .query(Entities.appTokenMetrics.table.name)
       .withIndex('by_permaslug_snapshot_at', (q) => q.eq('model_permaslug', model.permaslug))
       .order('desc')
       .first()
@@ -93,7 +89,7 @@ export const getOrTopAppsForModel = query({
 
     // Get all metrics from the latest snapshot (all variants)
     const metrics = await ctx.db
-      .query(OrAppTokenMetrics.name)
+      .query(Entities.appTokenMetrics.table.name)
       .withIndex('by_permaslug_snapshot_at', (q) =>
         q.eq('model_permaslug', model.permaslug).eq('snapshot_at', latestMetric.snapshot_at),
       )
@@ -101,7 +97,7 @@ export const getOrTopAppsForModel = query({
 
     const apps = await asyncMap(metrics, async (metric) => {
       const app = await ctx.db
-        .query(OrApps.name)
+        .query(Entities.apps.table.name)
         .withIndex('by_app_id', (q) => q.eq('app_id', metric.app_id))
         .first()
 
@@ -120,14 +116,14 @@ export const getOrModelTokenMetrics = query({
     slug: v.string(),
   },
   handler: async (ctx, args) => {
-    const models = await ctx.db.query(OrModels.name).collect()
+    const models = await ctx.db.query(Entities.models.table.name).collect()
     const model = models.find((m) => m.slug === args.slug)
 
     if (!model) return []
 
     const n = model.variants.length * 72
     return await ctx.db
-      .query(OrModelTokenMetrics.name)
+      .query(Entities.modelTokenMetrics.table.name)
       .withIndex('by_permaslug_timestamp', (q) => q.eq('model_permaslug', model.permaslug))
       .order('desc')
       .take(n)

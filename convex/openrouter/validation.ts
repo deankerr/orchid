@@ -1,6 +1,19 @@
 import z4 from 'zod/v4'
 
-import type { ValidationIssue } from './types'
+export interface Issue {
+  type: string
+  message: string
+  indices: number[]
+}
+
+function addIssue(issueMap: Map<string, Issue>, type: string, message: string, index: number) {
+  const key = `${type}|${message}`
+  if (issueMap.has(key)) {
+    issueMap.get(key)!.indices.push(index)
+  } else {
+    issueMap.set(key, { type, message, indices: [index] })
+  }
+}
 
 /**
  * Validate an array of raw records with transform & strict schema pair
@@ -12,33 +25,25 @@ export function validateArray<TParsed>(
   strictSchema: z4.ZodTypeAny,
 ) {
   const items: TParsed[] = []
-  const issues: ValidationIssue[] = []
+  const issueMap = new Map<string, Issue>()
 
-  data.forEach((raw, index) => {
+  for (const [index, raw] of data.entries()) {
     // Transform schema - used to extract and shape data
     const transformResult = transformSchema.safeParse(raw)
     if (transformResult.success) {
       items.push(transformResult.data)
     } else {
-      issues.push({
-        index,
-        type: 'transform',
-        message: z4.prettifyError(transformResult.error),
-      })
+      addIssue(issueMap, 'transform', z4.prettifyError(transformResult.error), index)
     }
 
     // Strict schema - validates our understanding of the full structure
     const strictResult = strictSchema.safeParse(raw)
     if (!strictResult.success) {
-      issues.push({
-        index,
-        type: 'schema',
-        message: z4.prettifyError(strictResult.error),
-      })
+      addIssue(issueMap, 'schema', z4.prettifyError(strictResult.error), index)
     }
-  })
+  }
 
-  return { items, issues }
+  return { items, issues: Array.from(issueMap.values()) }
 }
 
 /**

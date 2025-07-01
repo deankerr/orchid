@@ -1,17 +1,18 @@
 import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
-import { SnapshotArchives } from './openrouter/archives'
-import { SnapshotConfig } from './openrouter/snapshot'
-import { OrAppTokenMetrics } from './or/or_app_token_metrics'
-import { OrApps, OrAppsChanges } from './or/or_apps'
-import { OrAuthors, OrAuthorsChanges } from './or/or_authors'
-import { OrEndpointMetrics } from './or/or_endpoint_metrics'
-import { OrEndpointUptimeMetrics } from './or/or_endpoint_uptime_metrics'
-import { OrEndpoints, OrEndpointsChanges } from './or/or_endpoints'
-import { OrModelTokenMetrics } from './or/or_model_token_metrics'
-import { OrModels, OrModelsChanges } from './or/or_models'
-import { OrProviders, OrProvidersChanges } from './or/or_providers'
+import { SnapshotArchives } from './openrouter/archive'
+import { OrApps, OrAppsChanges } from './openrouter/entities/apps'
+import { OrAppTokenMetrics } from './openrouter/entities/appTokenMetrics'
+import { OrAuthors, OrAuthorsChanges } from './openrouter/entities/authors'
+import { OrEndpointMetrics } from './openrouter/entities/endpointMetrics'
+import { OrEndpoints, OrEndpointsChanges } from './openrouter/entities/endpoints'
+import { OrEndpointUptimeMetrics } from './openrouter/entities/endpointUptimeMetrics'
+import { OrModels, OrModelsChanges } from './openrouter/entities/models'
+import { OrModelTokenMetrics } from './openrouter/entities/modelTokenMetrics'
+import { OrProviders, OrProvidersChanges } from './openrouter/entities/providers'
+import { SnapshotSchedule } from './openrouter/schedule'
+import { SnapshotResults, SnapshotRuns } from './openrouter/snapshot'
 
 export const schema = defineSchema(
   {
@@ -60,8 +61,10 @@ export const schema = defineSchema(
     or_providers: OrProviders.table.index('by_slug', ['slug']),
     or_providers_changes: OrProvidersChanges.table,
 
-    snapshot_config: SnapshotConfig.table,
     snapshot_archives: SnapshotArchives.table.index('by_snapshot_at', ['snapshot_at']),
+    snapshot_results: SnapshotResults.table,
+    snapshot_runs: SnapshotRuns.table,
+    snapshot_schedule: SnapshotSchedule.table,
 
     // version 0 archived data
     snapshots: defineTable({

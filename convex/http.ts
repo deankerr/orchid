@@ -1,7 +1,7 @@
 import { httpRouter } from 'convex/server'
 
 import { httpAction } from './_generated/server'
-import { getSnapshotArchives } from './openrouter/archives'
+import { getSnapshotArchives } from './openrouter/archive'
 
 const http = httpRouter()
 

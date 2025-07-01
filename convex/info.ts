@@ -2,14 +2,13 @@ import { v } from 'convex/values'
 import * as R from 'remeda'
 
 import { internalQuery } from './_generated/server'
-import { OrAppTokenMetrics } from './or/or_app_token_metrics'
-import { OrEndpoints } from './or/or_endpoints'
+import { Entities } from './openrouter/registry'
 
 export const snapshotAppCounts = internalQuery({
   args: { snapshot_at: v.number() },
   handler: async (ctx, { snapshot_at }) => {
     const metrics = await ctx.db
-      .query(OrAppTokenMetrics.name)
+      .query(Entities.appTokenMetrics.table.name)
       .withIndex('by_snapshot_at', (q) => q.eq('snapshot_at', snapshot_at))
       .collect()
     const map = Map.groupBy(metrics, (m) => `${m.model_slug}:${m.model_variant}`)
@@ -26,7 +25,7 @@ export const modelsWithMultipleEndpoints = internalQuery({
 
   handler: async (ctx) => {
     // 1. Collect all endpoints
-    const allEndpoints = await ctx.db.query(OrEndpoints.name).collect()
+    const allEndpoints = await ctx.db.query(Entities.endpoints.table.name).collect()
 
     // 2. Filter out "free" variants
     const filteredEndpoints = allEndpoints.filter(
@@ -48,7 +47,7 @@ export const modelsWithMultipleEndpoints = internalQuery({
       for (const endpoint of endpoints) {
         // Get metrics for the same snapshot_at as the endpoint
         const stats = await ctx.db
-          .query('or_endpoint_metrics')
+          .query(Entities.endpointMetrics.table.name)
           .withIndex('by_endpoint_uuid_snapshot_at', (q) =>
             q.eq('endpoint_uuid', endpoint.uuid).eq('snapshot_at', endpoint.snapshot_at),
           )
@@ -56,7 +55,7 @@ export const modelsWithMultipleEndpoints = internalQuery({
 
         // Get uptime data for last 48 hours
         const uptimeMetrics = await ctx.db
-          .query('or_endpoint_uptime_metrics')
+          .query(Entities.endpointUptimeMetrics.table.name)
           .withIndex('by_endpoint_uuid_timestamp', (q) => q.eq('endpoint_uuid', endpoint.uuid))
           .order('desc')
           .take(48)

@@ -1,15 +1,15 @@
-import { Table } from 'convex-helpers/server'
 import { v } from 'convex/values'
 
 import { gunzipSync, gzipSync } from 'fflate'
 
 import { internal } from '../_generated/api'
 import { internalMutation, internalQuery, type ActionCtx } from '../_generated/server'
+import { Table2 } from '../table2'
 
-export const SnapshotArchives = Table('snapshot_archives', {
+export const SnapshotArchives = Table2('snapshot_archives', {
   run_id: v.string(),
   snapshot_at: v.number(),
-  type: v.string(), // endpoint name e.g. models/endpoints etc. or report
+  type: v.string(), // e.g. models/endpoints
   size: v.number(), // original
   storage_id: v.id('_storage'),
   sha256: v.string(),
@@ -47,7 +47,7 @@ export async function storeSnapshotData(
   }
 
   // Save archive record
-  return await ctx.runMutation(internal.openrouter.archives.insertArchiveRecord, {
+  return await ctx.runMutation(internal.openrouter.archive.insertArchiveRecord, {
     run_id,
     snapshot_at,
     type,
@@ -79,7 +79,7 @@ export async function retrieveArchive(ctx: ActionCtx, storage_id: string) {
  * Get all archives for a specific snapshot_at and type, sorted by creation time (latest first)
  */
 export async function getSnapshotArchives(ctx: ActionCtx, snapshot_at: number, type: string) {
-  const archives = await ctx.runQuery(internal.openrouter.archives.querySnapshotArchives, {
+  const archives = await ctx.runQuery(internal.openrouter.archive.querySnapshotArchives, {
     snapshot_at,
     type,
   })
@@ -101,9 +101,9 @@ export async function getSnapshotArchives(ctx: ActionCtx, snapshot_at: number, t
  * Internal mutation to save archive record
  */
 export const insertArchiveRecord = internalMutation({
-  args: SnapshotArchives.withoutSystemFields,
+  args: SnapshotArchives.content,
   handler: async (ctx, args) => {
-    return await ctx.db.insert('snapshot_archives', args)
+    return await ctx.db.insert(SnapshotArchives.name, args)
   },
 })
 
@@ -117,7 +117,7 @@ export const querySnapshotArchives = internalQuery({
   },
   handler: async (ctx, { snapshot_at, type }) => {
     return await ctx.db
-      .query('snapshot_archives')
+      .query(SnapshotArchives.name)
       .withIndex('by_snapshot_at', (q) => q.eq('snapshot_at', snapshot_at))
       .filter((q) => q.eq(q.field('type'), type))
       .collect()

@@ -1,119 +1,64 @@
 import { v } from 'convex/values'
-import * as R from 'remeda'
-import z4 from 'zod/v4'
 
-import { internal } from '../../_generated/api'
-import { internalMutation, type ActionCtx, type MutationCtx } from '../../_generated/server'
-import { OrModels, OrModelsFn, type OrModelFields } from '../../or/or_models'
-import { ModelStrictSchema, ModelTransformSchema } from '../../or/or_models_validators'
-import { storeSnapshotData } from '../archives'
-import { orFetch } from '../client'
-import type { EntitySyncData, Issue, SyncConfig } from '../types'
-import { validateArray } from '../validation'
+import { diff, type IChange } from 'json-diff-ts'
 
-/**
- * Sync all models from OpenRouter
- */
-export async function syncModels(
-  ctx: ActionCtx,
-  config: SyncConfig,
-): Promise<{ models: EntitySyncData<OrModelFields> }> {
-  try {
-    // Fetch models data
-    const response = await orFetch('/api/frontend/models', {
-      schema: z4.object({ data: z4.unknown().array() }),
-    })
+import { type MutationCtx, type QueryCtx } from '../../_generated/server'
+import { Table2 } from '../../table2'
 
-    // Store raw response in archives
-    await storeSnapshotData(ctx, {
-      run_id: config.runId,
-      snapshot_at: config.snapshotAt,
-      type: 'models',
-      data: response,
-    })
+export const OrModels = Table2('or_models', {
+  slug: v.string(),
+  permaslug: v.string(),
+  variants: v.array(v.string()),
 
-    // Validate and transform
-    const { items: modelVariants, issues: validationIssues } = validateArray(
-      response.data,
-      ModelTransformSchema,
-      ModelStrictSchema,
-    )
+  author_slug: v.string(),
 
-    // Convert validation issues to Issue format
-    const issues: Issue[] = validationIssues.map((issue) => ({
-      ...issue,
-      identifier: `models:${issue.index}`,
-    }))
+  name: v.string(),
+  short_name: v.string(),
+  description: v.string(),
+  context_length: v.number(),
+  input_modalities: v.array(v.string()),
+  output_modalities: v.array(v.string()),
+  tokenizer: v.string(),
+  instruct_type: v.optional(v.string()),
+  hugging_face_id: v.optional(v.string()),
+  warning_message: v.optional(v.string()),
 
-    // Consolidate variants into models (following original logic)
-    const models = consolidateVariants(modelVariants).map((model) => ({
-      ...model,
-      snapshot_at: config.snapshotAt,
-    }))
+  or_created_at: v.number(),
+  or_updated_at: v.number(),
 
-    // Merge models into database
-    const mergeResults = await ctx.runMutation(internal.openrouter.entities.models.mergeModels, {
-      models,
-    })
-
-    console.log('Models complete')
-    return {
-      models: {
-        items: models,
-        issues,
-        mergeResults,
-      },
-    }
-  } catch (error) {
-    return {
-      models: {
-        items: [],
-        issues: [
-          {
-            type: 'sync',
-            identifier: 'models',
-            message: error instanceof Error ? error.message : 'Unknown error during models fetch',
-          },
-        ],
-        mergeResults: [],
-      },
-    }
-  }
-}
-
-function consolidateVariants(models: z4.infer<typeof ModelTransformSchema>[]) {
-  // models are duplicated per variant, consolidate them into the single entity with a variants list
-  // use the model with shortest name as the base, e.g. "DeepSeek R1" instead of "DeepSeek R1 (free)"
-  return Map.groupBy(models, (m) => m.slug)
-    .values()
-    .map((variants) => {
-      const [first, ...rest] = variants.sort((a, b) => a.name.length - b.name.length)
-      const { variant, ...base } = first
-      return {
-        ...base,
-        variants: R.pipe([variant, ...rest.map((m) => m.variant)], R.filter(R.isDefined)),
-      }
-    })
-    .toArray()
-}
-
-/**
- * Internal mutation to merge models
- */
-export const mergeModels = internalMutation({
-  args: {
-    models: v.array(v.object(OrModels.withoutSystemFields)),
-  },
-  handler: async (ctx: MutationCtx, { models }) => {
-    const results = await Promise.all(
-      models.map(async (model) => {
-        const mergeResult = await OrModelsFn.merge(ctx, { model })
-        return {
-          identifier: model.slug,
-          action: mergeResult.action,
-        }
-      }),
-    )
-    return results
-  },
+  snapshot_at: v.number(),
 })
+
+export const OrModelsChanges = Table2('or_models_changes', {
+  slug: v.string(),
+  snapshot_at: v.number(),
+  changes: v.array(v.record(v.string(), v.any())),
+})
+
+export const OrModelsFn = {
+  get: async (ctx: QueryCtx, { slug }: { slug: string }) => {
+    return await ctx.db
+      .query(OrModels.name)
+      .withIndex('by_slug', (q) => q.eq('slug', slug))
+      .first()
+  },
+
+  diff: (a: unknown, b: unknown) =>
+    diff(a, b, {
+      keysToSkip: ['_id', '_creationTime', 'snapshot_at'],
+      embeddedObjKeys: {
+        input_modalities: '$value',
+        output_modalities: '$value',
+        variants: '$value',
+      },
+    }),
+
+  recordChanges: async (
+    ctx: MutationCtx,
+    { content, changes }: { content: { slug: string; snapshot_at: number }; changes: IChange[] },
+  ) => {
+    if (changes.length === 0) return
+    const { slug, snapshot_at } = content
+    await ctx.db.insert(OrModelsChanges.name, { slug, snapshot_at, changes })
+  },
+}

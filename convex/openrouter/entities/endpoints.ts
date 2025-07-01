@@ -1,289 +1,118 @@
 import { v } from 'convex/values'
-import z4 from 'zod/v4'
 
-import { internal } from '../../_generated/api'
-import { internalMutation, type ActionCtx, type MutationCtx } from '../../_generated/server'
-import {
-  OrEndpointMetrics,
-  OrEndpointMetricsFn,
-  type OrEndpointMetricsFields,
-} from '../../or/or_endpoint_metrics'
-import {
-  OrEndpointUptimeMetrics,
-  OrEndpointUptimeMetricsFn,
-  type OrEndpointUptimeMetricsFields,
-} from '../../or/or_endpoint_uptime_metrics'
-import {
-  EndpointUptimeStrictSchema,
-  EndpointUptimeTransformSchema,
-} from '../../or/or_endpoint_uptime_metrics_validators'
-import { OrEndpoints, OrEndpointsFn, type OrEndpointFields } from '../../or/or_endpoints'
-import { EndpointStrictSchema, EndpointTransformSchema } from '../../or/or_endpoints_validators'
-import type { OrModelFields } from '../../or/or_models'
-import { storeSnapshotData } from '../archives'
-import { orFetch } from '../client'
-import type { EntitySyncData, Issue, SyncConfig } from '../types'
-import { processBatchMutation } from '../utils'
-import { validateArray, validateRecord } from '../validation'
+import { diff, type IChange } from 'json-diff-ts'
 
-// Batch size for large arrays to avoid Convex limits
-const ENDPOINT_UPTIME_BATCH_SIZE = 4000
+import { type MutationCtx, type QueryCtx } from '../../_generated/server'
+import { Table2 } from '../../table2'
 
-/**
- * Sync endpoints and related data for given models
- */
-export async function syncEndpoints(
-  ctx: ActionCtx,
-  config: SyncConfig,
-  models: OrModelFields[],
-): Promise<{
-  endpoints: EntitySyncData<OrEndpointFields>
-  endpointMetrics: EntitySyncData<OrEndpointMetricsFields>
-  endpointUptimeMetrics: EntitySyncData<OrEndpointUptimeMetricsFields>
-}> {
-  const allEndpoints: OrEndpointFields[] = []
-  const allEndpointMetrics: OrEndpointMetricsFields[] = []
-  const allEndpointUptimeMetrics: OrEndpointUptimeMetricsFields[] = []
-  const allIssues: Issue[] = []
-  const rawEndpointResponses: [string, unknown][] = []
+export const OrEndpoints = Table2('or_endpoints', {
+  uuid: v.string(),
+  name: v.string(),
 
-  console.log(`Processing endpoints for ${models.length} models...`)
+  model_slug: v.string(),
+  model_permaslug: v.string(),
+  model_variant: v.string(),
 
-  for (const model of models) {
-    // Sync endpoints and stats for each model variant
-    for (const variant of model.variants) {
-      const endpointData = await syncModelEndpoints(ctx, config, model, variant)
-      allEndpoints.push(...endpointData.endpoints)
-      allEndpointMetrics.push(...endpointData.endpointMetrics)
-      allIssues.push(...endpointData.issues)
+  provider_id: v.string(), // TODO: provider_slug
+  provider_name: v.string(),
 
-      // Collect raw response for archival
-      if (endpointData.rawResponse) {
-        rawEndpointResponses.push([`${model.slug}:${variant}`, endpointData.rawResponse])
-      }
+  context_length: v.number(),
+  quantization: v.optional(v.string()),
+  supported_parameters: v.array(v.string()),
 
-      // Sync uptime data for each endpoint (but don't archive - low value)
-      for (const endpoint of endpointData.endpoints) {
-        const uptimeData = await syncEndpointUptimes(ctx, config, endpoint.uuid)
-        allEndpointUptimeMetrics.push(...uptimeData.uptimeMetrics)
-        allIssues.push(...uptimeData.issues)
-      }
-    }
-  }
+  capabilities: v.object({
+    completions: v.boolean(),
+    chat_completions: v.boolean(),
 
-  // Store batched endpoint responses
-  await storeSnapshotData(ctx, {
-    run_id: config.runId,
-    snapshot_at: config.snapshotAt,
-    type: 'endpoints',
-    data: rawEndpointResponses,
-  })
+    image_input: v.boolean(),
+    file_input: v.boolean(),
 
-  // Merge all data and track results separately
-  const endpointMergeResults = await ctx.runMutation(
-    internal.openrouter.entities.endpoints.mergeEndpoints,
-    {
-      endpoints: allEndpoints,
-    },
-  )
+    reasoning: v.boolean(),
+    tools: v.boolean(),
+    multipart_messages: v.boolean(),
+    stream_cancellation: v.boolean(),
+    byok: v.boolean(),
+  }),
 
-  const metricsMergeResults = await ctx.runMutation(
-    internal.openrouter.entities.endpoints.mergeEndpointMetrics,
-    {
-      endpointMetrics: allEndpointMetrics,
-    },
-  )
+  limits: v.object({
+    input_tokens: v.optional(v.number()),
+    output_tokens: v.optional(v.number()),
 
-  // Merge endpoint uptime metrics in batches to avoid Convex array limits
-  const uptimeMetricsMergeResults = await processBatchMutation({
-    ctx,
-    items: allEndpointUptimeMetrics,
-    batchSize: ENDPOINT_UPTIME_BATCH_SIZE,
-    mutationRef: internal.openrouter.entities.endpoints.mergeEndpointUptimeMetrics,
-    mutationArgsKey: 'endpointUptimeMetrics',
-  })
+    images_per_prompt: v.optional(v.number()),
+    tokens_per_image: v.optional(v.number()),
 
-  console.log('Endpoints complete')
-  return {
-    endpoints: {
-      items: allEndpoints,
-      issues: allIssues.filter(
-        (issue) => !issue.identifier.includes('stats') && !issue.identifier.includes('uptime'),
-      ),
-      mergeResults: endpointMergeResults,
-    },
-    endpointMetrics: {
-      items: allEndpointMetrics,
-      issues: allIssues.filter((issue) => issue.identifier.includes('stats')),
-      mergeResults: metricsMergeResults,
-    },
-    endpointUptimeMetrics: {
-      items: allEndpointUptimeMetrics,
-      issues: allIssues.filter((issue) => issue.identifier.includes('uptime')),
-      mergeResults: uptimeMetricsMergeResults,
-    },
-  }
-}
+    rpm: v.optional(v.number()),
+    rpd: v.optional(v.number()),
+  }),
 
-// Helper functions
-async function syncModelEndpoints(
-  ctx: ActionCtx,
-  config: SyncConfig,
-  model: OrModelFields,
-  variant: string,
-): Promise<{
-  endpoints: OrEndpointFields[]
-  endpointMetrics: OrEndpointMetricsFields[]
-  issues: Issue[]
-  rawResponse?: unknown
-}> {
-  const modelVariantId = `${model.slug}-${variant}`
+  data_policy: v.object({
+    training: v.optional(v.boolean()),
+    retains_prompts: v.optional(v.boolean()),
+    retention_days: v.optional(v.number()),
+    requires_user_ids: v.optional(v.boolean()),
+    can_publish: v.optional(v.boolean()),
+  }),
 
-  try {
-    const response = await orFetch('/api/frontend/stats/endpoint', {
-      params: { permaslug: model.permaslug, variant },
-      schema: z4.object({ data: z4.unknown().array() }),
-    })
+  pricing: v.object({
+    // per token
+    input: v.optional(v.number()),
+    output: v.optional(v.number()),
+    image_input: v.optional(v.number()),
+    reasoning_output: v.optional(v.number()),
+    web_search: v.optional(v.number()),
 
-    const { items, issues: validationIssues } = validateArray(
-      response.data,
-      EndpointTransformSchema,
-      EndpointStrictSchema,
-    )
+    cache_read: v.optional(v.number()),
+    cache_write: v.optional(v.number()),
 
-    // Convert validation issues to Issue format
-    const issues: Issue[] = validationIssues.map((issue) => ({
-      ...issue,
-      identifier: `${modelVariantId}:${issue.index}`,
-    }))
+    // flat rate
+    per_request: v.optional(v.number()),
 
-    const endpoints: OrEndpointFields[] = []
-    const endpointMetrics: OrEndpointMetricsFields[] = []
+    // e.g. 0.25, already applied to the other pricing fields
+    discount: v.optional(v.number()),
+  }),
 
-    for (const item of items) {
-      endpoints.push({
-        ...item.endpoint,
-        model_slug: model.slug,
-        model_permaslug: model.permaslug,
-        capabilities: {
-          ...item.endpoint.capabilities,
-          image_input: model.input_modalities.includes('image'),
-          file_input: model.input_modalities.includes('file'),
-        },
-        or_model_created_at: model.or_created_at,
-        snapshot_at: config.snapshotAt,
-      })
+  variable_pricings: v.optional(
+    v.array(v.record(v.string(), v.union(v.string(), v.number(), v.boolean()))),
+  ),
 
-      if (item.stats) {
-        endpointMetrics.push({
-          ...item.stats,
-          snapshot_at: config.snapshotAt,
-        })
-      }
-    }
+  status: v.number(),
 
-    return { endpoints, endpointMetrics, issues, rawResponse: response }
-  } catch (error) {
-    return {
-      endpoints: [],
-      endpointMetrics: [],
-      issues: [
-        {
-          type: 'sync',
-          identifier: modelVariantId,
-          message: error instanceof Error ? error.message : 'Unknown endpoint fetch error',
-        },
-      ],
-    }
-  }
-}
+  is_disabled: v.boolean(),
+  is_moderated: v.boolean(),
 
-async function syncEndpointUptimes(
-  ctx: ActionCtx,
-  config: SyncConfig,
-  endpointUuid: string,
-): Promise<{ uptimeMetrics: OrEndpointUptimeMetricsFields[]; issues: Issue[] }> {
-  try {
-    const response = await orFetch('/api/frontend/stats/uptime-hourly', {
-      params: { id: endpointUuid },
-      schema: z4.object({ data: z4.unknown() }),
-    })
+  or_model_created_at: v.number(),
 
-    const { item, issues: validationIssues } = validateRecord(
-      response.data,
-      EndpointUptimeTransformSchema,
-      EndpointUptimeStrictSchema,
-    )
-
-    // Convert validation issues to Issue format
-    const issues: Issue[] = validationIssues.map((issue) => ({
-      ...issue,
-      identifier: `uptime-${endpointUuid}`,
-    }))
-
-    const uptimeMetrics = item.map((uptime) => ({
-      endpoint_uuid: endpointUuid,
-      timestamp: uptime.timestamp,
-      uptime: uptime.uptime,
-    }))
-
-    return { uptimeMetrics, issues }
-  } catch (error) {
-    return {
-      uptimeMetrics: [],
-      issues: [
-        {
-          type: 'sync',
-          identifier: `uptime-${endpointUuid}`,
-          message: error instanceof Error ? error.message : 'Unknown uptime fetch error',
-        },
-      ],
-    }
-  }
-}
-
-// Merge mutations
-export const mergeEndpoints = internalMutation({
-  args: { endpoints: v.array(v.object(OrEndpoints.withoutSystemFields)) },
-  handler: async (ctx: MutationCtx, { endpoints }) => {
-    const results = await Promise.all(
-      endpoints.map(async (endpoint) => {
-        const mergeResult = await OrEndpointsFn.merge(ctx, { endpoint })
-        return {
-          identifier: endpoint.uuid,
-          action: mergeResult.action,
-        }
-      }),
-    )
-    return results
-  },
+  snapshot_at: v.number(),
 })
 
-export const mergeEndpointMetrics = internalMutation({
-  args: { endpointMetrics: v.array(v.object(OrEndpointMetrics.withoutSystemFields)) },
-  handler: async (ctx: MutationCtx, { endpointMetrics }) => {
-    const results = await Promise.all(
-      endpointMetrics.map(async (metric) => {
-        const mergeResult = await OrEndpointMetricsFn.merge(ctx, { endpointMetrics: metric })
-        return {
-          identifier: metric.endpoint_uuid,
-          action: mergeResult.action,
-        }
-      }),
-    )
-    return results
-  },
+export const OrEndpointsChanges = Table2('or_endpoints_changes', {
+  uuid: v.string(),
+  snapshot_at: v.number(),
+  changes: v.array(v.record(v.string(), v.any())),
 })
 
-export const mergeEndpointUptimeMetrics = internalMutation({
-  args: { endpointUptimeMetrics: v.array(v.object(OrEndpointUptimeMetrics.withoutSystemFields)) },
-  handler: async (ctx: MutationCtx, { endpointUptimeMetrics }) => {
-    const results = await OrEndpointUptimeMetricsFn.mergeTimeSeries(ctx, {
-      endpointUptimesSeries: endpointUptimeMetrics,
-    })
-    return results.map((result) => ({
-      identifier: result.action,
-      action: result.action,
-    }))
+export const OrEndpointsFn = {
+  get: async (ctx: QueryCtx, { uuid }: { uuid: string }) => {
+    return await ctx.db
+      .query(OrEndpoints.name)
+      .withIndex('by_uuid', (q) => q.eq('uuid', uuid))
+      .first()
   },
-})
+
+  diff: (a: unknown, b: unknown) =>
+    diff(a, b, {
+      keysToSkip: ['_id', '_creationTime', 'snapshot_at'],
+      embeddedObjKeys: {
+        supported_parameters: '$value',
+      },
+    }),
+
+  recordChanges: async (
+    ctx: MutationCtx,
+    { content, changes }: { content: { uuid: string; snapshot_at: number }; changes: IChange[] },
+  ) => {
+    if (changes.length === 0) return
+    const { uuid, snapshot_at } = content
+    await ctx.db.insert(OrEndpointsChanges.name, { uuid, snapshot_at, changes })
+  },
+}

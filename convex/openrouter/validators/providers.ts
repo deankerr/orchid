@@ -8,7 +8,7 @@ const paidModelFields = {
   canPublish: z4.boolean().optional(),
 }
 
-const freeModelFIelds = {
+const freeModelFields = {
   training: z4.boolean(),
   retainsPrompts: z4.boolean(),
   retentionDays: z4.number().optional(),
@@ -53,7 +53,7 @@ export const ProviderStrictSchema = z4.strictObject({
   dataPolicy: z4.strictObject({
     ...dataPolicyFields,
     paidModels: z4.strictObject(paidModelFields),
-    freeModels: z4.strictObject(freeModelFIelds).optional(),
+    freeModels: z4.strictObject(freeModelFields).optional(),
   }),
 })
 
@@ -64,7 +64,7 @@ export const ProviderTransformSchema = z4
     dataPolicy: z4.object({
       ...dataPolicyFields,
       paidModels: z4.object(paidModelFields),
-      freeModels: z4.object(freeModelFIelds).optional(),
+      freeModels: z4.object(freeModelFields).optional(),
     }),
   })
   .transform(R.pickBy(R.isNonNullish))
