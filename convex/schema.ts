@@ -17,15 +17,18 @@ import { SnapshotRuns } from './openrouter/snapshot'
 export const schema = defineSchema(
   {
     or_app_token_metrics: OrAppTokenMetrics.table
-      .index('by_app_id_snapshot_at', ['app_id', 'snapshot_at'])
-      .index('by_model_slug_variant_snapshot_at', ['model_slug', 'model_variant', 'snapshot_at'])
-      .index('by_model_permaslug_variant_snapshot_at', [
+      .index('by_permaslug_snapshot_at', ['model_permaslug', 'snapshot_at'])
+      .index('by_permaslug_variant_snapshot_at', [
         'model_permaslug',
         'model_variant',
         'snapshot_at',
       ])
-      .index('by_snapshot_at', ['snapshot_at'])
-      .index('by_permaslug_snapshot_at', ['model_permaslug', 'snapshot_at']),
+      .index('by_app_id_permaslug_variant_snapshot_at', [
+        'app_id',
+        'model_permaslug',
+        'model_variant',
+        'snapshot_at',
+      ]),
 
     or_apps: OrApps.table.index('by_app_id', ['app_id']),
     or_apps_changes: OrAppsChanges.table,

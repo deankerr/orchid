@@ -16,11 +16,23 @@ export const OrAppTokenMetrics = Table2('or_app_token_metrics', {
 })
 
 export const OrAppTokenMetricsFn = {
-  get: async (ctx: QueryCtx, { app_id, snapshot_at }: { app_id: number; snapshot_at: number }) => {
+  get: async (
+    ctx: QueryCtx,
+    {
+      app_id,
+      permaslug,
+      variant,
+      snapshot_at,
+    }: { app_id: number; permaslug: string; variant: string; snapshot_at: number },
+  ) => {
     return await ctx.db
       .query(OrAppTokenMetrics.name)
-      .withIndex('by_app_id_snapshot_at', (q) =>
-        q.eq('app_id', app_id).eq('snapshot_at', snapshot_at),
+      .withIndex('by_app_id_permaslug_variant_snapshot_at', (q) =>
+        q
+          .eq('app_id', app_id)
+          .eq('model_permaslug', permaslug)
+          .eq('model_variant', variant)
+          .eq('snapshot_at', snapshot_at),
       )
       .first()
   },
