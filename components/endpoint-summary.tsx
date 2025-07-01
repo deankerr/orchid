@@ -15,6 +15,7 @@ import {
 import { type useOrEndpoints } from '@/hooks/api'
 import { cn, formatTokenPriceToM } from '@/lib/utils'
 
+import ProviderIcon from './provider-icon'
 import { Badge } from './ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
 
@@ -33,6 +34,7 @@ type SortDirection = 'asc' | 'desc'
 type ProcessedEndpoint = {
   id: string
   provider: string
+  provider_id: string
   throughput: number | null
   latency: number | null
   input_price: number
@@ -62,6 +64,7 @@ function processEndpoints(endpoints: OrEndpointData[]): ProcessedEndpoint[] {
 
     return {
       id: ep._id,
+      provider_id: ep.provider_id,
       provider: ep.provider_name,
       throughput: metrics?.p50_throughput ?? null,
       latency: metrics?.p50_latency ?? null,
@@ -244,7 +247,10 @@ export function EndpointTable({
           const isStale = ep.snapshot_at < modelSnapshotTime
           return (
             <TableRow key={ep.id} className={cn('border-b-transparent', isStale && 'opacity-50')}>
-              <TableCell className="truncate font-medium">{ep.provider}</TableCell>
+              <TableCell className="flex items-center gap-2.5 truncate font-medium">
+                <ProviderIcon provider={ep.provider_id} width={16} />
+                {ep.provider}
+              </TableCell>
               <TableCell className="text-right">
                 {ep.throughput !== null ? Math.round(ep.throughput).toLocaleString() : '—'} tok/s
               </TableCell>

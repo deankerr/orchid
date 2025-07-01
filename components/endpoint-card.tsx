@@ -3,6 +3,7 @@ import type { OrEndpoint, OrEndpointMetric, OrEndpointUptimeMetric } from '@/con
 import { formatTokenPriceToK, formatTokenPriceToM } from '@/lib/utils'
 
 import { DataField } from './data-field'
+import ProviderIcon from './provider-icon'
 import { Badge } from './ui/badge'
 import { UptimeTracker } from './uptime-tracker'
 
@@ -15,7 +16,8 @@ export function EndpointCard({
 
   return (
     <div className="flex flex-col gap-6 rounded-sm border px-6 py-6 font-mono">
-      <div className="flex flex-wrap items-center gap-2 text-sm">
+      <div className="flex flex-wrap items-center gap-2.5 text-sm">
+        <ProviderIcon provider={endpoint.provider_id} />
         {endpoint.provider_name}
 
         {endpoint.model_variant !== 'standard' && (

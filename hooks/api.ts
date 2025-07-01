@@ -48,3 +48,8 @@ export function useOrModelTokenMetrics(slug: string) {
   const result = useQuery(api.frontend.getOrModelTokenMetrics, { slug })
   return useQueryTimer(result, `useOrModelTokenMetrics (${slug})`)
 }
+
+export function useOrProviders() {
+  const result = useQuery(api.frontend.listOrProviders)
+  return useQueryTimer(result, 'useOrProviders')
+}

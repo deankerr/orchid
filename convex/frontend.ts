@@ -129,3 +129,10 @@ export const getOrModelTokenMetrics = query({
       .take(n)
   },
 })
+
+export const listOrProviders = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query(Entities.providers.table.name).collect()
+  },
+})
