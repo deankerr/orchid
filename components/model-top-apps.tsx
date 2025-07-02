@@ -57,7 +57,7 @@ export function ModelTopApps({
         {/* First column */}
         <div className="space-y-4 p-4">
           {validApps.slice(0, Math.ceil(validApps.length / 2)).map(({ app, metric }, index) => (
-            <AppItem key={app.app_id} app={app} metric={metric} rank={index + 1} />
+            <AppItem key={metric._id} app={app} metric={metric} rank={index + 1} />
           ))}
         </div>
 
@@ -66,7 +66,7 @@ export function ModelTopApps({
           <div className="hidden space-y-4 p-4 lg:block">
             {validApps.slice(Math.ceil(validApps.length / 2)).map(({ app, metric }, index) => (
               <AppItem
-                key={app.app_id}
+                key={metric._id}
                 app={app}
                 metric={metric}
                 rank={Math.ceil(validApps.length / 2) + index + 1}
