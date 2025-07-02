@@ -17,8 +17,8 @@ export function EndpointCard({
   return (
     <div className="flex flex-col gap-6 rounded-sm border px-6 py-6 font-mono">
       <div className="flex flex-wrap items-center gap-2.5 text-sm">
-        <ProviderIcon provider={endpoint.provider_id} />
-        {endpoint.provider_name}
+        <ProviderIcon provider={endpoint.provider_id} size={20} />
+        <div className="font-medium">{endpoint.provider_name}</div>
 
         {endpoint.model_variant !== 'standard' && (
           <Badge variant="default">{endpoint.model_variant}</Badge>

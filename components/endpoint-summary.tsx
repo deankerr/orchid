@@ -248,7 +248,7 @@ export function EndpointTable({
           return (
             <TableRow key={ep.id} className={cn('border-b-transparent', isStale && 'opacity-50')}>
               <TableCell className="flex items-center gap-2.5 truncate font-medium">
-                <ProviderIcon provider={ep.provider_id} width={16} />
+                <ProviderIcon provider={ep.provider_id} size={16} />
                 {ep.provider}
               </TableCell>
               <TableCell className="text-right">

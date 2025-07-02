@@ -133,6 +133,7 @@ export const getOrModelTokenMetrics = query({
 export const listOrProviders = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query(Entities.providers.table.name).collect()
+    const providers = await ctx.db.query(Entities.providers.table.name).collect()
+    return providers.sort((a, b) => a.name.localeCompare(b.name))
   },
 })

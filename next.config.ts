@@ -1,7 +1,20 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'unpkg.com',
+        pathname: '/@lobehub/icons-static-png*/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 't0.gstatic.com',
+        pathname: '/faviconV2',
+      },
+    ],
+  },
 }
 
 export default nextConfig
