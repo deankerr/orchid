@@ -34,28 +34,22 @@ export const listOrEndpoints = query({
       .collect()
 
     return asyncMap(endpoints, async (endpoint) => {
-      // Find the latest snapshot_at for endpoint metrics
-      const latestEndpointMetric = await ctx.db
+      const metrics = await ctx.db
         .query(Entities.endpointMetrics.table.name)
-        .withIndex('by_endpoint_uuid_snapshot_at', (q) => q.eq('endpoint_uuid', endpoint.uuid))
+        .withIndex('by_endpoint_uuid_snapshot_at', (q) =>
+          q.eq('endpoint_uuid', endpoint.uuid).eq('snapshot_at', endpoint.snapshot_at),
+        )
         .order('desc')
         .first()
 
-      // Get metrics from latest snapshot only
-      const metrics = latestEndpointMetric
-        ? await ctx.db
-            .query(Entities.endpointMetrics.table.name)
-            .withIndex('by_endpoint_uuid_snapshot_at', (q) =>
-              q
-                .eq('endpoint_uuid', endpoint.uuid)
-                .eq('snapshot_at', latestEndpointMetric.snapshot_at),
-            )
-            .collect()
-        : []
-
+      const { p50_throughput, p50_latency, request_count } = metrics ?? {}
       return {
         ...endpoint,
-        metrics,
+        metrics: {
+          p50_throughput,
+          p50_latency,
+          request_count,
+        },
         uptime: await ctx.db
           .query(Entities.endpointUptimeMetrics.table.name)
           .withIndex('by_endpoint_uuid_timestamp', (q) => q.eq('endpoint_uuid', endpoint.uuid))

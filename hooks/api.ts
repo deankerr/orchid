@@ -34,6 +34,7 @@ export function useOrModels() {
   return useQueryTimer(result, 'useOrModels')
 }
 
+export type OrEndpointData = NonNullable<ReturnType<typeof useOrEndpoints>>[number]
 export function useOrEndpoints(slug: string) {
   const result = useQuery(api.frontend.listOrEndpoints, { slug })
   return useQueryTimer(result, `useOrEndpoints (${slug})`)

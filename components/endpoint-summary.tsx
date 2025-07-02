@@ -12,14 +12,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { type useOrEndpoints } from '@/hooks/api'
+import { type OrEndpointData, type useOrEndpoints } from '@/hooks/api'
 import { cn, formatTokenPriceToM } from '@/lib/utils'
 
 import ProviderIcon from './provider-icon'
 import { Badge } from './ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
-
-type OrEndpointData = NonNullable<ReturnType<typeof useOrEndpoints>>[number]
 
 type SortKey =
   | 'provider'
@@ -47,27 +45,27 @@ type ProcessedEndpoint = {
 function processEndpoints(endpoints: OrEndpointData[]): ProcessedEndpoint[] {
   // Calculate total request count for traffic percentages
   const totalRequests = endpoints.reduce((total, ep) => {
-    const requestCount = ep.metrics.length > 0 ? (ep.metrics[0]?.request_count ?? 0) : 0
+    const requestCount = ep.metrics.request_count ?? 0
     return total + requestCount
   }, 0)
 
   return endpoints.map((ep) => {
-    const metrics = ep.metrics.length > 0 ? ep.metrics[0] : null
+    const metrics = ep.metrics
     const validUptimes = ep.uptime.map((u) => u.uptime).filter((u): u is number => u !== undefined)
     const avgUptime =
       validUptimes.length > 0
         ? validUptimes.reduce((sum, uptime) => sum + uptime, 0) / validUptimes.length
         : null
 
-    const requestCount = metrics?.request_count ?? 0
+    const requestCount = metrics.request_count ?? 0
     const trafficPercentage = totalRequests > 0 ? (requestCount / totalRequests) * 100 : null
 
     return {
       id: ep._id,
       provider_id: ep.provider_id,
       provider: ep.provider_name,
-      throughput: metrics?.p50_throughput ?? null,
-      latency: metrics?.p50_latency ?? null,
+      throughput: metrics.p50_throughput ?? null,
+      latency: metrics.p50_latency ?? null,
       input_price: ep.pricing.input ?? 0,
       output_price: ep.pricing.output ?? 0,
       uptime: avgUptime,

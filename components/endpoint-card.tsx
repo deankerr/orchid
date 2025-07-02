@@ -1,5 +1,4 @@
-import type { OrEndpoint, OrEndpointMetric, OrEndpointUptimeMetric } from '@/convex/types'
-
+import type { OrEndpointData } from '@/hooks/api'
 import { formatTokenPriceToK, formatTokenPriceToM } from '@/lib/utils'
 
 import { DataField } from './data-field'
@@ -8,11 +7,7 @@ import { SnapshotAtBadge } from './snapshot-at-badge'
 import { Badge } from './ui/badge'
 import { UptimeTracker } from './uptime-tracker'
 
-export function EndpointCard({
-  endpoint,
-}: {
-  endpoint: OrEndpoint & { metrics: OrEndpointMetric[]; uptime: OrEndpointUptimeMetric[] }
-}) {
+export function EndpointCard({ endpoint }: { endpoint: OrEndpointData }) {
   const { output_tokens, ...limits } = endpoint.limits
 
   return (
@@ -99,15 +94,15 @@ export function EndpointCard({
 
         <div className="flex flex-wrap gap-4">
           <DataField label="p50_latency">
-            {`${endpoint.metrics[0]?.p50_latency.toLocaleString() ?? '—'} ms`}
+            {`${endpoint.metrics.p50_latency?.toLocaleString() ?? '—'} ms`}
           </DataField>
 
           <DataField label="p50_throughput">
-            {`${endpoint.metrics[0]?.p50_throughput.toFixed(2) ?? '—'} tps`}
+            {`${endpoint.metrics.p50_throughput?.toFixed(2) ?? '—'} tps`}
           </DataField>
 
           <DataField label="request_count">
-            {endpoint.metrics[0]?.request_count.toLocaleString() ?? '—'}
+            {endpoint.metrics.request_count?.toLocaleString() ?? '—'}
           </DataField>
         </div>
       </div>
