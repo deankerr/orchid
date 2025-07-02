@@ -9,6 +9,10 @@ export function formatIsoDate(timestamp: number | string) {
   return new Date(timestamp).toISOString().split('T')[0]
 }
 
+export function formatSnapshotAtTime(timestamp: number | string) {
+  return new Date(timestamp).toISOString().slice(0, 13).replace('T', ' ')
+}
+
 export function formatTokenPriceToM(value = 0) {
   return `$${(value * 1_000_000).toFixed(2)} / MTok`
 }

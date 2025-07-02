@@ -6,17 +6,18 @@ import { AlertTriangleIcon, FileIcon, ImageIcon } from 'lucide-react'
 
 import type { OrModel } from '@/convex/types'
 
-import { formatIsoDate } from '@/lib/utils'
+import { formatIsoDate, formatSnapshotAtTime } from '@/lib/utils'
 
 import { ExternalLink } from './external-link'
 import { MarkdownLinks } from './markdown-links'
 import { Pill } from './pill'
+import { SnapshotAtBadge } from './snapshot-at-badge'
 import { Badge } from './ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
 
 export function ModelCard({ model }: { model: OrModel }) {
   return (
-    <Card className="font-mono">
+    <Card className="relative font-mono">
       <CardHeader>
         <CardTitle>
           <Link href={`/?model=${model.slug}`} className="underline-offset-2 hover:underline">
@@ -53,7 +54,7 @@ export function ModelCard({ model }: { model: OrModel }) {
           </Pill>
         </div>
 
-        <div className="line-clamp-4 text-sm leading-normal text-muted-foreground">
+        <div className="line-clamp-4 font-sans text-sm leading-normal text-muted-foreground">
           <MarkdownLinks>{model.description}</MarkdownLinks>
         </div>
 
@@ -75,6 +76,8 @@ export function ModelCard({ model }: { model: OrModel }) {
           )}
         </div>
       </CardContent>
+
+      <SnapshotAtBadge snapshot_at={model.snapshot_at} />
     </Card>
   )
 }

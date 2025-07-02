@@ -25,7 +25,7 @@ alwaysApply: false
 ## Libraries/Components
 
 - All shadcn/ui components are installed.
-- We use Tailwind v4 - much is the same, but there is no longer a javscript config file. It is all defined in [globals.css](mdc:app/globals.css).
+- We use Tailwind v4 - much is the same, but there is no longer a javascript config file. It is all defined in [globals.css](mdc:app/globals.css).
 - Use the standard shadcn/ui theme variables. Do not add custom colors, background colors, border radius, etc.
 - We can and should add more colors to our theme as needed - e.g. "success", "warning", etc. (but more specific to our needs). Always refer to [globals.css](mdc:app/globals.css) when considering breaking from the basic theme.
 - Do not add components to the components/ui folder - leave this for shadcn/ui.

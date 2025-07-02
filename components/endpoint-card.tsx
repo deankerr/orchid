@@ -4,6 +4,7 @@ import { formatTokenPriceToK, formatTokenPriceToM } from '@/lib/utils'
 
 import { DataField } from './data-field'
 import ProviderIcon from './provider-icon'
+import { SnapshotAtBadge } from './snapshot-at-badge'
 import { Badge } from './ui/badge'
 import { UptimeTracker } from './uptime-tracker'
 
@@ -15,7 +16,7 @@ export function EndpointCard({
   const { output_tokens, ...limits } = endpoint.limits
 
   return (
-    <div className="flex flex-col gap-6 rounded-sm border px-6 py-6 font-mono">
+    <div className="relative flex flex-col gap-6 rounded-sm border px-6 py-6 font-mono">
       <div className="flex flex-wrap items-center gap-2.5 text-sm">
         <ProviderIcon provider={endpoint.provider_id} size={20} />
         <div className="font-medium">{endpoint.provider_name}</div>
@@ -117,6 +118,7 @@ export function EndpointCard({
 
       <code className="text-xs text-muted-foreground">{endpoint.uuid}</code>
 
+      <SnapshotAtBadge snapshot_at={endpoint.snapshot_at} />
       {/* <pre className="text-xs text-muted-foreground">{JSON.stringify(endpoint, null, 2)}</pre> */}
     </div>
   )
