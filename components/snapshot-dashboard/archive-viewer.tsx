@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { getConvexHttpUrl } from '@/lib/utils'
 
 interface ArchiveViewerProps {
   archiveId: string
@@ -49,7 +50,8 @@ export function ArchiveViewer({ archiveId }: ArchiveViewerProps) {
           return
         }
         
-        const response = await fetch(`/archives?snapshot_at=${snapshot_at}&type=${type}`)
+        const url = getConvexHttpUrl(`/archives?snapshot_at=${snapshot_at}&type=${type}`)
+        const response = await fetch(url)
         
         if (!response.ok) {
           const errorText = await response.text()

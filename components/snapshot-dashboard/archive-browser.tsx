@@ -136,9 +136,9 @@ export function ArchiveBrowser({ onSelectArchive }: ArchiveBrowserProps) {
                 <Separator />
                 
                 <div className="text-xs text-muted-foreground">
-                  <strong>Note:</strong> Archive viewing uses the HTTP endpoint at{' '}
+                  <strong>Note:</strong> Archive viewing uses the Convex HTTP endpoint at{' '}
                   <code className="bg-muted px-1 rounded">
-                    /archives?snapshot_at={selectedSnapshotAt}&type=models
+                    *.convex.site/archives?snapshot_at={selectedSnapshotAt}&type=models
                   </code>
                 </div>
               </div>
