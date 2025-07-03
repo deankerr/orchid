@@ -140,20 +140,20 @@ export const getSnapshotStatus = query({
       .first()
 
     if (!latestRun) {
-      return { status: 'unknown' as const }
+      return { status: 'unknown' as const, snapshot_at: null }
     }
 
     const isInProgress = !latestRun.ended_at
     const hasError = !latestRun.ok
 
     if (isInProgress) {
-      return { status: 'in_progress' as const }
+      return { status: 'in_progress' as const, snapshot_at: latestRun.snapshot_at }
     }
 
     if (hasError) {
-      return { status: 'error' as const }
+      return { status: 'error' as const, snapshot_at: latestRun.snapshot_at }
     }
 
-    return { status: 'ok' as const }
+    return { status: 'ok' as const, snapshot_at: latestRun.snapshot_at }
   },
 })
