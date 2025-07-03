@@ -140,3 +140,63 @@ export const getSnapshotStatus = query({
     return { status: 'ok' as const, snapshot_at: latestRun.snapshot_at }
   },
 })
+
+export const getSnapshotRuns = query({
+  args: {
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, { limit = 50 }) => {
+    const runs = await ctx.db
+      .query('snapshot_runs')
+      .order('desc')
+      .take(limit)
+    
+    return runs
+  },
+})
+
+export const getSnapshotRunById = query({
+  args: {
+    runId: v.id('snapshot_runs'),
+  },
+  handler: async (ctx, { runId }) => {
+    return await ctx.db.get(runId)
+  },
+})
+
+export const getSnapshotArchives = query({
+  args: {
+    snapshot_at: v.number(),
+  },
+  handler: async (ctx, { snapshot_at }) => {
+    const archives = await ctx.db
+      .query('snapshot_archives')
+      .withIndex('by_snapshot_at', (q) => q.eq('snapshot_at', snapshot_at))
+      .order('desc')
+      .collect()
+    
+    return archives
+  },
+})
+
+export const getArchiveData = query({
+  args: {
+    storage_id: v.id('_storage'),
+  },
+  handler: async (ctx, { storage_id }) => {
+    // Note: We'll handle decompression in the frontend since gunzipSync 
+    // is not available in Convex query runtime. Return raw blob metadata.
+    const blob = await ctx.storage.get(storage_id)
+    if (!blob) {
+      return null
+    }
+    
+    // Return metadata about the blob - actual decompression will be handled
+    // via the existing HTTP endpoint or in a separate action
+    return {
+      size: blob.size,
+      type: blob.type,
+      storage_id,
+    }
+  },
+})
