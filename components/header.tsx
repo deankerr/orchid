@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { parseAsString, useQueryState } from 'nuqs'
 
 import { SearchInput } from '@/components/search-input'
+import { SnapshotStatus } from '@/components/snapshot-status'
 
 import { ThemeButton } from './ui/theme-button'
 
@@ -24,7 +25,10 @@ export function Header() {
             placeholder="Search models..."
             className="w-80"
           />
-          <ThemeButton />
+          <div className="flex items-center gap-3">
+            <SnapshotStatus />
+            <ThemeButton />
+          </div>
         </div>
       </div>
     </header>
