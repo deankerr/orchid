@@ -55,7 +55,7 @@ export function SnapshotDashboard() {
                 Latest snapshot runs with status and pipeline information
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
               <SnapshotRunsList
                 runs={runs}
                 selectedRunId={selectedRunId}

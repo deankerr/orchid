@@ -6,7 +6,7 @@ import { CheckCircle, XCircle, Clock } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { cn } from '@/lib/utils'
+import { cn, formatSnapshotAtTime } from '@/lib/utils'
 
 interface SnapshotRun {
   _id: string
@@ -60,7 +60,7 @@ function formatDuration(startedAt: number, endedAt?: number) {
 export function SnapshotRunsList({ runs, selectedRunId, onSelectRun }: SnapshotRunsListProps) {
   return (
     <ScrollArea className="h-96">
-      <div className="space-y-2">
+      <div className="space-y-2 p-6">
         {runs.map((run) => (
           <Button
             key={run._id}
@@ -79,7 +79,7 @@ export function SnapshotRunsList({ runs, selectedRunId, onSelectRun }: SnapshotR
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <code className="text-xs font-mono bg-muted px-1 rounded">
-                    {new Date(run.snapshot_at).toISOString().slice(0, 16).replace('T', ' ')}
+                    {formatSnapshotAtTime(run.snapshot_at)}
                   </code>
                   {getStatusBadge(run)}
                 </div>

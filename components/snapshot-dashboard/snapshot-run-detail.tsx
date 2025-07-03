@@ -170,7 +170,7 @@ export function SnapshotRunDetail({ runId }: SnapshotRunDetailProps) {
                       key={archive._id}
                       variant="outline"
                       className="justify-start p-2 h-auto text-left"
-                      onClick={() => setSelectedArchive(archive._id)}
+                      onClick={() => setSelectedArchive(`${run.snapshot_at}:${archive.type}`)}
                     >
                       <div className="flex items-center gap-2">
                         <Archive className="h-4 w-4" />

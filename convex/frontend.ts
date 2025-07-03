@@ -179,4 +179,34 @@ export const getSnapshotArchives = query({
   },
 })
 
+export const getSnapshotArchiveTypes = query({
+  args: {
+    snapshot_at: v.number(),
+  },
+  handler: async (ctx, { snapshot_at }) => {
+    const archives = await ctx.db
+      .query('snapshot_archives')
+      .withIndex('by_snapshot_at', (q) => q.eq('snapshot_at', snapshot_at))
+      .collect()
+    
+    // Group by type and return summary info
+    const typesSummary = archives.reduce((acc: Record<string, any>, archive: any) => {
+      if (!acc[archive.type]) {
+        acc[archive.type] = {
+          type: archive.type,
+          count: 0,
+          totalSize: 0,
+          latestCreation: 0,
+        }
+      }
+      acc[archive.type].count++
+      acc[archive.type].totalSize += archive.size
+      acc[archive.type].latestCreation = Math.max(acc[archive.type].latestCreation, archive._creationTime)
+      return acc
+    }, {})
+    
+    return Object.values(typesSummary).sort((a: any, b: any) => a.type.localeCompare(b.type))
+  },
+})
+
 

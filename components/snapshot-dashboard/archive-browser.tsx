@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import { Archive, Eye } from 'lucide-react'
 
-import { useSnapshotRuns } from '@/hooks/api'
+import { useSnapshotRuns, useSnapshotArchiveTypes } from '@/hooks/api'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -12,6 +12,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { ArchiveViewer } from './archive-viewer'
+import { formatSnapshotAtTime } from '@/lib/utils'
 
 interface ArchiveBrowserProps {
   onSelectArchive?: (archiveId: string) => void
@@ -21,6 +22,7 @@ export function ArchiveBrowser({ onSelectArchive }: ArchiveBrowserProps) {
   const [selectedSnapshotAt, setSelectedSnapshotAt] = useState<number | null>(null)
   const [selectedArchiveId, setSelectedArchiveId] = useState<string | null>(null)
   const runs = useSnapshotRuns(50)
+  const archiveTypes = useSnapshotArchiveTypes(selectedSnapshotAt || 0)
 
   if (!runs) {
     return (
@@ -52,29 +54,29 @@ export function ArchiveBrowser({ onSelectArchive }: ArchiveBrowserProps) {
             <CardTitle className="text-base">Select Snapshot</CardTitle>
             <CardDescription>Choose a snapshot to view its archived data</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0">
             <ScrollArea className="h-96">
-              <div className="space-y-2">
+              <div className="space-y-2 p-6">
                 {successfulRuns.map((run) => (
                   <Button
                     key={run._id}
-                    variant={selectedSnapshotAt === run.snapshot_at ? "default" : "ghost"}
+                    variant={selectedSnapshotAt === run.snapshot_at ? "secondary" : "ghost"}
                     className="w-full justify-start p-3 h-auto text-left"
                     onClick={() => setSelectedSnapshotAt(run.snapshot_at)}
                   >
                     <div className="flex items-start gap-3 w-full">
-                      <Archive className="h-4 w-4 mt-1 text-muted-foreground" />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <code className="text-xs font-mono bg-muted px-1 rounded">
-                            {new Date(run.snapshot_at).toISOString().slice(0, 16).replace('T', ' ')}
-                          </code>
-                          <Badge variant="outline" className="text-xs">Success</Badge>
+                                              <Archive className="h-4 w-4 mt-1 text-muted-foreground" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <code className="text-xs font-mono bg-muted px-1 rounded">
+                              {formatSnapshotAtTime(run.snapshot_at)}
+                            </code>
+                            <Badge variant="outline" className="text-xs">Success</Badge>
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {formatDistanceToNow(new Date(run.started_at), { addSuffix: true })}
+                          </div>
                         </div>
-                        <div className="text-xs text-muted-foreground">
-                          {formatDistanceToNow(new Date(run.started_at), { addSuffix: true })}
-                        </div>
-                      </div>
                     </div>
                   </Button>
                 ))}
@@ -95,39 +97,41 @@ export function ArchiveBrowser({ onSelectArchive }: ArchiveBrowserProps) {
             {selectedSnapshotAt ? (
               <div className="space-y-3">
                 <div className="text-sm text-muted-foreground mb-4">
-                  Snapshot: {new Date(selectedSnapshotAt).toISOString()}
+                  Snapshot: {formatSnapshotAtTime(selectedSnapshotAt)}
                 </div>
                 
-                {/* Common archive types that should exist */}
-                {[
-                  { type: 'models', description: 'Model data from OpenRouter API' },
-                  { type: 'endpoints', description: 'Endpoint availability and pricing' },
-                  { type: 'providers', description: 'Provider information' },
-                  { type: 'apps', description: 'Application usage data' },
-                  { type: 'report', description: 'Processing summary report' },
-                ].map((archive) => (
-                  <div key={archive.type} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <div className="font-medium text-sm">{archive.type}</div>
-                      <div className="text-xs text-muted-foreground">{archive.description}</div>
+                {/* Real archive types from database */}
+                {archiveTypes && archiveTypes.length > 0 ? (
+                  archiveTypes.map((archiveType: any) => (
+                    <div key={archiveType.type} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div>
+                        <div className="font-medium text-sm">{archiveType.type}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {archiveType.count} archive{archiveType.count !== 1 ? 's' : ''} • {Math.round(archiveType.totalSize / 1024)} KB total
+                        </div>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          // Create archiveId in format "snapshot_at:type"
+                          const archiveId = `${selectedSnapshotAt}:${archiveType.type}`
+                          setSelectedArchiveId(archiveId)
+                          if (onSelectArchive) {
+                            onSelectArchive(archiveId)
+                          }
+                        }}
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        View
+                      </Button>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        // Create archiveId in format "snapshot_at:type"
-                        const archiveId = `${selectedSnapshotAt}:${archive.type}`
-                        setSelectedArchiveId(archiveId)
-                        if (onSelectArchive) {
-                          onSelectArchive(archiveId)
-                        }
-                      }}
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
-                      View
-                    </Button>
+                  ))
+                ) : selectedSnapshotAt ? (
+                  <div className="text-center text-muted-foreground py-8">
+                    No archives found for this snapshot
                   </div>
-                ))}
+                ) : null}
                 
                 <Separator />
                 

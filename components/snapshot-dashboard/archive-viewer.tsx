@@ -52,7 +52,8 @@ export function ArchiveViewer({ archiveId }: ArchiveViewerProps) {
         const response = await fetch(`/archives?snapshot_at=${snapshot_at}&type=${type}`)
         
         if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+          const errorText = await response.text()
+          throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`)
         }
         
         const data = await response.json()

@@ -75,4 +75,9 @@ export function useSnapshotArchives(snapshot_at: number) {
   return useQueryTimer(result, `useSnapshotArchives (${snapshot_at})`)
 }
 
+export function useSnapshotArchiveTypes(snapshot_at: number) {
+  const result = useQuery(api.frontend.getSnapshotArchiveTypes, { snapshot_at })
+  return useQueryTimer(result, `useSnapshotArchiveTypes (${snapshot_at})`)
+}
+
 
