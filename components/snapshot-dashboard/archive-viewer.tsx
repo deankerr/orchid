@@ -31,8 +31,7 @@ export function ArchiveViewer({ archiveId }: ArchiveViewerProps) {
   const [error, setError] = useState<string | null>(null)
   const [showRaw, setShowRaw] = useState(false)
 
-  // Get the archive by ID - we need to fetch from the HTTP endpoint
-  // since we can't decompress in Convex queries
+  // Fetch archive data from HTTP endpoint
   useEffect(() => {
     async function fetchArchive() {
       if (!archiveId) return
@@ -41,12 +40,28 @@ export function ArchiveViewer({ archiveId }: ArchiveViewerProps) {
       setError(null)
       
       try {
-        // We need to get the snapshot_at and type from the archive first
-        // For now, we'll use the existing HTTP endpoint pattern
-        // This is a simplified approach - in a real implementation, 
-        // we'd need to enhance the backend to support ID-based lookups
+        // archiveId format: "snapshot_at:type" for simplicity
+        const [snapshotAtStr, type] = archiveId.split(':')
+        const snapshot_at = parseInt(snapshotAtStr)
         
-        setError('Archive viewing not fully implemented yet. Need to enhance HTTP endpoint.')
+        if (isNaN(snapshot_at) || !type) {
+          setError('Invalid archive ID format. Expected "snapshot_at:type"')
+          return
+        }
+        
+        const response = await fetch(`/archives?snapshot_at=${snapshot_at}&type=${type}`)
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+        }
+        
+        const data = await response.json()
+        
+        if (Array.isArray(data) && data.length > 0) {
+          setArchiveData(data[0]) // Use first result
+        } else {
+          setError('No archive data found')
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch archive')
       } finally {

@@ -179,24 +179,4 @@ export const getSnapshotArchives = query({
   },
 })
 
-export const getArchiveData = query({
-  args: {
-    storage_id: v.id('_storage'),
-  },
-  handler: async (ctx, { storage_id }) => {
-    // Note: We'll handle decompression in the frontend since gunzipSync 
-    // is not available in Convex query runtime. Return raw blob metadata.
-    const blob = await ctx.storage.get(storage_id)
-    if (!blob) {
-      return null
-    }
-    
-    // Return metadata about the blob - actual decompression will be handled
-    // via the existing HTTP endpoint or in a separate action
-    return {
-      size: blob.size,
-      type: blob.type,
-      storage_id,
-    }
-  },
-})
+

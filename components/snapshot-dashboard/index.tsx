@@ -48,41 +48,35 @@ export function SnapshotDashboard() {
         </TabsList>
 
         <TabsContent value="runs" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Runs</CardTitle>
-                <CardDescription>
-                  Latest snapshot runs with status and pipeline information
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <SnapshotRunsList
-                  runs={runs}
-                  selectedRunId={selectedRunId}
-                  onSelectRun={setSelectedRunId}
-                />
-              </CardContent>
-            </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Runs</CardTitle>
+              <CardDescription>
+                Latest snapshot runs with status and pipeline information
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <SnapshotRunsList
+                runs={runs}
+                selectedRunId={selectedRunId}
+                onSelectRun={setSelectedRunId}
+              />
+            </CardContent>
+          </Card>
 
+          {selectedRunId && (
             <Card>
               <CardHeader>
                 <CardTitle>Run Details</CardTitle>
                 <CardDescription>
-                  {selectedRunId ? 'Pipeline details and timing' : 'Select a run to view details'}
+                  Pipeline details and timing for selected run
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {selectedRunId ? (
-                  <SnapshotRunDetail runId={selectedRunId} />
-                ) : (
-                  <div className="text-center text-muted-foreground py-8">
-                    Select a run from the list to view details
-                  </div>
-                )}
+                <SnapshotRunDetail runId={selectedRunId} />
               </CardContent>
             </Card>
-          </div>
+          )}
         </TabsContent>
 
         <TabsContent value="archives" className="space-y-4">

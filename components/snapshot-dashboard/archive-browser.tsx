@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
+import { ArchiveViewer } from './archive-viewer'
 
 interface ArchiveBrowserProps {
   onSelectArchive?: (archiveId: string) => void
@@ -18,6 +19,7 @@ interface ArchiveBrowserProps {
 
 export function ArchiveBrowser({ onSelectArchive }: ArchiveBrowserProps) {
   const [selectedSnapshotAt, setSelectedSnapshotAt] = useState<number | null>(null)
+  const [selectedArchiveId, setSelectedArchiveId] = useState<string | null>(null)
   const runs = useSnapshotRuns(50)
 
   if (!runs) {
@@ -113,9 +115,12 @@ export function ArchiveBrowser({ onSelectArchive }: ArchiveBrowserProps) {
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        // In a real implementation, we'd fetch the actual archive
-                        // For now, just show that this would open the archive viewer
-                        alert(`Would open ${archive.type} archive for ${new Date(selectedSnapshotAt).toISOString()}`)
+                        // Create archiveId in format "snapshot_at:type"
+                        const archiveId = `${selectedSnapshotAt}:${archive.type}`
+                        setSelectedArchiveId(archiveId)
+                        if (onSelectArchive) {
+                          onSelectArchive(archiveId)
+                        }
                       }}
                     >
                       <Eye className="h-4 w-4 mr-1" />
@@ -127,7 +132,7 @@ export function ArchiveBrowser({ onSelectArchive }: ArchiveBrowserProps) {
                 <Separator />
                 
                 <div className="text-xs text-muted-foreground">
-                  <strong>Note:</strong> Archive viewing uses the existing HTTP endpoint at{' '}
+                  <strong>Note:</strong> Archive viewing uses the HTTP endpoint at{' '}
                   <code className="bg-muted px-1 rounded">
                     /archives?snapshot_at={selectedSnapshotAt}&type=models
                   </code>
@@ -141,6 +146,20 @@ export function ArchiveBrowser({ onSelectArchive }: ArchiveBrowserProps) {
           </CardContent>
         </Card>
       </div>
+
+      {selectedArchiveId && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Archive Data</CardTitle>
+            <CardDescription>
+              Viewing archive content for {selectedArchiveId.replace(':', ' - ')}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ArchiveViewer archiveId={selectedArchiveId} />
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

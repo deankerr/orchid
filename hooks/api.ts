@@ -75,7 +75,4 @@ export function useSnapshotArchives(snapshot_at: number) {
   return useQueryTimer(result, `useSnapshotArchives (${snapshot_at})`)
 }
 
-export function useArchiveData(storage_id: string) {
-  const result = useQuery(api.frontend.getArchiveData, { storage_id: storage_id as any })
-  return useQueryTimer(result, `useArchiveData (${storage_id})`)
-}
+
