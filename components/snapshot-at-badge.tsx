@@ -16,11 +16,40 @@ function getStalenessColor(diff: number): string {
 
 export function SnapshotAtBadge({ 
   snapshot_at, 
-  className 
+  className,
+  loading = false 
 }: { 
-  snapshot_at: number
-  className?: string 
+  snapshot_at?: number | null
+  className?: string
+  loading?: boolean
 }) {
+  // Loading state - show pulsing badge with consistent width
+  if (loading || (snapshot_at === undefined)) {
+    return (
+      <Badge
+        variant="outline"
+        title="Loading snapshot data..."
+        className={cn('absolute top-3 right-3 animate-pulse', className)}
+      >
+        {"Loading......"}
+      </Badge>
+    )
+  }
+
+  // No data state
+  if (snapshot_at === null) {
+    return (
+      <Badge
+        variant="outline"
+        title="No snapshot data available"
+        className={cn('absolute top-3 right-3 text-muted-foreground', className)}
+      >
+        {"NO DATA     "}
+      </Badge>
+    )
+  }
+
+  // Normal state with timestamp
   const current = getHourAlignedTimestamp()
   const diff = current - snapshot_at
   const color = getStalenessColor(diff)
