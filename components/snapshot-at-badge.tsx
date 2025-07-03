@@ -14,7 +14,42 @@ function getStalenessColor(diff: number): string {
   return STALENESS_LEVELS.find((level) => diffHours > level.hours)?.color ?? ''
 }
 
-export function SnapshotAtBadge({ snapshot_at }: { snapshot_at: number }) {
+export function SnapshotAtBadge({
+  snapshot_at,
+  className,
+  loading = false,
+}: {
+  snapshot_at?: number | null
+  className?: string
+  loading?: boolean
+}) {
+  // Loading state - show pulsing badge with consistent width
+  if (loading || snapshot_at === undefined) {
+    return (
+      <Badge
+        variant="outline"
+        title="Loading snapshot data..."
+        className={cn('absolute top-3 right-3 animate-pulse', className)}
+      >
+        {'Loading......'}
+      </Badge>
+    )
+  }
+
+  // No data state
+  if (snapshot_at === null) {
+    return (
+      <Badge
+        variant="outline"
+        title="No snapshot data available"
+        className={cn('absolute top-3 right-3 text-muted-foreground', className)}
+      >
+        {'NO DATA     '}
+      </Badge>
+    )
+  }
+
+  // Normal state with timestamp
   const current = getHourAlignedTimestamp()
   const diff = current - snapshot_at
   const color = getStalenessColor(diff)
@@ -23,7 +58,7 @@ export function SnapshotAtBadge({ snapshot_at }: { snapshot_at: number }) {
     <Badge
       variant="outline"
       title={new Date(snapshot_at).toString()}
-      className={cn('absolute top-3 right-3', color)}
+      className={cn('absolute top-3 right-3', color, className)}
     >
       {formatSnapshotAtTime(snapshot_at)}
     </Badge>

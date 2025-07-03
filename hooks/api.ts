@@ -54,3 +54,8 @@ export function useOrProviders() {
   const result = useQuery(api.frontend.listOrProviders)
   return useQueryTimer(result, 'useOrProviders')
 }
+
+export function useSnapshotStatus() {
+  const result = useQuery(api.frontend.getSnapshotStatus)
+  return useQueryTimer(result, 'useSnapshotStatus')
+}

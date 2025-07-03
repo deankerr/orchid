@@ -131,3 +131,26 @@ export const listOrProviders = query({
     return providers.sort((a, b) => a.name.localeCompare(b.name))
   },
 })
+
+export const getSnapshotStatus = query({
+  handler: async (ctx) => {
+    const latestRun = await ctx.db.query('snapshot_runs').order('desc').first()
+
+    if (!latestRun) {
+      return { status: 'unknown' as const, snapshot_at: null }
+    }
+
+    const isInProgress = !latestRun.ended_at
+    const hasError = !latestRun.ok
+
+    if (isInProgress) {
+      return { status: 'in_progress' as const, snapshot_at: latestRun.snapshot_at }
+    }
+
+    if (hasError) {
+      return { status: 'error' as const, snapshot_at: latestRun.snapshot_at }
+    }
+
+    return { status: 'ok' as const, snapshot_at: latestRun.snapshot_at }
+  },
+})
