@@ -14,7 +14,13 @@ function getStalenessColor(diff: number): string {
   return STALENESS_LEVELS.find((level) => diffHours > level.hours)?.color ?? ''
 }
 
-export function SnapshotAtBadge({ snapshot_at }: { snapshot_at: number }) {
+export function SnapshotAtBadge({ 
+  snapshot_at, 
+  className 
+}: { 
+  snapshot_at: number
+  className?: string 
+}) {
   const current = getHourAlignedTimestamp()
   const diff = current - snapshot_at
   const color = getStalenessColor(diff)
@@ -23,7 +29,7 @@ export function SnapshotAtBadge({ snapshot_at }: { snapshot_at: number }) {
     <Badge
       variant="outline"
       title={new Date(snapshot_at).toString()}
-      className={cn('absolute top-3 right-3', color)}
+      className={cn('absolute top-3 right-3', color, className)}
     >
       {formatSnapshotAtTime(snapshot_at)}
     </Badge>

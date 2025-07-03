@@ -1,19 +1,8 @@
 'use client'
 
-import { getHourAlignedTimestamp } from '@/convex/shared'
+import { SnapshotAtBadge } from '@/components/snapshot-at-badge'
 import { useSnapshotStatus } from '@/hooks/api'
-import { cn, formatSnapshotAtTime } from '@/lib/utils'
-
-const STALENESS_LEVELS = [
-  { hours: 24, color: 'text-red-400' }, // 24+ hours
-  { hours: 4, color: 'text-amber-400' }, // 4+ hours
-  { hours: 1, color: 'text-muted-foreground' }, // 1+ hours
-] as const
-
-function getStalenessColor(diff: number): string {
-  const diffHours = diff / (60 * 60 * 1000)
-  return STALENESS_LEVELS.find((level) => diffHours > level.hours)?.color ?? ''
-}
+import { cn } from '@/lib/utils'
 
 export function SnapshotStatus() {
   const status = useSnapshotStatus()
@@ -43,15 +32,10 @@ export function SnapshotStatus() {
     unknown: 'bg-muted-foreground/50',
   } as const
 
-  const current = getHourAlignedTimestamp()
-  const diff = current - status.snapshot_at
-  const stalenessColor = getStalenessColor(diff)
-  const formattedTime = formatSnapshotAtTime(status.snapshot_at)
-
   return (
     <div
       className="flex items-center gap-2"
-      title={`Snapshot status: ${status.status.replace('_', ' ')} • ${new Date(status.snapshot_at).toString()}`}
+      title={`Snapshot status: ${status.status.replace('_', ' ')}`}
     >
       <div
         className={cn(
@@ -59,9 +43,10 @@ export function SnapshotStatus() {
           statusStyles[status.status as keyof typeof statusStyles]
         )}
       />
-      <span className={cn('text-xs font-mono', stalenessColor || 'text-foreground')}>
-        {formattedTime}
-      </span>
+      <SnapshotAtBadge 
+        snapshot_at={status.snapshot_at}
+        className="static bg-transparent border-none p-0 h-auto text-xs font-mono"
+      />
     </div>
   )
 }
