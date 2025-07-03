@@ -13,7 +13,7 @@ export const OrEndpoints = Table2('or_endpoints', {
   model_permaslug: v.string(),
   model_variant: v.string(),
 
-  provider_id: v.string(), // TODO: provider_slug
+  provider_slug: v.string(),
   provider_name: v.string(),
 
   context_length: v.number(),
@@ -75,6 +75,14 @@ export const OrEndpoints = Table2('or_endpoints', {
     v.array(v.record(v.string(), v.union(v.string(), v.number(), v.boolean()))),
   ),
 
+  stats: v.optional(
+    v.object({
+      p50_throughput: v.number(),
+      p50_latency: v.number(),
+      request_count: v.number(),
+    }),
+  ),
+
   status: v.number(),
 
   is_disabled: v.boolean(),
@@ -101,7 +109,7 @@ export const OrEndpointsFn = {
 
   diff: (a: unknown, b: unknown) =>
     diff(a, b, {
-      keysToSkip: ['_id', '_creationTime', 'snapshot_at'],
+      keysToSkip: ['_id', '_creationTime', 'snapshot_at', 'stats'],
       embeddedObjKeys: {
         supported_parameters: '$value',
       },

@@ -42,8 +42,14 @@ export async function upsertEntity(
   // Stable - update snapshot_at to mark as current
   if (changes.length === 0) {
     if ('snapshot_at' in record) {
-      await ctx.db.patch(existing._id, { snapshot_at: record.snapshot_at })
+      if (name === 'endpoints') {
+        // update 'stats' (excluded from diff)
+        await ctx.db.patch(existing._id, { snapshot_at: record.snapshot_at, stats: record.stats })
+      } else {
+        await ctx.db.patch(existing._id, { snapshot_at: record.snapshot_at })
+      }
     }
+
     return { action: 'stable' }
   }
 

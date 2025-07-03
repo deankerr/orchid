@@ -9,7 +9,7 @@ export const OrEndpointMetrics = Table2('or_endpoint_metrics', {
   endpoint_uuid: v.string(),
   p50_latency: v.number(),
   p50_throughput: v.number(),
-  request_count: v.number(), // ? over what period?
+  request_count: v.number(), // ~ last 24 hours
 
   snapshot_at: v.number(),
 })

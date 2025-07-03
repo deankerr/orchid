@@ -34,22 +34,8 @@ export const listOrEndpoints = query({
       .collect()
 
     return asyncMap(endpoints, async (endpoint) => {
-      const metrics = await ctx.db
-        .query(Entities.endpointMetrics.table.name)
-        .withIndex('by_endpoint_uuid_snapshot_at', (q) =>
-          q.eq('endpoint_uuid', endpoint.uuid).eq('snapshot_at', endpoint.snapshot_at),
-        )
-        .order('desc')
-        .first()
-
-      const { p50_throughput, p50_latency, request_count } = metrics ?? {}
       return {
         ...endpoint,
-        metrics: {
-          p50_throughput,
-          p50_latency,
-          request_count,
-        },
         uptime: await ctx.db
           .query(Entities.endpointUptimeMetrics.table.name)
           .withIndex('by_endpoint_uuid_timestamp', (q) => q.eq('endpoint_uuid', endpoint.uuid))

@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { type OrEndpointData, type useOrEndpoints } from '@/hooks/api'
+import { type OrEndpointData } from '@/hooks/api'
 import { cn, formatTokenPriceToM } from '@/lib/utils'
 
 import ProviderIcon from './provider-icon'
@@ -32,7 +32,7 @@ type SortDirection = 'asc' | 'desc'
 type ProcessedEndpoint = {
   id: string
   provider: string
-  provider_id: string
+  provider_slug: string
   throughput: number | null
   latency: number | null
   input_price: number
@@ -45,27 +45,26 @@ type ProcessedEndpoint = {
 function processEndpoints(endpoints: OrEndpointData[]): ProcessedEndpoint[] {
   // Calculate total request count for traffic percentages
   const totalRequests = endpoints.reduce((total, ep) => {
-    const requestCount = ep.metrics.request_count ?? 0
+    const requestCount = ep.stats?.request_count ?? 0
     return total + requestCount
   }, 0)
 
   return endpoints.map((ep) => {
-    const metrics = ep.metrics
     const validUptimes = ep.uptime.map((u) => u.uptime).filter((u): u is number => u !== undefined)
     const avgUptime =
       validUptimes.length > 0
         ? validUptimes.reduce((sum, uptime) => sum + uptime, 0) / validUptimes.length
         : null
 
-    const requestCount = metrics.request_count ?? 0
+    const requestCount = ep.stats?.request_count ?? 0
     const trafficPercentage = totalRequests > 0 ? (requestCount / totalRequests) * 100 : null
 
     return {
       id: ep._id,
-      provider_id: ep.provider_id,
+      provider_slug: ep.provider_slug,
       provider: ep.provider_name,
-      throughput: metrics.p50_throughput ?? null,
-      latency: metrics.p50_latency ?? null,
+      throughput: ep.stats?.p50_throughput ?? null,
+      latency: ep.stats?.p50_latency ?? null,
       input_price: ep.pricing.input ?? 0,
       output_price: ep.pricing.output ?? 0,
       uptime: avgUptime,
@@ -246,7 +245,7 @@ export function EndpointTable({
           return (
             <TableRow key={ep.id} className={cn('border-b-transparent', isStale && 'opacity-50')}>
               <TableCell className="flex items-center gap-2.5 truncate font-medium">
-                <ProviderIcon provider={ep.provider_id} size={16} />
+                <ProviderIcon provider={ep.provider_slug} size={16} />
                 {ep.provider}
               </TableCell>
               <TableCell className="text-right">

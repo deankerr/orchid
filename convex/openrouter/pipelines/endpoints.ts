@@ -44,13 +44,13 @@ export async function endpointsPipeline(
 
       issues.push(...validationIssues)
 
-      for (const item of items) {
+      for (const endpoint of items) {
         endpoints.push({
-          ...item.endpoint,
+          ...endpoint,
           model_slug: model.slug,
           model_permaslug: model.permaslug,
           capabilities: {
-            ...item.endpoint.capabilities,
+            ...endpoint.capabilities,
             image_input: model.input_modalities.includes('image'),
             file_input: model.input_modalities.includes('file'),
           },
@@ -58,9 +58,10 @@ export async function endpointsPipeline(
           snapshot_at,
         })
 
-        if (item.stats) {
+        if (endpoint.stats) {
           endpointMetrics.push({
-            ...item.stats,
+            ...endpoint.stats,
+            endpoint_uuid: endpoint.uuid,
             snapshot_at,
           })
         }

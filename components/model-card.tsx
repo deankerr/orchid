@@ -6,7 +6,7 @@ import { AlertTriangleIcon, FileIcon, ImageIcon } from 'lucide-react'
 
 import type { OrModel } from '@/convex/types'
 
-import { formatIsoDate, formatSnapshotAtTime } from '@/lib/utils'
+import { formatIsoDate } from '@/lib/utils'
 
 import { ExternalLink } from './external-link'
 import { MarkdownLinks } from './markdown-links'

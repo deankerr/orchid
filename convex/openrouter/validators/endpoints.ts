@@ -54,13 +54,16 @@ const fields = {
   id: z4.string(), // primary key, uuid
   name: z4.string(), // internal id, `{provider_name} | {model_variant_slug}`
   context_length: z4.number(),
-  model: z4.unknown(), // Model
+  model: z4.unknown(), // Model entity
   model_variant_slug: z4.string(), // {slug}:{variant}
   model_variant_permaslug: z4.string(), // {permaslug}:{variant}
   provider_name: z4.string(), // foreign internal id
-  provider_info: z4.unknown(), // Provider
+  provider_info: z4.object({
+    // NOTE: Provider entity (no strict validation)
+    slug: z4.string(), // more reliable provider_slug (foreign key)
+  }),
+  provider_slug: z4.string(), // may have quant suffix
   provider_display_name: z4.string(),
-  provider_slug: z4.string(), // foreign key
   provider_model_id: z4.string(),
   provider_region: z4.string().nullable(),
   quantization: z4.string().nullable(),
@@ -111,7 +114,7 @@ export const EndpointTransformSchema = z4
   .object({
     ...R.omit(fields, [
       'model',
-      'provider_info',
+      'provider_slug',
       'provider_model_id',
       'provider_region',
       'limit_rpm_cf',
@@ -154,7 +157,7 @@ export const EndpointTransformSchema = z4
       uuid: r.id,
       model_variant: r.variant,
 
-      provider_id: r.provider_slug,
+      provider_slug: r.provider_info.slug,
       provider_name: r.provider_display_name,
 
       name: r.name,
@@ -203,19 +206,18 @@ export const EndpointTransformSchema = z4
 
       variable_pricings: r.variable_pricings,
 
+      stats: r.stats
+        ? {
+            p50_throughput: r.stats.p50_throughput,
+            p50_latency: r.stats.p50_latency,
+            request_count: r.stats.request_count,
+          }
+        : undefined,
+
       status: r.status ?? 0,
       is_disabled: r.is_disabled,
       is_moderated: r.moderation_required,
     }
 
-    const stats = r.stats
-      ? {
-          endpoint_uuid: r.stats.endpoint_id,
-          p50_throughput: r.stats.p50_throughput,
-          p50_latency: r.stats.p50_latency,
-          request_count: r.stats.request_count,
-        }
-      : undefined
-
-    return { endpoint, stats }
+    return endpoint
   })

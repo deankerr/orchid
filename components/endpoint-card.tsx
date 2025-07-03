@@ -13,7 +13,7 @@ export function EndpointCard({ endpoint }: { endpoint: OrEndpointData }) {
   return (
     <div className="relative flex flex-col gap-6 rounded-sm border px-6 py-6 font-mono">
       <div className="flex flex-wrap items-center gap-2.5 text-sm">
-        <ProviderIcon provider={endpoint.provider_id} size={20} />
+        <ProviderIcon provider={endpoint.provider_slug} size={20} />
         <div className="font-medium">{endpoint.provider_name}</div>
 
         {endpoint.model_variant !== 'standard' && (
@@ -94,15 +94,15 @@ export function EndpointCard({ endpoint }: { endpoint: OrEndpointData }) {
 
         <div className="flex flex-wrap gap-4">
           <DataField label="p50_latency">
-            {`${endpoint.metrics.p50_latency?.toLocaleString() ?? '—'} ms`}
+            {`${endpoint.stats?.p50_latency.toLocaleString() ?? '—'} ms`}
           </DataField>
 
           <DataField label="p50_throughput">
-            {`${endpoint.metrics.p50_throughput?.toFixed(2) ?? '—'} tps`}
+            {`${endpoint.stats?.p50_throughput.toFixed(2) ?? '—'} tps`}
           </DataField>
 
           <DataField label="request_count">
-            {endpoint.metrics.request_count?.toLocaleString() ?? '—'}
+            {endpoint.stats?.request_count.toLocaleString() ?? '—'}
           </DataField>
         </div>
       </div>

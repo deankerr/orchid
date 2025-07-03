@@ -1,0 +1,34 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+## Backend Structural Design Guidelines
+
+- **Component-Centric Folders**  
+   • Create one folder per domain concept (e.g. `models/`, `endpoints/`).  
+   • Keep schema, validation, data-fetch, data-store, and roll-up code together in that folder.
+
+- **Verb-Based Files**  
+   • Use clear verbs that describe intent: `load.ts`/`pull.ts` for retrieval, `store.ts`/`persist.ts` for writes, `rollup.ts`/`aggregate.ts` for summaries.  
+   • Functions should be small, single-purpose, and "pure" when possible.
+
+3. **Action vs. Mutation Placement**  
+   • Retrieval files (`load.ts`) live in actions; persistence and roll-ups live in mutations.  
+   • Keep cross-runtime calls minimal—batch when possible.
+
+4. **Table Namespacing**  
+   • Use prefixes/suffixes with underscores in table names to help organisation.
+
+5. **Minimal Globals**  
+   • Avoid deep shared util hierarchies; duplicate a few lines if it avoids cross-module coupling.
+
+6. **Progressive Enhancement**  
+   • Start simple; extract shared helpers only after clear duplication emerges.
+
+7. **Clear Error Boundaries**  
+   • Fail fast in actions; validate and sanitize before mutations.  
+   • Use discriminated unions for error values when returning from helpers.
+   • Not all exceptions should be caught.
+
+> Follow these patterns to keep backend codebase shallow, readable, and easy to navigate.
