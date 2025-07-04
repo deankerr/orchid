@@ -54,6 +54,7 @@ export default function ProviderIcon({
             fill
             sizes={`${size}px`}
             style={{ objectFit: 'contain' }}
+            className="hidden dark:block"
           />
           <Image
             src={`https://unpkg.com/@lobehub/icons-static-png@latest/light/${matchedLobeIcon}.png`}
@@ -61,6 +62,7 @@ export default function ProviderIcon({
             fill
             sizes={`${size}px`}
             style={{ objectFit: 'contain' }}
+            className="block dark:hidden"
           />
         </>
       ) : (
