@@ -83,6 +83,8 @@ export const OrEndpoints = Table2('or_endpoints', {
     }),
   ),
 
+  uptime_average: v.optional(v.number()),
+
   status: v.number(),
 
   is_disabled: v.boolean(),
@@ -109,7 +111,7 @@ export const OrEndpointsFn = {
 
   diff: (a: unknown, b: unknown) =>
     diff(a, b, {
-      keysToSkip: ['_id', '_creationTime', 'snapshot_at', 'stats'],
+      keysToSkip: ['_id', '_creationTime', 'snapshot_at', 'stats', 'uptime_average'],
       embeddedObjKeys: {
         supported_parameters: '$value',
       },

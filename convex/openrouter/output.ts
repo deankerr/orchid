@@ -43,8 +43,12 @@ export async function upsertEntity(
   if (changes.length === 0) {
     if ('snapshot_at' in record) {
       if (name === 'endpoints') {
-        // update 'stats' (excluded from diff)
-        await ctx.db.patch(existing._id, { snapshot_at: record.snapshot_at, stats: record.stats })
+        // update 'stats' and 'uptime_average' (excluded from diff)
+        await ctx.db.patch(existing._id, {
+          snapshot_at: record.snapshot_at,
+          stats: record.stats,
+          uptime_average: record.uptime_average,
+        })
       } else {
         await ctx.db.patch(existing._id, { snapshot_at: record.snapshot_at })
       }

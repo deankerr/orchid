@@ -4,7 +4,6 @@ import { getHourAlignedTimestamp } from '../shared'
 import { runPipelines } from './pipelineRunner'
 import { appsPipeline } from './pipelines/apps'
 import { endpointsPipeline } from './pipelines/endpoints'
-import { endpointUptimeMetricsPipeline } from './pipelines/endpointUptimeMetrics'
 import { modelsPipeline } from './pipelines/models'
 import { modelTokenMetricsPipeline } from './pipelines/modelTokenMetrics'
 import { providersPipeline } from './pipelines/providers'
@@ -64,22 +63,16 @@ export async function orchestrator(ctx: ActionCtx) {
   // ------------------------------------------------------------
 
   const stage2 = await runPipelines({
-    endpointsUptimeMetrics: async () => {
-      const endpoints = await endpointsPipeline(ctx, {
+    endpoints: () =>
+      endpointsPipeline(ctx, {
         snapshot_at,
         run_id,
         models,
-        source: { endpoints: OpenRouter.fetch.endpoints },
-      })
-      const uptimes = await endpointUptimeMetricsPipeline(ctx, {
-        snapshot_at,
-        run_id,
-        endpoints: endpoints.data,
-        source: { endpointUptimes: OpenRouter.fetch.uptimes },
-      })
-
-      return { data: undefined, metrics: [endpoints.metrics, uptimes.metrics] }
-    },
+        source: {
+          endpoints: OpenRouter.fetch.endpoints,
+          endpointUptimes: OpenRouter.fetch.uptimes,
+        },
+      }),
     apps: () =>
       appsPipeline(ctx, {
         snapshot_at,

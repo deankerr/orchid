@@ -31,7 +31,6 @@ import type * as openrouter_orchestrator from "../openrouter/orchestrator.js";
 import type * as openrouter_output from "../openrouter/output.js";
 import type * as openrouter_pipelineRunner from "../openrouter/pipelineRunner.js";
 import type * as openrouter_pipelines_apps from "../openrouter/pipelines/apps.js";
-import type * as openrouter_pipelines_endpointUptimeMetrics from "../openrouter/pipelines/endpointUptimeMetrics.js";
 import type * as openrouter_pipelines_endpoints from "../openrouter/pipelines/endpoints.js";
 import type * as openrouter_pipelines_modelTokenMetrics from "../openrouter/pipelines/modelTokenMetrics.js";
 import type * as openrouter_pipelines_models from "../openrouter/pipelines/models.js";
@@ -79,7 +78,6 @@ declare const fullApi: ApiFromModules<{
   "openrouter/output": typeof openrouter_output;
   "openrouter/pipelineRunner": typeof openrouter_pipelineRunner;
   "openrouter/pipelines/apps": typeof openrouter_pipelines_apps;
-  "openrouter/pipelines/endpointUptimeMetrics": typeof openrouter_pipelines_endpointUptimeMetrics;
   "openrouter/pipelines/endpoints": typeof openrouter_pipelines_endpoints;
   "openrouter/pipelines/modelTokenMetrics": typeof openrouter_pipelines_modelTokenMetrics;
   "openrouter/pipelines/models": typeof openrouter_pipelines_models;
