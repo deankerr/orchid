@@ -108,7 +108,7 @@ export function EndpointCard({ endpoint }: { endpoint: OrEndpointData }) {
       </div>
 
       <div className="max-w-lg">
-        <UptimeTracker uptimes={endpoint.uptime} />
+        <UptimeTracker endpoint_uuid={endpoint.uuid} />
       </div>
 
       <code className="text-xs text-muted-foreground">{endpoint.uuid}</code>

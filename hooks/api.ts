@@ -40,6 +40,11 @@ export function useOrEndpoints(slug: string) {
   return useQueryTimer(result, `useOrEndpoints (${slug})`)
 }
 
+export function useLatestUptimeMetrics(endpoint_uuid: string) {
+  const result = useQuery(api.frontend.getLatestUptimeMetrics, { endpoint_uuid })
+  return useQueryTimer(result, `useLatestUptimeMetrics (${endpoint_uuid})`)
+}
+
 export function useOrTopAppsForModel(slug: string) {
   const result = useQuery(api.frontend.getOrTopAppsForModel, { slug })
   return useQueryTimer(result, `useOrTopAppsForModel (${slug})`)

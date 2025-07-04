@@ -28,21 +28,10 @@ export const listOrEndpoints = query({
     slug: v.string(),
   },
   handler: async (ctx, args) => {
-    const endpoints = await ctx.db
+    return await ctx.db
       .query(Entities.endpoints.table.name)
       .withIndex('by_model_slug', (q) => q.eq('model_slug', args.slug))
       .collect()
-
-    return asyncMap(endpoints, async (endpoint) => {
-      return {
-        ...endpoint,
-        uptime: await ctx.db
-          .query(Entities.endpointUptimeMetrics.table.name)
-          .withIndex('by_endpoint_uuid_timestamp', (q) => q.eq('endpoint_uuid', endpoint.uuid))
-          .order('desc')
-          .take(72),
-      }
-    })
   },
 })
 
@@ -206,5 +195,18 @@ export const getSnapshotArchiveTypes = query({
     }, {})
 
     return Object.values(typesSummary).sort((a: any, b: any) => a.type.localeCompare(b.type))
+  },
+})
+
+export const getLatestUptimeMetrics = query({
+  args: {
+    endpoint_uuid: v.string(),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query(Entities.endpointUptimeMetrics.table.name)
+      .withIndex('by_endpoint_uuid_timestamp', (q) => q.eq('endpoint_uuid', args.endpoint_uuid))
+      .order('desc')
+      .take(72)
   },
 })

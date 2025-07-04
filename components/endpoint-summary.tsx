@@ -50,12 +50,6 @@ function processEndpoints(endpoints: OrEndpointData[]): ProcessedEndpoint[] {
   }, 0)
 
   return endpoints.map((ep) => {
-    const validUptimes = ep.uptime.map((u) => u.uptime).filter((u): u is number => u !== undefined)
-    const avgUptime =
-      validUptimes.length > 0
-        ? validUptimes.reduce((sum, uptime) => sum + uptime, 0) / validUptimes.length
-        : null
-
     const requestCount = ep.stats?.request_count ?? 0
     const trafficPercentage = totalRequests > 0 ? (requestCount / totalRequests) * 100 : null
 
@@ -67,7 +61,7 @@ function processEndpoints(endpoints: OrEndpointData[]): ProcessedEndpoint[] {
       latency: ep.stats?.p50_latency ?? null,
       input_price: ep.pricing.input ?? 0,
       output_price: ep.pricing.output ?? 0,
-      uptime: avgUptime,
+      uptime: ep.uptime_average ?? null,
       traffic: trafficPercentage,
       snapshot_at: ep.snapshot_at,
     }
