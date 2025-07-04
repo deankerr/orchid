@@ -44,3 +44,24 @@ export function formatTokenCount(count: number): string {
   }
   return count.toString()
 }
+
+/**
+ * Build a URL for a Convex HTTP endpoint
+ * Converts .convex.cloud to .convex.site and adds the path
+ */
+export function getConvexHttpUrl(path: string): string {
+  // Access environment variable using globalThis to avoid TypeScript issues
+  const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL
+
+  if (!convexUrl) {
+    throw new Error('NEXT_PUBLIC_CONVEX_URL environment variable is not set')
+  }
+
+  // Replace .convex.cloud with .convex.site
+  const httpUrl = convexUrl.replace('.convex.cloud', '.convex.site')
+
+  // Ensure path starts with /
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`
+
+  return `${httpUrl}${normalizedPath}`
+}

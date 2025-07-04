@@ -97,6 +97,7 @@ const fields = {
       .optional(),
     is_mandatory_reasoning: z4.boolean().optional(),
     supports_document_url: z4.null(),
+    supports_multipart: z4.boolean().optional(),
   }),
   status: z4.number().optional(), // values below 0 indicate deranked
   adapter_name: z4.string(), // e.g. "OpenAIAdapter", "AnthropicMessageAdapter", "ChutesAdapter"

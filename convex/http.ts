@@ -5,16 +5,18 @@ import { getSnapshotArchives } from './openrouter/archive'
 
 const http = httpRouter()
 
+// Enhanced archives endpoint for snapshot dashboard
 http.route({
   path: '/archives',
   method: 'GET',
   handler: httpAction(async (ctx, request) => {
     const url = new URL(request.url)
     const snapshotAtParam = url.searchParams.get('snapshot_at')
-    const type = url.searchParams.get('type') || 'report'
+    const type = url.searchParams.get('type')
+    const listOnly = url.searchParams.get('list') === 'true'
 
     try {
-      // snapshot_at is now required
+      // snapshot_at is required
       if (!snapshotAtParam) {
         return new Response("'snapshot_at' parameter is required", { status: 400 })
       }
@@ -24,7 +26,13 @@ http.route({
         return new Response("Invalid 'snapshot_at' parameter", { status: 400 })
       }
 
-      // Get all archives for this snapshot_at and type, sorted latest first
+      // If no type specified, return error for now
+      // TODO: Implement listing all types for a snapshot
+      if (!type) {
+        return new Response("'type' parameter is required", { status: 400 })
+      }
+
+      // Get archives for specific type
       const results = await getSnapshotArchives(ctx, snapshot_at, type)
 
       if (results.length === 0) {
@@ -33,7 +41,26 @@ http.route({
         })
       }
 
-      // Return all results as an array
+      // If list only, return metadata without data
+      if (listOnly) {
+        const archivesList = results.map((result) => ({
+          type: result.archive.type,
+          run_id: result.archive.run_id,
+          size: result.archive.size,
+          sha256: result.archive.sha256,
+          _creationTime: result.archive._creationTime,
+        }))
+
+        return new Response(JSON.stringify(archivesList, null, 2), {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+          },
+        })
+      }
+
+      // Return full data (existing behavior)
       const responseData = results.map((result) => ({
         archive: {
           type: result.archive.type,

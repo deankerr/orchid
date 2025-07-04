@@ -7,11 +7,13 @@ import { DataStreamLoader } from '@/components/loading'
 import { ModelList } from '@/components/model-list'
 import { ModelPage } from '@/components/model-page'
 import { PageContainer } from '@/components/page-container'
+import { SnapshotDashboard } from '@/components/snapshot-dashboard/snapshot-dashboard'
 import { useFilteredModels } from '@/hooks/use-filtered-models'
 import { useKeypress } from '@/hooks/use-keypress'
 
 export function HomePage() {
   const [modelSlug, setModelSlug] = useQueryState('model', parseAsString)
+  const [page, setPage] = useQueryState('page', parseAsString)
   const filteredModels = useFilteredModels()
 
   // Keyboard navigation for model pages
@@ -39,7 +41,9 @@ export function HomePage() {
   return (
     <AppLayout>
       <PageContainer>
-        {modelSlug ? (
+        {page === 'snapshots' ? (
+          <SnapshotDashboard />
+        ) : modelSlug ? (
           <ModelPage slug={modelSlug} />
         ) : filteredModels ? (
           <ModelList models={filteredModels} />
