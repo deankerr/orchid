@@ -12,10 +12,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { type OrEndpointData } from '@/hooks/api'
+import { useOrProviders, type OrEndpointData } from '@/hooks/api'
 import { cn, formatTokenPriceToM } from '@/lib/utils'
 
-import ProviderIcon from './provider-icon'
+import { BrandIcon } from './brand-icon'
 import { Badge } from './ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
 
@@ -150,6 +150,8 @@ export function EndpointTable({
 
   const sortedEndpoints = sortEndpoints(processedEndpoints, sortKey, sortDirection)
 
+  const providers = useOrProviders()
+
   return (
     <Table className="table-fixed text-xs">
       <TableHeader>
@@ -239,7 +241,11 @@ export function EndpointTable({
           return (
             <TableRow key={ep.id} className={cn('border-b-transparent', isStale && 'opacity-50')}>
               <TableCell className="flex items-center gap-2.5 truncate font-medium">
-                <ProviderIcon provider={ep.provider_slug} size={16} />
+                <BrandIcon
+                  slug={ep.provider_slug}
+                  size={16}
+                  fallbackSrc={providers?.find((p) => p.slug === ep.provider_slug)?.icon.url}
+                />
                 {ep.provider}
               </TableCell>
               <TableCell className="text-right">

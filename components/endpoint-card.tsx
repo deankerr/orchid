@@ -1,19 +1,24 @@
-import type { OrEndpointData } from '@/hooks/api'
+import { useOrProviders, type OrEndpointData } from '@/hooks/api'
 import { formatTokenPriceToK, formatTokenPriceToM } from '@/lib/utils'
 
+import { BrandIcon } from './brand-icon'
 import { DataField } from './data-field'
-import ProviderIcon from './provider-icon'
 import { SnapshotAtBadge } from './snapshot-at-badge'
 import { Badge } from './ui/badge'
 import { UptimeTracker } from './uptime-tracker'
 
 export function EndpointCard({ endpoint }: { endpoint: OrEndpointData }) {
   const { output_tokens, ...limits } = endpoint.limits
+  const providers = useOrProviders()
 
   return (
     <div className="relative flex flex-col gap-6 rounded-sm border px-6 py-6 font-mono">
       <div className="flex flex-wrap items-center gap-2.5 text-sm">
-        <ProviderIcon provider={endpoint.provider_slug} size={20} />
+        <BrandIcon
+          slug={endpoint.provider_slug}
+          size={20}
+          fallbackSrc={providers?.find((p) => p.slug === endpoint.provider_slug)?.icon.url}
+        />
         <div className="font-medium">{endpoint.provider_name}</div>
 
         {endpoint.model_variant !== 'standard' && (

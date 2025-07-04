@@ -8,6 +8,7 @@ import type { OrModel } from '@/convex/types'
 
 import { formatIsoDate } from '@/lib/utils'
 
+import { BrandIcon } from './brand-icon'
 import { ExternalLink } from './external-link'
 import { MarkdownLinks } from './markdown-links'
 import { Pill } from './pill'
@@ -19,7 +20,8 @@ export function ModelCard({ model }: { model: OrModel }) {
   return (
     <Card className="relative font-mono">
       <CardHeader>
-        <CardTitle>
+        <CardTitle className="flex items-center gap-2.5">
+          <BrandIcon slug={model.slug} size={24} />
           <Link href={`/?model=${model.slug}`} className="underline-offset-2 hover:underline">
             {model.name}
           </Link>
