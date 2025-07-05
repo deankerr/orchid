@@ -1,6 +1,10 @@
+import * as R from 'remeda'
+
+import { internal } from '../../_generated/api'
 import type { ActionCtx } from '../../_generated/server'
 import { storeSnapshotData } from '../archive'
-import { output } from '../output'
+import { OrEndpointUptimes } from '../entities/endpointUptimes'
+import { batch, output } from '../output'
 import type { Entities } from '../registry'
 import { validateArray, validateRecord, type Issue } from '../validation'
 import { EndpointStrictSchema, EndpointTransformSchema } from '../validators/endpoints'
@@ -30,6 +34,7 @@ export async function endpointsPipeline(
   const endpoints: (typeof Entities.endpoints.table.$content)[] = []
   const endpointMetrics: (typeof Entities.endpointMetrics.table.$content)[] = []
   const endpointUptimeMetrics: (typeof Entities.endpointUptimeMetrics.table.$content)[] = []
+  const endpointUptimes: (typeof OrEndpointUptimes.$content)[] = []
   const issues: Issue[] = []
   const rawEndpointResponses: [string, unknown][] = []
 
@@ -80,6 +85,19 @@ export async function endpointsPipeline(
           endpointUptimeMetrics.push(...uptimeMetrics)
         }
 
+        // Collect rolling window uptime data
+        if (uptimeHistory) {
+          endpointUptimes.push({
+            endpoint_uuid: endpoint.uuid,
+            snapshot_at,
+            latest_72h: uptimeHistory.map((uptime) => ({
+              timestamp: uptime.timestamp,
+              uptime: uptime.uptime,
+            })),
+            average_30d: [], // Will be calculated in the upsert function
+          })
+        }
+
         endpoints.push({
           ...endpoint,
           model_slug: model.slug,
@@ -113,6 +131,17 @@ export async function endpointsPipeline(
     data: rawEndpointResponses,
   })
 
+  const endpointUptimesResults = await batch({ items: endpointUptimes }, async (items) => {
+    return await ctx.runMutation(internal.openrouter.entities.endpointUptimes.upsert, {
+      items,
+    })
+  }).then((results) => {
+    return {
+      ...R.countBy(results, (v) => v.action),
+      name: 'endpointUptimes',
+    }
+  })
+
   const results = await output(ctx, {
     entities: [
       {
@@ -130,10 +159,13 @@ export async function endpointsPipeline(
     ],
   })
 
+  // Add the new uptime results if they exist
+  const allResults = endpointUptimesResults ? [...results, endpointUptimesResults] : results
+
   return {
     data: undefined,
     metrics: {
-      entities: results,
+      entities: allResults,
       issues,
       started_at,
       ended_at: Date.now(),
