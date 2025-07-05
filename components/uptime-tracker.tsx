@@ -1,16 +1,18 @@
 import { getHourAlignedTimestamp } from '@/convex/shared'
 
-import { useLatestUptimeMetrics } from '@/hooks/api'
+import { useOrEndpointUptimes } from '@/hooks/api'
 import { formatTimestampToYMDHM } from '@/lib/utils'
 
 import { Tracker } from './tracker'
 
 export function UptimeTracker({ endpoint_uuid }: { endpoint_uuid: string }) {
-  const uptimes = useLatestUptimeMetrics(endpoint_uuid)
+  const uptimeMetrics = useOrEndpointUptimes(endpoint_uuid)
 
-  if (!uptimes) {
+  if (!uptimeMetrics) {
     return <div className="font-mono text-sm text-muted-foreground">Loading...</div>
   }
+
+  const uptimes = uptimeMetrics.latest_72h
 
   const hours = 72
   const hourMs = 60 * 60 * 1000

@@ -40,9 +40,9 @@ export function useOrEndpoints(slug: string) {
   return useQueryTimer(result, `useOrEndpoints (${slug})`)
 }
 
-export function useLatestUptimeMetrics(endpoint_uuid: string) {
-  const result = useQuery(api.frontend.getLatestUptimeMetrics, { endpoint_uuid })
-  return useQueryTimer(result, `useLatestUptimeMetrics (${endpoint_uuid})`)
+export function useOrEndpointUptimes(endpoint_uuid: string) {
+  const result = useQuery(api.openrouter.entities.endpointUptimes.getLatest, { endpoint_uuid })
+  return useQueryTimer(result, `useOrEndpointUptimes (${endpoint_uuid})`)
 }
 
 export function useModelAppsLeaderboards(permaslug?: string) {
