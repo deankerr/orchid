@@ -29,7 +29,21 @@ export const insert = internalMutation({
   },
   handler: async (ctx, { items }) => {
     return await asyncMap(items, async (item) => {
-      return await ctx.db.insert(OrModelAppLeaderboards.name, item)
+      const existing = await ctx.db
+        .query(OrModelAppLeaderboards.name)
+        .withIndex('by_permaslug_snapshot_at', (q) =>
+          q.eq('model_permaslug', item.model_permaslug).eq('snapshot_at', item.snapshot_at),
+        )
+        .filter((q) => q.eq(q.field('model_variant'), item.model_variant))
+        .first()
+
+      if (existing) {
+        await ctx.db.replace(existing._id, item)
+        return { action: 'update' }
+      }
+
+      await ctx.db.insert(OrModelAppLeaderboards.name, item)
+      return { action: 'insert' }
     })
   },
 })
@@ -40,7 +54,7 @@ export const get = query({
     snapshot_at: v.optional(v.number()),
   },
   handler: async (ctx, { permaslug, snapshot_at }) => {
-    return await ctx.db
+    const results = await ctx.db
       .query('or_model_app_leaderboards')
       .withIndex('by_permaslug_snapshot_at', (q) => {
         return snapshot_at
@@ -49,5 +63,9 @@ export const get = query({
       })
       .order('desc')
       .collect()
+
+    return [...Map.groupBy(results, (r) => r.model_variant)].map(
+      ([key, items]) => [key, items[0]] as const,
+    )
   },
 })

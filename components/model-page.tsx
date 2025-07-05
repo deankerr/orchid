@@ -24,7 +24,7 @@ export function ModelPage({ slug }: ModelPageProps) {
 
   const endpoints = useOrEndpoints(slug)
 
-  const leaderboards = useModelAppsLeaderboards(model?.permaslug)
+  const leaderboardsMap = useModelAppsLeaderboards(model?.permaslug)
 
   const modelTokenMetrics = useOrModelTokenMetrics(slug)
   const tokenMetricsByVariant = Map.groupBy(modelTokenMetrics ?? [], (m) => m.model_variant)
@@ -58,10 +58,10 @@ export function ModelPage({ slug }: ModelPageProps) {
       </div>
 
       {/* Apps Section */}
-      {leaderboards === undefined ? (
+      {leaderboardsMap === undefined ? (
         <DataStreamLoader label="Loading applications..." />
       ) : (
-        leaderboards.map((leaderboard) => (
+        [...leaderboardsMap.values()].map((leaderboard) => (
           <ModelAppsLeaderboard key={leaderboard._id} leaderboard={leaderboard} />
         ))
       )}

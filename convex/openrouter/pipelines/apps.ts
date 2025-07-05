@@ -104,7 +104,7 @@ export async function appsPipeline(
     })
   }).then((results) => {
     return {
-      insert: results.length,
+      ...R.countBy(results, (v) => v.action),
       name: 'modelAppLeaderboards',
     }
   })
