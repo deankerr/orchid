@@ -2,6 +2,7 @@ import { asyncMap } from 'convex-helpers'
 import { v } from 'convex/values'
 
 import { internalMutation, query, type QueryCtx } from '../../_generated/server'
+import { getDayAlignedTimestamp } from '../../shared'
 import { Table2 } from '../../table2'
 
 export const OrEndpointUptimes = Table2('or_endpoint_uptimes', {
@@ -53,9 +54,7 @@ function updateHourlyData(
   }
 
   // Sort by timestamp and keep only the most recent 72 entries
-  return Array.from(deduplicated.values())
-    .sort((a, b) => a.timestamp - b.timestamp)
-    .slice(-72) // Keep only the most recent 72 data points
+  return [...deduplicated.values()].sort((a, b) => a.timestamp - b.timestamp).slice(-72)
 }
 
 function updateDailyAverages(
@@ -66,9 +65,7 @@ function updateDailyAverages(
   const dailyGroups = new Map<number, Array<{ timestamp: number; uptime?: number }>>()
 
   for (const item of hourlyData) {
-    const dayStart = new Date(item.timestamp)
-    dayStart.setUTCHours(0, 0, 0, 0)
-    const dayTimestamp = dayStart.getTime()
+    const dayTimestamp = getDayAlignedTimestamp(item.timestamp)
 
     if (!dailyGroups.has(dayTimestamp)) {
       dailyGroups.set(dayTimestamp, [])
@@ -77,7 +74,7 @@ function updateDailyAverages(
   }
 
   // Calculate daily averages
-  const newDailyAverages = Array.from(dailyGroups.entries()).map(([timestamp, items]) => {
+  const newDailyAverages = [...dailyGroups].map(([timestamp, items]) => {
     const validUptimes = items.filter((item) => item.uptime !== undefined && item.uptime !== null)
     const uptime =
       validUptimes.length > 0
@@ -97,14 +94,12 @@ function updateDailyAverages(
   }
 
   // Sort by date and keep only the most recent 30 daily averages
-  return Array.from(deduplicated.values())
-    .sort((a, b) => a.timestamp - b.timestamp)
-    .slice(-30) // Keep only the most recent 30 daily averages
+  return [...deduplicated.values()].sort((a, b) => a.timestamp - b.timestamp).slice(-30)
 }
 
 export const upsert = internalMutation({
   args: {
-    items: v.array(OrEndpointUptimes.content),
+    items: v.array(OrEndpointUptimes.content.omit('average_30d')),
   },
   // Maintains rolling windows with hard guarantees: max 72 hourly + max 30 daily data points
   handler: async (ctx, { items }) => {

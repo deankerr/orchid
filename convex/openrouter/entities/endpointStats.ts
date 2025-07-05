@@ -2,6 +2,7 @@ import { asyncMap } from 'convex-helpers'
 import { v, type Infer } from 'convex/values'
 
 import { internalMutation, type QueryCtx } from '../../_generated/server'
+import { getDayAlignedTimestamp } from '../../shared'
 import { Table2 } from '../../table2'
 
 const vEndpointStat = v.union(
@@ -22,7 +23,6 @@ export const OrEndpointStats = Table2('or_endpoint_stats', {
   snapshot_at: v.number(),
 
   latest_72h: v.array(vEndpointStat),
-
   average_30d: v.array(vEndpointStat),
 })
 
@@ -43,9 +43,7 @@ function updateHourlyStats(existingData: Array<EndpointStat>, newStat: EndpointS
     deduplicated.set(item.timestamp, item)
   }
   // Sort by timestamp and keep only the most recent 72 entries
-  return Array.from(deduplicated.values())
-    .sort((a, b) => a.timestamp - b.timestamp)
-    .slice(-72)
+  return [...deduplicated.values()].sort((a, b) => a.timestamp - b.timestamp).slice(-72)
 }
 
 function updateDailyAverages(
@@ -55,16 +53,15 @@ function updateDailyAverages(
   // Group hourly data by day
   const dailyGroups = new Map<number, Array<EndpointStat>>()
   for (const item of hourlyData) {
-    const dayStart = new Date(item.timestamp)
-    dayStart.setUTCHours(0, 0, 0, 0)
-    const dayTimestamp = dayStart.getTime()
+    const dayTimestamp = getDayAlignedTimestamp(item.timestamp)
+
     if (!dailyGroups.has(dayTimestamp)) {
       dailyGroups.set(dayTimestamp, [])
     }
     dailyGroups.get(dayTimestamp)!.push(item)
   }
   // Calculate daily averages for each stat
-  const newDailyAverages = Array.from(dailyGroups.entries()).map(([timestamp, items]) => {
+  const newDailyAverages = [...dailyGroups].map(([timestamp, items]) => {
     const valid = items.filter(
       (item) => 'p50_latency' in item && 'p50_throughput' in item && 'request_count' in item,
     )
@@ -90,9 +87,7 @@ function updateDailyAverages(
   }
 
   // Sort by date and keep only the most recent 30 daily averages
-  return Array.from(deduplicated.values())
-    .sort((a, b) => a.timestamp - b.timestamp)
-    .slice(-30)
+  return [...deduplicated.values()].sort((a, b) => a.timestamp - b.timestamp).slice(-30)
 }
 
 export const upsert = internalMutation({

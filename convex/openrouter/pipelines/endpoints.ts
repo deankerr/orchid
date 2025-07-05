@@ -4,7 +4,6 @@ import { internal } from '../../_generated/api'
 import type { ActionCtx } from '../../_generated/server'
 import { storeSnapshotData } from '../archive'
 import { type EndpointStat } from '../entities/endpointStats'
-import { OrEndpointUptimes } from '../entities/endpointUptimes'
 import { batch, output } from '../output'
 import type { Entities } from '../registry'
 import { validateArray, validateRecord, type Issue } from '../validation'
@@ -20,6 +19,14 @@ type NewEndpointStat = {
   stat: EndpointStat
 }
 
+type NewEndpointUptime = {
+  endpoint_uuid: string
+  snapshot_at: number
+  latest_72h: {
+    timestamp: number
+    uptime?: number
+  }[]
+}
 export async function endpointsPipeline(
   ctx: ActionCtx,
   {
@@ -40,7 +47,7 @@ export async function endpointsPipeline(
   const started_at = Date.now()
   const endpoints: (typeof Entities.endpoints.table.$content)[] = []
   const endpointStats: NewEndpointStat[] = []
-  const endpointUptimes: (typeof OrEndpointUptimes.$content)[] = []
+  const endpointUptimes: NewEndpointUptime[] = []
   const issues: Issue[] = []
   const rawEndpointResponses: [string, unknown][] = []
 
@@ -90,7 +97,6 @@ export async function endpointsPipeline(
               timestamp: uptime.timestamp,
               uptime: uptime.uptime,
             })),
-            average_30d: [], // Will be calculated in the upsert function
           })
         }
 
