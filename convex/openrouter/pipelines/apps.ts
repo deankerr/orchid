@@ -25,8 +25,8 @@ export async function appsPipeline(
 ) {
   const started_at = Date.now()
   const appsMap = new Map<number, typeof Entities.apps.table.$content>()
-  const appTokenMetrics: (typeof Entities.appTokenMetrics.table.$content)[] = []
   const modelAppLeaderboards: (typeof OrModelAppLeaderboards.$content)[] = []
+
   const issues: Issue[] = []
   const rawAppResponses: [string, unknown][] = []
 
@@ -71,14 +71,6 @@ export async function appsPipeline(
             snapshot_at,
           })
         }
-
-        appTokenMetrics.push({
-          ...item.appTokens,
-          model_permaslug: model.permaslug,
-          model_slug: model.slug,
-          model_variant: variant,
-          snapshot_at,
-        })
       }
     }
   }
@@ -99,14 +91,10 @@ export async function appsPipeline(
         name: 'apps',
         items: apps,
       },
-      {
-        name: 'appTokenMetrics',
-        items: appTokenMetrics,
-      },
     ],
   })
 
-  await batch({ items: modelAppLeaderboards }, async (items) => {
+  const leaderboardResults = await batch({ items: modelAppLeaderboards }, async (items) => {
     return await ctx.runMutation(internal.openrouter.entities.modelAppLeaderboards.insert, {
       items,
     })
@@ -115,7 +103,7 @@ export async function appsPipeline(
   return {
     data: undefined,
     metrics: {
-      entities: results,
+      entities: [...results, { name: 'modelAppLeaderboards', insert: leaderboardResults.length }],
       issues,
       started_at,
       ended_at: Date.now(),

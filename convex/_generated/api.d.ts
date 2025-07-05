@@ -16,9 +16,7 @@ import type {
 import type * as crons from "../crons.js";
 import type * as frontend from "../frontend.js";
 import type * as http from "../http.js";
-import type * as info from "../info.js";
 import type * as openrouter_archive from "../openrouter/archive.js";
-import type * as openrouter_entities_appTokenMetrics from "../openrouter/entities/appTokenMetrics.js";
 import type * as openrouter_entities_apps from "../openrouter/entities/apps.js";
 import type * as openrouter_entities_authors from "../openrouter/entities/authors.js";
 import type * as openrouter_entities_endpointMetrics from "../openrouter/entities/endpointMetrics.js";
@@ -64,9 +62,7 @@ declare const fullApi: ApiFromModules<{
   crons: typeof crons;
   frontend: typeof frontend;
   http: typeof http;
-  info: typeof info;
   "openrouter/archive": typeof openrouter_archive;
-  "openrouter/entities/appTokenMetrics": typeof openrouter_entities_appTokenMetrics;
   "openrouter/entities/apps": typeof openrouter_entities_apps;
   "openrouter/entities/authors": typeof openrouter_entities_authors;
   "openrouter/entities/endpointMetrics": typeof openrouter_entities_endpointMetrics;

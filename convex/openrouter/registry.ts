@@ -1,7 +1,6 @@
 import { literals } from 'convex-helpers/validators'
 
 import { OrApps, OrAppsFn } from './entities/apps'
-import { OrAppTokenMetrics, OrAppTokenMetricsFn } from './entities/appTokenMetrics'
 import { OrAuthors, OrAuthorsFn } from './entities/authors'
 import { OrEndpointMetrics, OrEndpointMetricsFn } from './entities/endpointMetrics'
 import { OrEndpoints, OrEndpointsFn } from './entities/endpoints'
@@ -9,7 +8,6 @@ import {
   OrEndpointUptimeMetrics,
   OrEndpointUptimeMetricsFn,
 } from './entities/endpointUptimeMetrics'
-import { OrModelAppLeaderboards } from './entities/modelAppLeaderboards'
 import { OrModels, OrModelsFn } from './entities/models'
 import { OrModelTokenMetrics, OrModelTokenMetricsFn } from './entities/modelTokenMetrics'
 import { OrProviders, OrProvidersFn } from './entities/providers'
@@ -17,11 +15,6 @@ import { OrProviders, OrProvidersFn } from './entities/providers'
 export type EntityName = keyof typeof Entities
 
 export const Entities = {
-  appTokenMetrics: {
-    table: OrAppTokenMetrics,
-    fn: OrAppTokenMetricsFn,
-  },
-
   apps: {
     table: OrApps,
     fn: OrAppsFn,

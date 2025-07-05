@@ -3,7 +3,6 @@ import { v } from 'convex/values'
 
 import { SnapshotArchives } from './openrouter/archive'
 import { OrApps, OrAppsChanges } from './openrouter/entities/apps'
-import { OrAppTokenMetrics } from './openrouter/entities/appTokenMetrics'
 import { OrAuthors, OrAuthorsChanges } from './openrouter/entities/authors'
 import { OrEndpointMetrics } from './openrouter/entities/endpointMetrics'
 import { OrEndpoints, OrEndpointsChanges } from './openrouter/entities/endpoints'
@@ -17,20 +16,6 @@ import { SnapshotRuns } from './openrouter/snapshot'
 
 export const schema = defineSchema(
   {
-    or_app_token_metrics: OrAppTokenMetrics.table
-      .index('by_permaslug_snapshot_at', ['model_permaslug', 'snapshot_at'])
-      .index('by_permaslug_variant_snapshot_at', [
-        'model_permaslug',
-        'model_variant',
-        'snapshot_at',
-      ])
-      .index('by_app_id_permaslug_variant_snapshot_at', [
-        'app_id',
-        'model_permaslug',
-        'model_variant',
-        'snapshot_at',
-      ]),
-
     or_apps: OrApps.table.index('by_app_id', ['app_id']),
     or_apps_changes: OrAppsChanges.table,
 

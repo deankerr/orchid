@@ -53,44 +53,6 @@ export const getOrModelTokenMetrics = query({
   },
 })
 
-export const listModelAppTokens = query({
-  args: {
-    permaslug: v.string(),
-    variant: v.string(),
-    limit: v.number(),
-  },
-  handler: async (ctx, { permaslug, variant, limit }) => {
-    const r = await ctx.db
-      .query('or_app_token_metrics')
-      .withIndex('by_permaslug_variant_snapshot_at', (q) =>
-        q.eq('model_permaslug', permaslug).eq('model_variant', variant),
-      )
-      .order('desc')
-      .take(limit)
-
-    const m = Map.groupBy(r, (r) => r.app_id)
-      .entries()
-      .map(
-        ([key, docs]) =>
-          [
-            key,
-            docs
-              .sort((a, b) => a.snapshot_at - b.snapshot_at)
-              .map(
-                (doc) =>
-                  [
-                    new Date(doc.snapshot_at).toISOString().slice(0, 13).replace('T', '_'),
-                    doc.total_tokens.toLocaleString(),
-                  ] as const,
-              ),
-          ] as const,
-      )
-      .toArray()
-
-    return m.map(([appid, data]) => ({ [appid]: Object.fromEntries(data) }))
-  },
-})
-
 export const listOrProviders = query({
   args: {},
   handler: async (ctx) => {

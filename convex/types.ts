@@ -9,7 +9,6 @@ export type MergeResult = {
 }
 
 export type OrApp = Doc<'or_apps'>
-export type OrAppTokenMetric = Doc<'or_app_token_metrics'>
 export type OrAuthor = Doc<'or_authors'>
 export type OrEndpoint = Doc<'or_endpoints'>
 export type OrEndpointMetric = Doc<'or_endpoint_metrics'>
