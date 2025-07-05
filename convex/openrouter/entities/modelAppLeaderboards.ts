@@ -88,6 +88,6 @@ export const get = query({
           : q.eq('model_permaslug', permaslug)
       })
       .order('desc')
-      .first()
+      .collect()
   },
 })

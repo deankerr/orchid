@@ -1,4 +1,3 @@
-import { asyncMap } from 'convex-helpers'
 import { v } from 'convex/values'
 
 import { query } from './_generated/server'
@@ -32,51 +31,6 @@ export const listOrEndpoints = query({
       .query(Entities.endpoints.table.name)
       .withIndex('by_model_slug', (q) => q.eq('model_slug', args.slug))
       .collect()
-  },
-})
-
-export const getOrTopAppsForModel = query({
-  args: {
-    slug: v.string(),
-  },
-  handler: async (ctx, args) => {
-    const models = await ctx.db.query(Entities.models.table.name).collect()
-    const model = models.find((m) => m.slug === args.slug)
-
-    if (!model) return []
-
-    // Find the latest snapshot_at for this model (across all variants)
-    const latestMetric = await ctx.db
-      .query(Entities.appTokenMetrics.table.name)
-      .withIndex('by_permaslug_snapshot_at', (q) => q.eq('model_permaslug', model.permaslug))
-      .order('desc')
-      .first()
-
-    if (!latestMetric) {
-      return []
-    }
-
-    // Get all metrics from the latest snapshot (all variants)
-    const metrics = await ctx.db
-      .query(Entities.appTokenMetrics.table.name)
-      .withIndex('by_permaslug_snapshot_at', (q) =>
-        q.eq('model_permaslug', model.permaslug).eq('snapshot_at', latestMetric.snapshot_at),
-      )
-      .collect()
-
-    const apps = await asyncMap(metrics, async (metric) => {
-      const app = await ctx.db
-        .query(Entities.apps.table.name)
-        .withIndex('by_app_id', (q) => q.eq('app_id', metric.app_id))
-        .first()
-
-      return {
-        metric,
-        app,
-      }
-    })
-
-    return apps.sort((a, b) => b.metric.total_tokens - a.metric.total_tokens)
   },
 })
 

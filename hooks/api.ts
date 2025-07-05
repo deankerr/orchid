@@ -45,9 +45,12 @@ export function useLatestUptimeMetrics(endpoint_uuid: string) {
   return useQueryTimer(result, `useLatestUptimeMetrics (${endpoint_uuid})`)
 }
 
-export function useOrTopAppsForModel(slug: string) {
-  const result = useQuery(api.frontend.getOrTopAppsForModel, { slug })
-  return useQueryTimer(result, `useOrTopAppsForModel (${slug})`)
+export function useModelAppsLeaderboards(permaslug?: string) {
+  const result = useQuery(
+    api.openrouter.entities.modelAppLeaderboards.get,
+    permaslug ? { permaslug } : 'skip',
+  )
+  return useQueryTimer(result, `useModelAppsLeaderboard (${permaslug})`)
 }
 
 export function useOrModelTokenMetrics(slug: string) {
