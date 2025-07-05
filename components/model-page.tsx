@@ -2,14 +2,14 @@
 
 import { EndpointCard } from '@/components/endpoint-card'
 import { DataStreamLoader, EmptyState } from '@/components/loading'
+import { ModelAppsLeaderboard } from '@/components/model-apps-leaderboard'
 import { ModelCard } from '@/components/model-card'
 import { ModelTokenChart } from '@/components/model-token-chart'
-import { ModelTopApps } from '@/components/model-top-apps'
 import {
+  useModelAppsLeaderboards,
   useOrEndpoints,
   useOrModels,
   useOrModelTokenMetrics,
-  useOrTopAppsForModel,
 } from '@/hooks/api'
 
 import { EndpointSummary } from './endpoint-summary'
@@ -23,11 +23,11 @@ export function ModelPage({ slug }: ModelPageProps) {
   const model = models?.find((m) => m.slug === slug)
 
   const endpoints = useOrEndpoints(slug)
-  const apps = useOrTopAppsForModel(slug)
+
+  const leaderboardsMap = useModelAppsLeaderboards(model?.permaslug)
 
   const modelTokenMetrics = useOrModelTokenMetrics(slug)
   const tokenMetricsByVariant = Map.groupBy(modelTokenMetrics ?? [], (m) => m.model_variant)
-  const appsByVariant = Map.groupBy(apps ?? [], (app) => app.metric.model_variant)
 
   if (!models) {
     return <DataStreamLoader label="Loading models..." />
@@ -58,15 +58,11 @@ export function ModelPage({ slug }: ModelPageProps) {
       </div>
 
       {/* Apps Section */}
-      {apps === undefined ? (
+      {leaderboardsMap === undefined ? (
         <DataStreamLoader label="Loading applications..." />
       ) : (
-        Array.from(appsByVariant.entries()).map(([variant, variantApps]) => (
-          <ModelTopApps
-            key={variant}
-            apps={variantApps}
-            title={variant === 'standard' ? 'Top Apps' : `Top Apps (${variant})`}
-          />
+        [...leaderboardsMap.values()].map((leaderboard) => (
+          <ModelAppsLeaderboard key={leaderboard._id} leaderboard={leaderboard} />
         ))
       )}
 

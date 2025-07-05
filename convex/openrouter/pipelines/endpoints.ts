@@ -1,6 +1,10 @@
+import * as R from 'remeda'
+
+import { internal } from '../../_generated/api'
 import type { ActionCtx } from '../../_generated/server'
 import { storeSnapshotData } from '../archive'
-import { output } from '../output'
+import { type EndpointStat } from '../entities/endpointStats'
+import { batch, output } from '../output'
 import type { Entities } from '../registry'
 import { validateArray, validateRecord, type Issue } from '../validation'
 import { EndpointStrictSchema, EndpointTransformSchema } from '../validators/endpoints'
@@ -9,6 +13,20 @@ import {
   EndpointUptimeTransformSchema,
 } from '../validators/endpointUptimesMetrics'
 
+type NewEndpointStat = {
+  endpoint_uuid: string
+  snapshot_at: number
+  stat: EndpointStat
+}
+
+type NewEndpointUptime = {
+  endpoint_uuid: string
+  snapshot_at: number
+  latest_72h: {
+    timestamp: number
+    uptime?: number
+  }[]
+}
 export async function endpointsPipeline(
   ctx: ActionCtx,
   {
@@ -28,8 +46,8 @@ export async function endpointsPipeline(
 ) {
   const started_at = Date.now()
   const endpoints: (typeof Entities.endpoints.table.$content)[] = []
-  const endpointMetrics: (typeof Entities.endpointMetrics.table.$content)[] = []
-  const endpointUptimeMetrics: (typeof Entities.endpointUptimeMetrics.table.$content)[] = []
+  const endpointStats: NewEndpointStat[] = []
+  const endpointUptimes: NewEndpointUptime[] = []
   const issues: Issue[] = []
   const rawEndpointResponses: [string, unknown][] = []
 
@@ -70,14 +88,16 @@ export async function endpointsPipeline(
             ? validUptimes.reduce((sum, u) => sum + u.uptime!, 0) / validUptimes.length
             : undefined
 
-        // Collect uptime metrics
+        // Collect rolling window uptime data
         if (uptimeHistory) {
-          const uptimeMetrics = uptimeHistory.map((uptime) => ({
+          endpointUptimes.push({
             endpoint_uuid: endpoint.uuid,
-            timestamp: uptime.timestamp,
-            uptime: uptime.uptime,
-          }))
-          endpointUptimeMetrics.push(...uptimeMetrics)
+            snapshot_at,
+            latest_72h: uptimeHistory.map((uptime) => ({
+              timestamp: uptime.timestamp,
+              uptime: uptime.uptime,
+            })),
+          })
         }
 
         endpoints.push({
@@ -94,13 +114,14 @@ export async function endpointsPipeline(
           snapshot_at,
         })
 
-        if (endpoint.stats) {
-          endpointMetrics.push({
+        endpointStats.push({
+          endpoint_uuid: endpoint.uuid,
+          snapshot_at,
+          stat: {
             ...endpoint.stats,
-            endpoint_uuid: endpoint.uuid,
-            snapshot_at,
-          })
-        }
+            timestamp: snapshot_at,
+          },
+        })
       }
     }
   }
@@ -113,19 +134,33 @@ export async function endpointsPipeline(
     data: rawEndpointResponses,
   })
 
+  const endpointUptimesResults = await batch({ items: endpointUptimes }, async (items) => {
+    return await ctx.runMutation(internal.openrouter.entities.endpointUptimes.upsert, {
+      items,
+    })
+  }).then((results) => {
+    return {
+      ...R.countBy(results, (v) => v.action),
+      name: 'endpointUptimes',
+    }
+  })
+
+  const endpointStatsResults = await batch({ items: endpointStats }, async (items) => {
+    return await ctx.runMutation(internal.openrouter.entities.endpointStats.upsert, {
+      items,
+    })
+  }).then((results) => {
+    return {
+      ...R.countBy(results, (v) => v.action),
+      name: 'endpointStats',
+    }
+  })
+
   const results = await output(ctx, {
     entities: [
       {
         name: 'endpoints',
         items: endpoints,
-      },
-      {
-        name: 'endpointMetrics',
-        items: endpointMetrics,
-      },
-      {
-        name: 'endpointUptimeMetrics',
-        items: endpointUptimeMetrics,
       },
     ],
   })
@@ -133,7 +168,7 @@ export async function endpointsPipeline(
   return {
     data: undefined,
     metrics: {
-      entities: results,
+      entities: [...results, endpointUptimesResults, endpointStatsResults],
       issues,
       started_at,
       ended_at: Date.now(),

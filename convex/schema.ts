@@ -3,11 +3,11 @@ import { v } from 'convex/values'
 
 import { SnapshotArchives } from './openrouter/archive'
 import { OrApps, OrAppsChanges } from './openrouter/entities/apps'
-import { OrAppTokenMetrics } from './openrouter/entities/appTokenMetrics'
 import { OrAuthors, OrAuthorsChanges } from './openrouter/entities/authors'
-import { OrEndpointMetrics } from './openrouter/entities/endpointMetrics'
 import { OrEndpoints, OrEndpointsChanges } from './openrouter/entities/endpoints'
-import { OrEndpointUptimeMetrics } from './openrouter/entities/endpointUptimeMetrics'
+import { OrEndpointStats } from './openrouter/entities/endpointStats'
+import { OrEndpointUptimes } from './openrouter/entities/endpointUptimes'
+import { OrModelAppLeaderboards } from './openrouter/entities/modelAppLeaderboards'
 import { OrModels, OrModelsChanges } from './openrouter/entities/models'
 import { OrModelTokenMetrics } from './openrouter/entities/modelTokenMetrics'
 import { OrProviders, OrProvidersChanges } from './openrouter/entities/providers'
@@ -16,39 +16,31 @@ import { SnapshotRuns } from './openrouter/snapshot'
 
 export const schema = defineSchema(
   {
-    or_app_token_metrics: OrAppTokenMetrics.table
-      .index('by_permaslug_snapshot_at', ['model_permaslug', 'snapshot_at'])
-      .index('by_permaslug_variant_snapshot_at', [
-        'model_permaslug',
-        'model_variant',
-        'snapshot_at',
-      ])
-      .index('by_app_id_permaslug_variant_snapshot_at', [
-        'app_id',
-        'model_permaslug',
-        'model_variant',
-        'snapshot_at',
-      ]),
-
     or_apps: OrApps.table.index('by_app_id', ['app_id']),
     or_apps_changes: OrAppsChanges.table,
 
     or_authors: OrAuthors.table.index('by_uuid', ['uuid']),
     or_authors_changes: OrAuthorsChanges.table,
 
-    or_endpoint_metrics: OrEndpointMetrics.table.index('by_endpoint_uuid_snapshot_at', [
+    or_endpoint_stats: OrEndpointStats.table.index('by_endpoint_uuid_snapshot_at', [
       'endpoint_uuid',
       'snapshot_at',
-    ]),
-    or_endpoint_uptime_metrics: OrEndpointUptimeMetrics.table.index('by_endpoint_uuid_timestamp', [
-      'endpoint_uuid',
-      'timestamp',
     ]),
 
     or_endpoints: OrEndpoints.table
       .index('by_uuid', ['uuid'])
       .index('by_model_slug', ['model_slug']),
     or_endpoints_changes: OrEndpointsChanges.table,
+
+    or_endpoint_uptimes: OrEndpointUptimes.table.index('by_endpoint_uuid_snapshot_at', [
+      'endpoint_uuid',
+      'snapshot_at',
+    ]),
+
+    or_model_app_leaderboards: OrModelAppLeaderboards.table.index('by_permaslug_snapshot_at', [
+      'model_permaslug',
+      'snapshot_at',
+    ]),
 
     or_model_token_metrics: OrModelTokenMetrics.table
       .index('by_model_permaslug_variant_timestamp', [

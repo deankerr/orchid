@@ -15,13 +15,15 @@ function useQueryTimer<T>(result: T, label: string): T {
       const timing = `${(performance.now() - startTimeRef.current).toFixed(0)}ms`
       const count = Array.isArray(result) ? `(${result.length})` : typeof result
 
-      console.log(
+      console.groupCollapsed(
         `%c${currentTime} %c${label} %c${timing}${count ? ` %c${count}` : ''}`,
         'color: #AAA; font-weight: normal',
         '',
         'color: #0ea5e9; font-weight: bold',
         'color: #10b981; font-weight: bold',
       )
+      console.log(result)
+      console.groupEnd()
       startTimeRef.current = null
     }
   }, [result, label])
@@ -40,14 +42,18 @@ export function useOrEndpoints(slug: string) {
   return useQueryTimer(result, `useOrEndpoints (${slug})`)
 }
 
-export function useLatestUptimeMetrics(endpoint_uuid: string) {
-  const result = useQuery(api.frontend.getLatestUptimeMetrics, { endpoint_uuid })
-  return useQueryTimer(result, `useLatestUptimeMetrics (${endpoint_uuid})`)
+export function useOrEndpointUptimes(endpoint_uuid: string) {
+  const result = useQuery(api.openrouter.entities.endpointUptimes.getLatest, { endpoint_uuid })
+  return useQueryTimer(result, `useOrEndpointUptimes (${endpoint_uuid})`)
 }
 
-export function useOrTopAppsForModel(slug: string) {
-  const result = useQuery(api.frontend.getOrTopAppsForModel, { slug })
-  return useQueryTimer(result, `useOrTopAppsForModel (${slug})`)
+export function useModelAppsLeaderboards(permaslug?: string) {
+  const result = useQueryTimer(
+    useQuery(api.openrouter.entities.modelAppLeaderboards.get, permaslug ? { permaslug } : 'skip'),
+    `useModelAppsLeaderboard (${permaslug})`,
+  )
+
+  return result ? new Map(result) : undefined
 }
 
 export function useOrModelTokenMetrics(slug: string) {

@@ -1,9 +1,11 @@
+import { asyncMap } from 'convex-helpers'
 import { v } from 'convex/values'
 
 import { diff, type IChange } from 'json-diff-ts'
 
-import { type MutationCtx, type QueryCtx } from '../../_generated/server'
+import { internalMutation, type MutationCtx, type QueryCtx } from '../../_generated/server'
 import { Table2 } from '../../table2'
+import { upsertEntity } from '../output'
 
 export const OrApps = Table2('or_apps', {
   app_id: v.number(),
@@ -45,3 +47,16 @@ export const OrAppsFn = {
     await ctx.db.insert(OrAppsChanges.name, { app_id, snapshot_at, changes })
   },
 }
+
+export const upsert = internalMutation({
+  args: {
+    items: v.array(OrApps.content),
+  },
+  handler: async (ctx, { items }) => {
+    const results = await asyncMap(items, async (item) => {
+      return await upsertEntity(ctx, 'apps', item)
+    })
+
+    return results
+  },
+})

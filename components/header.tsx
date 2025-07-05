@@ -6,13 +6,11 @@ import { parseAsString, useQueryState } from 'nuqs'
 
 import { SearchInput } from '@/components/search-input'
 import { SnapshotStatus } from '@/components/snapshot-status'
-import { Button } from '@/components/ui/button'
 
 import { ThemeButton } from './ui/theme-button'
 
 export function Header() {
   const [search, setSearch] = useQueryState('search', parseAsString.withDefault(''))
-  const [page, setPage] = useQueryState('page', parseAsString)
 
   return (
     <header className="border-b bg-background">

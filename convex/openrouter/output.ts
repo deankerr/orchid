@@ -4,7 +4,6 @@ import * as R from 'remeda'
 
 import { internal } from '../_generated/api'
 import { internalMutation, type ActionCtx, type MutationCtx } from '../_generated/server'
-import { type OrEndpointUptimeMetrics } from './entities/endpointUptimeMetrics'
 import { type OrModelTokenMetrics } from './entities/modelTokenMetrics'
 import { Entities, vEntityName, type EntityName } from './registry'
 
@@ -70,10 +69,6 @@ export const upsert = internalMutation({
   handler: async (ctx, { items, ...args }) => {
     const name = args.name as EntityName
 
-    if (name === 'endpointUptimeMetrics') {
-      return await mergeEndpointUptimes(ctx, { items })
-    }
-
     if (name === 'modelTokenMetrics') {
       return await mergeModelTokenMetrics(ctx, { items })
     }
@@ -118,32 +113,22 @@ export async function output(
   return results
 }
 
-// NOTE: temporary location for these to avoid circular dependencies
-
-async function mergeEndpointUptimes(
-  ctx: MutationCtx,
-  { items }: { items: (typeof OrEndpointUptimeMetrics.$content)[] },
+export async function batch<T, R>(
+  { items, batchSize = 2000 }: { items: T[]; batchSize?: number },
+  callback: (itemBatch: T[]) => Promise<R[]>,
 ) {
-  const uptimesByUuid = [...Map.groupBy(items, (u) => u.endpoint_uuid).values()]
+  const results: R[] = []
+  const batches = R.chunk(items, batchSize)
 
-  const resultsByUuid = await Promise.all(
-    uptimesByUuid.map(async (uptimes) => {
-      // later -> earlier
-      uptimes.sort((a, b) => b.timestamp - a.timestamp)
+  for (const batch of batches) {
+    const batchResults = await callback(batch)
+    results.push(...batchResults)
+  }
 
-      const results: UpsertResult[] = []
-      for (const uptime of uptimes) {
-        const result = await upsertEntity(ctx, 'endpointUptimeMetrics', uptime)
-        results.push(result)
-
-        if (result.action === 'stable') break // we already have this + all earlier entries
-      }
-
-      return results
-    }),
-  )
-  return resultsByUuid.flat()
+  return results
 }
+
+// NOTE: temporary location for these to avoid circular dependencies
 
 async function mergeModelTokenMetrics(
   ctx: MutationCtx,
