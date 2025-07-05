@@ -20,7 +20,7 @@ export const OrEndpointUptimes = Table2('or_endpoint_uptimes', {
   average_30d: v.array(
     v.object({
       timestamp: v.number(), // day timestamp (start of day)
-      average: v.optional(v.number()),
+      uptime: v.optional(v.number()),
     }),
   ),
 })
@@ -59,7 +59,7 @@ function updateHourlyData(
 }
 
 function updateDailyAverages(
-  existingDailyAverages: Array<{ timestamp: number; average?: number }>,
+  existingDailyAverages: Array<{ timestamp: number; uptime?: number }>,
   hourlyData: Array<{ timestamp: number; uptime?: number }>,
 ) {
   // Group hourly data by day
@@ -79,19 +79,19 @@ function updateDailyAverages(
   // Calculate daily averages
   const newDailyAverages = Array.from(dailyGroups.entries()).map(([timestamp, items]) => {
     const validUptimes = items.filter((item) => item.uptime !== undefined && item.uptime !== null)
-    const average =
+    const uptime =
       validUptimes.length > 0
         ? validUptimes.reduce((sum, item) => sum + item.uptime!, 0) / validUptimes.length
         : undefined
 
-    return { timestamp, average }
+    return { timestamp, uptime }
   })
 
   // Combine with existing daily averages
   const combined = [...existingDailyAverages, ...newDailyAverages]
 
   // Deduplicate by date (prefer newer calculations)
-  const deduplicated = new Map<number, { timestamp: number; average?: number }>()
+  const deduplicated = new Map<number, { timestamp: number; uptime?: number }>()
   for (const item of combined) {
     deduplicated.set(item.timestamp, item)
   }

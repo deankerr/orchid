@@ -4,10 +4,6 @@ import { OrApps, OrAppsFn } from './entities/apps'
 import { OrAuthors, OrAuthorsFn } from './entities/authors'
 import { OrEndpointMetrics, OrEndpointMetricsFn } from './entities/endpointMetrics'
 import { OrEndpoints, OrEndpointsFn } from './entities/endpoints'
-import {
-  OrEndpointUptimeMetrics,
-  OrEndpointUptimeMetricsFn,
-} from './entities/endpointUptimeMetrics'
 import { OrModels, OrModelsFn } from './entities/models'
 import { OrModelTokenMetrics, OrModelTokenMetricsFn } from './entities/modelTokenMetrics'
 import { OrProviders, OrProvidersFn } from './entities/providers'
@@ -33,11 +29,6 @@ export const Entities = {
   endpoints: {
     table: OrEndpoints,
     fn: OrEndpointsFn,
-  },
-
-  endpointUptimeMetrics: {
-    table: OrEndpointUptimeMetrics,
-    fn: OrEndpointUptimeMetricsFn,
   },
 
   models: {

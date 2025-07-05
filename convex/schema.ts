@@ -6,7 +6,6 @@ import { OrApps, OrAppsChanges } from './openrouter/entities/apps'
 import { OrAuthors, OrAuthorsChanges } from './openrouter/entities/authors'
 import { OrEndpointMetrics } from './openrouter/entities/endpointMetrics'
 import { OrEndpoints, OrEndpointsChanges } from './openrouter/entities/endpoints'
-import { OrEndpointUptimeMetrics } from './openrouter/entities/endpointUptimeMetrics'
 import { OrEndpointUptimes } from './openrouter/entities/endpointUptimes'
 import { OrModelAppLeaderboards } from './openrouter/entities/modelAppLeaderboards'
 import { OrModels, OrModelsChanges } from './openrouter/entities/models'
@@ -26,10 +25,6 @@ export const schema = defineSchema(
     or_endpoint_metrics: OrEndpointMetrics.table.index('by_endpoint_uuid_snapshot_at', [
       'endpoint_uuid',
       'snapshot_at',
-    ]),
-    or_endpoint_uptime_metrics: OrEndpointUptimeMetrics.table.index('by_endpoint_uuid_timestamp', [
-      'endpoint_uuid',
-      'timestamp',
     ]),
 
     or_endpoints: OrEndpoints.table

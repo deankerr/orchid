@@ -151,16 +151,3 @@ export const getSnapshotArchiveTypes = query({
     return Object.values(typesSummary).sort((a: any, b: any) => a.type.localeCompare(b.type))
   },
 })
-
-export const getLatestUptimeMetrics = query({
-  args: {
-    endpoint_uuid: v.string(),
-  },
-  handler: async (ctx, args) => {
-    return await ctx.db
-      .query(Entities.endpointUptimeMetrics.table.name)
-      .withIndex('by_endpoint_uuid_timestamp', (q) => q.eq('endpoint_uuid', args.endpoint_uuid))
-      .order('desc')
-      .take(72)
-  },
-})

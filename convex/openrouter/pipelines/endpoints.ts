@@ -33,7 +33,6 @@ export async function endpointsPipeline(
   const started_at = Date.now()
   const endpoints: (typeof Entities.endpoints.table.$content)[] = []
   const endpointMetrics: (typeof Entities.endpointMetrics.table.$content)[] = []
-  const endpointUptimeMetrics: (typeof Entities.endpointUptimeMetrics.table.$content)[] = []
   const endpointUptimes: (typeof OrEndpointUptimes.$content)[] = []
   const issues: Issue[] = []
   const rawEndpointResponses: [string, unknown][] = []
@@ -74,16 +73,6 @@ export async function endpointsPipeline(
           validUptimes.length > 0
             ? validUptimes.reduce((sum, u) => sum + u.uptime!, 0) / validUptimes.length
             : undefined
-
-        // Collect uptime metrics
-        if (uptimeHistory) {
-          const uptimeMetrics = uptimeHistory.map((uptime) => ({
-            endpoint_uuid: endpoint.uuid,
-            timestamp: uptime.timestamp,
-            uptime: uptime.uptime,
-          }))
-          endpointUptimeMetrics.push(...uptimeMetrics)
-        }
 
         // Collect rolling window uptime data
         if (uptimeHistory) {
@@ -151,10 +140,6 @@ export async function endpointsPipeline(
       {
         name: 'endpointMetrics',
         items: endpointMetrics,
-      },
-      {
-        name: 'endpointUptimeMetrics',
-        items: endpointUptimeMetrics,
       },
     ],
   })

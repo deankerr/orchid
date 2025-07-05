@@ -20,7 +20,6 @@ import type * as openrouter_archive from "../openrouter/archive.js";
 import type * as openrouter_entities_apps from "../openrouter/entities/apps.js";
 import type * as openrouter_entities_authors from "../openrouter/entities/authors.js";
 import type * as openrouter_entities_endpointMetrics from "../openrouter/entities/endpointMetrics.js";
-import type * as openrouter_entities_endpointUptimeMetrics from "../openrouter/entities/endpointUptimeMetrics.js";
 import type * as openrouter_entities_endpointUptimes from "../openrouter/entities/endpointUptimes.js";
 import type * as openrouter_entities_endpoints from "../openrouter/entities/endpoints.js";
 import type * as openrouter_entities_modelAppLeaderboards from "../openrouter/entities/modelAppLeaderboards.js";
@@ -67,7 +66,6 @@ declare const fullApi: ApiFromModules<{
   "openrouter/entities/apps": typeof openrouter_entities_apps;
   "openrouter/entities/authors": typeof openrouter_entities_authors;
   "openrouter/entities/endpointMetrics": typeof openrouter_entities_endpointMetrics;
-  "openrouter/entities/endpointUptimeMetrics": typeof openrouter_entities_endpointUptimeMetrics;
   "openrouter/entities/endpointUptimes": typeof openrouter_entities_endpointUptimes;
   "openrouter/entities/endpoints": typeof openrouter_entities_endpoints;
   "openrouter/entities/modelAppLeaderboards": typeof openrouter_entities_modelAppLeaderboards;
