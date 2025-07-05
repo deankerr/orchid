@@ -1,6 +1,8 @@
+import { internal } from '../../_generated/api'
 import type { ActionCtx } from '../../_generated/server'
 import { storeSnapshotData } from '../archive'
-import { output } from '../output'
+import type { OrModelAppLeaderboards } from '../entities/modelAppLeaderboards'
+import { batch, output } from '../output'
 import type { Entities } from '../registry'
 import { validateArray, type Issue } from '../validation'
 import { AppStrictSchema, AppTransformSchema } from '../validators/apps'
@@ -24,6 +26,7 @@ export async function appsPipeline(
   const started_at = Date.now()
   const appsMap = new Map<number, typeof Entities.apps.table.$content>()
   const appTokenMetrics: (typeof Entities.appTokenMetrics.table.$content)[] = []
+  const modelAppLeaderboards: (typeof OrModelAppLeaderboards.$content)[] = []
   const issues: Issue[] = []
   const rawAppResponses: [string, unknown][] = []
 
@@ -43,6 +46,22 @@ export async function appsPipeline(
       )
 
       issues.push(...validationIssues)
+
+      modelAppLeaderboards.push({
+        model_permaslug: permaslug,
+        model_variant: variant,
+        apps: items.map(({ app, appTokens }) => ({
+          app_id: app.app_id,
+          total_tokens: appTokens.total_tokens,
+          title: app.title,
+          description: app.description,
+          main_url: app.main_url,
+          origin_url: app.origin_url,
+          source_code_url: app.source_code_url,
+          or_created_at: app.or_created_at,
+        })),
+        snapshot_at,
+      })
 
       for (const item of items) {
         // Dedupe apps by app_id
@@ -85,6 +104,12 @@ export async function appsPipeline(
         items: appTokenMetrics,
       },
     ],
+  })
+
+  await batch({ items: modelAppLeaderboards }, async (items) => {
+    return await ctx.runMutation(internal.openrouter.entities.modelAppLeaderboards.insert, {
+      items,
+    })
   })
 
   return {

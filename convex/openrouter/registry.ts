@@ -9,6 +9,7 @@ import {
   OrEndpointUptimeMetrics,
   OrEndpointUptimeMetricsFn,
 } from './entities/endpointUptimeMetrics'
+import { OrModelAppLeaderboards } from './entities/modelAppLeaderboards'
 import { OrModels, OrModelsFn } from './entities/models'
 import { OrModelTokenMetrics, OrModelTokenMetricsFn } from './entities/modelTokenMetrics'
 import { OrProviders, OrProvidersFn } from './entities/providers'
@@ -16,14 +17,14 @@ import { OrProviders, OrProvidersFn } from './entities/providers'
 export type EntityName = keyof typeof Entities
 
 export const Entities = {
-  apps: {
-    table: OrApps,
-    fn: OrAppsFn,
-  },
-
   appTokenMetrics: {
     table: OrAppTokenMetrics,
     fn: OrAppTokenMetricsFn,
+  },
+
+  apps: {
+    table: OrApps,
+    fn: OrAppsFn,
   },
 
   authors: {

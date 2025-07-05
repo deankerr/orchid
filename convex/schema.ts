@@ -8,6 +8,7 @@ import { OrAuthors, OrAuthorsChanges } from './openrouter/entities/authors'
 import { OrEndpointMetrics } from './openrouter/entities/endpointMetrics'
 import { OrEndpoints, OrEndpointsChanges } from './openrouter/entities/endpoints'
 import { OrEndpointUptimeMetrics } from './openrouter/entities/endpointUptimeMetrics'
+import { OrModelAppLeaderboards } from './openrouter/entities/modelAppLeaderboards'
 import { OrModels, OrModelsChanges } from './openrouter/entities/models'
 import { OrModelTokenMetrics } from './openrouter/entities/modelTokenMetrics'
 import { OrProviders, OrProvidersChanges } from './openrouter/entities/providers'
@@ -49,6 +50,11 @@ export const schema = defineSchema(
       .index('by_uuid', ['uuid'])
       .index('by_model_slug', ['model_slug']),
     or_endpoints_changes: OrEndpointsChanges.table,
+
+    or_model_app_leaderboards: OrModelAppLeaderboards.table.index('by_permaslug_snapshot_at', [
+      'model_permaslug',
+      'snapshot_at',
+    ]),
 
     or_model_token_metrics: OrModelTokenMetrics.table
       .index('by_model_permaslug_variant_timestamp', [

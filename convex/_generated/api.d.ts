@@ -24,6 +24,7 @@ import type * as openrouter_entities_authors from "../openrouter/entities/author
 import type * as openrouter_entities_endpointMetrics from "../openrouter/entities/endpointMetrics.js";
 import type * as openrouter_entities_endpointUptimeMetrics from "../openrouter/entities/endpointUptimeMetrics.js";
 import type * as openrouter_entities_endpoints from "../openrouter/entities/endpoints.js";
+import type * as openrouter_entities_modelAppLeaderboards from "../openrouter/entities/modelAppLeaderboards.js";
 import type * as openrouter_entities_modelTokenMetrics from "../openrouter/entities/modelTokenMetrics.js";
 import type * as openrouter_entities_models from "../openrouter/entities/models.js";
 import type * as openrouter_entities_providers from "../openrouter/entities/providers.js";
@@ -71,6 +72,7 @@ declare const fullApi: ApiFromModules<{
   "openrouter/entities/endpointMetrics": typeof openrouter_entities_endpointMetrics;
   "openrouter/entities/endpointUptimeMetrics": typeof openrouter_entities_endpointUptimeMetrics;
   "openrouter/entities/endpoints": typeof openrouter_entities_endpoints;
+  "openrouter/entities/modelAppLeaderboards": typeof openrouter_entities_modelAppLeaderboards;
   "openrouter/entities/modelTokenMetrics": typeof openrouter_entities_modelTokenMetrics;
   "openrouter/entities/models": typeof openrouter_entities_models;
   "openrouter/entities/providers": typeof openrouter_entities_providers;

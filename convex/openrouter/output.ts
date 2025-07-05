@@ -118,6 +118,21 @@ export async function output(
   return results
 }
 
+export async function batch<T, R>(
+  { items, batchSize = 2000 }: { items: T[]; batchSize?: number },
+  callback: (itemBatch: T[]) => Promise<R[]>,
+) {
+  const results: R[] = []
+  const batches = R.chunk(items, batchSize)
+
+  for (const batch of batches) {
+    const batchResults = await callback(batch)
+    results.push(...batchResults)
+  }
+
+  return results
+}
+
 // NOTE: temporary location for these to avoid circular dependencies
 
 async function mergeEndpointUptimes(
