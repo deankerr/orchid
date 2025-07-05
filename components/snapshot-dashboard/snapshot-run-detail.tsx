@@ -3,24 +3,12 @@
 import { useEffect, useState } from 'react'
 
 import { formatDistanceToNow } from 'date-fns'
-import {
-  AlertTriangle,
-  Archive,
-  CheckCircle,
-  ChevronDown,
-  ChevronRight,
-  Clock,
-  Download,
-  Eye,
-  XCircle,
-} from 'lucide-react'
+import { AlertTriangle, Archive, CheckCircle, Clock, XCircle } from 'lucide-react'
 
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { Separator } from '@/components/ui/separator'
 import { useSnapshotArchives, useSnapshotRunById } from '@/hooks/api'
 
 import { ArchiveViewer } from './archive-viewer'
@@ -112,7 +100,6 @@ function getPipelineDuration(metrics: any): string {
 }
 
 export function SnapshotRunDetail({ runId }: SnapshotRunDetailProps) {
-  const [expandedPipelines, setExpandedPipelines] = useState<Set<string>>(new Set())
   const [selectedArchive, setSelectedArchive] = useState<string | null>(null)
 
   const run = useSnapshotRunById(runId)
@@ -122,16 +109,6 @@ export function SnapshotRunDetail({ runId }: SnapshotRunDetailProps) {
   useEffect(() => {
     setSelectedArchive(null)
   }, [runId])
-
-  const togglePipeline = (pipelineName: string) => {
-    const newExpanded = new Set(expandedPipelines)
-    if (newExpanded.has(pipelineName)) {
-      newExpanded.delete(pipelineName)
-    } else {
-      newExpanded.add(pipelineName)
-    }
-    setExpandedPipelines(newExpanded)
-  }
 
   if (!run) {
     return (

@@ -13,7 +13,7 @@ import { useKeypress } from '@/hooks/use-keypress'
 
 export function HomePage() {
   const [modelSlug, setModelSlug] = useQueryState('model', parseAsString)
-  const [page, setPage] = useQueryState('page', parseAsString)
+  const [page] = useQueryState('page', parseAsString)
   const filteredModels = useFilteredModels()
 
   // Keyboard navigation for model pages
