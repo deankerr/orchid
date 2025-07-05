@@ -2,7 +2,6 @@ import { literals } from 'convex-helpers/validators'
 
 import { OrApps, OrAppsFn } from './entities/apps'
 import { OrAuthors, OrAuthorsFn } from './entities/authors'
-import { OrEndpointMetrics, OrEndpointMetricsFn } from './entities/endpointMetrics'
 import { OrEndpoints, OrEndpointsFn } from './entities/endpoints'
 import { OrModels, OrModelsFn } from './entities/models'
 import { OrModelTokenMetrics, OrModelTokenMetricsFn } from './entities/modelTokenMetrics'
@@ -19,11 +18,6 @@ export const Entities = {
   authors: {
     table: OrAuthors,
     fn: OrAuthorsFn,
-  },
-
-  endpointMetrics: {
-    table: OrEndpointMetrics,
-    fn: OrEndpointMetricsFn,
   },
 
   endpoints: {

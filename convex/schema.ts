@@ -4,8 +4,8 @@ import { v } from 'convex/values'
 import { SnapshotArchives } from './openrouter/archive'
 import { OrApps, OrAppsChanges } from './openrouter/entities/apps'
 import { OrAuthors, OrAuthorsChanges } from './openrouter/entities/authors'
-import { OrEndpointMetrics } from './openrouter/entities/endpointMetrics'
 import { OrEndpoints, OrEndpointsChanges } from './openrouter/entities/endpoints'
+import { OrEndpointStats } from './openrouter/entities/endpointStats'
 import { OrEndpointUptimes } from './openrouter/entities/endpointUptimes'
 import { OrModelAppLeaderboards } from './openrouter/entities/modelAppLeaderboards'
 import { OrModels, OrModelsChanges } from './openrouter/entities/models'
@@ -22,7 +22,7 @@ export const schema = defineSchema(
     or_authors: OrAuthors.table.index('by_uuid', ['uuid']),
     or_authors_changes: OrAuthorsChanges.table,
 
-    or_endpoint_metrics: OrEndpointMetrics.table.index('by_endpoint_uuid_snapshot_at', [
+    or_endpoint_stats: OrEndpointStats.table.index('by_endpoint_uuid_snapshot_at', [
       'endpoint_uuid',
       'snapshot_at',
     ]),

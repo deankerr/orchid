@@ -3,6 +3,7 @@ import * as R from 'remeda'
 import { internal } from '../../_generated/api'
 import type { ActionCtx } from '../../_generated/server'
 import { storeSnapshotData } from '../archive'
+import { type EndpointStat } from '../entities/endpointStats'
 import { OrEndpointUptimes } from '../entities/endpointUptimes'
 import { batch, output } from '../output'
 import type { Entities } from '../registry'
@@ -12,6 +13,12 @@ import {
   EndpointUptimeStrictSchema,
   EndpointUptimeTransformSchema,
 } from '../validators/endpointUptimesMetrics'
+
+type NewEndpointStat = {
+  endpoint_uuid: string
+  snapshot_at: number
+  stat: EndpointStat
+}
 
 export async function endpointsPipeline(
   ctx: ActionCtx,
@@ -32,7 +39,7 @@ export async function endpointsPipeline(
 ) {
   const started_at = Date.now()
   const endpoints: (typeof Entities.endpoints.table.$content)[] = []
-  const endpointMetrics: (typeof Entities.endpointMetrics.table.$content)[] = []
+  const endpointStats: NewEndpointStat[] = []
   const endpointUptimes: (typeof OrEndpointUptimes.$content)[] = []
   const issues: Issue[] = []
   const rawEndpointResponses: [string, unknown][] = []
@@ -101,13 +108,14 @@ export async function endpointsPipeline(
           snapshot_at,
         })
 
-        if (endpoint.stats) {
-          endpointMetrics.push({
+        endpointStats.push({
+          endpoint_uuid: endpoint.uuid,
+          snapshot_at,
+          stat: {
             ...endpoint.stats,
-            endpoint_uuid: endpoint.uuid,
-            snapshot_at,
-          })
-        }
+            timestamp: snapshot_at,
+          },
+        })
       }
     }
   }
@@ -131,26 +139,30 @@ export async function endpointsPipeline(
     }
   })
 
+  const endpointStatsResults = await batch({ items: endpointStats }, async (items) => {
+    return await ctx.runMutation(internal.openrouter.entities.endpointStats.upsert, {
+      items,
+    })
+  }).then((results) => {
+    return {
+      ...R.countBy(results, (v) => v.action),
+      name: 'endpointStats',
+    }
+  })
+
   const results = await output(ctx, {
     entities: [
       {
         name: 'endpoints',
         items: endpoints,
       },
-      {
-        name: 'endpointMetrics',
-        items: endpointMetrics,
-      },
     ],
   })
-
-  // Add the new uptime results if they exist
-  const allResults = endpointUptimesResults ? [...results, endpointUptimesResults] : results
 
   return {
     data: undefined,
     metrics: {
-      entities: allResults,
+      entities: [...results, endpointUptimesResults, endpointStatsResults],
       issues,
       started_at,
       ended_at: Date.now(),
