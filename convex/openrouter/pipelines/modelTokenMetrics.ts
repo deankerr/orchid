@@ -60,11 +60,16 @@ export async function modelTokenMetricsPipeline(
     ],
   })
 
-  const modelTokenMetricsResults = await batch({ items: modelTokenMetrics }, async (items) => {
-    return await ctx.runMutation(internal.openrouter.entities.modelTokenMetrics.upsert, {
-      items,
-    })
-  }).then((results) => {
+  // NOTE: keep same permaslug metrics together - 91 * 22 = 2002
+  const byPermaslug = [...Map.groupBy(modelTokenMetrics, (m) => m.model_permaslug).values()]
+  const modelTokenMetricsResults = await batch(
+    { items: byPermaslug, batchSize: 22 },
+    async (items) => {
+      return await ctx.runMutation(internal.openrouter.entities.modelTokenMetrics.upsert, {
+        items: items.flat(),
+      })
+    },
+  ).then((results) => {
     return { ...R.countBy(results, (v) => v.action), name: 'modelTokenMetrics' }
   })
 

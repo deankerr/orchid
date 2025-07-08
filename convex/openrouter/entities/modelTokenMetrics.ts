@@ -74,7 +74,7 @@ export const upsert = internalMutation({
           if (existing) {
             if (OrModelTokenMetricsFn.diff(existing, metric).length === 0) {
               results.push({ action: 'stable' })
-              break // we already have this + all earlier entries
+              break // we already have all earlier entries
             }
 
             await ctx.db.patch(existing._id, metric)
