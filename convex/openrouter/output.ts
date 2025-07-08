@@ -4,7 +4,6 @@ import * as R from 'remeda'
 
 import { internal } from '../_generated/api'
 import { internalMutation, type ActionCtx, type MutationCtx } from '../_generated/server'
-import { type OrModelTokenMetrics } from './entities/modelTokenMetrics'
 import { Entities, vEntityName, type EntityName } from './registry'
 
 /**
@@ -69,10 +68,6 @@ export const upsert = internalMutation({
   handler: async (ctx, { items, ...args }) => {
     const name = args.name as EntityName
 
-    if (name === 'modelTokenMetrics') {
-      return await mergeModelTokenMetrics(ctx, { items })
-    }
-
     const mergeResults = await asyncMap(items, async (item) => {
       return await upsertEntity(ctx, name, item)
     })
@@ -126,35 +121,4 @@ export async function batch<T, R>(
   }
 
   return results
-}
-
-// NOTE: temporary location for these to avoid circular dependencies
-
-async function mergeModelTokenMetrics(
-  ctx: MutationCtx,
-  { items }: { items: (typeof OrModelTokenMetrics.$content)[] },
-) {
-  // stats come mixed up from the API, group them here
-  const byPermaslugVariant = [
-    ...Map.groupBy(items, (stat) => stat.model_permaslug + ' ' + stat.model_variant).values(),
-  ]
-
-  const resultsByPermaslugVariant = await Promise.all(
-    byPermaslugVariant.map(async (modelTokenMetrics) => {
-      // latest -> earliest
-      modelTokenMetrics.sort((a, b) => b.timestamp - a.timestamp)
-
-      const results: UpsertResult[] = []
-      for (const stat of modelTokenMetrics) {
-        const result = await upsertEntity(ctx, 'modelTokenMetrics', stat)
-        results.push(result)
-
-        if (result.action === 'stable') break // we already have this + all earlier entries
-      }
-
-      return results
-    }),
-  )
-
-  return resultsByPermaslugVariant.flat()
 }

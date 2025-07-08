@@ -1,5 +1,8 @@
+import * as R from 'remeda'
+
+import { internal } from '../../_generated/api'
 import type { ActionCtx } from '../../_generated/server'
-import { output } from '../output'
+import { batch, output } from '../output'
 import type { Entities } from '../registry'
 import { validateRecord, type Issue } from '../validation'
 import { AuthorStrictSchema, AuthorTransformSchema } from '../validators/authors'
@@ -51,20 +54,24 @@ export async function modelTokenMetricsPipeline(
   const results = await output(ctx, {
     entities: [
       {
-        name: 'modelTokenMetrics',
-        items: modelTokenMetrics,
-      },
-      {
         name: 'authors',
         items: authors,
       },
     ],
   })
 
+  const modelTokenMetricsResults = await batch({ items: modelTokenMetrics }, async (items) => {
+    return await ctx.runMutation(internal.openrouter.entities.modelTokenMetrics.upsert, {
+      items,
+    })
+  }).then((results) => {
+    return { ...R.countBy(results, (v) => v.action), name: 'modelTokenMetrics' }
+  })
+
   return {
     data: undefined,
     metrics: {
-      entities: results,
+      entities: [...results, modelTokenMetricsResults],
       issues,
       started_at,
       ended_at: Date.now(),
