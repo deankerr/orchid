@@ -18,15 +18,20 @@ function useModelsAndEndpoints() {
   if (models === null || endpoints === null) return null
   if (!(models && endpoints)) return
 
-  const modelWithEndpoints = endpoints.map((group) => ({
-    ...group,
-    model: models.find((m) => m.slug === group.model_slug)!,
-  }))
+  const modelWithEndpoints = endpoints
+    .map((group) => ({
+      ...group,
+      model: models.find((m) => m.slug === group.model_slug)!,
+    }))
+    .map((m) => ({
+      ...m,
+      tokens_7d: m.model.stats?.[m.variant]?.tokens_7d ?? 0,
+    }))
 
   return { models, endpoints, modelWithEndpoints }
 }
 
-const sortByKeys = ['original', 'tokens', 'requests', 'alphabetical'] as const
+const sortByKeys = ['created', 'tokens', 'alphabetical'] as const
 type SortBy = (typeof sortByKeys)[number]
 
 export type ModelWithEndpoint = NonNullable<
@@ -35,7 +40,7 @@ export type ModelWithEndpoint = NonNullable<
 
 export default function Page() {
   const data = useModelsAndEndpoints()
-  const [sortBy, setSortBy] = useState<SortBy>('original')
+  const [sortBy, setSortBy] = useState<SortBy>('created')
 
   if (!data) return <div>Loading</div>
 
@@ -63,9 +68,8 @@ export default function Page() {
       <div className="space-y-4">
         {data.modelWithEndpoints
           .sort((a, b) => {
-            if (sortBy === 'original') return 0
-            if (sortBy === 'tokens') return b.metrics.tokens - a.metrics.tokens
-            if (sortBy === 'requests') return b.metrics.requests - a.metrics.requests
+            if (sortBy === 'created') return 0
+            if (sortBy === 'tokens') return b.tokens_7d - a.tokens_7d
             return a.model.name.localeCompare(b.model.name)
           })
           .map((m) => (
