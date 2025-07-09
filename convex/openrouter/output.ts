@@ -3,6 +3,7 @@ import { v } from 'convex/values'
 import * as R from 'remeda'
 
 import { internal } from '../_generated/api'
+import type { Doc } from '../_generated/dataModel'
 import { internalMutation, type ActionCtx, type MutationCtx } from '../_generated/server'
 import { Entities, vEntityName, type EntityName } from './registry'
 
@@ -56,6 +57,11 @@ export async function upsertEntity(
   }
 
   // Update
+  if (name === 'models') {
+    // will be handled later, keep stable for now
+    record.stats = (existing as Doc<'or_models'>).stats ?? {}
+  }
+
   await ctx.db.replace(existing._id, record)
   return { action: 'update' }
 }

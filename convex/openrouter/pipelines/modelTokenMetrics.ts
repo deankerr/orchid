@@ -73,6 +73,40 @@ export async function modelTokenMetricsPipeline(
     return { ...R.countBy(results, (v) => v.action), name: 'modelTokenMetrics' }
   })
 
+  // * model aggregate stats
+  const modelStatsEntries = [
+    ...Map.groupBy(modelTokenMetrics, (m) => m.model_permaslug).entries(),
+  ].map(([permaslug, metrics]) => {
+    const stats = Object.fromEntries(
+      Map.groupBy(metrics, (m) => m.model_variant)
+        .entries()
+        .map(([variant, variantMetrics]) => {
+          const stats7d = aggregateTokenMetrics({ metrics: variantMetrics, days: 7 })
+          const stats30d = aggregateTokenMetrics({ metrics: variantMetrics, days: 30 })
+          const stats90d = aggregateTokenMetrics({ metrics: variantMetrics, days: 90 })
+
+          return [
+            variant,
+            {
+              tokens_7d: stats7d.tokens,
+              tokens_30d: stats30d.tokens,
+              tokens_90d: stats90d.tokens,
+              requests_7d: stats7d.requests,
+              requests_30d: stats30d.requests,
+              requests_90d: stats90d.requests,
+            },
+          ]
+        }),
+    )
+
+    return { permaslug, stats }
+  })
+
+  // Update models with aggregated stats
+  await ctx.runMutation(internal.openrouter.entities.models.updateStats, {
+    items: modelStatsEntries,
+  })
+
   return {
     data: undefined,
     metrics: {
@@ -81,5 +115,29 @@ export async function modelTokenMetricsPipeline(
       started_at,
       ended_at: Date.now(),
     },
+  }
+}
+
+function aggregateTokenMetrics({
+  metrics,
+  days,
+  now = Date.now(),
+}: {
+  metrics: Array<{
+    timestamp: number
+    input_tokens: number
+    output_tokens: number
+    request_count: number
+  }>
+  days: number
+  now?: number
+}) {
+  const timePeriod = days * 24 * 60 * 60 * 1000
+  const cutoff = now - timePeriod
+  const filteredMetrics = metrics.filter((m) => m.timestamp >= cutoff)
+
+  return {
+    tokens: filteredMetrics.reduce((sum, m) => sum + m.input_tokens + m.output_tokens, 0),
+    requests: filteredMetrics.reduce((sum, m) => sum + m.request_count, 0),
   }
 }
