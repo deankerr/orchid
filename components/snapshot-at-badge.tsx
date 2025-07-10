@@ -29,9 +29,9 @@ export function SnapshotAtBadge({
       <Badge
         variant="outline"
         title="Loading snapshot data..."
-        className={cn('absolute top-3 right-3 animate-pulse', className)}
+        className={cn('animate-pulse', className)}
       >
-        {'Loading......'}
+        {'  LOADING  '}
       </Badge>
     )
   }
@@ -42,9 +42,9 @@ export function SnapshotAtBadge({
       <Badge
         variant="outline"
         title="No snapshot data available"
-        className={cn('absolute top-3 right-3 text-muted-foreground', className)}
+        className={cn('text-muted-foreground', className)}
       >
-        {'NO DATA     '}
+        {'  NO DATA  '}
       </Badge>
     )
   }
@@ -58,7 +58,7 @@ export function SnapshotAtBadge({
     <Badge
       variant="outline"
       title={new Date(snapshot_at).toString()}
-      className={cn('absolute top-3 right-3', color, className)}
+      className={cn('', color, className)}
     >
       {formatSnapshotAtTime(snapshot_at)}
     </Badge>

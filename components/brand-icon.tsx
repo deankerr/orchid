@@ -21,6 +21,12 @@ export function BrandIcon({
     .split('/')
     .reverse()
     .map((s) => {
+      if (s === 'google-ai-studio') return 'aistudio'
+      if (s === 'google-vertex') return 'vertexai'
+      if (s === 'amazon-bedrock') return 'bedrock'
+      return s
+    })
+    .map((s) => {
       const match =
         lobeIconSlugs.find((l) => s.startsWith(l)) ??
         lobeIconSlugs.find((l) => s.replace('-', '').startsWith(l)) ??

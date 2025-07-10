@@ -2,8 +2,20 @@ import { v } from 'convex/values'
 
 import { diff, type IChange } from 'json-diff-ts'
 
-import { type MutationCtx, type QueryCtx } from '../../_generated/server'
+import { internalMutation, type MutationCtx, type QueryCtx } from '../../_generated/server'
 import { Table2 } from '../../table2'
+
+export const vModelStatsRecord = v.record(
+  v.string(), // variant
+  v.object({
+    tokens_7d: v.number(),
+    tokens_30d: v.number(),
+    tokens_90d: v.number(),
+    requests_7d: v.number(),
+    requests_30d: v.number(),
+    requests_90d: v.number(),
+  }),
+)
 
 export const OrModels = Table2('or_models', {
   slug: v.string(),
@@ -26,6 +38,9 @@ export const OrModels = Table2('or_models', {
   or_created_at: v.number(),
   or_updated_at: v.number(),
 
+  // TODO: remove optional after migration
+  stats: v.optional(vModelStatsRecord),
+
   snapshot_at: v.number(),
 })
 
@@ -45,7 +60,7 @@ export const OrModelsFn = {
 
   diff: (a: unknown, b: unknown) =>
     diff(a, b, {
-      keysToSkip: ['_id', '_creationTime', 'snapshot_at'],
+      keysToSkip: ['_id', '_creationTime', 'stats', 'snapshot_at'],
       embeddedObjKeys: {
         input_modalities: '$value',
         output_modalities: '$value',
@@ -62,3 +77,36 @@ export const OrModelsFn = {
     await ctx.db.insert(OrModelsChanges.name, { slug, snapshot_at, changes })
   },
 }
+
+export const updateStats = internalMutation({
+  args: {
+    items: v.array(
+      v.object({
+        permaslug: v.string(),
+        stats: vModelStatsRecord,
+      }),
+    ),
+  },
+  handler: async (ctx, { items }) => {
+    const models = await ctx.db.query(OrModels.name).collect()
+    const statsMap = new Map(items.map((item) => [item.permaslug, item.stats]))
+
+    for (const model of models) {
+      const newStats = statsMap.get(model.permaslug)
+
+      if (newStats) {
+        // We have stats for this model - check if they need updating
+        const changes = diff(model.stats ?? {}, newStats)
+
+        if (changes.length > 0) {
+          await ctx.db.patch(model._id, { stats: newStats })
+        }
+      } else {
+        // We don't have stats for this model - ensure it has empty stats
+        if (model.stats && Object.keys(model.stats).length > 0) {
+          await ctx.db.patch(model._id, { stats: {} })
+        }
+      }
+    }
+  },
+})

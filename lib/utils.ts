@@ -10,7 +10,7 @@ export function formatIsoDate(timestamp: number | string) {
 }
 
 export function formatSnapshotAtTime(timestamp: number | string) {
-  return new Date(timestamp).toISOString().slice(0, 13).replace('T', ' ')
+  return new Date(timestamp).toISOString().slice(2, 13).replace('T', ' ')
 }
 
 export function formatTokenPriceToM(value = 0) {

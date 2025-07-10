@@ -1,7 +1,7 @@
 'use client'
 
 import { EndpointCard } from '@/components/endpoint-card'
-import { DataStreamLoader, EmptyState } from '@/components/loading'
+import { DataStreamLoader, EmptyState, ErrorState } from '@/components/loading'
 import { ModelAppsLeaderboard } from '@/components/model-apps-leaderboard'
 import { ModelCard } from '@/components/model-card'
 import { ModelTokenChart } from '@/components/model-token-chart'
@@ -13,6 +13,7 @@ import {
 } from '@/hooks/api'
 
 import { EndpointSummary } from './endpoint-summary'
+import { PageContainer } from './page-container'
 
 interface ModelPageProps {
   slug: string
@@ -30,15 +31,30 @@ export function ModelPage({ slug }: ModelPageProps) {
   const tokenMetricsByVariant = Map.groupBy(modelTokenMetrics ?? [], (m) => m.model_variant)
 
   if (!models) {
-    return <DataStreamLoader label="Loading models..." />
+    if (models === null) {
+      return (
+        <PageContainer>
+          <ErrorState message="Failed to load models" />
+        </PageContainer>
+      )
+    }
+    return (
+      <PageContainer>
+        <DataStreamLoader label="Loading models..." />
+      </PageContainer>
+    )
   }
 
   if (!model) {
-    return <EmptyState message="Model not found" icon="404" />
+    return (
+      <PageContainer>
+        <EmptyState message="Model not found" icon="404" />
+      </PageContainer>
+    )
   }
 
   return (
-    <div className="space-y-6">
+    <PageContainer>
       <ModelCard model={model} />
 
       {/* Endpoints Section */}
@@ -74,6 +90,6 @@ export function ModelPage({ slug }: ModelPageProps) {
           <ModelTokenChart key={variant} data={metrics} variant={variant} />
         ))
       )}
-    </div>
+    </PageContainer>
   )
 }

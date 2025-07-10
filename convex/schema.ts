@@ -48,7 +48,8 @@ export const schema = defineSchema(
         'model_variant',
         'timestamp',
       ])
-      .index('by_permaslug_timestamp', ['model_permaslug', 'timestamp']),
+      .index('by_permaslug_timestamp', ['model_permaslug', 'timestamp'])
+      .index('by_timestamp', ['timestamp']),
 
     or_models: OrModels.table.index('by_slug', ['slug']),
     or_models_changes: OrModelsChanges.table,

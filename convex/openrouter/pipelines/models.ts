@@ -37,6 +37,7 @@ export async function modelsPipeline(
   const models = consolidateVariants(modelVariants).map((m) => ({
     ...m,
     snapshot_at,
+    stats: {},
   }))
 
   const results = await output(ctx, {

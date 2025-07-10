@@ -15,6 +15,15 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  redirects: async () => {
+    return [
+      {
+        source: '/',
+        destination: '/models',
+        permanent: false,
+      },
+    ]
+  },
 }
 
 export default nextConfig
