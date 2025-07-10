@@ -1,10 +1,41 @@
-'use client'
+import type { Metadata } from 'next'
 
-import { use } from 'react'
+import { fetchQuery } from 'convex/nextjs'
+
+import { api } from '@/convex/_generated/api'
 
 import { ModelPage } from '@/components/model-page'
 
-export default function Page({ params }: { params: Promise<{ slug: string[] }> }) {
-  const slug = use(params).slug.join('/')
+type Props = {
+  params: Promise<{ slug: string[] }>
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const slug = (await params).slug.join('/')
+
+  try {
+    const model = await fetchQuery(api.frontend.getOrModel, { slug })
+
+    if (!model) {
+      return {
+        title: 'Model Not Found - ORCHID',
+        description: 'The requested model could not be found',
+      }
+    }
+
+    return {
+      title: `${model.name} - ORCHID`,
+      description: `${model.name} (${model.slug}) - AI model details, endpoints, and metrics on OpenRouter`,
+    }
+  } catch {
+    return {
+      title: 'Model - ORCHID',
+      description: 'AI model details and metrics',
+    }
+  }
+}
+
+export default async function Page({ params }: Props) {
+  const slug = (await params).slug.join('/')
   return <ModelPage slug={slug} />
 }

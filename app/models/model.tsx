@@ -21,7 +21,7 @@ import { Badge } from '@/components/ui/badge'
 import { useOrProviders } from '@/hooks/api'
 import { cn, formatIsoDate } from '@/lib/utils'
 
-import type { ModelWithEndpoint } from './page'
+import type { ModelWithEndpoint } from './models-page'
 
 interface ModelProps {
   model: ModelWithEndpoint & { score?: number }
@@ -111,8 +111,8 @@ export function Model_({ model: m }: ModelProps) {
       {/* endpoints */}
       <div className="-mx-1 space-y-1.5 text-foreground/90">
         {m.endpoints
-          .sort((a, b) => (b.traffic ?? -1) - (a.traffic ?? -1))
-          .map((endp) => (
+          .sort((a: any, b: any) => (b.traffic ?? -1) - (a.traffic ?? -1))
+          .map((endp: any) => (
             <div
               key={endp._id}
               className="relative flex items-center justify-between gap-6 border px-1.5 py-2 dark:bg-black/20"

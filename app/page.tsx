@@ -1,12 +1,4 @@
-import { Suspense } from 'react'
-
-import { HomePage } from '@/components/home-page'
-import { DataStreamLoader } from '@/components/loading'
-
+// currently redirects to /models (next.config.ts)
 export default function Home() {
-  return (
-    <Suspense fallback={<DataStreamLoader label="Loading..." />}>
-      <HomePage />
-    </Suspense>
-  )
+  return <div>Welcome!</div>
 }

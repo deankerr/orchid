@@ -18,7 +18,8 @@ export const getOrModel = query({
 export const listOrModels = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query(Entities.models.table.name).collect()
+    const results = await ctx.db.query(Entities.models.table.name).collect()
+    return results.map((m) => ({ ...m, description: '' }))
   },
 })
 
@@ -90,7 +91,6 @@ export const getSnapshotRuns = query({
   },
   handler: async (ctx, { limit = 50 }) => {
     const runs = await ctx.db.query('snapshot_runs').order('desc').take(limit)
-
     return runs
   },
 })
