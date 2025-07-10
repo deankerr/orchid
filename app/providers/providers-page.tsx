@@ -1,8 +1,8 @@
 'use client'
 
 import { BrandIcon } from '@/components/brand-icon'
-import { DataStreamLoader, ErrorState } from '@/components/loading'
-import { PageContainer, PageTitle } from '@/components/page-container'
+import { ErrorState } from '@/components/loading'
+import { PageContainer, PageLoading, PageTitle } from '@/components/page-container'
 import { useOrProviders } from '@/hooks/api'
 
 export function ProvidersPage() {
@@ -16,11 +16,7 @@ export function ProvidersPage() {
         </PageContainer>
       )
     }
-    return (
-      <PageContainer>
-        <DataStreamLoader label="Loading providers..." />
-      </PageContainer>
-    )
+    return <PageLoading />
   }
 
   return (

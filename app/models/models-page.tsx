@@ -4,8 +4,8 @@ import { useDeferredValue, useMemo, useState } from 'react'
 
 import fuzzysort from 'fuzzysort'
 
-import { DataStreamLoader, ErrorState } from '@/components/loading'
-import { PageContainer, PageTitle } from '@/components/page-container'
+import { ErrorState } from '@/components/loading'
+import { PageContainer, PageLoading, PageTitle } from '@/components/page-container'
 import { SearchInput } from '@/components/search-input'
 import { Button } from '@/components/ui/button'
 import { useModelsAndEndpoints } from '@/hooks/api'
@@ -67,11 +67,7 @@ export function ModelsPage() {
         </PageContainer>
       )
     }
-    return (
-      <PageContainer>
-        <DataStreamLoader label="Loading models..." />
-      </PageContainer>
-    )
+    return <PageLoading />
   }
 
   return (

@@ -5,54 +5,47 @@ import { usePathname } from 'next/navigation'
 
 import { cn } from '@/lib/utils'
 
-import { PageContainer } from './page-container'
 import { SnapshotStatus } from './snapshot-status'
+import { Button } from './ui/button'
 import { ThemeButton } from './ui/theme-button'
 
 function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
   const pathname = usePathname()
   const isActive = pathname.startsWith(href)
   return (
-    <Link
-      href={href}
+    <Button
+      variant="ghost"
       className={cn(
-        'rounded px-3 py-1.5 text-muted-foreground hover:text-foreground',
-        isActive && 'bg-muted text-foreground',
+        isActive ? 'bg-accent text-accent-foreground dark:bg-accent/50' : 'text-muted-foreground',
       )}
+      asChild
     >
-      {children}
-    </Link>
+      <Link href={href}>{children}</Link>
+    </Button>
   )
 }
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
-      <header className="bg-background">
-        <PageContainer className="flex items-center justify-between gap-6 py-4">
-          <div className="flex items-center gap-6">
-            <Link
-              href="/"
-              className="font-mono text-lg font-medium text-neutral-700 dark:text-neutral-400"
-            >
-              ORCHID
-            </Link>
-          </div>
+    <div className="flex min-h-screen flex-col px-6 lg:px-12">
+      <header className="flex items-center justify-start gap-6 py-4">
+        <Button variant="link" className="-ml-4 font-mono text-base" asChild>
+          <Link href="/">ORCHID</Link>
+        </Button>
 
-          <nav className="flex grow items-center gap-2 text-sm font-medium">
-            <NavLink href="/models">Models</NavLink>
-            <NavLink href="/providers">Providers</NavLink>
-          </nav>
+        <nav className="flex grow items-center gap-2 text-sm font-medium">
+          <NavLink href="/models">Models</NavLink>
+          <NavLink href="/providers">Providers</NavLink>
+        </nav>
 
-          <div className="flex items-center justify-end gap-3">
-            <Link href="/snapshots">
-              <SnapshotStatus />
-            </Link>
-            <ThemeButton />
-          </div>
-        </PageContainer>
+        <div className="flex items-center justify-end gap-3">
+          <Link href="/snapshots">
+            <SnapshotStatus />
+          </Link>
+          <ThemeButton />
+        </div>
       </header>
       {children}
-    </>
+    </div>
   )
 }

@@ -6,7 +6,8 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useSnapshotRuns } from '@/hooks/api'
 
-import { PageContainer, PageTitle } from '../page-container'
+import { ErrorState } from '../loading'
+import { PageContainer, PageLoading, PageTitle } from '../page-container'
 import { SnapshotRunDetail } from './snapshot-run-detail'
 import { SnapshotRunsList } from './snapshot-runs-list'
 
@@ -15,14 +16,14 @@ export function SnapshotDashboard() {
   const runs = useSnapshotRuns(100)
 
   if (!runs) {
-    return (
-      <div className="p-6">
-        <div className="animate-pulse">
-          <div className="mb-4 h-8 w-48 rounded bg-muted"></div>
-          <div className="h-64 rounded bg-muted"></div>
-        </div>
-      </div>
-    )
+    if (runs === null) {
+      return (
+        <PageContainer>
+          <ErrorState message="Failed to load providers" />
+        </PageContainer>
+      )
+    }
+    return <PageLoading />
   }
 
   return (
