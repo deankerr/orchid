@@ -1,3 +1,6 @@
+import { memo } from 'react'
+import Link from 'next/link'
+
 import { useQuery } from 'convex-helpers/react/cache/hooks'
 
 import {
@@ -12,18 +15,20 @@ import {
 import { api } from '@/convex/_generated/api'
 
 import { BrandIcon } from '@/components/brand-icon'
+import { MarkdownLinks } from '@/components/markdown-links'
+import { SnapshotAtBadge } from '@/components/snapshot-at-badge'
 import { Badge } from '@/components/ui/badge'
 import { useOrProviders } from '@/hooks/api'
-import { cn } from '@/lib/utils'
+import { cn, formatIsoDate } from '@/lib/utils'
 
 import type { ModelWithEndpoint } from './page'
 
 interface ModelProps {
-  model: ModelWithEndpoint
+  model: ModelWithEndpoint & { score?: number }
 }
 
 function formatTokenPriceToM(value?: number) {
-  if (value === undefined) return '    -'
+  if (value === undefined) return ' - '
   return `${(value * 1_000_000).toFixed(2)}`
 }
 
@@ -33,14 +38,17 @@ export function useProviderIcon(slug: string) {
   return providers.find((p) => p.slug === slug)?.icon.url ?? null
 }
 
-export function Model({ model: m }: ModelProps) {
+export function Model_({ model: m }: ModelProps) {
   const providers = useQuery(api.frontend.listOrProviders)
 
   return (
     <div key={m.variantSlug} className="min-w-60 space-y-4 rounded-sm border bg-card px-4 py-3.5">
       {/* title */}
       <div className="flex items-center gap-4">
-        <div className="flex items-center gap-3">
+        <Link
+          href={`/models/${m.model_slug}`}
+          className="flex items-center gap-3 underline-offset-2 hover:underline"
+        >
           <BrandIcon slug={m.variantSlug} size={24} />
           <div className="truncate font-semibold">{m.model.name}</div>
           {m.variant !== 'standard' && (
@@ -48,7 +56,7 @@ export function Model({ model: m }: ModelProps) {
               :{m.variant}
             </Badge>
           )}
-        </div>
+        </Link>
 
         <div className="flex grow items-center justify-between font-mono text-sm">
           <div className="flex flex-wrap items-center gap-1 font-mono">
@@ -84,15 +92,23 @@ export function Model({ model: m }: ModelProps) {
                 pdf
               </Badge>
             )}
+
+            <Badge variant="default" className="font-mono">
+              <span className="text-[11px]">{m.score?.toFixed(1)}</span>
+            </Badge>
           </div>
-          <div className="text-right text-xs">tokens_7d: {m.tokens_7d.toLocaleString()}</div>
+          <div className="text-right text-xs">
+            created: {formatIsoDate(m.model.or_created_at)}
+            <br />
+            tokens_7d: {m.tokens_7d.toLocaleString()}
+          </div>
         </div>
       </div>
 
       {m.model.warning_message && (
         <div className="rounded-sm border border-warning p-2 text-xs text-warning">
           <TriangleAlertIcon className="-mt-0.5 mr-2 inline-flex size-3.5" />
-          {m.model.warning_message}
+          <MarkdownLinks>{m.model.warning_message}</MarkdownLinks>
         </div>
       )}
 
@@ -103,7 +119,7 @@ export function Model({ model: m }: ModelProps) {
           .map((endp) => (
             <div
               key={endp._id}
-              className="flex items-center justify-between gap-6 border px-1.5 py-2 dark:bg-black/20"
+              className="relative flex items-center justify-between gap-6 border px-1.5 py-2 dark:bg-black/20"
             >
               {/* icon / name */}
               <div className="flex grow items-center gap-3 pl-0.5">
@@ -118,6 +134,9 @@ export function Model({ model: m }: ModelProps) {
                     <OctagonAlertIcon />
                     DISABLED
                   </Badge>
+                )}
+                {endp.snapshot_at && m.model.snapshot_at && (
+                  <SnapshotAtBadge snapshot_at={endp.snapshot_at} />
                 )}
               </div>
 
@@ -171,3 +190,5 @@ export function Model({ model: m }: ModelProps) {
     </div>
   )
 }
+
+export const Model = memo(Model_)

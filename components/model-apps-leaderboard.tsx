@@ -78,7 +78,7 @@ export function ModelAppsLeaderboard({
         )}
       </div>
 
-      <SnapshotAtBadge snapshot_at={leaderboard.snapshot_at} />
+      <SnapshotAtBadge snapshot_at={leaderboard.snapshot_at} className="absolute top-3 right-3" />
     </div>
   )
 }

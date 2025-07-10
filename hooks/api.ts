@@ -31,6 +31,26 @@ function useQueryTimer<T>(result: T, label: string): T {
   return result
 }
 
+export function useModelsAndEndpoints() {
+  const models = useQueryTimer(useQuery(api.frontend.listOrModels), 'list models')
+  const endpoints = useQueryTimer(useQuery(api.dev.listEndpoints), 'list endpoints')
+
+  if (models === null || endpoints === null) return null
+  if (!(models && endpoints)) return
+
+  const modelWithEndpoints = endpoints
+    .map((group) => ({
+      ...group,
+      model: models.find((m) => m.slug === group.model_slug)!,
+    }))
+    .map((m) => ({
+      ...m,
+      tokens_7d: m.model.stats?.[m.variant]?.tokens_7d ?? 0,
+    }))
+
+  return { models, endpoints, modelWithEndpoints }
+}
+
 export function useOrModels() {
   const result = useQuery(api.frontend.listOrModels)
   return useQueryTimer(result, 'useOrModels')

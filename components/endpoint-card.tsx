@@ -118,7 +118,7 @@ export function EndpointCard({ endpoint }: { endpoint: OrEndpointData }) {
 
       <code className="text-xs text-muted-foreground">{endpoint.uuid}</code>
 
-      <SnapshotAtBadge snapshot_at={endpoint.snapshot_at} />
+      <SnapshotAtBadge snapshot_at={endpoint.snapshot_at} className="absolute top-3 right-3" />
       {/* <pre className="text-xs text-muted-foreground">{JSON.stringify(endpoint, null, 2)}</pre> */}
     </div>
   )

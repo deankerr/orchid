@@ -79,7 +79,7 @@ export function ModelCard({ model }: { model: OrModel }) {
         </div>
       </CardContent>
 
-      <SnapshotAtBadge snapshot_at={model.snapshot_at} />
+      <SnapshotAtBadge snapshot_at={model.snapshot_at} className="absolute top-3 right-3" />
     </Card>
   )
 }

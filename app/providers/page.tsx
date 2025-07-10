@@ -1,31 +1,35 @@
 'use client'
 
 import { BrandIcon } from '@/components/brand-icon'
-import { ThemeButton } from '@/components/ui/theme-button'
+import { DataStreamLoader, ErrorState } from '@/components/loading'
+import { PageContainer, PageTitle } from '@/components/page-container'
 import { useOrProviders } from '@/hooks/api'
 
 export default function ProvidersPage() {
   const providers = useOrProviders()
 
   if (!providers) {
+    if (providers === null) {
+      return (
+        <PageContainer>
+          <ErrorState message="Failed to load providers" />
+        </PageContainer>
+      )
+    }
     return (
-      <div className="flex flex-col gap-4 p-6">
-        <ThemeButton />
-        <p>Loading providers...</p>
-      </div>
+      <PageContainer>
+        <DataStreamLoader label="Loading providers..." />
+      </PageContainer>
     )
   }
 
   return (
-    <div className="flex flex-col gap-4 p-6">
+    <PageContainer>
       <div className="flex items-center justify-between">
-        <h1 className="font-mono text-2xl">Providers</h1>
-        <ThemeButton />
+        <PageTitle>Providers</PageTitle>
       </div>
 
-      <p className="text-sm text-muted-foreground">
-        All providers with their consolidated icons (LobeHub preferred, API fallback)
-      </p>
+      <p className="text-sm text-muted-foreground">{providers.length} providers</p>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {providers.map((provider) => (
@@ -38,6 +42,6 @@ export default function ProvidersPage() {
           </div>
         ))}
       </div>
-    </div>
+    </PageContainer>
   )
 }

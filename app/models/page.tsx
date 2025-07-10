@@ -1,38 +1,19 @@
 'use client'
 
-import { useState } from 'react'
+import { useDeferredValue, useMemo, useState } from 'react'
 
-import { useQuery } from 'convex-helpers/react/cache/hooks'
+import fuzzysort from 'fuzzysort'
 
-import { api } from '@/convex/_generated/api'
-
+import { DataStreamLoader, ErrorState } from '@/components/loading'
+import { PageContainer, PageTitle } from '@/components/page-container'
+import { SearchInput } from '@/components/search-input'
 import { Button } from '@/components/ui/button'
-import { ThemeButton } from '@/components/ui/theme-button'
+import { useModelsAndEndpoints } from '@/hooks/api'
 
 import { Model } from './model'
 
-function useModelsAndEndpoints() {
-  const models = useQuery(api.frontend.listOrModels)
-  const endpoints = useQuery(api.dev.listEndpoints)
-
-  if (models === null || endpoints === null) return null
-  if (!(models && endpoints)) return
-
-  const modelWithEndpoints = endpoints
-    .map((group) => ({
-      ...group,
-      model: models.find((m) => m.slug === group.model_slug)!,
-    }))
-    .map((m) => ({
-      ...m,
-      tokens_7d: m.model.stats?.[m.variant]?.tokens_7d ?? 0,
-    }))
-
-  return { models, endpoints, modelWithEndpoints }
-}
-
 const sortByKeys = ['created', 'tokens', 'alphabetical'] as const
-type SortBy = (typeof sortByKeys)[number]
+export type SortBy = (typeof sortByKeys)[number]
 
 export type ModelWithEndpoint = NonNullable<
   ReturnType<typeof useModelsAndEndpoints>
@@ -41,13 +22,65 @@ export type ModelWithEndpoint = NonNullable<
 export default function Page() {
   const data = useModelsAndEndpoints()
   const [sortBy, setSortBy] = useState<SortBy>('created')
+  const [search, setSearch] = useState('')
 
-  if (!data) return <div>Loading</div>
+  const processedData = useMemo(() => {
+    if (!data) return []
+
+    const filteredModels = fuzzysort
+      .go(search, data.modelWithEndpoints, { key: 'model.name', all: true })
+      .map((result) => ({ ...result.obj, score: result.score }))
+
+    // If there's a search query, sort primarily by fuzzysort score bands, then by sortBy
+    if (search) {
+      return filteredModels.sort((a, b) => {
+        const aTruncatedScore = Math.floor(a.score * 10) / 10
+        const bTruncatedScore = Math.floor(b.score * 10) / 10
+
+        // Sort by truncated fuzzysort score in descending order (higher score is better)
+        if (aTruncatedScore !== bTruncatedScore) {
+          return bTruncatedScore - aTruncatedScore
+        }
+
+        // If truncated scores are the same, apply the secondary sort based on sortBy
+        if (sortBy === 'created') return b.model.or_created_at - a.model.or_created_at
+        if (sortBy === 'tokens') return b.tokens_7d - a.tokens_7d
+        return a.model.name.localeCompare(b.model.name)
+      })
+    } else {
+      // If no search query, sort only by sortBy
+      return filteredModels.sort((a, b) => {
+        if (sortBy === 'created') return b.model.or_created_at - a.model.or_created_at
+        if (sortBy === 'tokens') return b.tokens_7d - a.tokens_7d
+        return a.model.name.localeCompare(b.model.name)
+      })
+    }
+  }, [data, search, sortBy])
+
+  const deferredData = useDeferredValue(processedData)
+
+  if (!data) {
+    if (data === null) {
+      return (
+        <PageContainer>
+          <ErrorState message="Failed to load models" />
+        </PageContainer>
+      )
+    }
+    return (
+      <PageContainer>
+        <DataStreamLoader label="Loading models..." />
+      </PageContainer>
+    )
+  }
 
   return (
-    <div className="flex flex-col gap-4 p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="font-mono text-2xl">Models ({data.modelWithEndpoints.length})</h1>
+    <PageContainer>
+      <div className="flex items-center justify-between gap-4">
+        <PageTitle>Models</PageTitle>
+
+        <div className="grow" />
+        <SearchInput value={search} onChange={setSearch} placeholder="Search models" />
 
         <div className="flex items-center gap-2">
           {sortByKeys.map((key) => (
@@ -62,20 +95,17 @@ export default function Page() {
             </Button>
           ))}
         </div>
-        <ThemeButton />
       </div>
 
+      <p className="text-sm text-muted-foreground">
+        Comparing {data.models.length} models with {data.endpoints.length} endpoints
+      </p>
+
       <div className="space-y-4">
-        {data.modelWithEndpoints
-          .sort((a, b) => {
-            if (sortBy === 'created') return 0
-            if (sortBy === 'tokens') return b.tokens_7d - a.tokens_7d
-            return a.model.name.localeCompare(b.model.name)
-          })
-          .map((m) => (
-            <Model key={m.variantSlug} model={m} />
-          ))}
+        {deferredData.map((m) => (
+          <Model key={m.variantSlug} model={m} />
+        ))}
       </div>
-    </div>
+    </PageContainer>
   )
 }

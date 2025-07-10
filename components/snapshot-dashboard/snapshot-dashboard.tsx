@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useSnapshotRuns } from '@/hooks/api'
 
+import { PageContainer, PageTitle } from '../page-container'
 import { SnapshotRunDetail } from './snapshot-run-detail'
 import { SnapshotRunsList } from './snapshot-runs-list'
 
@@ -25,10 +26,10 @@ export function SnapshotDashboard() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <PageContainer>
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Snapshot Dashboard</h1>
+          <PageTitle>Snapshot Dashboard</PageTitle>
           <p className="text-muted-foreground">
             View snapshot runs, pipeline details, and archived data
           </p>
@@ -60,6 +61,6 @@ export function SnapshotDashboard() {
 
       {/* Selected Run Details */}
       {selectedRunId && <SnapshotRunDetail runId={selectedRunId} />}
-    </div>
+    </PageContainer>
   )
 }
