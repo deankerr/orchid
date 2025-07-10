@@ -92,10 +92,6 @@ export function Model_({ model: m }: ModelProps) {
                 pdf
               </Badge>
             )}
-
-            <Badge variant="default" className="font-mono">
-              <span className="text-[11px]">{m.score?.toFixed(1)}</span>
-            </Badge>
           </div>
           <div className="text-right text-xs">
             created: {formatIsoDate(m.model.or_created_at)}
