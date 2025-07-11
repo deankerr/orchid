@@ -1,8 +1,6 @@
 import { memo } from 'react'
 import Link from 'next/link'
 
-import { useQuery } from 'convex-helpers/react/cache/hooks'
-
 import {
   BrainIcon,
   FileUpIcon,
@@ -12,9 +10,7 @@ import {
   TriangleAlertIcon,
 } from 'lucide-react'
 
-import { api } from '@/convex/_generated/api'
-
-import { BrandIcon } from '@/components/brand-icon'
+import { BrandIcon, ProviderBrandIcon } from '@/components/brand-icon'
 import { MarkdownLinks } from '@/components/markdown-links'
 import { SnapshotAtBadge } from '@/components/snapshot-at-badge'
 import { Badge } from '@/components/ui/badge'
@@ -33,8 +29,6 @@ export function useProviderIcon(slug: string) {
 }
 
 function ModelEBV_({ ebv }: { ebv: EndpointsByVariant[number] }) {
-  const providers = useQuery(api.frontend.listOrProviders)
-
   const unionCapabilities = [
     ...new Set(
       ebv.endpoints.flatMap((endp) =>
@@ -123,11 +117,7 @@ function ModelEBV_({ ebv }: { ebv: EndpointsByVariant[number] }) {
             >
               {/* icon / name */}
               <div className="flex grow items-center gap-3 pl-0.5">
-                <BrandIcon
-                  slug={endp.provider_slug}
-                  fallbackSrc={providers?.find((p) => p.slug === endp.provider_slug)?.icon.url}
-                  size={18}
-                />
+                <ProviderBrandIcon slug={endp.provider_slug} size={18} />
                 <div className="truncate text-sm font-medium">{endp.provider_name}</div>
                 {endp.is_disabled && (
                   <Badge variant="destructive" className="font-mono">

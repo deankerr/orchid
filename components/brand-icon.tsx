@@ -1,5 +1,6 @@
 import Image from 'next/image'
 
+import { useProvidersList } from '@/hooks/api'
 import { cn } from '@/lib/utils'
 
 import lobeIconSlugs from './icons.json'
@@ -73,5 +74,12 @@ export function BrandIcon({
         <div className="m-auto size-5/6 rounded-lg border dark:bg-muted/30" />
       )}
     </div>
+  )
+}
+
+export function ProviderBrandIcon(props: React.ComponentProps<typeof BrandIcon>) {
+  const providers = useProvidersList()
+  return (
+    <BrandIcon {...props} fallbackSrc={providers?.find((p) => p.slug === props.slug)?.icon.url} />
   )
 }
