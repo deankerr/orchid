@@ -87,26 +87,16 @@ export function useOrProviders() {
 }
 
 export function useSnapshotStatus() {
-  const result = useQuery(api.frontend.getSnapshotStatus)
+  const result = useQuery(api.openrouter.snapshot.getSnapshotStatus)
   return useQueryTimer(result, 'useSnapshotStatus')
 }
 
 export function useSnapshotRuns(limit?: number) {
-  const result = useQuery(api.frontend.getSnapshotRuns, { limit })
+  const result = useQuery(api.openrouter.snapshot.getSnapshotRuns, { limit })
   return useQueryTimer(result, 'useSnapshotRuns')
 }
 
-export function useSnapshotRunById(runId: string) {
-  const result = useQuery(api.frontend.getSnapshotRunById, { runId: runId as any })
-  return useQueryTimer(result, `useSnapshotRunById (${runId})`)
-}
-
 export function useSnapshotArchives(snapshot_at: number) {
-  const result = useQuery(api.frontend.getSnapshotArchives, { snapshot_at })
+  const result = useQuery(api.openrouter.snapshot.getSnapshotArchives, { snapshot_at })
   return useQueryTimer(result, `useSnapshotArchives (${snapshot_at})`)
-}
-
-export function useSnapshotArchiveTypes(snapshot_at: number) {
-  const result = useQuery(api.frontend.getSnapshotArchiveTypes, { snapshot_at })
-  return useQueryTimer(result, `useSnapshotArchiveTypes (${snapshot_at})`)
 }

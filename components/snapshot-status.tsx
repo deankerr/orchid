@@ -9,6 +9,7 @@ export function SnapshotStatus() {
 
   const statusStyles = {
     ok: 'bg-green-500',
+    issues: 'bg-yellow-500',
     in_progress: 'bg-green-500 animate-pulse',
     error: 'bg-red-500',
     unknown: 'bg-muted-foreground/50',

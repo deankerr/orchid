@@ -5,16 +5,18 @@ import { useEffect, useState } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import { AlertTriangle, Archive, CheckCircle, Clock, XCircle } from 'lucide-react'
 
+import type { Doc } from '@/convex/_generated/dataModel'
+
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { useSnapshotArchives, useSnapshotRunById } from '@/hooks/api'
+import { useSnapshotArchives } from '@/hooks/api'
 
 import { ArchiveViewer } from './archive-viewer'
 
 interface SnapshotRunDetailProps {
-  runId: string
+  run: Doc<'snapshot_runs'>
 }
 
 function formatDuration(startedAt: number, endedAt?: number) {
@@ -99,10 +101,10 @@ function getPipelineDuration(metrics: any): string {
   return `${Math.round((latestEnd - earliestStart) / 1000)}s`
 }
 
-export function SnapshotRunDetail({ runId }: SnapshotRunDetailProps) {
+export function SnapshotRunDetail({ run }: SnapshotRunDetailProps) {
   const [selectedArchive, setSelectedArchive] = useState<string | null>(null)
+  const runId = run._id
 
-  const run = useSnapshotRunById(runId)
   const archives = useSnapshotArchives(run?.snapshot_at || 0)
 
   // Reset selected archive when runId changes

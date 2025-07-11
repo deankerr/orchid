@@ -98,11 +98,9 @@ export function ModelsPage() {
       </p>
 
       <div className="space-y-4">
-        {deferredData
-          .filter((m) => m.variant === 'free')
-          .map((m) => (
-            <Model key={m.variantSlug} model={m} />
-          ))}
+        {deferredData.map((m) => (
+          <Model key={m.variantSlug} model={m} />
+        ))}
       </div>
     </PageContainer>
   )

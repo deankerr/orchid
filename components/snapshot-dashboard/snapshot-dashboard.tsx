@@ -12,8 +12,9 @@ import { SnapshotRunDetail } from './snapshot-run-detail'
 import { SnapshotRunsList } from './snapshot-runs-list'
 
 export function SnapshotDashboard() {
-  const [selectedRunId, setSelectedRunId] = useQueryState('run', parseAsString)
   const runs = useSnapshotRuns(100)
+  const [selectedRunId, setSelectedRunId] = useQueryState('run', parseAsString)
+  const selectedRun = runs?.find((r) => r._id === selectedRunId)
 
   if (!runs) {
     if (runs === null) {
@@ -61,7 +62,7 @@ export function SnapshotDashboard() {
       </Card>
 
       {/* Selected Run Details */}
-      {selectedRunId && <SnapshotRunDetail runId={selectedRunId} />}
+      {selectedRun && <SnapshotRunDetail run={selectedRun} />}
     </PageContainer>
   )
 }

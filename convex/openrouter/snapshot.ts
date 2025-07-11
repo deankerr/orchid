@@ -1,6 +1,6 @@
 import { v } from 'convex/values'
 
-import { internalAction, internalMutation } from '../_generated/server'
+import { internalAction, internalMutation, query } from '../_generated/server'
 import { Table2 } from '../table2'
 import { orchestrator } from './orchestrator'
 
@@ -43,7 +43,7 @@ export const updateRun = internalMutation({
         name: v.string(),
         ok: v.boolean(),
         error: v.optional(v.string()),
-        metrics: v.optional(v.any()),
+        metrics: v.optional(v.record(v.string(), v.any())),
       }),
     ),
   },
@@ -55,4 +55,59 @@ export const updateRun = internalMutation({
 
 export const run = internalAction({
   handler: orchestrator,
+})
+
+// * queries
+
+export const getSnapshotStatus = query({
+  handler: async (ctx) => {
+    const latestRun = await ctx.db.query('snapshot_runs').order('desc').first()
+
+    if (!latestRun) {
+      return { status: 'unknown' as const, snapshot_at: null }
+    }
+
+    const isInProgress = !latestRun.ended_at
+    const hasError = !latestRun.ok
+    const hasIssues = latestRun.pipelines.some((p) => p.metrics?.issues?.length)
+
+    if (isInProgress) {
+      return { status: 'in_progress' as const, snapshot_at: latestRun.snapshot_at }
+    }
+
+    if (hasError) {
+      return { status: 'error' as const, snapshot_at: latestRun.snapshot_at }
+    }
+
+    if (hasIssues) {
+      return { status: 'issues' as const, snapshot_at: latestRun.snapshot_at }
+    }
+
+    return { status: 'ok' as const, snapshot_at: latestRun.snapshot_at }
+  },
+})
+
+export const getSnapshotRuns = query({
+  args: {
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, { limit = 50 }) => {
+    const runs = await ctx.db.query('snapshot_runs').order('desc').take(limit)
+    return runs
+  },
+})
+
+export const getSnapshotArchives = query({
+  args: {
+    snapshot_at: v.number(),
+  },
+  handler: async (ctx, { snapshot_at }) => {
+    const archives = await ctx.db
+      .query('snapshot_archives')
+      .withIndex('by_snapshot_at', (q) => q.eq('snapshot_at', snapshot_at))
+      .order('desc')
+      .collect()
+
+    return archives
+  },
 })
