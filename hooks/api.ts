@@ -34,11 +34,8 @@ function useQueryTimer<T>(result: T, label: string): T {
 
 export type EndpointsByVariant = NonNullable<ReturnType<typeof useEndpointsByVariant>>
 export function useEndpointsByVariant() {
-  const models = useQueryTimer(useQuery(api.openrouter.entities.models.list), 'list models')
-  const endpoints = useQueryTimer(
-    useQuery(api.openrouter.entities.endpoints.list),
-    'list endpoints',
-  )
+  const models = useModelsList()
+  const endpoints = useEndpointsList()
 
   if (models === null || endpoints === null) return null
   if (!(models && endpoints)) return
@@ -66,20 +63,19 @@ export function useEndpointsByVariant() {
   return endpointsByVariant
 }
 
-export function useOrModels() {
-  const result = useQuery(api.frontend.listOrModels)
-  return useQueryTimer(result, 'useOrModels')
+export function useModelsList() {
+  const result = useQuery(api.openrouter.entities.models.list)
+  return useQueryTimer(result, 'useModelsList')
 }
 
-export type OrEndpointData = NonNullable<ReturnType<typeof useOrEndpoints>>[number]
-export function useOrEndpoints(slug: string) {
-  const result = useQuery(api.frontend.listOrEndpoints, { slug })
-  return useQueryTimer(result, `useOrEndpoints (${slug})`)
+export function useEndpointsList() {
+  const result = useQuery(api.openrouter.entities.endpoints.list)
+  return useQueryTimer(result, 'useEndpointsList')
 }
 
-export function useOrEndpointUptimes(endpoint_uuid: string) {
+export function useEndpointUptimes(endpoint_uuid: string) {
   const result = useQuery(api.openrouter.entities.endpointUptimes.getLatest, { endpoint_uuid })
-  return useQueryTimer(result, `useOrEndpointUptimes (${endpoint_uuid})`)
+  return useQueryTimer(result, `useEndpointUptimes (${endpoint_uuid})`)
 }
 
 export function useModelAppsLeaderboards(permaslug?: string) {
@@ -91,14 +87,17 @@ export function useModelAppsLeaderboards(permaslug?: string) {
   return result ? new Map(result) : undefined
 }
 
-export function useOrModelTokenMetrics(slug: string) {
-  const result = useQuery(api.frontend.getOrModelTokenMetrics, { slug })
-  return useQueryTimer(result, `useOrModelTokenMetrics (${slug})`)
+export function useModelTokenMetrics(permaslug?: string) {
+  const result = useQuery(
+    api.openrouter.entities.modelTokenMetrics.getLatest,
+    permaslug ? { permaslug } : 'skip',
+  )
+  return useQueryTimer(result, `useModelTokenMetrics (${permaslug})`)
 }
 
-export function useOrProviders() {
-  const result = useQuery(api.frontend.listOrProviders)
-  return useQueryTimer(result, 'useOrProviders')
+export function useProvidersList() {
+  const result = useQuery(api.openrouter.entities.providers.list)
+  return useQueryTimer(result, 'useProvidersList')
 }
 
 export function useSnapshotStatus() {

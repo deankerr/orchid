@@ -18,7 +18,7 @@ import { BrandIcon } from '@/components/brand-icon'
 import { MarkdownLinks } from '@/components/markdown-links'
 import { SnapshotAtBadge } from '@/components/snapshot-at-badge'
 import { Badge } from '@/components/ui/badge'
-import { useOrProviders, type EndpointsByVariant } from '@/hooks/api'
+import { useProvidersList, type EndpointsByVariant } from '@/hooks/api'
 import { cn, formatIsoDate } from '@/lib/utils'
 
 function formatTokenPriceToM(value?: number) {
@@ -27,7 +27,7 @@ function formatTokenPriceToM(value?: number) {
 }
 
 export function useProviderIcon(slug: string) {
-  const providers = useOrProviders()
+  const providers = useProvidersList()
   if (!providers) return
   return providers.find((p) => p.slug === slug)?.icon.url ?? null
 }

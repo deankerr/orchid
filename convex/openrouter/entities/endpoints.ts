@@ -127,9 +127,11 @@ export const OrEndpointsFn = {
   },
 }
 
+// * queries
+
 export const list = query({
   handler: async (ctx) => {
-    const results = await ctx.db.query(OrEndpoints.name).collect()
+    const results = await ctx.db.query('or_endpoints').collect()
     return results
   },
 })

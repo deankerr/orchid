@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const slug = (await params).slug.join('/')
 
   try {
-    const model = await fetchQuery(api.frontend.getOrModel, { slug })
+    const model = await fetchQuery(api.openrouter.entities.models.get, { slug })
 
     if (!model) {
       return {

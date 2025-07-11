@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import { ChevronDown, ChevronUp } from 'lucide-react'
 
-import type { OrModel } from '@/convex/types'
+import type { Doc } from '@/convex/_generated/dataModel'
 
 import {
   Table,
@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { useOrProviders, type OrEndpointData } from '@/hooks/api'
+import { useProvidersList } from '@/hooks/api'
 import { cn, formatTokenPriceToM } from '@/lib/utils'
 
 import { BrandIcon } from './brand-icon'
@@ -42,7 +42,7 @@ type ProcessedEndpoint = {
   snapshot_at: number
 }
 
-function processEndpoints(endpoints: OrEndpointData[]): ProcessedEndpoint[] {
+function processEndpoints(endpoints: Doc<'or_endpoints'>[]): ProcessedEndpoint[] {
   // Calculate total request count for traffic percentages
   const totalRequests = endpoints.reduce((total, ep) => {
     const requestCount = ep.stats?.request_count ?? 0
@@ -131,7 +131,7 @@ export function EndpointTable({
   endpoints,
   modelSnapshotTime,
 }: {
-  endpoints: OrEndpointData[]
+  endpoints: Doc<'or_endpoints'>[]
   modelSnapshotTime: number
 }) {
   const [sortKey, setSortKey] = useState<SortKey>('traffic')
@@ -150,7 +150,7 @@ export function EndpointTable({
 
   const sortedEndpoints = sortEndpoints(processedEndpoints, sortKey, sortDirection)
 
-  const providers = useOrProviders()
+  const providers = useProvidersList()
 
   return (
     <Table className="table-fixed text-xs">
@@ -274,8 +274,8 @@ export function EndpointSummary({
   model,
   endpoints,
 }: {
-  model: OrModel
-  endpoints: OrEndpointData[]
+  model: Doc<'or_models'>
+  endpoints: Doc<'or_endpoints'>[]
 }) {
   // Group endpoints by variant
   const endpointsByVariant = Map.groupBy(endpoints, (endpoint) => endpoint.model_variant)

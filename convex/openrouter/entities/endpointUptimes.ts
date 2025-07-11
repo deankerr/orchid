@@ -28,17 +28,10 @@ export const OrEndpointUptimes = Table2('or_endpoint_uptimes', {
 
 export async function getLatestHelper(ctx: QueryCtx, { endpoint_uuid }: { endpoint_uuid: string }) {
   return await ctx.db
-    .query(OrEndpointUptimes.name)
+    .query('or_endpoint_uptimes')
     .withIndex('by_endpoint_uuid_snapshot_at', (q) => q.eq('endpoint_uuid', endpoint_uuid))
     .first()
 }
-
-export const getLatest = query({
-  args: {
-    endpoint_uuid: v.string(),
-  },
-  handler: getLatestHelper,
-})
 
 function updateHourlyData(
   existingData: Array<{ timestamp: number; uptime?: number }>,
@@ -135,4 +128,13 @@ export const upsert = internalMutation({
 
     return results
   },
+})
+
+// * queries
+
+export const getLatest = query({
+  args: {
+    endpoint_uuid: v.string(),
+  },
+  handler: getLatestHelper,
 })

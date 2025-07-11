@@ -4,7 +4,6 @@ import { OrApps, OrAppsFn } from './entities/apps'
 import { OrAuthors, OrAuthorsFn } from './entities/authors'
 import { OrEndpoints, OrEndpointsFn } from './entities/endpoints'
 import { OrModels, OrModelsFn } from './entities/models'
-import { OrModelTokenMetrics, OrModelTokenMetricsFn } from './entities/modelTokenMetrics'
 import { OrProviders, OrProvidersFn } from './entities/providers'
 
 export type EntityName = keyof typeof Entities
@@ -28,11 +27,6 @@ export const Entities = {
   models: {
     table: OrModels,
     fn: OrModelsFn,
-  },
-
-  modelTokenMetrics: {
-    table: OrModelTokenMetrics,
-    fn: OrModelTokenMetricsFn,
   },
 
   providers: {

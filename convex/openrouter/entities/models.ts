@@ -4,7 +4,6 @@ import { diff, type IChange } from 'json-diff-ts'
 
 import { internalMutation, query, type MutationCtx, type QueryCtx } from '../../_generated/server'
 import { Table2 } from '../../table2'
-import { OrAuthorsFn } from './authors'
 
 export const vModelStatsRecord = v.record(
   v.string(), // variant
@@ -118,11 +117,25 @@ export const updateStats = internalMutation({
   },
 })
 
+// * queries
+
+export const get = query({
+  args: {
+    slug: v.string(),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query('or_models')
+      .withIndex('by_slug', (q) => q.eq('slug', args.slug))
+      .first()
+  },
+})
+
 export const list = query({
   handler: async (ctx) => {
-    const authors = await OrAuthorsFn.list(ctx)
+    const authors = await ctx.db.query('or_authors').collect()
 
-    const models = await ctx.db.query(OrModels.name).collect()
+    const models = await ctx.db.query('or_models').collect()
     return models.map((m) => ({
       ...m,
       author_name: authors.find((a) => a.slug === m.author_slug)?.name ?? m.author_slug,

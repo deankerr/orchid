@@ -29,7 +29,7 @@ export const OrEndpointStats = Table2('or_endpoint_stats', {
 // Helper: fetch latest stats doc for endpoint
 async function getLatestHelper(ctx: QueryCtx, { endpoint_uuid }: { endpoint_uuid: string }) {
   return await ctx.db
-    .query(OrEndpointStats.name)
+    .query('or_endpoint_stats')
     .withIndex('by_endpoint_uuid_snapshot_at', (q) => q.eq('endpoint_uuid', endpoint_uuid))
     .first()
 }

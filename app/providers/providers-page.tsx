@@ -3,10 +3,10 @@
 import { BrandIcon } from '@/components/brand-icon'
 import { ErrorState } from '@/components/loading'
 import { PageContainer, PageLoading, PageTitle } from '@/components/page-container'
-import { useOrProviders } from '@/hooks/api'
+import { useProvidersList } from '@/hooks/api'
 
 export function ProvidersPage() {
-  const providers = useOrProviders()
+  const providers = useProvidersList()
 
   if (!providers) {
     if (providers === null) {

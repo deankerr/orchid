@@ -6,10 +6,10 @@ import { ModelAppsLeaderboard } from '@/components/model-apps-leaderboard'
 import { ModelCard } from '@/components/model-card'
 import { ModelTokenChart } from '@/components/model-token-chart'
 import {
+  useEndpointsList,
   useModelAppsLeaderboards,
-  useOrEndpoints,
-  useOrModels,
-  useOrModelTokenMetrics,
+  useModelsList,
+  useModelTokenMetrics,
 } from '@/hooks/api'
 
 import { EndpointSummary } from './endpoint-summary'
@@ -20,15 +20,15 @@ interface ModelPageProps {
 }
 
 export function ModelPage({ slug }: ModelPageProps) {
-  const models = useOrModels()
+  const models = useModelsList()
   const model = models?.find((m) => m.slug === slug)
 
-  const endpoints = useOrEndpoints(slug)
+  const endpointsList = useEndpointsList()
+  const endpoints = endpointsList?.filter((e) => e.model_slug === slug)
 
   const leaderboardsMap = useModelAppsLeaderboards(model?.permaslug)
 
-  const modelTokenMetrics = useOrModelTokenMetrics(slug)
-  const tokenMetricsByVariant = Map.groupBy(modelTokenMetrics ?? [], (m) => m.model_variant)
+  const modelTokenMetrics = useModelTokenMetrics(model?.permaslug)
 
   if (!models) {
     if (models === null) {
@@ -86,8 +86,8 @@ export function ModelPage({ slug }: ModelPageProps) {
       {modelTokenMetrics === undefined ? (
         <DataStreamLoader label="Loading metrics..." />
       ) : (
-        Array.from(tokenMetricsByVariant.entries()).map(([variant, metrics]) => (
-          <ModelTokenChart key={variant} data={metrics} variant={variant} />
+        Object.entries(modelTokenMetrics).map(([variant, metrics]) => (
+          <ModelTokenChart key={variant} data={metrics ?? []} variant={variant} />
         ))
       )}
     </PageContainer>

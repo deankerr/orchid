@@ -2,7 +2,7 @@ import { v } from 'convex/values'
 
 import { diff, type IChange } from 'json-diff-ts'
 
-import { type MutationCtx, type QueryCtx } from '../../_generated/server'
+import { query, type MutationCtx, type QueryCtx } from '../../_generated/server'
 import { Table2 } from '../../table2'
 
 export const OrProviders = Table2('or_providers', {
@@ -82,3 +82,11 @@ export const OrProvidersFn = {
     await ctx.db.insert(OrProvidersChanges.name, { slug, snapshot_at, changes })
   },
 }
+
+// * queries
+
+export const list = query({
+  handler: async (ctx) => {
+    return await ctx.db.query('or_providers').collect()
+  },
+})

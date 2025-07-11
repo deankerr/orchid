@@ -25,7 +25,7 @@ export const insertRun = internalMutation({
     started_at: v.number(),
   },
   handler: async (ctx, args) => {
-    return await ctx.db.insert(SnapshotRuns.name, {
+    return await ctx.db.insert('snapshot_runs', {
       ...args,
       ok: true,
       pipelines: [],
@@ -35,7 +35,7 @@ export const insertRun = internalMutation({
 
 export const updateRun = internalMutation({
   args: {
-    run_id: v.id(SnapshotRuns.name),
+    run_id: v.id('snapshot_runs'),
     ended_at: v.number(),
     ok: v.boolean(),
     pipelines: v.array(

@@ -3,7 +3,7 @@ import { v } from 'convex/values'
 
 import { diff } from 'json-diff-ts'
 
-import { internalMutation, type QueryCtx } from '../../_generated/server'
+import { internalMutation, query, type QueryCtx } from '../../_generated/server'
 import { Table2 } from '../../table2'
 import type { UpsertResult } from '../output'
 
@@ -90,5 +90,22 @@ export const upsert = internalMutation({
     )
 
     return resultsByPermaslugVariant.flat()
+  },
+})
+
+// * queries
+
+export const getLatest = query({
+  args: {
+    permaslug: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const metrics = await ctx.db
+      .query('or_model_token_metrics')
+      .withIndex('by_permaslug_timestamp', (q) => q.eq('model_permaslug', args.permaslug))
+      .order('desc')
+      .take(72)
+
+    return Object.groupBy(metrics, (m) => m.model_variant)
   },
 })

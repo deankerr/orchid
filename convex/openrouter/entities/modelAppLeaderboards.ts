@@ -30,7 +30,7 @@ export const insert = internalMutation({
   handler: async (ctx, { items }) => {
     return await asyncMap(items, async (item) => {
       const existing = await ctx.db
-        .query(OrModelAppLeaderboards.name)
+        .query('or_model_app_leaderboards')
         .withIndex('by_permaslug_snapshot_at', (q) =>
           q.eq('model_permaslug', item.model_permaslug).eq('snapshot_at', item.snapshot_at),
         )
@@ -42,11 +42,13 @@ export const insert = internalMutation({
         return { action: 'update' }
       }
 
-      await ctx.db.insert(OrModelAppLeaderboards.name, item)
+      await ctx.db.insert('or_model_app_leaderboards', item)
       return { action: 'insert' }
     })
   },
 })
+
+// * queries
 
 export const get = query({
   args: {

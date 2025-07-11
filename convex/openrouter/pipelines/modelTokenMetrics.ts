@@ -2,6 +2,7 @@ import * as R from 'remeda'
 
 import { internal } from '../../_generated/api'
 import type { ActionCtx } from '../../_generated/server'
+import type { OrModelTokenMetrics } from '../entities/modelTokenMetrics'
 import { batch, output } from '../output'
 import type { Entities } from '../registry'
 import { validateRecord, type Issue } from '../validation'
@@ -27,7 +28,7 @@ export async function modelTokenMetricsPipeline(
   },
 ) {
   const started_at = Date.now()
-  const modelTokenMetrics: (typeof Entities.modelTokenMetrics.table.$content)[] = []
+  const modelTokenMetrics: (typeof OrModelTokenMetrics.$content)[] = []
   const authors: (typeof Entities.authors.table.$content)[] = []
   const issues: Issue[] = []
 
