@@ -10,12 +10,12 @@ import { SearchInput } from '@/components/search-input'
 import { Button } from '@/components/ui/button'
 import { useEndpointsByVariant } from '@/hooks/api'
 
-import { Model } from './model'
+import { ModelEBV } from './model-ebv'
 
 const sortByKeys = ['created', 'tokens', 'alphabetical'] as const
 export type SortBy = (typeof sortByKeys)[number]
 
-export function ModelsPage() {
+export function ModelsListPage() {
   const endpointsByVariant = useEndpointsByVariant()
   const [sortBy, setSortBy] = useState<SortBy>('created')
   const [search, setSearch] = useState('')
@@ -95,7 +95,7 @@ export function ModelsPage() {
 
       <div className="space-y-4">
         {deferredData.map((m) => (
-          <Model key={m.model_variant_slug} ebv={m} />
+          <ModelEBV key={m.model_variant_slug} ebv={m} />
         ))}
       </div>
     </PageContainer>

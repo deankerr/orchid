@@ -32,7 +32,7 @@ export function useProviderIcon(slug: string) {
   return providers.find((p) => p.slug === slug)?.icon.url ?? null
 }
 
-export function Model_({ ebv }: { ebv: EndpointsByVariant[number] }) {
+function ModelEBV_({ ebv }: { ebv: EndpointsByVariant[number] }) {
   const providers = useQuery(api.frontend.listOrProviders)
 
   const unionCapabilities = [
@@ -191,4 +191,4 @@ export function Model_({ ebv }: { ebv: EndpointsByVariant[number] }) {
   )
 }
 
-export const Model = memo(Model_)
+export const ModelEBV = memo(ModelEBV_)

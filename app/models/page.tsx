@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-import { ModelsPage } from './models-page'
+import { ModelsListPage } from './models-list-page'
 
 export const metadata: Metadata = {
   title: 'Models - ORCHID',
@@ -8,5 +8,5 @@ export const metadata: Metadata = {
 }
 
 export default function Page() {
-  return <ModelsPage />
+  return <ModelsListPage />
 }

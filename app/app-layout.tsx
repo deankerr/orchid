@@ -3,11 +3,10 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
+import { SnapshotStatus } from '@/components/snapshot-status'
+import { Button } from '@/components/ui/button'
+import { ThemeButton } from '@/components/ui/theme-button'
 import { cn } from '@/lib/utils'
-
-import { SnapshotStatus } from './snapshot-status'
-import { Button } from './ui/button'
-import { ThemeButton } from './ui/theme-button'
 
 function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
   const pathname = usePathname()
