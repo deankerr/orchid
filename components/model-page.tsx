@@ -19,6 +19,7 @@ interface ModelPageProps {
   slug: string
 }
 
+// this is the old model page. it should not be modified.
 export function ModelPage({ slug }: ModelPageProps) {
   const models = useModelsList()
   const model = models?.find((m) => m.slug === slug)

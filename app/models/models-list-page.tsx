@@ -5,7 +5,7 @@ import { useDeferredValue, useMemo, useState } from 'react'
 import fuzzysort from 'fuzzysort'
 
 import { ErrorState } from '@/components/loading'
-import { PageContainer, PageLoading, PageTitle } from '@/components/page-container'
+import { PageContainer, PageHeader, PageLoading, PageTitle } from '@/components/page-container'
 import { SearchInput } from '@/components/search-input'
 import { Button } from '@/components/ui/button'
 import { useEndpointsByVariant } from '@/hooks/api'
@@ -68,7 +68,7 @@ export function ModelsListPage() {
 
   return (
     <PageContainer>
-      <div className="flex items-center justify-between gap-4">
+      <PageHeader>
         <PageTitle>Models</PageTitle>
 
         <div className="grow" />
@@ -87,7 +87,7 @@ export function ModelsListPage() {
             </Button>
           ))}
         </div>
-      </div>
+      </PageHeader>
 
       <p className="text-sm text-muted-foreground">
         {/* Comparing {endpointsByVariant.models.length} models with {endpointsByVariant.endpoints.length} endpoints */}

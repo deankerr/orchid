@@ -2,7 +2,7 @@
 
 import { BrandIcon } from '@/components/brand-icon'
 import { ErrorState } from '@/components/loading'
-import { PageContainer, PageLoading, PageTitle } from '@/components/page-container'
+import { PageContainer, PageHeader, PageLoading, PageTitle } from '@/components/page-container'
 import { useProvidersList } from '@/hooks/api'
 
 export function ProvidersPage() {
@@ -21,9 +21,9 @@ export function ProvidersPage() {
 
   return (
     <PageContainer>
-      <div className="flex items-center justify-between">
+      <PageHeader>
         <PageTitle>Providers</PageTitle>
-      </div>
+      </PageHeader>
 
       <p className="text-sm text-muted-foreground">{providers.length} providers</p>
 

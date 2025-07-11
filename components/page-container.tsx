@@ -21,6 +21,14 @@ export function PageLoading() {
   )
 }
 
+export function PageHeader({ children, className, ...props }: React.ComponentProps<'div'>) {
+  return (
+    <div className={cn('flex items-center justify-between gap-4', className)} {...props}>
+      {children}
+    </div>
+  )
+}
+
 export function PageTitle({ children }: { children: React.ReactNode }) {
   return <h1 className="font-mono text-2xl font-medium tracking-tight">{children}</h1>
 }
