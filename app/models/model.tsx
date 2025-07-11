@@ -18,14 +18,8 @@ import { BrandIcon } from '@/components/brand-icon'
 import { MarkdownLinks } from '@/components/markdown-links'
 import { SnapshotAtBadge } from '@/components/snapshot-at-badge'
 import { Badge } from '@/components/ui/badge'
-import { useOrProviders } from '@/hooks/api'
+import { useOrProviders, type EndpointsByVariant } from '@/hooks/api'
 import { cn, formatIsoDate } from '@/lib/utils'
-
-import type { ModelWithEndpoint } from './models-page'
-
-interface ModelProps {
-  model: ModelWithEndpoint & { score?: number }
-}
 
 function formatTokenPriceToM(value?: number) {
   if (value === undefined) return ' - '
@@ -38,29 +32,39 @@ export function useProviderIcon(slug: string) {
   return providers.find((p) => p.slug === slug)?.icon.url ?? null
 }
 
-export function Model_({ model: m }: ModelProps) {
+export function Model_({ ebv }: { ebv: EndpointsByVariant[number] }) {
   const providers = useQuery(api.frontend.listOrProviders)
 
+  const unionCapabilities = [
+    ...new Set(
+      ebv.endpoints.flatMap((endp) =>
+        Object.entries(endp.capabilities)
+          .filter(([, value]) => value === true)
+          .map(([key]) => key),
+      ),
+    ),
+  ]
+
   return (
-    <div key={m.variantSlug} className="min-w-60 space-y-4 rounded-sm border bg-card px-4 py-3.5">
+    <div className="min-w-60 space-y-4 rounded-sm border bg-card px-4 py-3.5">
       {/* title */}
       <div className="flex items-center gap-4">
         <Link
-          href={`/models/${m.model_slug}`}
+          href={`/models/${ebv.model.slug}`}
           className="flex items-center gap-3 underline-offset-2 hover:underline"
         >
-          <BrandIcon slug={m.variantSlug} size={24} />
-          <div className="truncate font-semibold">{m.model.name}</div>
-          {m.variant !== 'standard' && (
+          <BrandIcon slug={ebv.model_variant_slug} size={24} />
+          <div className="truncate font-semibold">{ebv.model.name}</div>
+          {ebv.model_variant !== 'standard' && (
             <Badge variant="default" className="font-mono">
-              :{m.variant}
+              :{ebv.model_variant}
             </Badge>
           )}
         </Link>
 
         <div className="flex grow items-center justify-between font-mono text-sm">
           <div className="flex flex-wrap items-center gap-1 font-mono">
-            {m.unionCapabilities.includes('tools') && (
+            {unionCapabilities.includes('tools') && (
               <Badge variant="secondary">
                 <span>
                   <ToolCaseIcon className="size-4" />
@@ -68,7 +72,7 @@ export function Model_({ model: m }: ModelProps) {
                 tools
               </Badge>
             )}
-            {m.unionCapabilities.includes('reasoning') && (
+            {unionCapabilities.includes('reasoning') && (
               <Badge variant="secondary">
                 <span>
                   <BrainIcon className="size-4" />
@@ -76,7 +80,7 @@ export function Model_({ model: m }: ModelProps) {
                 reasoning
               </Badge>
             )}
-            {m.unionCapabilities.includes('image_input') && (
+            {unionCapabilities.includes('image_input') && (
               <Badge variant="secondary">
                 <span>
                   <ImageUpIcon className="size-4" />
@@ -84,7 +88,7 @@ export function Model_({ model: m }: ModelProps) {
                 images
               </Badge>
             )}
-            {m.unionCapabilities.includes('file_input') && (
+            {unionCapabilities.includes('file_input') && (
               <Badge variant="secondary">
                 <span>
                   <FileUpIcon className="size-4" />
@@ -94,23 +98,23 @@ export function Model_({ model: m }: ModelProps) {
             )}
           </div>
           <div className="text-right text-xs">
-            created: {formatIsoDate(m.model.or_created_at)}
+            created: {formatIsoDate(ebv.model.or_created_at)}
             <br />
-            tokens_7d: {m.tokens_7d.toLocaleString()}
+            tokens_7d: {ebv.tokens_7d.toLocaleString()}
           </div>
         </div>
       </div>
 
-      {m.model.warning_message && (
+      {ebv.model.warning_message && (
         <div className="rounded-sm border border-warning p-2 text-xs text-warning">
           <TriangleAlertIcon className="-mt-0.5 mr-2 inline-flex size-3.5" />
-          <MarkdownLinks>{m.model.warning_message}</MarkdownLinks>
+          <MarkdownLinks>{ebv.model.warning_message}</MarkdownLinks>
         </div>
       )}
 
       {/* endpoints */}
       <div className="-mx-1 space-y-1.5 text-foreground/90">
-        {m.endpoints
+        {ebv.endpoints
           .sort((a: any, b: any) => (b.traffic ?? -1) - (a.traffic ?? -1))
           .map((endp: any) => (
             <div
@@ -131,7 +135,7 @@ export function Model_({ model: m }: ModelProps) {
                     DISABLED
                   </Badge>
                 )}
-                {endp.snapshot_at && m.model.snapshot_at && (
+                {endp.snapshot_at && ebv.model.snapshot_at && (
                   <SnapshotAtBadge snapshot_at={endp.snapshot_at} />
                 )}
               </div>
@@ -141,7 +145,7 @@ export function Model_({ model: m }: ModelProps) {
                 <div
                   className={cn(
                     'w-28 space-x-0.5',
-                    endp.context_length < m.model.context_length && 'text-muted-foreground',
+                    endp.context_length < ebv.model.context_length && 'text-muted-foreground',
                   )}
                 >
                   <span>{endp.context_length.toLocaleString()}</span>

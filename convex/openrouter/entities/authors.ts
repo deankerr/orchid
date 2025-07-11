@@ -31,6 +31,11 @@ export const OrAuthorsFn = {
       .first()
   },
 
+  list: async (ctx: QueryCtx) => {
+    const results = await ctx.db.query(OrAuthors.name).collect()
+    return results
+  },
+
   diff: (a: unknown, b: unknown) =>
     diff(a, b, {
       keysToSkip: ['_id', '_creationTime', 'snapshot_at'],

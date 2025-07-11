@@ -2,8 +2,9 @@ import { v } from 'convex/values'
 
 import { diff, type IChange } from 'json-diff-ts'
 
-import { internalMutation, type MutationCtx, type QueryCtx } from '../../_generated/server'
+import { internalMutation, query, type MutationCtx, type QueryCtx } from '../../_generated/server'
 import { Table2 } from '../../table2'
+import { OrAuthorsFn } from './authors'
 
 export const vModelStatsRecord = v.record(
   v.string(), // variant
@@ -27,19 +28,25 @@ export const OrModels = Table2('or_models', {
   name: v.string(),
   short_name: v.string(),
   description: v.string(),
-  context_length: v.number(),
-  input_modalities: v.array(v.string()),
-  output_modalities: v.array(v.string()),
   tokenizer: v.string(),
   instruct_type: v.optional(v.string()),
   hugging_face_id: v.optional(v.string()),
   warning_message: v.optional(v.string()),
 
+  context_length: v.number(),
+  input_modalities: v.array(v.string()),
+  output_modalities: v.array(v.string()),
+  reasoning_config: v.optional(
+    v.object({
+      start_token: v.string(),
+      end_token: v.string(),
+    }),
+  ),
+
   or_created_at: v.number(),
   or_updated_at: v.number(),
 
-  // TODO: remove optional after migration
-  stats: v.optional(vModelStatsRecord),
+  stats: vModelStatsRecord,
 
   snapshot_at: v.number(),
 })
@@ -108,5 +115,17 @@ export const updateStats = internalMutation({
         }
       }
     }
+  },
+})
+
+export const list = query({
+  handler: async (ctx) => {
+    const authors = await OrAuthorsFn.list(ctx)
+
+    const models = await ctx.db.query(OrModels.name).collect()
+    return models.map((m) => ({
+      ...m,
+      author_name: authors.find((a) => a.slug === m.author_slug)?.name ?? m.author_slug,
+    }))
   },
 })

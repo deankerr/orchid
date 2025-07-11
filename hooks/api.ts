@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 
 import { useQuery } from 'convex-helpers/react/cache/hooks'
+import * as R from 'remeda'
 
 import { api } from '@/convex/_generated/api'
 
@@ -31,24 +32,38 @@ function useQueryTimer<T>(result: T, label: string): T {
   return result
 }
 
-export function useModelsAndEndpoints() {
-  const models = useQueryTimer(useQuery(api.frontend.listOrModels), 'list models')
-  const endpoints = useQueryTimer(useQuery(api.dev.listEndpoints), 'list endpoints')
+export type EndpointsByVariant = NonNullable<ReturnType<typeof useEndpointsByVariant>>
+export function useEndpointsByVariant() {
+  const models = useQueryTimer(useQuery(api.openrouter.entities.models.list), 'list models')
+  const endpoints = useQueryTimer(
+    useQuery(api.openrouter.entities.endpoints.list),
+    'list endpoints',
+  )
 
   if (models === null || endpoints === null) return null
   if (!(models && endpoints)) return
 
-  const modelWithEndpoints = endpoints
-    .map((group) => ({
-      ...group,
-      model: models.find((m) => m.slug === group.model_slug)!,
-    }))
-    .map((m) => ({
-      ...m,
-      tokens_7d: m.model.stats?.[m.variant]?.tokens_7d ?? 0,
-    }))
+  const endpointsByVariant = Object.entries(
+    R.groupBy(endpoints, (e) => `${e.model_slug}:${e.model_variant}`),
+  ).map(([model_variant_slug, endpoints]) => {
+    const totalRequests = endpoints.reduce((acc, endp) => acc + (endp.stats?.request_count ?? 0), 0)
 
-  return { models, endpoints, modelWithEndpoints }
+    const [model_slug, model_variant] = model_variant_slug.split(':')
+    const model = models.find((m) => m.slug === model_slug)!
+
+    return {
+      model_variant_slug,
+      model,
+      model_variant,
+      tokens_7d: model.stats?.[model_variant]?.tokens_7d ?? 0,
+      endpoints: endpoints.map((endp) => ({
+        ...endp,
+        traffic: endp.stats?.request_count ? endp.stats.request_count / totalRequests : undefined,
+      })),
+    }
+  })
+
+  return endpointsByVariant
 }
 
 export function useOrModels() {

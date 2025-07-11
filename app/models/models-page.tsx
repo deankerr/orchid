@@ -8,27 +8,23 @@ import { ErrorState } from '@/components/loading'
 import { PageContainer, PageLoading, PageTitle } from '@/components/page-container'
 import { SearchInput } from '@/components/search-input'
 import { Button } from '@/components/ui/button'
-import { useModelsAndEndpoints } from '@/hooks/api'
+import { useEndpointsByVariant } from '@/hooks/api'
 
 import { Model } from './model'
 
 const sortByKeys = ['created', 'tokens', 'alphabetical'] as const
 export type SortBy = (typeof sortByKeys)[number]
 
-export type ModelWithEndpoint = NonNullable<
-  ReturnType<typeof useModelsAndEndpoints>
->['modelWithEndpoints'][number]
-
 export function ModelsPage() {
-  const data = useModelsAndEndpoints()
+  const endpointsByVariant = useEndpointsByVariant()
   const [sortBy, setSortBy] = useState<SortBy>('created')
   const [search, setSearch] = useState('')
 
   const processedData = useMemo(() => {
-    if (!data) return []
+    if (!endpointsByVariant) return []
 
     const filteredModels = fuzzysort
-      .go(search, data.modelWithEndpoints, { key: 'model.name', all: true })
+      .go(search, endpointsByVariant, { key: 'model.name', all: true })
       .map((result) => ({ ...result.obj, score: result.score }))
 
     // If there's a search query, sort primarily by fuzzysort score bands, then by sortBy
@@ -55,12 +51,12 @@ export function ModelsPage() {
         return a.model.name.localeCompare(b.model.name)
       })
     }
-  }, [data, search, sortBy])
+  }, [endpointsByVariant, search, sortBy])
 
   const deferredData = useDeferredValue(processedData)
 
-  if (!data) {
-    if (data === null) {
+  if (!endpointsByVariant) {
+    if (endpointsByVariant === null) {
       return (
         <PageContainer>
           <ErrorState message="Failed to load models" />
@@ -94,12 +90,12 @@ export function ModelsPage() {
       </div>
 
       <p className="text-sm text-muted-foreground">
-        Comparing {data.models.length} models with {data.endpoints.length} endpoints
+        {/* Comparing {endpointsByVariant.models.length} models with {endpointsByVariant.endpoints.length} endpoints */}
       </p>
 
       <div className="space-y-4">
         {deferredData.map((m) => (
-          <Model key={m.variantSlug} model={m} />
+          <Model key={m.model_variant_slug} ebv={m} />
         ))}
       </div>
     </PageContainer>
