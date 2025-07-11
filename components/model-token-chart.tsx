@@ -48,7 +48,7 @@ function CustomTooltipContent({
   }
 
   // Format the date nicely
-  const formattedDate = label ? formatIsoDate(label) : 'Tokens'
+  const formattedDate = label ? formatIsoDate(new Date(label).getTime()) : 'Tokens'
 
   // Define the order we want (matching visual stack from bottom to top)
   const sortedPayload = payload.toReversed()
