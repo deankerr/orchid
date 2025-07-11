@@ -5,11 +5,9 @@ import { useMemo, useState } from 'react'
 import {
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
   getSortedRowModel,
   useReactTable,
   type ColumnDef,
-  type ColumnFiltersState,
   type SortingState,
   type VisibilityState,
 } from '@tanstack/react-table'
@@ -24,11 +22,8 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
 import {
   Table,
   TableBody,
@@ -95,26 +90,49 @@ function createBasicInfoColumns(modelSnapshotTime: number): ColumnDef<EndpointWi
   return [
     {
       id: 'provider',
-      header: ({ column }) => <SortableHeader column={column}>Provider</SortableHeader>,
+      header: ({ column }) => (
+        <SortableHeader column={column} className="ml-1">
+          Provider
+        </SortableHeader>
+      ),
       accessorFn: (row) => row.provider_name,
       cell: ({ row }) => {
         const isStale = row.original.snapshot_at < modelSnapshotTime
         return (
-          <div className={cn('flex items-center gap-2', isStale && 'opacity-50')}>
+          <div className={cn('flex items-center gap-3 px-0.5', isStale && 'opacity-50')}>
             <ProviderBrandIcon slug={row.original.provider_slug} size={16} />
             <span className="font-medium">{row.original.provider_name}</span>
+
             {row.original.is_disabled && (
               <Badge variant="destructive" className="gap-1 text-[10px]">
                 <OctagonXIcon className="size-3" />
                 DISABLED
               </Badge>
             )}
+
             {row.original.status < 0 && <AlertTriangleIcon className="size-3.5 text-warning" />}
           </div>
         )
       },
-      filterFn: (row, id, value) => {
-        return row.original.provider_name.toLowerCase().includes(value.toLowerCase())
+    },
+    {
+      id: 'variant',
+      header: ({ column }) => <SortableHeader column={column}>Variant</SortableHeader>,
+      accessorFn: (row) => row.model_variant,
+      cell: ({ row }) => {
+        const variant = row.original.model_variant
+        if (variant === 'standard') {
+          return <span className="text-xs text-muted-foreground">standard</span>
+        }
+        return <Badge variant="default">{variant}</Badge>
+      },
+      sortingFn: (rowA, rowB) => {
+        const a = rowA.original.model_variant
+        const b = rowB.original.model_variant
+        if (a === b) return 0
+        if (a === 'standard') return -1
+        if (b === 'standard') return 1
+        return a.localeCompare(b)
       },
     },
   ]
@@ -285,7 +303,7 @@ function createPricingColumns(): ColumnDef<EndpointWithTraffic>[] {
               : '—'
           }
           prefix={row.original.pricing.cache_read ? '$' : ''}
-          className="text-right text-muted-foreground"
+          className="text-right"
         />
       ),
     },
@@ -305,7 +323,7 @@ function createPricingColumns(): ColumnDef<EndpointWithTraffic>[] {
               : '—'
           }
           prefix={row.original.pricing.reasoning_output ? '$' : ''}
-          className="text-right text-muted-foreground"
+          className="text-right"
         />
       ),
     },
@@ -320,7 +338,7 @@ function createMiscColumns(): ColumnDef<EndpointWithTraffic>[] {
       cell: ({ row }) => {
         const caps = row.original.capabilities
         return (
-          <div className="flex flex-wrap gap-1">
+          <div className="flex gap-1">
             <CapabilityBadge enabled={caps.tools} label="tools" />
             <CapabilityBadge enabled={caps.reasoning} label="reason" />
             <CapabilityBadge enabled={caps.image_input} label="image" />
@@ -339,10 +357,7 @@ function createMiscColumns(): ColumnDef<EndpointWithTraffic>[] {
       ),
       accessorFn: createNullSafeAccessor((row) => row.limits.rpm),
       cell: ({ row }) => (
-        <FormattedCell
-          value={formatRateLimit(row.original.limits.rpm)}
-          className="text-right text-muted-foreground"
-        />
+        <FormattedCell value={formatRateLimit(row.original.limits.rpm)} className="text-right" />
       ),
     },
     {
@@ -354,10 +369,7 @@ function createMiscColumns(): ColumnDef<EndpointWithTraffic>[] {
       ),
       accessorFn: createNullSafeAccessor((row) => row.limits.rpd),
       cell: ({ row }) => (
-        <FormattedCell
-          value={formatRateLimit(row.original.limits.rpd)}
-          className="text-right text-muted-foreground"
-        />
+        <FormattedCell value={formatRateLimit(row.original.limits.rpd)} className="text-right" />
       ),
     },
     {
@@ -393,14 +405,11 @@ const DEFAULT_HIDDEN_COLUMNS: VisibilityState = {
 interface EndpointDataTableProps {
   model: Doc<'or_models'>
   endpoints: Doc<'or_endpoints'>[]
-  variant?: string
 }
 
-export function EndpointDataTable({ model, endpoints, variant }: EndpointDataTableProps) {
+export function EndpointDataTable({ model, endpoints }: EndpointDataTableProps) {
   const [sorting, setSorting] = useState<SortingState>([{ id: 'traffic', desc: true }])
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(DEFAULT_HIDDEN_COLUMNS)
-  const [globalFilter, setGlobalFilter] = useState('')
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({}) // NOTE: show all during development
 
   // Calculate traffic percentages
   const endpointsWithTraffic = useMemo(() => {
@@ -418,32 +427,19 @@ export function EndpointDataTable({ model, endpoints, variant }: EndpointDataTab
     data: endpointsWithTraffic,
     columns,
     onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
     state: {
       sorting,
-      columnFilters,
       columnVisibility,
-      globalFilter,
     },
-    onGlobalFilterChange: setGlobalFilter,
   })
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Input
-            placeholder="Filter providers..."
-            value={(table.getColumn('provider')?.getFilterValue() as string) ?? ''}
-            onChange={(event) => table.getColumn('provider')?.setFilterValue(event.target.value)}
-            className="h-8 w-[200px] font-mono text-xs"
-          />
-        </div>
-
+    <div className="space-y-2 font-mono">
+      <div className="flex items-center justify-between px-3">
+        <div className="font-medium">Endpoints</div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" className="font-mono text-xs">
@@ -451,8 +447,6 @@ export function EndpointDataTable({ model, endpoints, variant }: EndpointDataTab
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-[180px]">
-            <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
-            <DropdownMenuSeparator />
             {table
               .getAllColumns()
               .filter((column) => column.getCanHide())
@@ -472,57 +466,43 @@ export function EndpointDataTable({ model, endpoints, variant }: EndpointDataTab
         </DropdownMenu>
       </div>
 
-      <div className="rounded-sm border font-mono">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id} className="px-0 text-xs">
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  )
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
+      <Table className="border-t">
+        <TableHeader>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow key={headerGroup.id}>
+              {headerGroup.headers.map((header) => {
+                return (
+                  <TableHead key={header.id} className="text-xs has-[>button]:px-0">
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
+                )
+              })}
+            </TableRow>
+          ))}
+        </TableHeader>
 
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="py-2">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No results.
-                </TableCell>
+        <TableBody>
+          {table.getRowModel().rows?.length ? (
+            table.getRowModel().rows.map((row) => (
+              <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      <div className="flex items-center justify-between">
-        <div className="font-mono text-xs text-muted-foreground">
-          {table.getFilteredRowModel().rows.length} of {table.getCoreRowModel().rows.length}{' '}
-          endpoint(s)
-        </div>
-        {variant && (
-          <Badge variant="outline" className="font-mono">
-            {variant} variant
-          </Badge>
-        )}
-      </div>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={columns.length} className="h-24 text-center">
+                No results.
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
     </div>
   )
 }

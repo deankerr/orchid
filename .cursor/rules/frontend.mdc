@@ -1,8 +1,9 @@
 ---
-description: 
+description:
 globs: app/**/*,components/**/*,hooks/**/*,lib/**/*
 alwaysApply: false
 ---
+
 # Frontend Guide
 
 - Our audience is highly technical and knowledgable about working with OpenRouter and LLMs in general.
@@ -31,3 +32,4 @@ alwaysApply: false
 - Do not add components to the components/ui folder - leave this for shadcn/ui.
 - Add components to the root components folder for now.
 - `border-border` is already the default border color, you don't need to specify it.
+- `text-xs` is the default for Badge.
