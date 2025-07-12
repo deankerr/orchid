@@ -3,16 +3,16 @@
 import { EndpointDataTable } from '@/components/endpoint-tables/endpoint-data-table'
 import { PageContainer, PageHeader, PageLoading, PageTitle } from '@/components/page-container'
 import { Card } from '@/components/ui/card'
-import { useEndpoints, useModelsList } from '@/hooks/api'
+import { useEndpointsList, useModelsList } from '@/hooks/api'
 
 export function ModelPage({ slug }: { slug: string }) {
-  const models = useModelsList()
-  const endpointsCollect = useEndpoints()
+  const modelsList = useModelsList()
+  const endpointsList = useEndpointsList()
 
-  const model = models?.find((m) => m.slug === slug)
-  const endpoints = endpointsCollect?.filter((e) => e.model_slug === slug)
+  const model = modelsList?.find((m) => m.slug === slug)
+  const endpoints = endpointsList?.filter((e) => e.model_slug === slug)
 
-  if (!models || !endpointsCollect) {
+  if (!modelsList || !endpointsList) {
     return <PageLoading />
   }
 

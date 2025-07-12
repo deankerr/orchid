@@ -133,14 +133,7 @@ export const OrEndpointsFn = {
 }
 
 // * queries
-
 export const list = query({
-  handler: async (ctx) => {
-    return await ctx.db.query('or_endpoints').collect()
-  },
-})
-
-export const collect = query({
   handler: async (ctx) => {
     const snapshot_at = await getCurrentSnapshotTimestamp(ctx)
     const results = await ctx.db.query('or_endpoints').collect()

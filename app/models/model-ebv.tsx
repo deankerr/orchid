@@ -49,7 +49,7 @@ function ModelEBV_({ ebv }: { ebv: EndpointsByVariant[number] }) {
         >
           <BrandIcon slug={ebv.model_variant_slug} size={24} />
           <div className="truncate font-semibold">{ebv.model.name}</div>
-          {ebv.model_variant !== 'standard' && (
+          {ebv.model_variant && (
             <Badge variant="default" className="font-mono">
               :{ebv.model_variant}
             </Badge>
