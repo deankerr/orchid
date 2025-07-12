@@ -5,6 +5,8 @@
 
 'use client'
 
+import * as R from 'remeda'
+
 import type { Column } from '@tanstack/react-table'
 import { ChevronDownIcon, ChevronsUpDownIcon, ChevronUpIcon } from 'lucide-react'
 
@@ -48,6 +50,31 @@ export function SortableHeader<TData>({
         <ChevronsUpDownIcon className="size-3 opacity-5" />
       )}
     </Button>
+  )
+}
+
+function formatNumber(value: number, decimals: number) {
+  return new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  }).format(value)
+}
+
+export function FormattedCell({
+  value,
+  className,
+  decimals = 0,
+}: {
+  value?: string | number | null
+  className?: string
+  decimals?: number
+}) {
+  const formatted =
+    typeof value === 'number' ? formatNumber(value, decimals) : R.isNullish(value) ? '-' : value
+  return (
+    <div className={cn('px-0.5', R.isNullish(value) && 'text-muted-foreground', className)}>
+      {formatted}
+    </div>
   )
 }
 

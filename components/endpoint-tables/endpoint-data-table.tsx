@@ -35,34 +35,19 @@ import {
 import { type Endpoint } from '@/hooks/api'
 import { cn } from '@/lib/utils'
 
-import { createNullSafeAccessor, createNullSafeSortingFn, SortableHeader } from './table-components'
+import { createNullSafeSortingFn, FormattedCell, SortableHeader } from './table-components'
 
 // Price formatting utility
-function formatPrice(value: number | null | undefined): string {
-  if (!value) return '—'
-  return (value * 1_000_000).toFixed(2)
+function formatPriceToM(value: number | null | undefined) {
+  if (typeof value === 'number') {
+    return (value * 1_000_000).toFixed(2)
+  }
 }
 
-// Enhanced cell component with built-in formatting
-function FormattedCell({
-  value,
-  className,
-  decimals = 0,
-}: {
-  value?: string | number | null
-  className?: string
-  decimals?: number
-}) {
-  if (value === null || value === undefined) return <div className={className}>—</div>
-  if (typeof value === 'string') return <div className={className}>{value}</div>
-
-  // Use Intl.NumberFormat for proper number formatting
-  const formatted = new Intl.NumberFormat('en-US', {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  }).format(value)
-
-  return <div className={className}>{formatted}</div>
+function formatPriceToK(value: number | null | undefined) {
+  if (typeof value === 'number') {
+    return (value * 1_000).toFixed(2)
+  }
 }
 
 function CapabilityBadge({ enabled, label }: { enabled: boolean; label: string }) {
@@ -97,7 +82,7 @@ function DataPolicyIndicator({ policy }: { policy: Doc<'or_endpoints'>['data_pol
   )
 }
 
-export function createColumns(modelSnapshotTime: number): ColumnDef<Endpoint>[] {
+export function createColumns(): ColumnDef<Endpoint>[] {
   return [
     // === Basic Info ===
     {
@@ -109,9 +94,8 @@ export function createColumns(modelSnapshotTime: number): ColumnDef<Endpoint>[] 
       ),
       accessorFn: (row) => row.provider_name,
       cell: ({ row }) => {
-        const isStale = row.original.snapshot_at < modelSnapshotTime
         return (
-          <div className={cn('flex items-center gap-3 px-0.5', isStale && 'opacity-50')}>
+          <div className={cn('flex items-center gap-3 px-0.5')}>
             <ProviderBrandIcon slug={row.original.provider_slug} size={16} />
             <span className="font-medium">{row.original.provider_name}</span>
 
@@ -167,7 +151,7 @@ export function createColumns(modelSnapshotTime: number): ColumnDef<Endpoint>[] 
       id: 'context_length',
       header: ({ column }) => (
         <SortableHeader column={column} align="right">
-          Context (Ktok)
+          Context (tok)
         </SortableHeader>
       ),
       accessorFn: (row) => row.context_length,
@@ -177,13 +161,26 @@ export function createColumns(modelSnapshotTime: number): ColumnDef<Endpoint>[] 
     },
 
     {
+      id: 'max_input',
+      header: ({ column }) => (
+        <SortableHeader column={column} align="right">
+          Max Input (tok)
+        </SortableHeader>
+      ),
+      accessorFn: (row) => row.limits.input_tokens,
+      cell: ({ row }) => (
+        <FormattedCell value={row.original.limits.input_tokens} className="text-right" />
+      ),
+    },
+
+    {
       id: 'max_output',
       header: ({ column }) => (
         <SortableHeader column={column} align="right">
-          Max Output (Ktok)
+          Max Output (tok)
         </SortableHeader>
       ),
-      accessorFn: (row) => row.limits.output_tokens ?? row.context_length,
+      accessorFn: (row) => row.limits.output_tokens,
       cell: ({ row }) => (
         <FormattedCell
           value={row.original.limits.output_tokens ?? row.original.context_length}
@@ -195,10 +192,8 @@ export function createColumns(modelSnapshotTime: number): ColumnDef<Endpoint>[] 
     {
       id: 'quantization',
       header: ({ column }) => <SortableHeader column={column}>Quant</SortableHeader>,
-      accessorFn: (row) => row.quantization ?? '—',
-      cell: ({ row }) => (
-        <FormattedCell value={row.original.quantization ?? '—'} className="text-muted-foreground" />
-      ),
+      accessorFn: (row) => row.quantization,
+      cell: ({ row }) => <FormattedCell value={row.original.quantization} />,
     },
 
     // === Performance ===
@@ -209,7 +204,7 @@ export function createColumns(modelSnapshotTime: number): ColumnDef<Endpoint>[] 
           Throughput (tok/s)
         </SortableHeader>
       ),
-      accessorFn: createNullSafeAccessor((row) => row.stats?.p50_throughput),
+      accessorFn: (row) => row.stats?.p50_throughput,
       cell: ({ row }) => (
         <FormattedCell
           value={row.original.stats?.p50_throughput}
@@ -227,7 +222,7 @@ export function createColumns(modelSnapshotTime: number): ColumnDef<Endpoint>[] 
           Latency (ms)
         </SortableHeader>
       ),
-      accessorFn: createNullSafeAccessor((row) => row.stats?.p50_latency),
+      accessorFn: (row) => row.stats?.p50_latency,
       cell: ({ row }) => (
         <FormattedCell value={row.original.stats?.p50_latency} className="text-right" />
       ),
@@ -241,13 +236,12 @@ export function createColumns(modelSnapshotTime: number): ColumnDef<Endpoint>[] 
           Uptime (%)
         </SortableHeader>
       ),
-      accessorFn: createNullSafeAccessor((row) => row.uptime_average),
+      accessorFn: (row) => row.uptime_average,
       cell: ({ row }) => {
         const uptime = row.original.uptime_average
-        const formattedValue = uptime ? uptime.toFixed(1) : '—'
         return (
           <FormattedCell
-            value={formattedValue}
+            value={uptime}
             className={cn(
               uptime && uptime < 95 && 'text-warning',
               uptime && uptime < 90 && 'text-destructive',
@@ -266,7 +260,7 @@ export function createColumns(modelSnapshotTime: number): ColumnDef<Endpoint>[] 
           Traffic (%)
         </SortableHeader>
       ),
-      accessorFn: createNullSafeAccessor((row) => row.traffic_share),
+      accessorFn: (row) => row.traffic_share,
       cell: ({ row }) => {
         const traffic = row.original.traffic_share
         const value = traffic ? traffic * 100 : traffic
@@ -284,7 +278,7 @@ export function createColumns(modelSnapshotTime: number): ColumnDef<Endpoint>[] 
       ),
       accessorFn: (row) => row.pricing.input ?? 0,
       cell: ({ row }) => (
-        <FormattedCell value={formatPrice(row.original.pricing.input)} className="text-right" />
+        <FormattedCell value={formatPriceToM(row.original.pricing.input)} className="text-right" />
       ),
     },
 
@@ -297,25 +291,7 @@ export function createColumns(modelSnapshotTime: number): ColumnDef<Endpoint>[] 
       ),
       accessorFn: (row) => row.pricing.output ?? 0,
       cell: ({ row }) => (
-        <FormattedCell value={formatPrice(row.original.pricing.output)} className="text-right" />
-      ),
-    },
-
-    {
-      id: 'cache_read_price',
-      header: ({ column }) => (
-        <SortableHeader column={column} align="right">
-          Cache R ($/Mtok)
-        </SortableHeader>
-      ),
-      accessorFn: createNullSafeAccessor((row) => row.pricing.cache_read),
-      cell: ({ row }) => (
-        <FormattedCell
-          value={
-            row.original.pricing.cache_read ? formatPrice(row.original.pricing.cache_read) : '—'
-          }
-          className="text-right"
-        />
+        <FormattedCell value={formatPriceToM(row.original.pricing.output)} className="text-right" />
       ),
     },
 
@@ -323,18 +299,96 @@ export function createColumns(modelSnapshotTime: number): ColumnDef<Endpoint>[] 
       id: 'reasoning_price',
       header: ({ column }) => (
         <SortableHeader column={column} align="right">
-          Reason ($/Mtok)
+          Reasoning ($/Mtok)
         </SortableHeader>
       ),
-      accessorFn: createNullSafeAccessor((row) => row.pricing.reasoning_output),
+      accessorFn: (row) => row.pricing.reasoning_output,
       cell: ({ row }) => (
         <FormattedCell
-          value={
-            row.original.pricing.reasoning_output
-              ? formatPrice(row.original.pricing.reasoning_output)
-              : '—'
-          }
+          value={formatPriceToM(row.original.pricing.reasoning_output)}
           className="text-right"
+        />
+      ),
+    },
+
+    {
+      id: 'image_input_price',
+      header: ({ column }) => (
+        <SortableHeader column={column} align="right">
+          Image ($/ktok)
+        </SortableHeader>
+      ),
+      accessorFn: (row) => row.pricing.image_input,
+      cell: ({ row }) => (
+        <FormattedCell
+          value={formatPriceToK(row.original.pricing.image_input)}
+          className="text-right"
+        />
+      ),
+    },
+
+    {
+      id: 'cache_read_price',
+      header: ({ column }) => (
+        <SortableHeader column={column} align="right">
+          Cache Read ($/Mtok)
+        </SortableHeader>
+      ),
+      accessorFn: (row) => row.pricing.cache_read,
+      cell: ({ row }) => (
+        <FormattedCell
+          value={formatPriceToM(row.original.pricing.cache_read)}
+          className="text-right"
+        />
+      ),
+    },
+
+    {
+      id: 'cache_write_price',
+      header: ({ column }) => (
+        <SortableHeader column={column} align="right">
+          Cache Write ($/Mtok)
+        </SortableHeader>
+      ),
+      accessorFn: (row) => row.pricing.cache_write,
+      cell: ({ row }) => (
+        <FormattedCell
+          value={formatPriceToM(row.original.pricing.cache_write)}
+          className="text-right"
+        />
+      ),
+    },
+
+    {
+      id: 'web_search_price',
+      header: ({ column }) => (
+        <SortableHeader column={column} align="right">
+          Web Search ($)
+        </SortableHeader>
+      ),
+      accessorFn: (row) => row.pricing.web_search,
+      cell: ({ row }) => (
+        <FormattedCell
+          value={row.original.pricing.web_search}
+          className="text-right"
+          decimals={6}
+        />
+      ),
+    },
+
+    {
+      id: 'per_request_price',
+      header: ({ column }) => (
+        <SortableHeader column={column} align="right">
+          Per Request ($)
+        </SortableHeader>
+      ),
+      accessorFn: (row) => row.pricing.per_request,
+      cell: ({ row }) => (
+        <FormattedCell
+          value={row.original.pricing.per_request}
+          className="text-right"
+          decimals={6}
         />
       ),
     },
@@ -361,10 +415,10 @@ export function createColumns(modelSnapshotTime: number): ColumnDef<Endpoint>[] 
       id: 'rpm_limit',
       header: ({ column }) => (
         <SortableHeader column={column} align="right">
-          RPM
+          Requests/Min
         </SortableHeader>
       ),
-      accessorFn: createNullSafeAccessor((row) => row.limits.rpm),
+      accessorFn: (row) => row.limits.rpm,
       cell: ({ row }) => <FormattedCell value={row.original.limits.rpm} className="text-right" />,
     },
 
@@ -372,11 +426,37 @@ export function createColumns(modelSnapshotTime: number): ColumnDef<Endpoint>[] 
       id: 'rpd_limit',
       header: ({ column }) => (
         <SortableHeader column={column} align="right">
-          RPD
+          Requests/Day
         </SortableHeader>
       ),
-      accessorFn: createNullSafeAccessor((row) => row.limits.rpd),
+      accessorFn: (row) => row.limits.rpd,
       cell: ({ row }) => <FormattedCell value={row.original.limits.rpd} className="text-right" />,
+    },
+
+    {
+      id: 'images_per_prompt',
+      header: ({ column }) => (
+        <SortableHeader column={column} align="right">
+          Images/Prompt
+        </SortableHeader>
+      ),
+      accessorFn: (row) => row.limits.images_per_prompt,
+      cell: ({ row }) => (
+        <FormattedCell value={row.original.limits.images_per_prompt} className="text-right" />
+      ),
+    },
+
+    {
+      id: 'tokens_per_image',
+      header: ({ column }) => (
+        <SortableHeader column={column} align="right">
+          Tokens/Image
+        </SortableHeader>
+      ),
+      accessorFn: (row) => row.limits.tokens_per_image,
+      cell: ({ row }) => (
+        <FormattedCell value={row.original.limits.tokens_per_image} className="text-right" />
+      ),
     },
 
     {
@@ -385,17 +465,40 @@ export function createColumns(modelSnapshotTime: number): ColumnDef<Endpoint>[] 
       cell: ({ row }) => <DataPolicyIndicator policy={row.original.data_policy} />,
       enableSorting: false,
     },
+
+    {
+      id: 'is_moderated',
+      header: 'Moderated',
+      accessorFn: (row) => row.is_moderated,
+      cell: ({ row }) => {
+        if (!row.original.is_moderated) return null
+        return (
+          <Badge variant="outline" className="gap-1 text-[10px] text-warning">
+            <AlertTriangleIcon className="size-3" />
+            moderated
+          </Badge>
+        )
+      },
+    },
   ]
 }
 
 // Default hidden columns - less commonly needed information
 const DEFAULT_HIDDEN_COLUMNS: VisibilityState = {
   quantization: false,
+  max_input: false,
   cache_read_price: false,
   reasoning_price: false,
+  image_input_price: false,
+  web_search_price: false,
+  cache_write_price: false,
+  per_request_price: false,
   rpm_limit: false,
   rpd_limit: false,
+  images_per_prompt: false,
+  tokens_per_image: false,
   data_policy: false,
+  is_moderated: false,
 }
 
 interface EndpointDataTableProps {
@@ -410,7 +513,7 @@ export function EndpointDataTable({ model, endpoints, dev = true }: EndpointData
     dev ? {} : DEFAULT_HIDDEN_COLUMNS,
   )
 
-  const columns = useMemo(() => createColumns(model.snapshot_at), [model.snapshot_at])
+  const columns = useMemo(() => createColumns(), [])
 
   const table = useReactTable({
     data: endpoints,
@@ -475,7 +578,14 @@ export function EndpointDataTable({ model, endpoints, dev = true }: EndpointData
         <TableBody>
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
+              <TableRow
+                key={row.id}
+                data-state={row.getIsSelected() && 'selected'}
+                className={cn(
+                  'border-b-transparent',
+                  row.original.staleness_hours > 6 && 'opacity-50',
+                )}
+              >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
