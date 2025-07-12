@@ -43,6 +43,21 @@ export function useEndpointsList() {
   return useCachedQuery(api.openrouter.entities.endpoints.list, {}, 'useEndpointsList')
 }
 
+export type EndpointsMap = NonNullable<ReturnType<typeof useEndpointsMap>>
+export type EndpointVariantsMap = EndpointsMap extends Map<any, infer V> ? V : never
+export type Endpoint = (NonNullable<EndpointVariantsMap> extends Map<any, infer V>
+  ? V
+  : never)[number]
+export function useEndpointsMap() {
+  const result = useCachedQuery(api.openrouter.entities.endpoints.collect, {}, 'useEndpointsMap')
+  if (!result) return result
+
+  const map = new Map(
+    result.map(([model_slug, endpointsByVariant]) => [model_slug, new Map(endpointsByVariant)]),
+  )
+  return map
+}
+
 export function useEndpointUptimes(endpoint_uuid: string) {
   return useCachedQuery(
     api.openrouter.entities.endpointUptimes.getLatest,

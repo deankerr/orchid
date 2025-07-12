@@ -32,25 +32,37 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import {
-  cn,
-  formatLatency,
-  formatPercentage,
-  formatRateLimit,
-  formatThroughput,
-  formatTokenLimit,
-  formatTokenPrice,
-} from '@/lib/utils'
+import { type Endpoint } from '@/hooks/api'
+import { cn } from '@/lib/utils'
 
-import {
-  createNullSafeAccessor,
-  createNullSafeSortingFn,
-  FormattedCell,
-  SortableHeader,
-} from './table-components'
+import { createNullSafeAccessor, createNullSafeSortingFn, SortableHeader } from './table-components'
 
-type EndpointWithTraffic = Doc<'or_endpoints'> & {
-  traffic?: number
+// Price formatting utility
+function formatPrice(value: number | null | undefined): string {
+  if (!value) return '—'
+  return (value * 1_000_000).toFixed(2)
+}
+
+// Enhanced cell component with built-in formatting
+function FormattedCell({
+  value,
+  className,
+  decimals = 0,
+}: {
+  value?: string | number | null
+  className?: string
+  decimals?: number
+}) {
+  if (value === null || value === undefined) return <div className={className}>—</div>
+  if (typeof value === 'string') return <div className={className}>{value}</div>
+
+  // Use Intl.NumberFormat for proper number formatting
+  const formatted = new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  }).format(value)
+
+  return <div className={className}>{formatted}</div>
 }
 
 function CapabilityBadge({ enabled, label }: { enabled: boolean; label: string }) {
@@ -85,9 +97,9 @@ function DataPolicyIndicator({ policy }: { policy: Doc<'or_endpoints'>['data_pol
   )
 }
 
-// Column group factories
-function createBasicInfoColumns(modelSnapshotTime: number): ColumnDef<EndpointWithTraffic>[] {
+export function createColumns(modelSnapshotTime: number): ColumnDef<Endpoint>[] {
   return [
+    // === Basic Info ===
     {
       id: 'provider',
       header: ({ column }) => (
@@ -115,6 +127,7 @@ function createBasicInfoColumns(modelSnapshotTime: number): ColumnDef<EndpointWi
         )
       },
     },
+
     {
       id: 'variant',
       header: ({ column }) => <SortableHeader column={column}>Variant</SortableHeader>,
@@ -135,41 +148,50 @@ function createBasicInfoColumns(modelSnapshotTime: number): ColumnDef<EndpointWi
         return a.localeCompare(b)
       },
     },
-  ]
-}
 
-function createTechnicalColumns(): ColumnDef<EndpointWithTraffic>[] {
-  return [
+    {
+      id: 'staleness',
+      header: ({ column }) => (
+        <SortableHeader column={column} align="right">
+          Staleness
+        </SortableHeader>
+      ),
+      accessorFn: (row) => row.staleness_hours,
+      cell: ({ row }) => (
+        <FormattedCell value={row.original.staleness_hours} className="text-right" />
+      ),
+    },
+
+    // === Technical Specs ===
     {
       id: 'context_length',
       header: ({ column }) => (
         <SortableHeader column={column} align="right">
-          Context
+          Context (Ktok)
         </SortableHeader>
       ),
       accessorFn: (row) => row.context_length,
       cell: ({ row }) => (
-        <FormattedCell
-          value={formatTokenLimit(row.original.context_length)}
-          className="text-right"
-        />
+        <FormattedCell value={row.original.context_length} className="text-right" />
       ),
     },
+
     {
       id: 'max_output',
       header: ({ column }) => (
         <SortableHeader column={column} align="right">
-          Max Output
+          Max Output (Ktok)
         </SortableHeader>
       ),
       accessorFn: (row) => row.limits.output_tokens ?? row.context_length,
       cell: ({ row }) => (
         <FormattedCell
-          value={formatTokenLimit(row.original.limits.output_tokens ?? row.original.context_length)}
+          value={row.original.limits.output_tokens ?? row.original.context_length}
           className="text-right"
         />
       ),
     },
+
     {
       id: 'quantization',
       header: ({ column }) => <SortableHeader column={column}>Quant</SortableHeader>,
@@ -178,140 +200,130 @@ function createTechnicalColumns(): ColumnDef<EndpointWithTraffic>[] {
         <FormattedCell value={row.original.quantization ?? '—'} className="text-muted-foreground" />
       ),
     },
-  ]
-}
 
-function createPerformanceColumns(): ColumnDef<EndpointWithTraffic>[] {
-  return [
+    // === Performance ===
     {
       id: 'throughput',
       header: ({ column }) => (
         <SortableHeader column={column} align="right">
-          Throughput
+          Throughput (tok/s)
         </SortableHeader>
       ),
       accessorFn: createNullSafeAccessor((row) => row.stats?.p50_throughput),
       cell: ({ row }) => (
         <FormattedCell
-          value={formatThroughput(row.original.stats?.p50_throughput)}
-          unit="tok/s"
+          value={row.original.stats?.p50_throughput}
           className="text-right"
+          decimals={1}
         />
       ),
       sortingFn: createNullSafeSortingFn((row) => row.stats?.p50_throughput),
     },
+
     {
       id: 'latency',
       header: ({ column }) => (
         <SortableHeader column={column} align="right">
-          Latency
+          Latency (ms)
         </SortableHeader>
       ),
       accessorFn: createNullSafeAccessor((row) => row.stats?.p50_latency),
       cell: ({ row }) => (
-        <FormattedCell
-          value={formatLatency(row.original.stats?.p50_latency)}
-          className="text-right"
-        />
+        <FormattedCell value={row.original.stats?.p50_latency} className="text-right" />
       ),
       sortingFn: createNullSafeSortingFn((row) => row.stats?.p50_latency),
     },
+
     {
       id: 'uptime',
       header: ({ column }) => (
         <SortableHeader column={column} align="right">
-          Uptime
+          Uptime (%)
         </SortableHeader>
       ),
       accessorFn: createNullSafeAccessor((row) => row.uptime_average),
       cell: ({ row }) => {
         const uptime = row.original.uptime_average
+        const formattedValue = uptime ? uptime.toFixed(1) : '—'
         return (
           <FormattedCell
-            value={formatPercentage(uptime)}
+            value={formattedValue}
             className={cn(
               uptime && uptime < 95 && 'text-warning',
               uptime && uptime < 90 && 'text-destructive',
               'text-right',
             )}
+            decimals={1}
           />
         )
       },
     },
+
     {
-      id: 'traffic',
+      id: 'traffic_share',
       header: ({ column }) => (
         <SortableHeader column={column} align="right">
-          Traffic
+          Traffic (%)
         </SortableHeader>
       ),
-      accessorFn: createNullSafeAccessor((row) => row.traffic),
-      cell: ({ row }) => (
-        <FormattedCell value={formatPercentage(row.original.traffic)} className="text-right" />
-      ),
+      accessorFn: createNullSafeAccessor((row) => row.traffic_share),
+      cell: ({ row }) => {
+        const traffic = row.original.traffic_share
+        const value = traffic ? traffic * 100 : traffic
+        return <FormattedCell value={value} className="text-right" decimals={1} />
+      },
     },
-  ]
-}
 
-function createPricingColumns(): ColumnDef<EndpointWithTraffic>[] {
-  return [
+    // === Pricing ===
     {
       id: 'input_price',
       header: ({ column }) => (
         <SortableHeader column={column} align="right">
-          $/M In
+          Input ($/Mtok)
         </SortableHeader>
       ),
       accessorFn: (row) => row.pricing.input ?? 0,
       cell: ({ row }) => (
-        <FormattedCell
-          value={formatTokenPrice(row.original.pricing.input)}
-          prefix="$"
-          className="text-right"
-        />
+        <FormattedCell value={formatPrice(row.original.pricing.input)} className="text-right" />
       ),
     },
+
     {
       id: 'output_price',
       header: ({ column }) => (
         <SortableHeader column={column} align="right">
-          $/M Out
+          Output ($/Mtok)
         </SortableHeader>
       ),
       accessorFn: (row) => row.pricing.output ?? 0,
       cell: ({ row }) => (
-        <FormattedCell
-          value={formatTokenPrice(row.original.pricing.output)}
-          prefix="$"
-          className="text-right"
-        />
+        <FormattedCell value={formatPrice(row.original.pricing.output)} className="text-right" />
       ),
     },
+
     {
       id: 'cache_read_price',
       header: ({ column }) => (
         <SortableHeader column={column} align="right">
-          Cache R
+          Cache R ($/Mtok)
         </SortableHeader>
       ),
       accessorFn: createNullSafeAccessor((row) => row.pricing.cache_read),
       cell: ({ row }) => (
         <FormattedCell
           value={
-            row.original.pricing.cache_read
-              ? formatTokenPrice(row.original.pricing.cache_read)
-              : '—'
+            row.original.pricing.cache_read ? formatPrice(row.original.pricing.cache_read) : '—'
           }
-          prefix={row.original.pricing.cache_read ? '$' : ''}
           className="text-right"
         />
       ),
     },
+
     {
       id: 'reasoning_price',
       header: ({ column }) => (
         <SortableHeader column={column} align="right">
-          Reason
+          Reason ($/Mtok)
         </SortableHeader>
       ),
       accessorFn: createNullSafeAccessor((row) => row.pricing.reasoning_output),
@@ -319,19 +331,15 @@ function createPricingColumns(): ColumnDef<EndpointWithTraffic>[] {
         <FormattedCell
           value={
             row.original.pricing.reasoning_output
-              ? formatTokenPrice(row.original.pricing.reasoning_output)
+              ? formatPrice(row.original.pricing.reasoning_output)
               : '—'
           }
-          prefix={row.original.pricing.reasoning_output ? '$' : ''}
           className="text-right"
         />
       ),
     },
-  ]
-}
 
-function createMiscColumns(): ColumnDef<EndpointWithTraffic>[] {
-  return [
+    // === Capabilities & Limits ===
     {
       id: 'capabilities',
       header: 'Capabilities',
@@ -348,6 +356,7 @@ function createMiscColumns(): ColumnDef<EndpointWithTraffic>[] {
       },
       enableSorting: false,
     },
+
     {
       id: 'rpm_limit',
       header: ({ column }) => (
@@ -356,10 +365,9 @@ function createMiscColumns(): ColumnDef<EndpointWithTraffic>[] {
         </SortableHeader>
       ),
       accessorFn: createNullSafeAccessor((row) => row.limits.rpm),
-      cell: ({ row }) => (
-        <FormattedCell value={formatRateLimit(row.original.limits.rpm)} className="text-right" />
-      ),
+      cell: ({ row }) => <FormattedCell value={row.original.limits.rpm} className="text-right" />,
     },
+
     {
       id: 'rpd_limit',
       header: ({ column }) => (
@@ -368,27 +376,15 @@ function createMiscColumns(): ColumnDef<EndpointWithTraffic>[] {
         </SortableHeader>
       ),
       accessorFn: createNullSafeAccessor((row) => row.limits.rpd),
-      cell: ({ row }) => (
-        <FormattedCell value={formatRateLimit(row.original.limits.rpd)} className="text-right" />
-      ),
+      cell: ({ row }) => <FormattedCell value={row.original.limits.rpd} className="text-right" />,
     },
+
     {
       id: 'data_policy',
       header: 'Data Policy',
       cell: ({ row }) => <DataPolicyIndicator policy={row.original.data_policy} />,
       enableSorting: false,
     },
-  ]
-}
-
-// Main column definition
-export function createColumns(modelSnapshotTime: number): ColumnDef<EndpointWithTraffic>[] {
-  return [
-    ...createBasicInfoColumns(modelSnapshotTime),
-    ...createTechnicalColumns(),
-    ...createPerformanceColumns(),
-    ...createPricingColumns(),
-    ...createMiscColumns(),
   ]
 }
 
@@ -404,27 +400,20 @@ const DEFAULT_HIDDEN_COLUMNS: VisibilityState = {
 
 interface EndpointDataTableProps {
   model: Doc<'or_models'>
-  endpoints: Doc<'or_endpoints'>[]
+  endpoints: Endpoint[]
+  dev?: boolean
 }
 
-export function EndpointDataTable({ model, endpoints }: EndpointDataTableProps) {
-  const [sorting, setSorting] = useState<SortingState>([{ id: 'traffic', desc: true }])
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({}) // NOTE: show all during development
-
-  // Calculate traffic percentages
-  const endpointsWithTraffic = useMemo(() => {
-    const totalRequests = endpoints.reduce((sum, ep) => sum + (ep.stats?.request_count ?? 0), 0)
-    return endpoints.map((ep) => ({
-      ...ep,
-      traffic:
-        totalRequests > 0 ? ((ep.stats?.request_count ?? 0) / totalRequests) * 100 : undefined,
-    }))
-  }, [endpoints])
+export function EndpointDataTable({ model, endpoints, dev = true }: EndpointDataTableProps) {
+  const [sorting, setSorting] = useState<SortingState>([{ id: 'traffic_share', desc: true }])
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
+    dev ? {} : DEFAULT_HIDDEN_COLUMNS,
+  )
 
   const columns = useMemo(() => createColumns(model.snapshot_at), [model.snapshot_at])
 
   const table = useReactTable({
-    data: endpointsWithTraffic,
+    data: endpoints,
     columns,
     onSortingChange: setSorting,
     onColumnVisibilityChange: setColumnVisibility,

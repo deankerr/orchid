@@ -1,6 +1,6 @@
 import { v } from 'convex/values'
 
-import { internalAction, internalMutation, query } from '../_generated/server'
+import { internalAction, internalMutation, query, type QueryCtx } from '../_generated/server'
 import { Table2 } from '../table2'
 import { orchestrator } from './orchestrator'
 
@@ -58,6 +58,14 @@ export const run = internalAction({
 })
 
 // * queries
+export async function getCurrentSnapshotTimestamp(ctx: QueryCtx) {
+  const latestRun = await ctx.db
+    .query('snapshot_runs')
+    .order('desc')
+    .filter((q) => q.neq(q.field('ended_at'), undefined))
+    .first()
+  return latestRun?.snapshot_at ?? 0
+}
 
 export const getSnapshotStatus = query({
   handler: async (ctx) => {

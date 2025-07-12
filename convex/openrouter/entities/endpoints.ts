@@ -1,9 +1,12 @@
 import { v } from 'convex/values'
+import * as R from 'remeda'
 
 import { diff, type IChange } from 'json-diff-ts'
 
 import { query, type MutationCtx, type QueryCtx } from '../../_generated/server'
+import { hoursBetween } from '../../shared'
 import { Table2 } from '../../table2'
+import { getCurrentSnapshotTimestamp } from '../snapshot'
 
 export const OrEndpoints = Table2('or_endpoints', {
   uuid: v.string(),
@@ -131,7 +134,45 @@ export const OrEndpointsFn = {
 
 export const list = query({
   handler: async (ctx) => {
+    return await ctx.db.query('or_endpoints').collect()
+  },
+})
+
+export const collect = query({
+  handler: async (ctx) => {
+    const snapshot_at = await getCurrentSnapshotTimestamp(ctx)
     const results = await ctx.db.query('or_endpoints').collect()
-    return results
+
+    return Map.groupBy(results, (r) => r.model_slug)
+      .entries()
+      .map(([model_slug, endpoints]) => {
+        const endpointsByVariant = Map.groupBy(endpoints, (r) => r.model_variant)
+          .entries()
+          .map(([model_variant, endpoints]) => {
+            const totalRequests = endpoints.reduce(
+              (sum, ep) => sum + (ep.stats?.request_count ?? 0),
+              0,
+            )
+
+            return [
+              model_variant,
+              endpoints.map((endp) => ({
+                ...endp,
+                limits: {
+                  ...endp.limits,
+                  output_tokens: endp.limits.output_tokens ?? endp.context_length,
+                },
+                staleness_hours: hoursBetween(endp.snapshot_at, snapshot_at),
+                traffic_share: R.isDefined(endp.stats?.request_count)
+                  ? (endp.stats?.request_count ?? 0) / totalRequests
+                  : undefined,
+              })),
+            ] as const
+          })
+          .toArray()
+
+        return [model_slug, endpointsByVariant] as const
+      })
+      .toArray()
   },
 })

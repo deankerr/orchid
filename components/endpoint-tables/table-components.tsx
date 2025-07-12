@@ -51,24 +51,6 @@ export function SortableHeader<TData>({
   )
 }
 
-// Formatted cell component
-interface FormattedCellProps {
-  value: string | number
-  unit?: string
-  className?: string
-  prefix?: string
-}
-
-export function FormattedCell({ value, unit, className, prefix }: FormattedCellProps) {
-  return (
-    <div className={cn('', className)}>
-      {prefix}
-      {value}
-      {unit && <span className="text-[10px]"> {unit}</span>}
-    </div>
-  )
-}
-
 // Null-safe sorting function factory
 export function createNullSafeSortingFn<T>(getValue: (row: T) => number | null | undefined) {
   return (rowA: { original: T }, rowB: { original: T }) => {

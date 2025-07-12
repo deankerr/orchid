@@ -9,3 +9,7 @@ export function getDayAlignedTimestamp(now = Date.now()) {
   date.setHours(0, 0, 0, 0)
   return date.getTime()
 }
+
+export function hoursBetween(from: number, to: number) {
+  return Math.floor((to - from) / (1000 * 60 * 60))
+}
