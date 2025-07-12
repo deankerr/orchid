@@ -22,7 +22,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
     id: 'provider',
     header: ({ column }) => (
       <SortableHeader column={column} className="ml-1">
-        Provider
+        provider
       </SortableHeader>
     ),
     accessorFn: (row) => row.provider_name,
@@ -51,7 +51,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
     id: 'staleness',
     header: ({ column }) => (
       <SortableHeader column={column} align="right">
-        Staleness
+        staleness
       </SortableHeader>
     ),
     accessorFn: (row) => row.staleness_hours,
@@ -65,23 +65,25 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
     id: 'context_length',
     header: ({ column }) => (
       <SortableHeader column={column} align="right">
-        Context (tok)
+        context
       </SortableHeader>
     ),
     accessorFn: (row) => row.context_length,
-    cell: ({ row }) => <FormattedCell value={row.original.context_length} className="text-right" />,
+    cell: ({ row }) => (
+      <FormattedCell value={row.original.context_length} className="text-right" suffix="tok" />
+    ),
   },
 
   {
     id: 'max_input',
     header: ({ column }) => (
       <SortableHeader column={column} align="right">
-        Max Input (tok)
+        max input
       </SortableHeader>
     ),
     accessorFn: (row) => row.limits.input_tokens,
     cell: ({ row }) => (
-      <FormattedCell value={row.original.limits.input_tokens} className="text-right" />
+      <FormattedCell value={row.original.limits.input_tokens} className="text-right" suffix="tok" />
     ),
   },
 
@@ -89,7 +91,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
     id: 'max_output',
     header: ({ column }) => (
       <SortableHeader column={column} align="right">
-        Max Output (tok)
+        max output
       </SortableHeader>
     ),
     accessorFn: (row) => row.limits.output_tokens,
@@ -97,13 +99,14 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
       <FormattedCell
         value={row.original.limits.output_tokens ?? row.original.context_length}
         className="text-right"
+        suffix="tok"
       />
     ),
   },
 
   {
     id: 'quantization',
-    header: ({ column }) => <SortableHeader column={column}>Quant</SortableHeader>,
+    header: ({ column }) => <SortableHeader column={column}>quant</SortableHeader>,
     accessorFn: (row) => row.quantization,
     cell: ({ row }) => <FormattedCell value={row.original.quantization} />,
   },
@@ -113,7 +116,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
     id: 'throughput',
     header: ({ column }) => (
       <SortableHeader column={column} align="right">
-        Throughput (tok/s)
+        throughput
       </SortableHeader>
     ),
     accessorFn: (row) => row.stats?.p50_throughput,
@@ -122,6 +125,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
         value={row.original.stats?.p50_throughput}
         className="text-right"
         decimals={1}
+        suffix="tok/s"
       />
     ),
     sortingFn: createNullSafeSortingFn((row) => row.stats?.p50_throughput),
@@ -131,12 +135,12 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
     id: 'latency',
     header: ({ column }) => (
       <SortableHeader column={column} align="right">
-        Latency (ms)
+        latency
       </SortableHeader>
     ),
     accessorFn: (row) => row.stats?.p50_latency,
     cell: ({ row }) => (
-      <FormattedCell value={row.original.stats?.p50_latency} className="text-right" />
+      <FormattedCell value={row.original.stats?.p50_latency} className="text-right" suffix="ms" />
     ),
     sortingFn: createNullSafeSortingFn((row) => row.stats?.p50_latency),
   },
@@ -145,7 +149,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
     id: 'uptime',
     header: ({ column }) => (
       <SortableHeader column={column} align="right">
-        Uptime (%)
+        uptime
       </SortableHeader>
     ),
     accessorFn: (row) => row.uptime_average,
@@ -160,23 +164,9 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
             'text-right',
           )}
           decimals={1}
+          suffix="%"
         />
       )
-    },
-  },
-
-  {
-    id: 'traffic_share',
-    header: ({ column }) => (
-      <SortableHeader column={column} align="right">
-        Traffic (%)
-      </SortableHeader>
-    ),
-    accessorFn: (row) => row.traffic_share,
-    cell: ({ row }) => {
-      const traffic = row.original.traffic_share
-      const value = traffic ? traffic * 100 : traffic
-      return <FormattedCell value={value} className="text-right" decimals={1} />
     },
   },
 
@@ -185,12 +175,17 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
     id: 'input_price',
     header: ({ column }) => (
       <SortableHeader column={column} align="right">
-        Input ($/Mtok)
+        input
       </SortableHeader>
     ),
     accessorFn: (row) => row.pricing.input ?? 0,
     cell: ({ row }) => (
-      <FormattedCell value={formatPriceToM(row.original.pricing.input)} className="text-right" />
+      <FormattedCell
+        value={formatPriceToM(row.original.pricing.input)}
+        className="text-right"
+        prefix="$"
+        suffix="Mtok"
+      />
     ),
   },
 
@@ -198,12 +193,17 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
     id: 'output_price',
     header: ({ column }) => (
       <SortableHeader column={column} align="right">
-        Output ($/Mtok)
+        output
       </SortableHeader>
     ),
     accessorFn: (row) => row.pricing.output ?? 0,
     cell: ({ row }) => (
-      <FormattedCell value={formatPriceToM(row.original.pricing.output)} className="text-right" />
+      <FormattedCell
+        value={formatPriceToM(row.original.pricing.output)}
+        className="text-right"
+        prefix="$"
+        suffix="Mtok"
+      />
     ),
   },
 
@@ -211,7 +211,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
     id: 'reasoning_price',
     header: ({ column }) => (
       <SortableHeader column={column} align="right">
-        Reasoning ($/Mtok)
+        reasoning
       </SortableHeader>
     ),
     accessorFn: (row) => row.pricing.reasoning_output,
@@ -219,6 +219,8 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
       <FormattedCell
         value={formatPriceToM(row.original.pricing.reasoning_output)}
         className="text-right"
+        prefix="$"
+        suffix="Mtok"
       />
     ),
   },
@@ -227,7 +229,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
     id: 'image_input_price',
     header: ({ column }) => (
       <SortableHeader column={column} align="right">
-        Image ($/ktok)
+        image
       </SortableHeader>
     ),
     accessorFn: (row) => row.pricing.image_input,
@@ -235,6 +237,8 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
       <FormattedCell
         value={formatPriceToK(row.original.pricing.image_input)}
         className="text-right"
+        prefix="$"
+        suffix="Ktok"
       />
     ),
   },
@@ -243,7 +247,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
     id: 'cache_read_price',
     header: ({ column }) => (
       <SortableHeader column={column} align="right">
-        Cache Read ($/Mtok)
+        cache read
       </SortableHeader>
     ),
     accessorFn: (row) => row.pricing.cache_read,
@@ -251,6 +255,8 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
       <FormattedCell
         value={formatPriceToM(row.original.pricing.cache_read)}
         className="text-right"
+        prefix="$"
+        suffix="Mtok"
       />
     ),
   },
@@ -259,7 +265,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
     id: 'cache_write_price',
     header: ({ column }) => (
       <SortableHeader column={column} align="right">
-        Cache Write ($/Mtok)
+        cache write
       </SortableHeader>
     ),
     accessorFn: (row) => row.pricing.cache_write,
@@ -267,6 +273,8 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
       <FormattedCell
         value={formatPriceToM(row.original.pricing.cache_write)}
         className="text-right"
+        prefix="$"
+        suffix="Mtok"
       />
     ),
   },
@@ -275,12 +283,17 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
     id: 'web_search_price',
     header: ({ column }) => (
       <SortableHeader column={column} align="right">
-        Web Search ($)
+        web search
       </SortableHeader>
     ),
     accessorFn: (row) => row.pricing.web_search,
     cell: ({ row }) => (
-      <FormattedCell value={row.original.pricing.web_search} className="text-right" decimals={6} />
+      <FormattedCell
+        value={row.original.pricing.web_search}
+        className="text-right"
+        decimals={6}
+        prefix="$"
+      />
     ),
   },
 
@@ -288,27 +301,34 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
     id: 'per_request_price',
     header: ({ column }) => (
       <SortableHeader column={column} align="right">
-        Per Request ($)
+        per request
       </SortableHeader>
     ),
     accessorFn: (row) => row.pricing.per_request,
     cell: ({ row }) => (
-      <FormattedCell value={row.original.pricing.per_request} className="text-right" decimals={6} />
+      <FormattedCell
+        value={row.original.pricing.per_request}
+        className="text-right"
+        decimals={6}
+        prefix="$"
+      />
     ),
   },
 
   // === Capabilities & Limits ===
   {
     id: 'capabilities',
-    header: 'Capabilities',
+    header: ({ column }) => <SortableHeader column={column}>capabilities</SortableHeader>,
     cell: ({ row }) => {
       const caps = row.original.capabilities
       return (
         <div className="flex gap-1">
+          <CapabilityBadge enabled={caps.byok} label="byok" />
+          <CapabilityBadge enabled={caps.chat_completions} label="chat" />
+          <CapabilityBadge enabled={caps.completions} label="completions" />
+          <CapabilityBadge enabled={caps.multipart_messages} label="multipart" />
+          <CapabilityBadge enabled={caps.stream_cancellation} label="cancel" />
           <CapabilityBadge enabled={caps.tools} label="tools" />
-          <CapabilityBadge enabled={caps.reasoning} label="reason" />
-          <CapabilityBadge enabled={caps.image_input} label="image" />
-          <CapabilityBadge enabled={caps.file_input} label="pdf" />
         </div>
       )
     },
@@ -319,34 +339,42 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
     id: 'rpm_limit',
     header: ({ column }) => (
       <SortableHeader column={column} align="right">
-        Requests/Min
+        requests/min
       </SortableHeader>
     ),
     accessorFn: (row) => row.limits.rpm,
-    cell: ({ row }) => <FormattedCell value={row.original.limits.rpm} className="text-right" />,
+    cell: ({ row }) => (
+      <FormattedCell value={row.original.limits.rpm} className="text-right" suffix="req/min" />
+    ),
   },
 
   {
     id: 'rpd_limit',
     header: ({ column }) => (
       <SortableHeader column={column} align="right">
-        Requests/Day
+        requests/day
       </SortableHeader>
     ),
     accessorFn: (row) => row.limits.rpd,
-    cell: ({ row }) => <FormattedCell value={row.original.limits.rpd} className="text-right" />,
+    cell: ({ row }) => (
+      <FormattedCell value={row.original.limits.rpd} className="text-right" suffix="req/day" />
+    ),
   },
 
   {
     id: 'images_per_prompt',
     header: ({ column }) => (
       <SortableHeader column={column} align="right">
-        Images/Prompt
+        images/prompt
       </SortableHeader>
     ),
     accessorFn: (row) => row.limits.images_per_prompt,
     cell: ({ row }) => (
-      <FormattedCell value={row.original.limits.images_per_prompt} className="text-right" />
+      <FormattedCell
+        value={row.original.limits.images_per_prompt}
+        className="text-right"
+        suffix="img"
+      />
     ),
   },
 
@@ -354,25 +382,29 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
     id: 'tokens_per_image',
     header: ({ column }) => (
       <SortableHeader column={column} align="right">
-        Tokens/Image
+        tokens/image
       </SortableHeader>
     ),
     accessorFn: (row) => row.limits.tokens_per_image,
     cell: ({ row }) => (
-      <FormattedCell value={row.original.limits.tokens_per_image} className="text-right" />
+      <FormattedCell
+        value={row.original.limits.tokens_per_image}
+        className="text-right"
+        suffix="tok"
+      />
     ),
   },
 
   {
     id: 'data_policy',
-    header: 'Data Policy',
+    header: ({ column }) => <SortableHeader column={column}>data policy</SortableHeader>,
     cell: ({ row }) => <DataPolicyIndicator policy={row.original.data_policy} />,
     enableSorting: false,
   },
 
   {
     id: 'is_moderated',
-    header: 'Moderated',
+    header: ({ column }) => <SortableHeader column={column}>moderated</SortableHeader>,
     accessorFn: (row) => row.is_moderated,
     cell: ({ row }) => {
       if (!row.original.is_moderated) return null
@@ -382,6 +414,21 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
           moderated
         </Badge>
       )
+    },
+  },
+
+  {
+    id: 'traffic_share',
+    header: ({ column }) => (
+      <SortableHeader column={column} align="right">
+        traffic
+      </SortableHeader>
+    ),
+    accessorFn: (row) => row.traffic_share,
+    cell: ({ row }) => {
+      const traffic = row.original.traffic_share
+      const value = traffic ? traffic * 100 : traffic
+      return <FormattedCell value={value} className="text-right" decimals={1} suffix="%" />
     },
   },
 ]

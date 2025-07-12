@@ -53,7 +53,7 @@ const columns: ColumnDef<Endpoint>[] = [
       if (b === 'standard') return 1
       return a.localeCompare(b)
     },
-    enableHiding: false,
+    enableHiding: true,
   },
 
   ...endpointColumns,
@@ -110,7 +110,6 @@ export function EndpointDataTable({
       sorting,
       columnVisibility,
       grouping,
-      expanded: true,
     },
   })
 
@@ -144,17 +143,17 @@ export function EndpointDataTable({
         </DropdownMenu>
       </div>
 
-      <Table className="border-t">
+      <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
+            <TableRow key={headerGroup.id} className="hover:bg-transparent">
               {headerGroup.headers.map((header) => {
                 // Skip rendering TableHead for variant column since it's only used for grouping
                 if (header.column.id === 'model_variant_slug') {
                   return null
                 }
                 return (
-                  <TableHead key={header.id} className="text-xs has-[>button]:px-0">
+                  <TableHead key={header.id} className="text-xs">
                     {header.isPlaceholder
                       ? null
                       : flexRender(header.column.columnDef.header, header.getContext())}
@@ -184,7 +183,7 @@ export function EndpointDataTable({
                       return (
                         <TableCell
                           key={cell.id}
-                          className="border-b px-3 pt-3 pb-1 text-xs font-medium"
+                          className="border-b px-2.5 text-xs font-medium text-muted-foreground"
                           colSpan={table.getVisibleLeafColumns().length}
                         >
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}

@@ -18,7 +18,6 @@ import {
 
 import type { Doc } from '@/convex/_generated/dataModel'
 
-import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 import { Badge } from '../ui/badge'
@@ -31,25 +30,32 @@ interface SortableHeaderProps<TData> {
   align?: 'left' | 'center' | 'right'
 }
 
-export function SortableHeader<TData>({
-  column,
+// Custom minimal monospace sort button for table headers
+function TableSortButton({
+  onClick,
   children,
   className,
   align = 'left',
-}: SortableHeaderProps<TData>) {
-  const sorted = column.getIsSorted()
-
+  sorted,
+}: {
+  onClick: () => void
+  children: React.ReactNode
+  className?: string
+  align?: 'left' | 'center' | 'right'
+  sorted: false | 'asc' | 'desc'
+}) {
   return (
-    <Button
-      variant="ghost"
-      size="sm"
+    <button
+      type="button"
+      tabIndex={0}
+      onClick={onClick}
       className={cn(
-        'h-8 w-full justify-start text-xs',
-        align === 'right' && 'flex-row-reverse justify-end',
+        'flex w-full items-center gap-1 border-none bg-transparent py-0.5 text-xs font-medium text-muted-foreground transition-colors outline-none select-none focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-ring/50',
+        'hover:bg-accent/40',
+        align === 'right' && 'justify-end',
         align === 'center' && 'justify-center',
         className,
       )}
-      onClick={() => column.toggleSorting(sorted === 'asc')}
     >
       {children}
       {sorted === 'asc' ? (
@@ -59,7 +65,27 @@ export function SortableHeader<TData>({
       ) : (
         <ChevronsUpDownIcon className="size-3 opacity-5" />
       )}
-    </Button>
+    </button>
+  )
+}
+
+export function SortableHeader<TData>({
+  column,
+  children,
+  className,
+  align = 'left',
+}: SortableHeaderProps<TData>) {
+  const sorted = column.getIsSorted()
+
+  return (
+    <TableSortButton
+      onClick={() => column.toggleSorting(sorted === 'asc')}
+      className={className}
+      align={align}
+      sorted={sorted}
+    >
+      {children}
+    </TableSortButton>
   )
 }
 
@@ -86,16 +112,33 @@ export function FormattedCell({
   value,
   className,
   decimals = 0,
+  prefix,
+  suffix,
 }: {
   value?: string | number | null
   className?: string
   decimals?: number
+  prefix?: string
+  suffix?: string
 }) {
   const formatted =
     typeof value === 'number' ? formatNumber(value, decimals) : R.isNullish(value) ? '-' : value
+
   return (
-    <div className={cn('px-0.5', R.isNullish(value) && 'text-muted-foreground', className)}>
-      {formatted}
+    <div
+      className={cn(
+        'flex flex-row items-baseline px-0.5',
+        R.isNullish(value) && 'text-muted-foreground',
+        className,
+      )}
+    >
+      <span className={cn('pr-2 text-right align-middle text-xs text-muted-foreground')}>
+        {prefix || ''}
+      </span>
+      <span className="flex-1 text-right">{formatted}</span>
+      {suffix && (
+        <span className="ml-0.5 align-middle text-[10px] text-muted-foreground">{suffix}</span>
+      )}
     </div>
   )
 }
