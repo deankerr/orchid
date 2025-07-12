@@ -1,7 +1,10 @@
+import * as R from 'remeda'
+
+import { internal } from '../../_generated/api'
 import type { ActionCtx } from '../../_generated/server'
 import { storeSnapshotData } from '../archive'
-import { output } from '../output'
-import type { Entities } from '../registry'
+import { OrProviders } from '../entities/providers'
+import type { UpsertResult } from '../output'
 import { validateArray, type Issue } from '../validation'
 import { ProviderStrictSchema, ProviderTransformSchema } from '../validators/providers'
 
@@ -38,24 +41,24 @@ export async function providersPipeline(
 
   issues.push(...validationIssues)
 
-  const providers: (typeof Entities.providers.table.$content)[] = items.map((provider) => ({
+  const providers: (typeof OrProviders.$content)[] = items.map((provider) => ({
     ...provider,
     snapshot_at,
   }))
 
-  const results = await output(ctx, {
-    entities: [
-      {
-        name: 'providers',
-        items: providers,
-      },
-    ],
+  const results = await ctx.runMutation(internal.openrouter.entities.providers.upsert, {
+    items: providers,
   })
 
   return {
     data: undefined,
     metrics: {
-      entities: results,
+      entities: [
+        {
+          ...R.countBy(results, (v: UpsertResult) => v.action),
+          name: 'providers',
+        },
+      ],
       issues,
       started_at,
       ended_at: Date.now(),

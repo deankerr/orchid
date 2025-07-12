@@ -1,119 +1,73 @@
-import { asyncMap } from 'convex-helpers'
-import { v } from 'convex/values'
 import * as R from 'remeda'
 
-import { internal } from '../_generated/api'
 import type { Doc } from '../_generated/dataModel'
-import { internalMutation, type ActionCtx, type MutationCtx } from '../_generated/server'
-import { Entities, vEntityName, type EntityName } from './registry'
+import type { MutationCtx } from '../_generated/server'
+import type { IChange } from 'json-diff-ts'
 
 /**
- * Generic upsert that works for any registered entity helper.
+ * Result of an upsert operation
  */
 export interface UpsertResult {
   action: 'insert' | 'update' | 'stable'
 }
 
-export async function upsertEntity(
+/**
+ * Shared upsert helper that can be used by individual entity upsert functions
+ */
+export async function upsertHelper<T extends { _id?: any; _creationTime?: any }>(
   ctx: MutationCtx,
-  name: EntityName,
-  record: any,
+  {
+    tableName,
+    record,
+    existingRecord,
+    changes,
+    recordChanges,
+    onStable,
+    onUpdate,
+  }: {
+    tableName: string
+    record: any
+    existingRecord: T | null
+    changes: IChange[]
+    recordChanges?: (ctx: MutationCtx, content: any, changes: IChange[]) => Promise<void>
+    onStable?: (ctx: MutationCtx, existing: T, record: any) => Promise<void>
+    onUpdate?: (ctx: MutationCtx, existing: T, record: any) => Promise<void>
+  },
 ): Promise<UpsertResult> {
-  const helper = Entities[name]
-  if (!helper) throw new Error(`Unknown entity helper: ${name}`)
-
-  const existing = await helper.fn.get(ctx, record)
-  const changes = helper.fn.diff(existing ?? {}, record)
-
-  if ('recordChanges' in helper.fn) {
-    await helper.fn.recordChanges(ctx, {
-      content: record,
-      changes,
-    })
+  // Record changes if function provided
+  if (recordChanges) {
+    await recordChanges(ctx, record, changes)
   }
 
   // Insert
-  if (!existing) {
-    await ctx.db.insert(helper.table.name, record)
+  if (!existingRecord) {
+    await ctx.db.insert(tableName as any, record)
     return { action: 'insert' }
   }
 
-  // Stable - update snapshot_at to mark as current
+  // Stable - no changes
   if (changes.length === 0) {
-    if ('snapshot_at' in record) {
-      if (name === 'endpoints') {
-        // update 'stats' and 'uptime_average' (excluded from diff)
-        await ctx.db.patch(existing._id, {
-          snapshot_at: record.snapshot_at,
-          stats: record.stats,
-          uptime_average: record.uptime_average,
-        })
-      } else {
-        await ctx.db.patch(existing._id, { snapshot_at: record.snapshot_at })
-      }
+    if (onStable) {
+      await onStable(ctx, existingRecord, record)
+    } else if ('snapshot_at' in record) {
+      // Default stable behavior - update snapshot_at
+      await ctx.db.patch(existingRecord._id, { snapshot_at: record.snapshot_at })
     }
-
     return { action: 'stable' }
   }
 
   // Update
-  if (name === 'models') {
-    // will be handled later, keep stable for now
-    record.stats = (existing as Doc<'or_models'>).stats ?? {}
+  if (onUpdate) {
+    await onUpdate(ctx, existingRecord, record)
+  } else {
+    await ctx.db.replace(existingRecord._id, record)
   }
-
-  await ctx.db.replace(existing._id, record)
   return { action: 'update' }
 }
 
-export const upsert = internalMutation({
-  args: {
-    name: vEntityName,
-    items: v.array(v.any()),
-  },
-  handler: async (ctx, { items, ...args }) => {
-    const name = args.name as EntityName
-
-    const mergeResults = await asyncMap(items, async (item) => {
-      return await upsertEntity(ctx, name, item)
-    })
-
-    return mergeResults
-  },
-})
-
-export async function output(
-  ctx: ActionCtx,
-  {
-    entities,
-    batchSize = 2000,
-  }: {
-    entities: { name: EntityName; items: Record<string, any>[] }[]
-    batchSize?: number
-  },
-) {
-  const results = await asyncMap(entities, async (entity) => {
-    const results: UpsertResult[] = []
-    const batches = R.chunk(entity.items, batchSize)
-
-    for (const batch of batches) {
-      const batchResults = await ctx.runMutation(internal.openrouter.output.upsert, {
-        name: entity.name,
-        items: batch,
-      })
-
-      results.push(...batchResults)
-    }
-
-    return {
-      ...R.countBy(results, (v) => v.action),
-      name: entity.name,
-    }
-  })
-
-  return results
-}
-
+/**
+ * Batch processing helper
+ */
 export async function batch<T, R>(
   { items, batchSize = 2000 }: { items: T[]; batchSize?: number },
   callback: (itemBatch: T[]) => Promise<R[]>,

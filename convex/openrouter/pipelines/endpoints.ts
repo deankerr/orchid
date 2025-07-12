@@ -4,8 +4,9 @@ import { internal } from '../../_generated/api'
 import type { ActionCtx } from '../../_generated/server'
 import { storeSnapshotData } from '../archive'
 import { type EndpointStat } from '../entities/endpointStats'
-import { batch, output } from '../output'
-import type { Entities } from '../registry'
+import { OrEndpoints } from '../entities/endpoints'
+import { OrModels } from '../entities/models'
+import { batch, type UpsertResult } from '../output'
 import { validateArray, validateRecord, type Issue } from '../validation'
 import { EndpointStrictSchema, EndpointTransformSchema } from '../validators/endpoints'
 import {
@@ -34,10 +35,10 @@ export async function endpointsPipeline(
     run_id,
     models,
     source,
-  }: {
+  }:   {
     snapshot_at: number
     run_id: string
-    models: (typeof Entities.models.table.$content)[]
+    models: (typeof OrModels.$content)[]
     source: {
       endpoints: (args: { permaslug: string; variant: string }) => Promise<unknown[]>
       endpointUptimes: (args: { uuid: string }) => Promise<unknown>
@@ -45,7 +46,7 @@ export async function endpointsPipeline(
   },
 ) {
   const started_at = Date.now()
-  const endpoints: (typeof Entities.endpoints.table.$content)[] = []
+  const endpoints: (typeof OrEndpoints.$content)[] = []
   const endpointStats: NewEndpointStat[] = []
   const endpointUptimes: NewEndpointUptime[] = []
   const issues: Issue[] = []
@@ -140,7 +141,7 @@ export async function endpointsPipeline(
     })
   }).then((results) => {
     return {
-      ...R.countBy(results, (v) => v.action),
+      ...R.countBy(results, (v: UpsertResult) => v.action),
       name: 'endpointUptimes',
     }
   })
@@ -151,24 +152,26 @@ export async function endpointsPipeline(
     })
   }).then((results) => {
     return {
-      ...R.countBy(results, (v) => v.action),
+      ...R.countBy(results, (v: UpsertResult) => v.action),
       name: 'endpointStats',
     }
   })
 
-  const results = await output(ctx, {
-    entities: [
-      {
-        name: 'endpoints',
-        items: endpoints,
-      },
-    ],
+  const results = await ctx.runMutation(internal.openrouter.entities.endpoints.upsert, {
+    items: endpoints,
   })
 
   return {
     data: undefined,
     metrics: {
-      entities: [...results, endpointUptimesResults, endpointStatsResults],
+      entities: [
+        {
+          ...R.countBy(results, (v: UpsertResult) => v.action),
+          name: 'endpoints',
+        },
+        endpointUptimesResults,
+        endpointStatsResults,
+      ],
       issues,
       started_at,
       ended_at: Date.now(),

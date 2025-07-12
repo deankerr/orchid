@@ -2,8 +2,9 @@ import { v } from 'convex/values'
 
 import { diff, type IChange } from 'json-diff-ts'
 
-import { type MutationCtx, type QueryCtx } from '../../_generated/server'
+import { internalMutation, type MutationCtx, type QueryCtx } from '../../_generated/server'
 import { Table2 } from '../../table2'
+import { upsertHelper, type UpsertResult } from '../output'
 
 export const OrAuthors = Table2('or_authors', {
   uuid: v.string(),
@@ -50,3 +51,31 @@ export const OrAuthorsFn = {
     await ctx.db.insert(OrAuthorsChanges.name, { uuid, snapshot_at, changes })
   },
 }
+
+export const upsert = internalMutation({
+  args: {
+    items: v.array(OrAuthors.content),
+  },
+  handler: async (ctx, { items }) => {
+    const results: UpsertResult[] = []
+    
+    for (const item of items) {
+      const existing = await OrAuthorsFn.get(ctx, { uuid: item.uuid })
+      const changes = OrAuthorsFn.diff(existing ?? {}, item)
+
+      const result = await upsertHelper(ctx, {
+        tableName: OrAuthors.name,
+        record: item,
+        existingRecord: existing,
+        changes,
+        recordChanges: async (ctx, content, changes) => {
+          await OrAuthorsFn.recordChanges(ctx, { content, changes })
+        },
+      })
+      
+      results.push(result)
+    }
+
+    return results
+  },
+})

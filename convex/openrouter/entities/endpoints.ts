@@ -2,8 +2,9 @@ import { v } from 'convex/values'
 
 import { diff, type IChange } from 'json-diff-ts'
 
-import { query, type MutationCtx, type QueryCtx } from '../../_generated/server'
+import { internalMutation, query, type MutationCtx, type QueryCtx } from '../../_generated/server'
 import { Table2 } from '../../table2'
+import { upsertHelper, type UpsertResult } from '../output'
 
 export const OrEndpoints = Table2('or_endpoints', {
   uuid: v.string(),
@@ -126,6 +127,42 @@ export const OrEndpointsFn = {
     await ctx.db.insert(OrEndpointsChanges.name, { uuid, snapshot_at, changes })
   },
 }
+
+export const upsert = internalMutation({
+  args: {
+    items: v.array(OrEndpoints.content),
+  },
+  handler: async (ctx, { items }: { items: (typeof OrEndpoints.$content)[] }) => {
+    const results: UpsertResult[] = []
+    
+    for (const item of items) {
+      const existing = await OrEndpointsFn.get(ctx, { uuid: item.uuid })
+      const changes = OrEndpointsFn.diff(existing ?? {}, item)
+
+      const result = await upsertHelper(ctx, {
+        tableName: OrEndpoints.name,
+        record: item,
+        existingRecord: existing,
+        changes,
+        recordChanges: async (ctx, content, changes) => {
+          await OrEndpointsFn.recordChanges(ctx, { content, changes })
+        },
+        onStable: async (ctx, existing, record) => {
+          // For endpoints, update stats and uptime_average (excluded from diff)
+          await ctx.db.patch(existing._id, {
+            snapshot_at: record.snapshot_at,
+            stats: record.stats,
+            uptime_average: record.uptime_average,
+          })
+        },
+      })
+      
+      results.push(result)
+    }
+
+    return results
+  },
+})
 
 // * queries
 
