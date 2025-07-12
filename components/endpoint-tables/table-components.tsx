@@ -8,10 +8,20 @@
 import * as R from 'remeda'
 
 import type { Column } from '@tanstack/react-table'
-import { ChevronDownIcon, ChevronsUpDownIcon, ChevronUpIcon } from 'lucide-react'
+import {
+  AlertTriangleIcon,
+  ChevronDownIcon,
+  ChevronsUpDownIcon,
+  ChevronUpIcon,
+  CircleCheckIcon,
+} from 'lucide-react'
+
+import type { Doc } from '@/convex/_generated/dataModel'
 
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+
+import { Badge } from '../ui/badge'
 
 // Sortable header component
 interface SortableHeaderProps<TData> {
@@ -60,6 +70,18 @@ function formatNumber(value: number, decimals: number) {
   }).format(value)
 }
 
+export function formatPriceToM(value: number | null | undefined) {
+  if (typeof value === 'number') {
+    return (value * 1_000_000).toFixed(2)
+  }
+}
+
+export function formatPriceToK(value: number | null | undefined) {
+  if (typeof value === 'number') {
+    return (value * 1_000).toFixed(2)
+  }
+}
+
 export function FormattedCell({
   value,
   className,
@@ -81,16 +103,40 @@ export function FormattedCell({
 // Null-safe sorting function factory
 export function createNullSafeSortingFn<T>(getValue: (row: T) => number | null | undefined) {
   return (rowA: { original: T }, rowB: { original: T }) => {
-    const a = getValue(rowA.original) ?? -1
-    const b = getValue(rowB.original) ?? -1
+    const a = getValue(rowA.original) ?? Number.NEGATIVE_INFINITY
+    const b = getValue(rowB.original) ?? Number.NEGATIVE_INFINITY
     return a - b
   }
 }
 
-// Null-safe accessor function factory
-export function createNullSafeAccessor<T>(
-  getValue: (row: T) => number | null | undefined,
-  defaultValue = -1,
-) {
-  return (row: T) => getValue(row) ?? defaultValue
+export function CapabilityBadge({ enabled, label }: { enabled: boolean; label: string }) {
+  if (!enabled) return null
+  return (
+    <Badge variant="secondary" className="gap-1 text-[10px]">
+      <CircleCheckIcon className="size-3" />
+      {label}
+    </Badge>
+  )
+}
+
+export function DataPolicyIndicator({ policy }: { policy: Doc<'or_endpoints'>['data_policy'] }) {
+  const hasIssues = policy.training || policy.retains_prompts
+  if (!hasIssues) return null
+
+  return (
+    <div className="flex gap-1">
+      {policy.training && (
+        <Badge variant="outline" className="gap-1 text-[10px] text-warning">
+          <AlertTriangleIcon className="size-3" />
+          trains
+        </Badge>
+      )}
+      {policy.retains_prompts && (
+        <Badge variant="outline" className="gap-1 text-[10px] text-warning">
+          <AlertTriangleIcon className="size-3" />
+          retains
+        </Badge>
+      )}
+    </div>
+  )
 }

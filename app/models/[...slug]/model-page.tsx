@@ -3,16 +3,16 @@
 import { EndpointDataTable } from '@/components/endpoint-tables/endpoint-data-table'
 import { PageContainer, PageHeader, PageLoading, PageTitle } from '@/components/page-container'
 import { Card } from '@/components/ui/card'
-import { useEndpointsMap, useModelsList } from '@/hooks/api'
+import { useEndpoints, useModelsList } from '@/hooks/api'
 
 export function ModelPage({ slug }: { slug: string }) {
   const models = useModelsList()
-  const endpointsMap = useEndpointsMap()
+  const endpointsCollect = useEndpoints()
 
   const model = models?.find((m) => m.slug === slug)
-  const endpoints = endpointsMap?.get(slug)
+  const endpoints = endpointsCollect?.filter((e) => e.model_slug === slug)
 
-  if (!models || !endpointsMap) {
+  if (!models || !endpointsCollect) {
     return <PageLoading />
   }
 
@@ -36,13 +36,11 @@ export function ModelPage({ slug }: { slug: string }) {
       {/* Model description */}
       {model.description && <p className="text-sm text-muted-foreground">{model.description}</p>}
 
-      {/* Endpoint comparison table */}
-      {endpoints ? (
-        [...endpoints].map(([variant, endpoints]) => (
-          <Card key={variant} className="rounded-sm py-2">
-            <EndpointDataTable model={model} endpoints={endpoints} />
-          </Card>
-        ))
+      {/* Unified endpoint table with variant separators */}
+      {endpoints && endpoints.length > 0 ? (
+        <Card className="rounded-sm py-2">
+          <EndpointDataTable model={model} endpoints={endpoints} />
+        </Card>
       ) : (
         <div className="rounded-sm border p-8 text-center">
           <p className="text-sm text-muted-foreground">No endpoints available for this model.</p>

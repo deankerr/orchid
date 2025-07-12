@@ -24,17 +24,19 @@ export const OrEndpoints = Table2('or_endpoints', {
   supported_parameters: v.array(v.string()),
 
   capabilities: v.object({
+    // provider dependent
     completions: v.boolean(),
     chat_completions: v.boolean(),
 
-    image_input: v.boolean(),
-    file_input: v.boolean(),
-
-    reasoning: v.boolean(),
     tools: v.boolean(),
     multipart_messages: v.boolean(),
     stream_cancellation: v.boolean(),
     byok: v.boolean(),
+
+    // model dependent
+    image_input: v.boolean(),
+    file_input: v.boolean(),
+    reasoning: v.boolean(),
   }),
 
   limits: v.object({
@@ -62,12 +64,12 @@ export const OrEndpoints = Table2('or_endpoints', {
     output: v.optional(v.number()),
     image_input: v.optional(v.number()),
     reasoning_output: v.optional(v.number()),
-    web_search: v.optional(v.number()),
 
     cache_read: v.optional(v.number()),
     cache_write: v.optional(v.number()),
 
     // flat rate
+    web_search: v.optional(v.number()),
     per_request: v.optional(v.number()),
 
     // e.g. 0.25, already applied to the other pricing fields
@@ -143,35 +145,28 @@ export const collect = query({
     const snapshot_at = await getCurrentSnapshotTimestamp(ctx)
     const results = await ctx.db.query('or_endpoints').collect()
 
-    return Map.groupBy(results, (r) => r.model_slug)
+    return Map.groupBy(results, (r) =>
+      r.model_variant === 'standard' ? r.model_slug : `${r.model_slug}:${r.model_variant}`,
+    )
       .entries()
-      .map(([model_slug, endpoints]) => {
-        const endpointsByVariant = Map.groupBy(endpoints, (r) => r.model_variant)
-          .entries()
-          .map(([model_variant, endpoints]) => {
-            const totalRequests = endpoints.reduce(
-              (sum, ep) => sum + (ep.stats?.request_count ?? 0),
-              0,
-            )
+      .flatMap(([model_variant_slug, endpoints]) => {
+        const totalRequests = endpoints.reduce(
+          (sum, endp) => sum + (endp.stats?.request_count ?? 0),
+          0,
+        )
 
-            return [
-              model_variant,
-              endpoints.map((endp) => ({
-                ...endp,
-                limits: {
-                  ...endp.limits,
-                  output_tokens: endp.limits.output_tokens ?? endp.context_length,
-                },
-                staleness_hours: hoursBetween(endp.snapshot_at, snapshot_at),
-                traffic_share: R.isDefined(endp.stats?.request_count)
-                  ? (endp.stats?.request_count ?? 0) / totalRequests
-                  : undefined,
-              })),
-            ] as const
-          })
-          .toArray()
-
-        return [model_slug, endpointsByVariant] as const
+        return endpoints.map((endp) => ({
+          ...endp,
+          limits: {
+            ...endp.limits,
+            output_tokens: endp.limits.output_tokens ?? endp.context_length,
+          },
+          model_variant_slug,
+          staleness_hours: hoursBetween(endp.snapshot_at, snapshot_at),
+          traffic_share: R.isDefined(endp.stats?.request_count)
+            ? (endp.stats?.request_count ?? 0) / totalRequests
+            : undefined,
+        }))
       })
       .toArray()
   },
