@@ -136,7 +136,18 @@ export const OrEndpointsFn = {
 export const list = query({
   handler: async (ctx) => {
     const snapshot_at = await getCurrentSnapshotTimestamp(ctx)
-    const results = await ctx.db.query('or_endpoints').collect()
+    const results = await ctx.db
+      .query('or_endpoints')
+      .collect()
+      .then(
+        (res) =>
+          res
+            .map((endp) => ({
+              ...endp,
+              staleness_hours: hoursBetween(endp.snapshot_at, snapshot_at),
+            }))
+            .filter((endp) => endp.staleness_hours < 1), // NOTE: remove all stale endpoints
+      )
 
     return Map.groupBy(results, (r) =>
       r.model_variant === 'standard' ? r.model_slug : `${r.model_slug}:${r.model_variant}`,
@@ -155,7 +166,6 @@ export const list = query({
             output_tokens: endp.limits.output_tokens ?? endp.context_length,
           },
           model_variant_slug,
-          staleness_hours: hoursBetween(endp.snapshot_at, snapshot_at),
           traffic_share: R.isDefined(endp.stats?.request_count)
             ? (endp.stats?.request_count ?? 0) / totalRequests
             : undefined,

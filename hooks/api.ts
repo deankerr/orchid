@@ -24,7 +24,7 @@ export function useEndpointsByVariant() {
       model_variant_slug,
       model,
       model_variant,
-      tokens_7d: model.stats?.[model_variant]?.tokens_7d ?? 0,
+      tokens_7d: model.stats?.[model_variant ?? 'standard']?.tokens_7d ?? 0,
       endpoints,
     }
   })

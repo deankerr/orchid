@@ -3,7 +3,9 @@ import { v } from 'convex/values'
 import { diff, type IChange } from 'json-diff-ts'
 
 import { internalMutation, query, type MutationCtx, type QueryCtx } from '../../_generated/server'
+import { hoursBetween } from '../../shared'
 import { Table2 } from '../../table2'
+import { getCurrentSnapshotTimestamp } from '../snapshot'
 
 export const vModelStatsRecord = v.record(
   v.string(), // variant
@@ -133,9 +135,22 @@ export const get = query({
 
 export const list = query({
   handler: async (ctx) => {
+    const snapshot_at = await getCurrentSnapshotTimestamp(ctx)
     const authors = await ctx.db.query('or_authors').collect()
 
-    const models = await ctx.db.query('or_models').collect()
+    const models = await ctx.db
+      .query('or_models')
+      .collect()
+      .then(
+        (res) =>
+          res
+            .map((m) => ({
+              ...m,
+              staleness_hours: hoursBetween(m.snapshot_at, snapshot_at),
+            }))
+            .filter((m) => m.staleness_hours < 1), // NOTE: remove all stale models
+      )
+
     return models.map((m) => ({
       ...m,
       author_name: authors.find((a) => a.slug === m.author_slug)?.name ?? m.author_slug,
