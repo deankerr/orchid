@@ -12,7 +12,6 @@ import {
 
 import { BrandIcon, ProviderBrandIcon } from '@/components/brand-icon'
 import { MarkdownLinks } from '@/components/markdown-links'
-import { SnapshotAtBadge } from '@/components/snapshot-at-badge'
 import { Badge } from '@/components/ui/badge'
 import { useProvidersList, type EndpointsByVariant } from '@/hooks/api'
 import { cn, formatIsoDate } from '@/lib/utils'
@@ -47,7 +46,8 @@ function ModelEBV_({ ebv }: { ebv: EndpointsByVariant[number] }) {
           href={`/models/${ebv.model.slug}`}
           className="flex items-center gap-3 underline-offset-2 hover:underline"
         >
-          <BrandIcon slug={ebv.model_variant_slug} size={24} />
+          <BrandIcon slug={ebv.model_variant_slug} size={24} fallback="model" />
+
           <div className="truncate font-semibold">{ebv.model.name}</div>
           {ebv.model_variant && (
             <Badge variant="default" className="font-mono">
@@ -124,9 +124,6 @@ function ModelEBV_({ ebv }: { ebv: EndpointsByVariant[number] }) {
                     <OctagonAlertIcon />
                     DISABLED
                   </Badge>
-                )}
-                {endp.snapshot_at && ebv.model.snapshot_at && (
-                  <SnapshotAtBadge snapshot_at={endp.snapshot_at} />
                 )}
               </div>
 

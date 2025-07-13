@@ -43,7 +43,7 @@ export function ModelPage({ slug }: { slug: string }) {
     <PageContainer className="space-y-6">
       <PageHeader>
         <PageTitle>
-          <BrandIcon slug={model.slug} size={24} />
+          <BrandIcon slug={model.slug} size={24} fallback="model" />
           {model.name}
         </PageTitle>
       </PageHeader>
