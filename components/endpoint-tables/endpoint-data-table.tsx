@@ -70,6 +70,7 @@ const DEFAULT_HIDDEN_COLUMNS: VisibilityState = {
   web_search_price: false,
   cache_write_price: false,
   per_request_price: false,
+  capabilities: false,
   rpm_limit: false,
   rpd_limit: false,
   images_per_prompt: false,
@@ -89,7 +90,7 @@ export function EndpointDataTable({
   endpoints,
   defaultHiddenColumns = DEFAULT_HIDDEN_COLUMNS,
 }: EndpointDataTableProps) {
-  const [sorting, setSorting] = useState<SortingState>([{ id: 'provider', desc: true }])
+  const [sorting, setSorting] = useState<SortingState>([{ id: 'traffic', desc: true }])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(defaultHiddenColumns)
   const [grouping, setGrouping] = useState<GroupingState>(['model_variant_slug'])
 

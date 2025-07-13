@@ -418,7 +418,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
   },
 
   {
-    id: 'traffic_share',
+    id: 'traffic',
     header: ({ column }) => (
       <SortableHeader column={column} align="right">
         traffic

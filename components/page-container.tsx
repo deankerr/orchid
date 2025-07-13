@@ -30,5 +30,9 @@ export function PageHeader({ children, className, ...props }: React.ComponentPro
 }
 
 export function PageTitle({ children }: { children: React.ReactNode }) {
-  return <h1 className="font-mono text-2xl font-medium tracking-tight">{children}</h1>
+  return (
+    <h1 className="flex items-center gap-2.5 font-mono text-2xl font-medium tracking-tight">
+      {children}
+    </h1>
+  )
 }
