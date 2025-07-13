@@ -3,6 +3,7 @@
 import { AlertTriangleIcon, FileUpIcon, ImageUpIcon } from 'lucide-react'
 
 import { BrandIcon } from '@/components/brand-icon'
+import { CopyButton } from '@/components/copy-button'
 import { EndpointCard } from '@/components/endpoint-card'
 import { EndpointDataTable } from '@/components/endpoint-tables/endpoint-data-table'
 import { ExternalLink } from '@/components/external-link'
@@ -51,6 +52,7 @@ export function ModelPage({ slug }: { slug: string }) {
         <PageTitle>
           <BrandIcon slug={model.slug} size={24} fallback="model" />
           {model.name}
+          <CopyButton value={model.slug} variant="ghost" />
         </PageTitle>
       </PageHeader>
 
