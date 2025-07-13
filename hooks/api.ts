@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+
 import * as R from 'remeda'
 
 import { api } from '@/convex/_generated/api'
@@ -37,6 +39,20 @@ export function useModelsList() {
 export type Endpoint = NonNullable<ReturnType<typeof useEndpointsList>>[number]
 export function useEndpointsList() {
   return useCachedQuery(api.openrouter.entities.endpoints.list, {}, 'useEndpointsList')
+}
+
+export function useModelData(slug: string) {
+  const modelsList = useModelsList()
+  const endpointsList = useEndpointsList()
+
+  const modelData = useMemo(() => {
+    if (!modelsList) return
+    const model = modelsList.find((m) => m.slug === slug)
+    if (!model) return null
+    return { ...model, endpoints: endpointsList?.filter((e) => e.model_slug === slug) }
+  }, [endpointsList, modelsList, slug])
+
+  return modelData
 }
 
 export function useEndpointUptimes(endpoint_uuid: string) {

@@ -430,5 +430,6 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
       const value = traffic ? traffic * 100 : traffic
       return <FormattedCell value={value} className="text-right" decimals={1} suffix="%" />
     },
+    sortingFn: createNullSafeSortingFn((row) => row.traffic_share),
   },
 ]

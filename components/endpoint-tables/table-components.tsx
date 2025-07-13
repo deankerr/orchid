@@ -146,8 +146,8 @@ export function FormattedCell({
 // Null-safe sorting function factory
 export function createNullSafeSortingFn<T>(getValue: (row: T) => number | null | undefined) {
   return (rowA: { original: T }, rowB: { original: T }) => {
-    const a = getValue(rowA.original) ?? Number.NEGATIVE_INFINITY
-    const b = getValue(rowB.original) ?? Number.NEGATIVE_INFINITY
+    const a = getValue(rowA.original) ?? 1
+    const b = getValue(rowB.original) ?? 1
     return a - b
   }
 }

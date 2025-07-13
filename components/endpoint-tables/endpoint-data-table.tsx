@@ -85,13 +85,9 @@ interface EndpointDataTableProps {
   defaultHiddenColumns?: VisibilityState
 }
 
-export function EndpointDataTable({
-  model: _model,
-  endpoints,
-  defaultHiddenColumns = DEFAULT_HIDDEN_COLUMNS,
-}: EndpointDataTableProps) {
+export function EndpointDataTable({ model: _model, endpoints }: EndpointDataTableProps) {
   const [sorting, setSorting] = useState<SortingState>([{ id: 'traffic', desc: true }])
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(defaultHiddenColumns)
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(DEFAULT_HIDDEN_COLUMNS)
   const [grouping, setGrouping] = useState<GroupingState>(['model_variant_slug'])
 
   const table = useReactTable({
@@ -104,6 +100,7 @@ export function EndpointDataTable({
     getSortedRowModel: getSortedRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
+    manualPagination: true, // prevents state update on initial render error
     initialState: {
       expanded: true,
     },
