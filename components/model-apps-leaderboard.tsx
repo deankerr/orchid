@@ -3,7 +3,6 @@ import type { Doc } from '@/convex/_generated/dataModel'
 import { formatTokenCount } from '@/lib/utils'
 
 import { ExternalLink } from './external-link'
-import { SnapshotAtBadge } from './snapshot-at-badge'
 import { Badge } from './ui/badge'
 
 function LeaderboardItem({
@@ -46,17 +45,17 @@ export function ModelAppsLeaderboard({
   return (
     <div className="relative rounded-sm border font-mono">
       <div className="border-b p-4">
-        <div className="text-sm font-medium text-muted-foreground">
+        <div className="flex items-center text-sm font-medium text-muted-foreground">
           {title}
           {leaderboard.model_variant !== 'standard' && (
-            <Badge variant="default" className="ml-2.5">
+            <Badge variant="secondary" className="ml-2.5">
               {leaderboard.model_variant}
             </Badge>
           )}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 lg:divide-x">
+      <div className="grid grid-cols-1 md:grid-cols-2 md:divide-x">
         {/* First column */}
         <div className="space-y-4 p-4">
           {apps.slice(0, Math.ceil(apps.length / 2)).map((app, index) => (
@@ -64,9 +63,9 @@ export function ModelAppsLeaderboard({
           ))}
         </div>
 
-        {/* Second column - only show on lg+ screens and if there are enough apps */}
+        {/* Second column - only show on md+ screens and if there are enough apps */}
         {apps.length > Math.ceil(apps.length / 2) && (
-          <div className="hidden space-y-4 p-4 lg:block">
+          <div className="hidden space-y-4 p-4 md:block">
             {apps.slice(Math.ceil(apps.length / 2)).map((app, index) => (
               <LeaderboardItem
                 key={app.app_id}
@@ -77,8 +76,6 @@ export function ModelAppsLeaderboard({
           </div>
         )}
       </div>
-
-      <SnapshotAtBadge snapshot_at={leaderboard.snapshot_at} className="absolute top-3 right-3" />
     </div>
   )
 }

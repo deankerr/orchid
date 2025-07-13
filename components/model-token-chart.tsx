@@ -101,26 +101,14 @@ export function ModelTokenChart({ data, variant, title }: ModelTokenChartProps) 
   // Sort data by timestamp (oldest first for proper chart display)
   const sortedData = [...data].sort((a, b) => a.timestamp - b.timestamp)
 
-  // Transform data for chart
-  const chartData = sortedData.map((metric) => ({
-    date: new Date(metric.timestamp).toISOString().split('T')[0], // YYYY-MM-DD format
-    timestamp: metric.timestamp,
-    input_tokens: metric.input_tokens,
-    output_tokens: metric.output_tokens,
-    reasoning_tokens: metric.reasoning_tokens,
-  }))
+  // Get the first data point
+  const first = sortedData[0]
 
-  const getTitle = () => {
-    if (title) return title
-    if (variant === 'standard') return 'Token Usage'
-    return `Token Usage (${variant})`
-  }
-
-  if (chartData.length === 0) {
+  if (!first) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="font-mono text-sm">{getTitle()}</CardTitle>
+          <CardTitle className="font-mono text-sm">{title || 'Token Usage'}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="font-mono text-sm text-muted-foreground">No data available</div>
@@ -129,12 +117,35 @@ export function ModelTokenChart({ data, variant, title }: ModelTokenChartProps) 
     )
   }
 
+  // Pad the start if needed
+  let chartData = [...sortedData].map((metric) => ({
+    date: new Date(metric.timestamp).toISOString().split('T')[0],
+    timestamp: metric.timestamp,
+    input_tokens: metric.input_tokens,
+    output_tokens: metric.output_tokens,
+    reasoning_tokens: metric.reasoning_tokens,
+  }))
+
+  if (chartData.length < 7) {
+    const MS_PER_DAY = 24 * 60 * 60 * 1000
+    const pads = []
+    for (let i = chartData.length; i < 7; i++) {
+      const padTimestamp = first.timestamp - MS_PER_DAY * (i - chartData.length + 1)
+      pads.unshift({
+        date: new Date(padTimestamp).toISOString().split('T')[0],
+        timestamp: padTimestamp,
+        input_tokens: 0,
+        output_tokens: 0,
+        reasoning_tokens: 0,
+      })
+    }
+    chartData = [...pads, ...chartData]
+  }
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-mono text-sm">
-          {getTitle()} ({data.length} days)
-        </CardTitle>
+        <CardTitle className="font-mono text-sm">{title ?? `Token Usage (${variant})`}</CardTitle>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="aspect-auto h-[250px] w-full font-mono">

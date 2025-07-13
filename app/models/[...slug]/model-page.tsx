@@ -12,6 +12,12 @@ import { ModelAppsLeaderboard } from '@/components/model-apps-leaderboard'
 import { ModelTokenChart } from '@/components/model-token-chart'
 import { PageContainer, PageHeader, PageLoading, PageTitle } from '@/components/page-container'
 import { Pill } from '@/components/pill'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { useModelAppsLeaderboards, useModelData, useModelTokenMetrics } from '@/hooks/api'
@@ -40,7 +46,7 @@ export function ModelPage({ slug }: { slug: string }) {
   }
 
   return (
-    <PageContainer className="space-y-6">
+    <PageContainer className="space-y-7">
       <PageHeader>
         <PageTitle>
           <BrandIcon slug={model.slug} size={24} fallback="model" />
@@ -68,11 +74,8 @@ export function ModelPage({ slug }: { slug: string }) {
         )}
 
         <Pill label="added">{formatIsoDate(model.or_created_at)}</Pill>
-
         <Pill label="context_length">{model.context_length.toLocaleString()}</Pill>
-
         <Pill label="tokenizer">{model.tokenizer}</Pill>
-
         {model.instruct_type && <Pill label="instruct_type">{model.instruct_type}</Pill>}
       </div>
 
@@ -129,10 +132,26 @@ export function ModelPage({ slug }: { slug: string }) {
       {modelTokenMetrics === undefined ? (
         <DataStreamLoader label="Loading metrics..." />
       ) : (
-        Object.entries(modelTokenMetrics).map(([variant, metrics]) => (
-          <ModelTokenChart key={variant} data={metrics ?? []} variant={variant} />
+        model.variants.map((variant) => (
+          <ModelTokenChart
+            key={variant}
+            data={modelTokenMetrics[variant] ?? []}
+            variant={variant}
+            title={`Tokens: ${model.slug}${variant !== 'standard' ? `:${variant}` : ''}`}
+          />
         ))
       )}
+
+      <Accordion type="single" collapsible className="bg-muted/30">
+        <AccordionItem value="model-data" className="border-b-0">
+          <AccordionTrigger className="px-4 font-mono text-sm">Raw</AccordionTrigger>
+          <AccordionContent className="px-4">
+            <pre className="text-xs whitespace-pre-wrap text-muted-foreground">
+              {JSON.stringify(model, null, 2)}
+            </pre>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     </PageContainer>
   )
 }
