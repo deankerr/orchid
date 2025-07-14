@@ -11,20 +11,20 @@ const appFields = {
   created_at: z4.string(),
 }
 
-const fields = {
+export const AppStrictSchema = z4.strictObject({
   app_id: z4.number(),
   total_tokens: z4.coerce.number(),
-}
-
-export const AppStrictSchema = z4.strictObject({
-  ...fields,
   app: z4.strictObject(appFields),
 })
 
 export const AppTransformSchema = z4
-  .object({ ...fields, app: z4.object(appFields).transform(R.pickBy(R.isNonNullish)) })
-  .transform((rec) => {
-    const { created_at, id, ...app } = rec.app
+  .object({
+    app_id: z4.number(),
+    total_tokens: z4.coerce.number(),
+    app: z4.object(appFields).transform(R.pickBy(R.isNonNullish)),
+  })
+  .transform((data) => {
+    const { created_at, id, ...app } = data.app
 
     return {
       app: {
@@ -34,8 +34,8 @@ export const AppTransformSchema = z4
       },
 
       appTokens: {
-        app_id: rec.app_id,
-        total_tokens: rec.total_tokens,
+        app_id: data.app_id,
+        total_tokens: data.total_tokens,
       },
     }
   })

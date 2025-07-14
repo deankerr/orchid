@@ -7,6 +7,7 @@ const statsFields = {
   total_completion_tokens: z4.number(),
   total_prompt_tokens: z4.number(),
   total_native_tokens_reasoning: z4.number(),
+  variant_permaslug: z4.string(),
   count: z4.number(),
 }
 
@@ -14,7 +15,7 @@ export const ModelTokenStatsStrictSchema = z4.strictObject({
   modelsWithStats: z4
     .object({
       slug: z4.string(),
-      stats: z4.strictObject({ ...statsFields, variant_permaslug: z4.string() }).array(),
+      stats: z4.strictObject(statsFields).array(),
     })
     .array(),
   author: z4.unknown(), // checked in author_views
@@ -29,8 +30,7 @@ export const ModelTokenStatsTransformSchema = z4
       })
       .array(),
   })
-  .transform((rec) => rec.modelsWithStats)
-  .transform((modelsWithStats) =>
+  .transform(({ modelsWithStats }) =>
     modelsWithStats.flatMap((model) =>
       model.stats.map((stat) => ({
         model_slug: model.slug,

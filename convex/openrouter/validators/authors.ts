@@ -20,10 +20,10 @@ export const AuthorTransformSchema = z4
   .object({
     author: z4.object(fields),
   })
-  .transform((rec) => rec.author)
+  .transform((data) => data.author)
   .transform(R.pickBy(R.isNonNullish))
-  .transform((rec) => {
-    const { id, created_at, updated_at, ...rest } = rec
+  .transform((data) => {
+    const { id, created_at, updated_at, ...rest } = data
 
     return {
       ...rest,
