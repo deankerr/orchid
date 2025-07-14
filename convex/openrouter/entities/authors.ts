@@ -42,7 +42,7 @@ export const upsert = internalMutation({
   args: {
     items: v.array(OrAuthors.content),
   },
-  handler: async (ctx, { items }: { items: (typeof OrAuthors.$content)[] }) => {
+  handler: async (ctx, { items }) => {
     const results: UpsertResult[] = []
 
     for (const item of items) {
