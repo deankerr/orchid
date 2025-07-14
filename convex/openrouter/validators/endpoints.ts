@@ -1,31 +1,7 @@
 import * as R from 'remeda'
 import z4 from 'zod/v4'
 
-const dataPolicyFields = {
-  termsOfServiceURL: z4.url().optional(),
-  privacyPolicyURL: z4.url().optional(),
-  dataPolicyUrl: z4.url().optional(),
-  freeModels: z4
-    .object({
-      training: z4.boolean(),
-      retainsPrompts: z4.boolean(),
-      retentionDays: z4.number().optional(),
-      canPublish: z4.boolean().optional(),
-    })
-    .optional(),
-  paidModels: z4.object({
-    training: z4.boolean(),
-    retainsPrompts: z4.boolean().optional(),
-    retentionDays: z4.number().optional(),
-    requiresUserIDs: z4.boolean().optional(),
-    canPublish: z4.boolean().optional(),
-  }),
-  training: z4.boolean().optional(),
-  retainsPrompts: z4.boolean().optional(),
-  retentionDays: z4.number().optional(),
-  requiresUserIDs: z4.boolean().optional(),
-  canPublish: z4.boolean().optional(),
-}
+import { DataPolicySchemas } from './dataPolicy'
 
 const pricingFields = {
   prompt: z4.string(),
@@ -104,7 +80,7 @@ const fields = {
 
 export const EndpointStrictSchema = z4.strictObject({
   ...fields,
-  data_policy: z4.strictObject(dataPolicyFields),
+  data_policy: DataPolicySchemas.endpoint.strict,
   pricing: z4.strictObject(pricingFields),
   variable_pricings: variablePricingsFields,
   stats: z4.strictObject(statsFields).optional(),
@@ -124,15 +100,7 @@ export const EndpointTransformSchema = z4
       'is_free',
       'adapter_name',
     ]),
-    data_policy: z4.object(
-      R.pick(dataPolicyFields, [
-        'training',
-        'retainsPrompts',
-        'retentionDays',
-        'requiresUserIDs',
-        'canPublish',
-      ]),
-    ),
+    data_policy: DataPolicySchemas.endpoint.transform,
     pricing: z4
       .object({
         prompt: z4.coerce.number(),

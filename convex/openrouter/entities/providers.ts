@@ -42,7 +42,7 @@ export const OrProviders = Table2('or_providers', {
     free_models: v.optional(
       v.object({
         training: v.boolean(),
-        retains_prompts: v.boolean(),
+        retains_prompts: v.optional(v.boolean()),
         retention_days: v.optional(v.number()),
         can_publish: v.optional(v.boolean()),
       }),

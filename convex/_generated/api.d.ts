@@ -41,6 +41,7 @@ import type * as openrouter_sources from "../openrouter/sources.js";
 import type * as openrouter_validation from "../openrouter/validation.js";
 import type * as openrouter_validators_apps from "../openrouter/validators/apps.js";
 import type * as openrouter_validators_authors from "../openrouter/validators/authors.js";
+import type * as openrouter_validators_dataPolicy from "../openrouter/validators/dataPolicy.js";
 import type * as openrouter_validators_endpointUptimesMetrics from "../openrouter/validators/endpointUptimesMetrics.js";
 import type * as openrouter_validators_endpoints from "../openrouter/validators/endpoints.js";
 import type * as openrouter_validators_modelTokenMetrics from "../openrouter/validators/modelTokenMetrics.js";
@@ -87,6 +88,7 @@ declare const fullApi: ApiFromModules<{
   "openrouter/validation": typeof openrouter_validation;
   "openrouter/validators/apps": typeof openrouter_validators_apps;
   "openrouter/validators/authors": typeof openrouter_validators_authors;
+  "openrouter/validators/dataPolicy": typeof openrouter_validators_dataPolicy;
   "openrouter/validators/endpointUptimesMetrics": typeof openrouter_validators_endpointUptimesMetrics;
   "openrouter/validators/endpoints": typeof openrouter_validators_endpoints;
   "openrouter/validators/modelTokenMetrics": typeof openrouter_validators_modelTokenMetrics;

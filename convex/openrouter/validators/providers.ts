@@ -1,26 +1,7 @@
 import * as R from 'remeda'
 import z4 from 'zod/v4'
 
-const paidModelFields = {
-  training: z4.boolean(),
-  retainsPrompts: z4.boolean().optional(),
-  retentionDays: z4.number().optional(),
-  canPublish: z4.boolean().optional(),
-}
-
-const freeModelFields = {
-  training: z4.boolean(),
-  retainsPrompts: z4.boolean(),
-  retentionDays: z4.number().optional(),
-  canPublish: z4.boolean().optional(),
-}
-
-const dataPolicyFields = {
-  termsOfServiceURL: z4.url().optional(),
-  privacyPolicyURL: z4.url().optional(),
-  dataPolicyUrl: z4.url().optional(),
-  requiresUserIDs: z4.boolean().optional(),
-}
+import { DataPolicySchemas } from './dataPolicy'
 
 const iconFields = {
   url: z4.string(),
@@ -50,22 +31,14 @@ const fields = {
 export const ProviderStrictSchema = z4.strictObject({
   ...fields,
   icon: z4.strictObject(iconFields),
-  dataPolicy: z4.strictObject({
-    ...dataPolicyFields,
-    paidModels: z4.strictObject(paidModelFields),
-    freeModels: z4.strictObject(freeModelFields).optional(),
-  }),
+  dataPolicy: DataPolicySchemas.provider.strict,
 })
 
 export const ProviderTransformSchema = z4
   .object({
     ...R.omit(fields, ['name', 'baseUrl', 'editors', 'owners', 'ignoredProviderModels']),
     icon: z4.object(iconFields),
-    dataPolicy: z4.object({
-      ...dataPolicyFields,
-      paidModels: z4.object(paidModelFields),
-      freeModels: z4.object(freeModelFields).optional(),
-    }),
+    dataPolicy: DataPolicySchemas.provider.transform,
   })
   .transform(R.pickBy(R.isNonNullish))
   .transform((record) => {
