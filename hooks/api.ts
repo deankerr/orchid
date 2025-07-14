@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+
 import * as R from 'remeda'
 
 import { api } from '@/convex/_generated/api'
@@ -13,22 +15,19 @@ export function useEndpointsByVariant() {
   if (!(models && endpoints)) return
 
   const endpointsByVariant = Object.entries(
-    R.groupBy(endpoints, (e) => `${e.model_slug}:${e.model_variant}`),
+    R.groupBy(endpoints, (endp) => endp.model_variant_slug),
   ).map(([model_variant_slug, endpoints]) => {
-    const totalRequests = endpoints.reduce((acc, endp) => acc + (endp.stats?.request_count ?? 0), 0)
-
     const [model_slug, model_variant] = model_variant_slug.split(':')
     const model = models.find((m) => m.slug === model_slug)!
+
+    endpoints.sort((a, b) => (b.traffic_share ?? 0) - (a.traffic_share ?? 0))
 
     return {
       model_variant_slug,
       model,
       model_variant,
-      tokens_7d: model.stats?.[model_variant]?.tokens_7d ?? 0,
-      endpoints: endpoints.map((endp) => ({
-        ...endp,
-        traffic: endp.stats?.request_count ? endp.stats.request_count / totalRequests : undefined,
-      })),
+      tokens_7d: model.stats?.[model_variant ?? 'standard']?.tokens_7d ?? 0,
+      endpoints,
     }
   })
 
@@ -39,8 +38,23 @@ export function useModelsList() {
   return useCachedQuery(api.openrouter.entities.models.list, {}, 'useModelsList')
 }
 
+export type Endpoint = NonNullable<ReturnType<typeof useEndpointsList>>[number]
 export function useEndpointsList() {
   return useCachedQuery(api.openrouter.entities.endpoints.list, {}, 'useEndpointsList')
+}
+
+export function useModelData(slug: string) {
+  const modelsList = useModelsList()
+  const endpointsList = useEndpointsList()
+
+  const modelData = useMemo(() => {
+    if (!modelsList) return
+    const model = modelsList.find((m) => m.slug === slug)
+    if (!model) return null
+    return { ...model, endpoints: endpointsList?.filter((e) => e.model_slug === slug) }
+  }, [endpointsList, modelsList, slug])
+
+  return modelData
 }
 
 export function useEndpointUptimes(endpoint_uuid: string) {

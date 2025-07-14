@@ -1,5 +1,7 @@
 import Image from 'next/image'
 
+import { BoxIcon } from 'lucide-react'
+
 import { useProvidersList } from '@/hooks/api'
 import { cn } from '@/lib/utils'
 
@@ -10,12 +12,14 @@ export function BrandIcon({
   alt = '',
   size = 20,
   fallbackSrc,
-  className = '',
+  fallback,
+  className,
 }: {
   slug: string
   alt?: string
   size?: number
   fallbackSrc?: string
+  fallback?: 'model'
   className?: string
 }) {
   const iconSlug = slug
@@ -70,6 +74,8 @@ export function BrandIcon({
           sizes={`${size}px`}
           style={{ objectFit: 'contain' }}
         />
+      ) : fallback === 'model' ? (
+        <BoxIcon className="m-auto opacity-95" strokeWidth={1.5} />
       ) : (
         <div className="m-auto size-5/6 rounded-lg border dark:bg-muted/30" />
       )}

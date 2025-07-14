@@ -4,7 +4,7 @@ import { fetchQuery } from 'convex/nextjs'
 
 import { api } from '@/convex/_generated/api'
 
-import { ModelPage } from '@/components/model-page'
+import { ModelPage } from './model-page'
 
 type Props = {
   params: Promise<{ slug: string[] }>

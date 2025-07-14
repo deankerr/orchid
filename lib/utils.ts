@@ -5,16 +5,17 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function formatIsoDate(timestamp: number | string) {
-  return new Date(timestamp).toISOString().split('T')[0]
+export function formatIsoDate(date: number) {
+  return new Date(date).toISOString().split('T')[0]
 }
 
 export function formatSnapshotAtTime(timestamp: number | string) {
   return new Date(timestamp).toISOString().slice(2, 13).replace('T', ' ')
 }
 
-export function formatTokenPriceToM(value = 0) {
-  return `$${(value * 1_000_000).toFixed(2)} / MTok`
+export function formatTokenPriceToM(value?: number) {
+  if (value === undefined) return ' - '
+  return `${(value * 1_000_000).toFixed(2)}`
 }
 
 export function formatTokenPriceToK(value = 0) {

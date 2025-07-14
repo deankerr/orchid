@@ -1,10 +1,13 @@
 import { v } from 'convex/values'
+import * as R from 'remeda'
 
 import { diff, type IChange } from 'json-diff-ts'
 
 import { internalMutation, query, type MutationCtx, type QueryCtx } from '../../_generated/server'
-import { Table2 } from '../../table2'
 import { type UpsertResult } from '../output'
+import { hoursBetween } from '../../shared'
+import { Table2 } from '../../table2'
+import { getCurrentSnapshotTimestamp } from '../snapshot'
 
 export const OrEndpoints = Table2('or_endpoints', {
   uuid: v.string(),
@@ -22,17 +25,19 @@ export const OrEndpoints = Table2('or_endpoints', {
   supported_parameters: v.array(v.string()),
 
   capabilities: v.object({
+    // provider dependent
     completions: v.boolean(),
     chat_completions: v.boolean(),
 
-    image_input: v.boolean(),
-    file_input: v.boolean(),
-
-    reasoning: v.boolean(),
     tools: v.boolean(),
     multipart_messages: v.boolean(),
     stream_cancellation: v.boolean(),
     byok: v.boolean(),
+
+    // model dependent
+    image_input: v.boolean(),
+    file_input: v.boolean(),
+    reasoning: v.boolean(),
   }),
 
   limits: v.object({
@@ -60,12 +65,12 @@ export const OrEndpoints = Table2('or_endpoints', {
     output: v.optional(v.number()),
     image_input: v.optional(v.number()),
     reasoning_output: v.optional(v.number()),
-    web_search: v.optional(v.number()),
 
     cache_read: v.optional(v.number()),
     cache_write: v.optional(v.number()),
 
     // flat rate
+    web_search: v.optional(v.number()),
     per_request: v.optional(v.number()),
 
     // e.g. 0.25, already applied to the other pricing fields
@@ -170,10 +175,44 @@ export const upsert = internalMutation({
 })
 
 // * queries
-
 export const list = query({
   handler: async (ctx) => {
-    const results = await ctx.db.query('or_endpoints').collect()
-    return results
+    const snapshot_at = await getCurrentSnapshotTimestamp(ctx)
+    const results = await ctx.db
+      .query('or_endpoints')
+      .collect()
+      .then(
+        (res) =>
+          res
+            .map((endp) => ({
+              ...endp,
+              staleness_hours: hoursBetween(endp.snapshot_at, snapshot_at),
+            }))
+            .filter((endp) => endp.staleness_hours < 1), // NOTE: remove all stale endpoints
+      )
+
+    return Map.groupBy(results, (r) =>
+      r.model_variant === 'standard' ? r.model_slug : `${r.model_slug}:${r.model_variant}`,
+    )
+      .entries()
+      .flatMap(([model_variant_slug, endpoints]) => {
+        const totalRequests = endpoints.reduce(
+          (sum, endp) => sum + (endp.stats?.request_count ?? 0),
+          0,
+        )
+
+        return endpoints.map((endp) => ({
+          ...endp,
+          limits: {
+            ...endp.limits,
+            output_tokens: endp.limits.output_tokens ?? endp.context_length,
+          },
+          model_variant_slug,
+          traffic_share: R.isDefined(endp.stats?.request_count)
+            ? (endp.stats?.request_count ?? 0) / totalRequests
+            : undefined,
+        }))
+      })
+      .toArray()
   },
 })

@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useSnapshotRuns } from '@/hooks/api'
 
 import { ErrorState } from '../loading'
-import { PageContainer, PageLoading, PageTitle } from '../page-container'
+import { PageContainer, PageHeader, PageLoading, PageTitle } from '../page-container'
 import { SnapshotRunDetail } from './snapshot-run-detail'
 import { SnapshotRunsList } from './snapshot-runs-list'
 
@@ -29,13 +29,9 @@ export function SnapshotDashboard() {
 
   return (
     <PageContainer>
-      <div className="flex items-center justify-between">
-        <div>
-          <PageTitle>Snapshot Dashboard</PageTitle>
-          <p className="text-muted-foreground">
-            View snapshot runs, pipeline details, and archived data
-          </p>
-        </div>
+      <PageHeader>
+        <PageTitle>Snapshots</PageTitle>
+
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="font-mono">
             {runs.length} runs
@@ -44,7 +40,7 @@ export function SnapshotDashboard() {
             {runs.filter((run) => run.ok && run.ended_at).length} with archives
           </Badge>
         </div>
-      </div>
+      </PageHeader>
 
       {/* Runs List */}
       <Card>
