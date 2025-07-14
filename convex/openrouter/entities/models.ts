@@ -4,7 +4,7 @@ import { diff, type IChange } from 'json-diff-ts'
 
 import { internalMutation, query, type MutationCtx, type QueryCtx } from '../../_generated/server'
 import { Table2 } from '../../table2'
-import { upsertHelper, type UpsertResult } from '../output'
+import { type UpsertResult } from '../output'
 
 export const vModelStatsRecord = v.record(
   v.string(), // variant
@@ -89,7 +89,7 @@ export const upsert = internalMutation({
   args: {
     items: v.array(OrModels.content),
   },
-  handler: async (ctx, { items }) => {
+  handler: async (ctx, { items }: { items: (typeof OrModels.$content)[] }) => {
     const results: UpsertResult[] = []
     
     for (const item of items) {
@@ -101,17 +101,26 @@ export const upsert = internalMutation({
         item.stats = existing.stats ?? {}
       }
 
-      const result = await upsertHelper(ctx, {
-        tableName: OrModels.name,
-        record: item,
-        existingRecord: existing,
-        changes,
-        recordChanges: async (ctx, content, changes) => {
-          await OrModelsFn.recordChanges(ctx, { content, changes })
-        },
-      })
-      
-      results.push(result)
+      // Record changes
+      await OrModelsFn.recordChanges(ctx, { content: item, changes })
+
+      // Insert
+      if (!existing) {
+        await ctx.db.insert(OrModels.name, item)
+        results.push({ action: 'insert' })
+        continue
+      }
+
+      // Stable - no changes
+      if (changes.length === 0) {
+        await ctx.db.patch(existing._id, { snapshot_at: item.snapshot_at })
+        results.push({ action: 'stable' })
+        continue
+      }
+
+      // Update
+      await ctx.db.replace(existing._id, item)
+      results.push({ action: 'update' })
     }
 
     return results

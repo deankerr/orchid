@@ -4,7 +4,7 @@ import { diff, type IChange } from 'json-diff-ts'
 
 import { internalMutation, type MutationCtx, type QueryCtx } from '../../_generated/server'
 import { Table2 } from '../../table2'
-import { upsertHelper, type UpsertResult } from '../output'
+import { type UpsertResult } from '../output'
 
 export const OrApps = Table2('or_apps', {
   app_id: v.number(),
@@ -58,17 +58,26 @@ export const upsert = internalMutation({
       const existing = await OrAppsFn.get(ctx, { app_id: item.app_id })
       const changes = OrAppsFn.diff(existing ?? {}, item)
 
-      const result = await upsertHelper(ctx, {
-        tableName: OrApps.name,
-        record: item,
-        existingRecord: existing,
-        changes,
-        recordChanges: async (ctx, content, changes) => {
-          await OrAppsFn.recordChanges(ctx, { content, changes })
-        },
-      })
-      
-      results.push(result)
+      // Record changes
+      await OrAppsFn.recordChanges(ctx, { content: item, changes })
+
+      // Insert
+      if (!existing) {
+        await ctx.db.insert(OrApps.name, item)
+        results.push({ action: 'insert' })
+        continue
+      }
+
+      // Stable - no changes
+      if (changes.length === 0) {
+        await ctx.db.patch(existing._id, { snapshot_at: item.snapshot_at })
+        results.push({ action: 'stable' })
+        continue
+      }
+
+      // Update
+      await ctx.db.replace(existing._id, item)
+      results.push({ action: 'update' })
     }
 
     return results

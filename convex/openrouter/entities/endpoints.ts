@@ -4,7 +4,7 @@ import { diff, type IChange } from 'json-diff-ts'
 
 import { internalMutation, query, type MutationCtx, type QueryCtx } from '../../_generated/server'
 import { Table2 } from '../../table2'
-import { upsertHelper, type UpsertResult } from '../output'
+import { type UpsertResult } from '../output'
 
 export const OrEndpoints = Table2('or_endpoints', {
   uuid: v.string(),
@@ -139,28 +139,30 @@ export const upsert = internalMutation({
       const existing = await OrEndpointsFn.get(ctx, { uuid: item.uuid })
       const changes = OrEndpointsFn.diff(existing ?? {}, item)
 
-      // stats and uptime_average are excluded from diff but need to be updated
-      // onStable callback handles this without marking the endpoint as "updated"
+      // Record changes
+      await OrEndpointsFn.recordChanges(ctx, { content: item, changes })
 
-      const result = await upsertHelper(ctx, {
-        tableName: OrEndpoints.name,
-        record: item,
-        existingRecord: existing,
-        changes,
-        recordChanges: async (ctx, content, changes) => {
-          await OrEndpointsFn.recordChanges(ctx, { content, changes })
-        },
-        onStable: async (ctx, existing, record) => {
-          // For endpoints, update stats and uptime_average (excluded from diff)
-          await ctx.db.patch(existing._id, {
-            snapshot_at: record.snapshot_at,
-            stats: record.stats,
-            uptime_average: record.uptime_average,
-          })
-        },
-      })
-      
-      results.push(result)
+      // Insert
+      if (!existing) {
+        await ctx.db.insert(OrEndpoints.name, item)
+        results.push({ action: 'insert' })
+        continue
+      }
+
+      // Stable - no changes, but update stats and uptime_average (excluded from diff)
+      if (changes.length === 0) {
+        await ctx.db.patch(existing._id, {
+          snapshot_at: item.snapshot_at,
+          stats: item.stats,
+          uptime_average: item.uptime_average,
+        })
+        results.push({ action: 'stable' })
+        continue
+      }
+
+      // Update
+      await ctx.db.replace(existing._id, item)
+      results.push({ action: 'update' })
     }
 
     return results
