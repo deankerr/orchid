@@ -1,9 +1,10 @@
 import * as R from 'remeda'
 import type z4 from 'zod/v4'
 
+import { internal } from '../../_generated/api'
 import type { ActionCtx } from '../../_generated/server'
 import { storeSnapshotData } from '../archive'
-import { output } from '../output'
+import type { UpsertResult } from '../output'
 import { validateArray } from '../validation'
 import { ModelStrictSchema, ModelTransformSchema } from '../validators/models'
 
@@ -40,19 +41,19 @@ export async function modelsPipeline(
     stats: {},
   }))
 
-  const results = await output(ctx, {
-    entities: [
-      {
-        name: 'models',
-        items: models,
-      },
-    ],
+  const results = await ctx.runMutation(internal.openrouter.entities.models.upsert, {
+    items: models,
   })
 
   return {
     data: models,
     metrics: {
-      entities: results,
+      entities: [
+        {
+          ...R.countBy(results, (v: UpsertResult) => v.action),
+          name: 'models',
+        },
+      ],
       issues,
       started_at,
       ended_at: Date.now(),

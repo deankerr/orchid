@@ -3,7 +3,8 @@ import * as R from 'remeda'
 
 import { diff, type IChange } from 'json-diff-ts'
 
-import { query, type MutationCtx, type QueryCtx } from '../../_generated/server'
+import { internalMutation, query, type MutationCtx, type QueryCtx } from '../../_generated/server'
+import { type UpsertResult } from '../output'
 import { hoursBetween } from '../../shared'
 import { Table2 } from '../../table2'
 import { getCurrentSnapshotTimestamp } from '../snapshot'
@@ -131,6 +132,47 @@ export const OrEndpointsFn = {
     await ctx.db.insert(OrEndpointsChanges.name, { uuid, snapshot_at, changes })
   },
 }
+
+export const upsert = internalMutation({
+  args: {
+    items: v.array(OrEndpoints.content),
+  },
+  handler: async (ctx, { items }: { items: (typeof OrEndpoints.$content)[] }) => {
+    const results: UpsertResult[] = []
+    
+    for (const item of items) {
+      const existing = await OrEndpointsFn.get(ctx, { uuid: item.uuid })
+      const changes = OrEndpointsFn.diff(existing ?? {}, item)
+
+      // Record changes
+      await OrEndpointsFn.recordChanges(ctx, { content: item, changes })
+
+      // Insert
+      if (!existing) {
+        await ctx.db.insert(OrEndpoints.name, item)
+        results.push({ action: 'insert' })
+        continue
+      }
+
+      // Stable - no changes, but update stats and uptime_average (excluded from diff)
+      if (changes.length === 0) {
+        await ctx.db.patch(existing._id, {
+          snapshot_at: item.snapshot_at,
+          stats: item.stats,
+          uptime_average: item.uptime_average,
+        })
+        results.push({ action: 'stable' })
+        continue
+      }
+
+      // Update
+      await ctx.db.replace(existing._id, item)
+      results.push({ action: 'update' })
+    }
+
+    return results
+  },
+})
 
 // * queries
 export const list = query({

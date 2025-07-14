@@ -2,9 +2,10 @@ import * as R from 'remeda'
 
 import { internal } from '../../_generated/api'
 import type { ActionCtx } from '../../_generated/server'
+import { OrAuthors } from '../entities/authors'
+import { OrModels } from '../entities/models'
 import type { OrModelTokenMetrics } from '../entities/modelTokenMetrics'
-import { batch, output } from '../output'
-import type { Entities } from '../registry'
+import { batch, type UpsertResult } from '../output'
 import { validateRecord, type Issue } from '../validation'
 import { AuthorStrictSchema, AuthorTransformSchema } from '../validators/authors'
 import {
@@ -18,10 +19,10 @@ export async function modelTokenMetricsPipeline(
     snapshot_at,
     models,
     source,
-  }: {
+  }:   {
     snapshot_at: number
     run_id: string
-    models: (typeof Entities.models.table.$content)[]
+    models: (typeof OrModels.$content)[]
     source: {
       authors: (args: { authorSlug: string }) => Promise<unknown>
     }
@@ -29,7 +30,7 @@ export async function modelTokenMetricsPipeline(
 ) {
   const started_at = Date.now()
   const modelTokenMetrics: (typeof OrModelTokenMetrics.$content)[] = []
-  const authors: (typeof Entities.authors.table.$content)[] = []
+  const authors: (typeof OrAuthors.$content)[] = []
   const issues: Issue[] = []
 
   for (const authorSlug of new Set(models.map((m) => m.author_slug))) {
@@ -52,13 +53,8 @@ export async function modelTokenMetricsPipeline(
     authors.push({ ...authorItem, snapshot_at })
   }
 
-  const results = await output(ctx, {
-    entities: [
-      {
-        name: 'authors',
-        items: authors,
-      },
-    ],
+  const results = await ctx.runMutation(internal.openrouter.entities.authors.upsert, {
+    items: authors,
   })
 
   // NOTE: keep same permaslug metrics together - 91 * 22 = 2002
@@ -71,7 +67,7 @@ export async function modelTokenMetricsPipeline(
       })
     },
   ).then((results) => {
-    return { ...R.countBy(results, (v) => v.action), name: 'modelTokenMetrics' }
+    return { ...R.countBy(results, (v: UpsertResult) => v.action), name: 'modelTokenMetrics' }
   })
 
   // * model aggregate stats
@@ -111,7 +107,13 @@ export async function modelTokenMetricsPipeline(
   return {
     data: undefined,
     metrics: {
-      entities: [...results, modelTokenMetricsResults],
+      entities: [
+        {
+          ...R.countBy(results, (v: UpsertResult) => v.action),
+          name: 'authors',
+        },
+        modelTokenMetricsResults,
+      ],
       issues,
       started_at,
       ended_at: Date.now(),

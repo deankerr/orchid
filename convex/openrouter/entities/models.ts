@@ -3,6 +3,7 @@ import { v } from 'convex/values'
 import { diff, type IChange } from 'json-diff-ts'
 
 import { internalMutation, query, type MutationCtx, type QueryCtx } from '../../_generated/server'
+import { type UpsertResult } from '../output'
 import { hoursBetween } from '../../shared'
 import { Table2 } from '../../table2'
 import { getCurrentSnapshotTimestamp } from '../snapshot'
@@ -85,6 +86,48 @@ export const OrModelsFn = {
     await ctx.db.insert(OrModelsChanges.name, { slug, snapshot_at, changes })
   },
 }
+
+export const upsert = internalMutation({
+  args: {
+    items: v.array(OrModels.content),
+  },
+  handler: async (ctx, { items }: { items: (typeof OrModels.$content)[] }) => {
+    const results: UpsertResult[] = []
+    
+    for (const item of items) {
+      const existing = await OrModelsFn.get(ctx, { slug: item.slug })
+      const changes = OrModelsFn.diff(existing ?? {}, item)
+
+      // Preserve existing stats
+      if (existing) {
+        item.stats = existing.stats ?? {}
+      }
+
+      // Record changes
+      await OrModelsFn.recordChanges(ctx, { content: item, changes })
+
+      // Insert
+      if (!existing) {
+        await ctx.db.insert(OrModels.name, item)
+        results.push({ action: 'insert' })
+        continue
+      }
+
+      // Stable - no changes
+      if (changes.length === 0) {
+        await ctx.db.patch(existing._id, { snapshot_at: item.snapshot_at })
+        results.push({ action: 'stable' })
+        continue
+      }
+
+      // Update
+      await ctx.db.replace(existing._id, item)
+      results.push({ action: 'update' })
+    }
+
+    return results
+  },
+})
 
 export const updateStats = internalMutation({
   args: {

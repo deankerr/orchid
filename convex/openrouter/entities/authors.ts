@@ -2,8 +2,9 @@ import { v } from 'convex/values'
 
 import { diff, type IChange } from 'json-diff-ts'
 
-import { type MutationCtx, type QueryCtx } from '../../_generated/server'
+import { internalMutation, type MutationCtx, type QueryCtx } from '../../_generated/server'
 import { Table2 } from '../../table2'
+import { type UpsertResult } from '../output'
 
 export const OrAuthors = Table2('or_authors', {
   uuid: v.string(),
@@ -50,3 +51,40 @@ export const OrAuthorsFn = {
     await ctx.db.insert(OrAuthorsChanges.name, { uuid, snapshot_at, changes })
   },
 }
+
+export const upsert = internalMutation({
+  args: {
+    items: v.array(OrAuthors.content),
+  },
+  handler: async (ctx, { items }: { items: (typeof OrAuthors.$content)[] }) => {
+    const results: UpsertResult[] = []
+    
+    for (const item of items) {
+      const existing = await OrAuthorsFn.get(ctx, { uuid: item.uuid })
+      const changes = OrAuthorsFn.diff(existing ?? {}, item)
+
+      // Record changes
+      await OrAuthorsFn.recordChanges(ctx, { content: item, changes })
+
+      // Insert
+      if (!existing) {
+        await ctx.db.insert(OrAuthors.name, item)
+        results.push({ action: 'insert' })
+        continue
+      }
+
+      // Stable - no changes
+      if (changes.length === 0) {
+        await ctx.db.patch(existing._id, { snapshot_at: item.snapshot_at })
+        results.push({ action: 'stable' })
+        continue
+      }
+
+      // Update
+      await ctx.db.replace(existing._id, item)
+      results.push({ action: 'update' })
+    }
+
+    return results
+  },
+})

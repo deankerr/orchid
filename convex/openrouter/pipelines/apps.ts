@@ -3,9 +3,10 @@ import * as R from 'remeda'
 import { internal } from '../../_generated/api'
 import type { ActionCtx } from '../../_generated/server'
 import { storeSnapshotData } from '../archive'
+import { OrApps } from '../entities/apps'
 import type { OrModelAppLeaderboards } from '../entities/modelAppLeaderboards'
-import { batch } from '../output'
-import type { Entities } from '../registry'
+import { OrModels } from '../entities/models'
+import { batch, type UpsertResult } from '../output'
 import { validateArray, type Issue } from '../validation'
 import { AppStrictSchema, AppTransformSchema } from '../validators/apps'
 
@@ -19,14 +20,14 @@ export async function appsPipeline(
   }: {
     snapshot_at: number
     run_id: string
-    models: (typeof Entities.models.table.$content)[]
+    models: (typeof OrModels.$content)[]
     source: {
       apps: (args: { permaslug: string; variant: string }) => Promise<unknown[]>
     }
   },
 ) {
   const started_at = Date.now()
-  const appsMap = new Map<number, typeof Entities.apps.table.$content>()
+  const appsMap = new Map<number, typeof OrApps.$content>()
   const modelAppLeaderboards: (typeof OrModelAppLeaderboards.$content)[] = []
 
   const issues: Issue[] = []
@@ -93,7 +94,7 @@ export async function appsPipeline(
     })
   }).then((results) => {
     return {
-      ...R.countBy(results, (v) => v.action),
+      ...R.countBy(results, (v: UpsertResult) => v.action),
       name: 'apps',
     }
   })
@@ -104,7 +105,7 @@ export async function appsPipeline(
     })
   }).then((results) => {
     return {
-      ...R.countBy(results, (v) => v.action),
+      ...R.countBy(results as UpsertResult[], (v: UpsertResult) => v.action),
       name: 'modelAppLeaderboards',
     }
   })

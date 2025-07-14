@@ -1,11 +1,10 @@
-import { asyncMap } from 'convex-helpers'
 import { v } from 'convex/values'
 
 import { diff, type IChange } from 'json-diff-ts'
 
 import { internalMutation, type MutationCtx, type QueryCtx } from '../../_generated/server'
 import { Table2 } from '../../table2'
-import { upsertEntity } from '../output'
+import { type UpsertResult } from '../output'
 
 export const OrApps = Table2('or_apps', {
   app_id: v.number(),
@@ -52,10 +51,34 @@ export const upsert = internalMutation({
   args: {
     items: v.array(OrApps.content),
   },
-  handler: async (ctx, { items }) => {
-    const results = await asyncMap(items, async (item) => {
-      return await upsertEntity(ctx, 'apps', item)
-    })
+  handler: async (ctx, { items }: { items: (typeof OrApps.$content)[] }) => {
+    const results: UpsertResult[] = []
+    
+    for (const item of items) {
+      const existing = await OrAppsFn.get(ctx, { app_id: item.app_id })
+      const changes = OrAppsFn.diff(existing ?? {}, item)
+
+      // Record changes
+      await OrAppsFn.recordChanges(ctx, { content: item, changes })
+
+      // Insert
+      if (!existing) {
+        await ctx.db.insert(OrApps.name, item)
+        results.push({ action: 'insert' })
+        continue
+      }
+
+      // Stable - no changes
+      if (changes.length === 0) {
+        await ctx.db.patch(existing._id, { snapshot_at: item.snapshot_at })
+        results.push({ action: 'stable' })
+        continue
+      }
+
+      // Update
+      await ctx.db.replace(existing._id, item)
+      results.push({ action: 'update' })
+    }
 
     return results
   },
