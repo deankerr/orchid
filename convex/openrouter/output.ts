@@ -23,7 +23,6 @@ export async function upsertHelper<T extends { _id?: any; _creationTime?: any }>
     changes,
     recordChanges,
     onStable,
-    onUpdate,
   }: {
     tableName: string
     record: any
@@ -31,7 +30,6 @@ export async function upsertHelper<T extends { _id?: any; _creationTime?: any }>
     changes: IChange[]
     recordChanges?: (ctx: MutationCtx, content: any, changes: IChange[]) => Promise<void>
     onStable?: (ctx: MutationCtx, existing: T, record: any) => Promise<void>
-    onUpdate?: (ctx: MutationCtx, existing: T, record: any) => Promise<void>
   },
 ): Promise<UpsertResult> {
   // Record changes if function provided
@@ -57,11 +55,7 @@ export async function upsertHelper<T extends { _id?: any; _creationTime?: any }>
   }
 
   // Update
-  if (onUpdate) {
-    await onUpdate(ctx, existingRecord, record)
-  } else {
-    await ctx.db.replace(existingRecord._id, record)
-  }
+  await ctx.db.replace(existingRecord._id, record)
   return { action: 'update' }
 }
 

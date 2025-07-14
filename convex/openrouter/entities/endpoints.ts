@@ -139,6 +139,9 @@ export const upsert = internalMutation({
       const existing = await OrEndpointsFn.get(ctx, { uuid: item.uuid })
       const changes = OrEndpointsFn.diff(existing ?? {}, item)
 
+      // stats and uptime_average are excluded from diff but need to be updated
+      // onStable callback handles this without marking the endpoint as "updated"
+
       const result = await upsertHelper(ctx, {
         tableName: OrEndpoints.name,
         record: item,

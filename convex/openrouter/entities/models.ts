@@ -96,6 +96,11 @@ export const upsert = internalMutation({
       const existing = await OrModelsFn.get(ctx, { slug: item.slug })
       const changes = OrModelsFn.diff(existing ?? {}, item)
 
+      // Preserve existing stats
+      if (existing) {
+        item.stats = existing.stats ?? {}
+      }
+
       const result = await upsertHelper(ctx, {
         tableName: OrModels.name,
         record: item,
@@ -103,11 +108,6 @@ export const upsert = internalMutation({
         changes,
         recordChanges: async (ctx, content, changes) => {
           await OrModelsFn.recordChanges(ctx, { content, changes })
-        },
-        onUpdate: async (ctx, existing, record) => {
-          // Keep existing stats when updating
-          record.stats = existing.stats ?? {}
-          await ctx.db.replace(existing._id, record)
         },
       })
       
