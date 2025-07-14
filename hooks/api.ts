@@ -20,6 +20,8 @@ export function useEndpointsByVariant() {
     const [model_slug, model_variant] = model_variant_slug.split(':')
     const model = models.find((m) => m.slug === model_slug)!
 
+    endpoints.sort((a, b) => (b.traffic_share ?? 0) - (a.traffic_share ?? 0))
+
     return {
       model_variant_slug,
       model,
