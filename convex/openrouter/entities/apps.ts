@@ -1,8 +1,8 @@
 import { v } from 'convex/values'
 
-import { diff, type IChange } from 'json-diff-ts'
+import { diff as jsonDiff, type IChange } from 'json-diff-ts'
 
-import { internalMutation, type MutationCtx, type QueryCtx } from '../../_generated/server'
+import { internalMutation, type MutationCtx } from '../../_generated/server'
 import { Table2 } from '../../table2'
 import { type UpsertResult } from '../output'
 
@@ -24,27 +24,18 @@ export const OrAppsChanges = Table2('or_apps_changes', {
   changes: v.array(v.record(v.string(), v.any())),
 })
 
-export const OrAppsFn = {
-  get: async (ctx: QueryCtx, { app_id }: { app_id: number }) => {
-    return await ctx.db
-      .query(OrApps.name)
-      .withIndex('by_app_id', (q) => q.eq('app_id', app_id))
-      .first()
-  },
+const diff = (a: unknown, b: unknown) =>
+  jsonDiff(a, b, {
+    keysToSkip: ['_id', '_creationTime', 'snapshot_at'],
+  })
 
-  diff: (a: unknown, b: unknown) =>
-    diff(a, b, {
-      keysToSkip: ['_id', '_creationTime', 'snapshot_at'],
-    }),
-
-  recordChanges: async (
-    ctx: MutationCtx,
-    { content, changes }: { content: { app_id: number; snapshot_at: number }; changes: IChange[] },
-  ) => {
-    if (changes.length === 0) return
-    const { app_id, snapshot_at } = content
-    await ctx.db.insert(OrAppsChanges.name, { app_id, snapshot_at, changes })
-  },
+const recordChanges = async (
+  ctx: MutationCtx,
+  { content, changes }: { content: { app_id: number; snapshot_at: number }; changes: IChange[] },
+) => {
+  if (changes.length === 0) return
+  const { app_id, snapshot_at } = content
+  await ctx.db.insert(OrAppsChanges.name, { app_id, snapshot_at, changes })
 }
 
 export const upsert = internalMutation({
@@ -53,13 +44,16 @@ export const upsert = internalMutation({
   },
   handler: async (ctx, { items }: { items: (typeof OrApps.$content)[] }) => {
     const results: UpsertResult[] = []
-    
+
     for (const item of items) {
-      const existing = await OrAppsFn.get(ctx, { app_id: item.app_id })
-      const changes = OrAppsFn.diff(existing ?? {}, item)
+      const existing = await ctx.db
+        .query(OrApps.name)
+        .withIndex('by_app_id', (q) => q.eq('app_id', item.app_id))
+        .first()
+      const changes = diff(existing ?? {}, item)
 
       // Record changes
-      await OrAppsFn.recordChanges(ctx, { content: item, changes })
+      await recordChanges(ctx, { content: item, changes })
 
       // Insert
       if (!existing) {

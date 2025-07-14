@@ -1,8 +1,8 @@
 import { v } from 'convex/values'
 
-import { diff, type IChange } from 'json-diff-ts'
+import { diff as jsonDiff, type IChange } from 'json-diff-ts'
 
-import { internalMutation, type MutationCtx, type QueryCtx } from '../../_generated/server'
+import { internalMutation, type MutationCtx } from '../../_generated/server'
 import { Table2 } from '../../table2'
 import { type UpsertResult } from '../output'
 
@@ -24,32 +24,18 @@ export const OrAuthorsChanges = Table2('or_authors_changes', {
   changes: v.array(v.record(v.string(), v.any())),
 })
 
-export const OrAuthorsFn = {
-  get: async (ctx: QueryCtx, { uuid }: { uuid: string }) => {
-    return await ctx.db
-      .query(OrAuthors.name)
-      .withIndex('by_uuid', (q) => q.eq('uuid', uuid))
-      .first()
-  },
+const diff = (a: unknown, b: unknown) =>
+  jsonDiff(a, b, {
+    keysToSkip: ['_id', '_creationTime', 'snapshot_at'],
+  })
 
-  list: async (ctx: QueryCtx) => {
-    const results = await ctx.db.query(OrAuthors.name).collect()
-    return results
-  },
-
-  diff: (a: unknown, b: unknown) =>
-    diff(a, b, {
-      keysToSkip: ['_id', '_creationTime', 'snapshot_at'],
-    }),
-
-  recordChanges: async (
-    ctx: MutationCtx,
-    { content, changes }: { content: { uuid: string; snapshot_at: number }; changes: IChange[] },
-  ) => {
-    if (changes.length === 0) return
-    const { uuid, snapshot_at } = content
-    await ctx.db.insert(OrAuthorsChanges.name, { uuid, snapshot_at, changes })
-  },
+const recordChanges = async (
+  ctx: MutationCtx,
+  { content, changes }: { content: { uuid: string; snapshot_at: number }; changes: IChange[] },
+) => {
+  if (changes.length === 0) return
+  const { uuid, snapshot_at } = content
+  await ctx.db.insert(OrAuthorsChanges.name, { uuid, snapshot_at, changes })
 }
 
 export const upsert = internalMutation({
@@ -58,13 +44,16 @@ export const upsert = internalMutation({
   },
   handler: async (ctx, { items }: { items: (typeof OrAuthors.$content)[] }) => {
     const results: UpsertResult[] = []
-    
+
     for (const item of items) {
-      const existing = await OrAuthorsFn.get(ctx, { uuid: item.uuid })
-      const changes = OrAuthorsFn.diff(existing ?? {}, item)
+      const existing = await ctx.db
+        .query(OrAuthors.name)
+        .withIndex('by_uuid', (q) => q.eq('uuid', item.uuid))
+        .first()
+      const changes = diff(existing ?? {}, item)
 
       // Record changes
-      await OrAuthorsFn.recordChanges(ctx, { content: item, changes })
+      await recordChanges(ctx, { content: item, changes })
 
       // Insert
       if (!existing) {

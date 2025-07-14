@@ -1,12 +1,12 @@
 import { v } from 'convex/values'
 import * as R from 'remeda'
 
-import { diff, type IChange } from 'json-diff-ts'
+import { diff as jsonDiff, type IChange } from 'json-diff-ts'
 
-import { internalMutation, query, type MutationCtx, type QueryCtx } from '../../_generated/server'
-import { type UpsertResult } from '../output'
+import { internalMutation, query, type MutationCtx } from '../../_generated/server'
 import { hoursBetween } from '../../shared'
 import { Table2 } from '../../table2'
+import { type UpsertResult } from '../output'
 import { getCurrentSnapshotTimestamp } from '../snapshot'
 
 export const OrEndpoints = Table2('or_endpoints', {
@@ -107,30 +107,21 @@ export const OrEndpointsChanges = Table2('or_endpoints_changes', {
   changes: v.array(v.record(v.string(), v.any())),
 })
 
-export const OrEndpointsFn = {
-  get: async (ctx: QueryCtx, { uuid }: { uuid: string }) => {
-    return await ctx.db
-      .query(OrEndpoints.name)
-      .withIndex('by_uuid', (q) => q.eq('uuid', uuid))
-      .first()
-  },
+const diff = (a: unknown, b: unknown) =>
+  jsonDiff(a, b, {
+    keysToSkip: ['_id', '_creationTime', 'snapshot_at', 'stats', 'uptime_average'],
+    embeddedObjKeys: {
+      supported_parameters: '$value',
+    },
+  })
 
-  diff: (a: unknown, b: unknown) =>
-    diff(a, b, {
-      keysToSkip: ['_id', '_creationTime', 'snapshot_at', 'stats', 'uptime_average'],
-      embeddedObjKeys: {
-        supported_parameters: '$value',
-      },
-    }),
-
-  recordChanges: async (
-    ctx: MutationCtx,
-    { content, changes }: { content: { uuid: string; snapshot_at: number }; changes: IChange[] },
-  ) => {
-    if (changes.length === 0) return
-    const { uuid, snapshot_at } = content
-    await ctx.db.insert(OrEndpointsChanges.name, { uuid, snapshot_at, changes })
-  },
+const recordChanges = async (
+  ctx: MutationCtx,
+  { content, changes }: { content: { uuid: string; snapshot_at: number }; changes: IChange[] },
+) => {
+  if (changes.length === 0) return
+  const { uuid, snapshot_at } = content
+  await ctx.db.insert(OrEndpointsChanges.name, { uuid, snapshot_at, changes })
 }
 
 export const upsert = internalMutation({
@@ -139,13 +130,16 @@ export const upsert = internalMutation({
   },
   handler: async (ctx, { items }: { items: (typeof OrEndpoints.$content)[] }) => {
     const results: UpsertResult[] = []
-    
+
     for (const item of items) {
-      const existing = await OrEndpointsFn.get(ctx, { uuid: item.uuid })
-      const changes = OrEndpointsFn.diff(existing ?? {}, item)
+      const existing = await ctx.db
+        .query(OrEndpoints.name)
+        .withIndex('by_uuid', (q) => q.eq('uuid', item.uuid))
+        .first()
+      const changes = diff(existing ?? {}, item)
 
       // Record changes
-      await OrEndpointsFn.recordChanges(ctx, { content: item, changes })
+      await recordChanges(ctx, { content: item, changes })
 
       // Insert
       if (!existing) {

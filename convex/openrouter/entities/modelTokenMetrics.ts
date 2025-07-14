@@ -1,9 +1,9 @@
 import { asyncMap } from 'convex-helpers'
 import { v } from 'convex/values'
 
-import { diff } from 'json-diff-ts'
+import { diff as jsonDiff } from 'json-diff-ts'
 
-import { internalMutation, query, type QueryCtx } from '../../_generated/server'
+import { internalMutation, query } from '../../_generated/server'
 import { Table2 } from '../../table2'
 import type { UpsertResult } from '../output'
 
@@ -20,31 +20,10 @@ export const OrModelTokenMetrics = Table2('or_model_token_metrics', {
   timestamp: v.number(),
 })
 
-export const OrModelTokenMetricsFn = {
-  get: async (
-    ctx: QueryCtx,
-    {
-      model_permaslug,
-      model_variant,
-      timestamp,
-    }: { model_permaslug: string; model_variant: string; timestamp: number },
-  ) => {
-    return await ctx.db
-      .query(OrModelTokenMetrics.name)
-      .withIndex('by_model_permaslug_variant_timestamp', (q) =>
-        q
-          .eq('model_permaslug', model_permaslug)
-          .eq('model_variant', model_variant)
-          .eq('timestamp', timestamp),
-      )
-      .first()
-  },
-
-  diff: (a: unknown, b: unknown) =>
-    diff(a, b, {
-      keysToSkip: ['_id', '_creationTime'],
-    }),
-}
+const diff = (a: unknown, b: unknown) =>
+  jsonDiff(a, b, {
+    keysToSkip: ['_id', '_creationTime'],
+  })
 
 export const upsert = internalMutation({
   args: {
@@ -72,7 +51,7 @@ export const upsert = internalMutation({
             .first()
 
           if (existing) {
-            if (OrModelTokenMetricsFn.diff(existing, metric).length === 0) {
+            if (diff(existing, metric).length === 0) {
               results.push({ action: 'stable' })
               break // we already have all earlier entries
             }
