@@ -7,7 +7,7 @@ alwaysApply: true
 ## Environment
 
 - bun is the package manager, and script runner. The bun runtime is never actually used.
-- `bun typecheck && bun lint` to check your work.
+- `bun check` to typecheck and lint your work.
 - Don't try to start the dev server. It's already running in my terminal.
 
 ## Libraries
