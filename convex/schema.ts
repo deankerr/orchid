@@ -38,10 +38,9 @@ export const schema = defineSchema(
       'snapshot_at',
     ]),
 
-    or_model_app_leaderboards: OrModelAppLeaderboards.table.index('by_permaslug_snapshot_at', [
-      'model_permaslug',
-      'snapshot_at',
-    ]),
+    or_model_app_leaderboards: OrModelAppLeaderboards.table
+      .index('by_permaslug_snapshot_at', ['model_permaslug', 'snapshot_at'])
+      .index('by_permaslug_variant', ['model_permaslug', 'model_variant']),
 
     or_model_token_metrics: OrModelTokenMetrics.table
       .index('by_model_permaslug_variant_timestamp', [

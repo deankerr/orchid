@@ -99,16 +99,16 @@ export async function appsPipeline(
     }
   })
 
-  const leaderboardResults = await batch({ items: modelAppLeaderboards }, async (items) => {
-    return await ctx.runMutation(internal.openrouter.entities.modelAppLeaderboards.insert, {
-      items,
+  const leaderboardResults = await ctx
+    .runMutation(internal.openrouter.entities.modelAppLeaderboards.upsert, {
+      items: modelAppLeaderboards,
     })
-  }).then((results) => {
-    return {
-      ...R.countBy(results as UpsertResult[], (v: UpsertResult) => v.action),
-      name: 'modelAppLeaderboards',
-    }
-  })
+    .then((results) => {
+      return {
+        ...R.countBy(results as UpsertResult[], (v: UpsertResult) => v.action),
+        name: 'modelAppLeaderboards',
+      }
+    })
 
   return {
     data: undefined,

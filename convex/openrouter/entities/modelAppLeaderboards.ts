@@ -1,6 +1,8 @@
 import { asyncMap } from 'convex-helpers'
 import { v } from 'convex/values'
 
+import { diff as jsonDiff } from 'json-diff-ts'
+
 import { internalMutation, query } from '../../_generated/server'
 import { Table2 } from '../../table2'
 
@@ -23,7 +25,12 @@ export const OrModelAppLeaderboards = Table2('or_model_app_leaderboards', {
   snapshot_at: v.number(),
 })
 
-export const insert = internalMutation({
+const diff = (a: unknown, b: unknown) =>
+  jsonDiff(a, b, {
+    keysToSkip: ['_id', '_creationTime'],
+  })
+
+export const upsert = internalMutation({
   args: {
     items: v.array(OrModelAppLeaderboards.content),
   },
@@ -31,19 +38,27 @@ export const insert = internalMutation({
     return await asyncMap(items, async (item) => {
       const existing = await ctx.db
         .query('or_model_app_leaderboards')
-        .withIndex('by_permaslug_snapshot_at', (q) =>
-          q.eq('model_permaslug', item.model_permaslug).eq('snapshot_at', item.snapshot_at),
+        .withIndex('by_permaslug_variant', (q) =>
+          q.eq('model_permaslug', item.model_permaslug).eq('model_variant', item.model_variant),
         )
-        .filter((q) => q.eq(q.field('model_variant'), item.model_variant))
         .first()
 
-      if (existing) {
-        await ctx.db.replace(existing._id, item)
-        return { action: 'update' }
+      const changes = diff(existing ?? {}, item)
+
+      // Insert
+      if (!existing) {
+        await ctx.db.insert(OrModelAppLeaderboards.name, item)
+        return { action: 'insert' }
       }
 
-      await ctx.db.insert('or_model_app_leaderboards', item)
-      return { action: 'insert' }
+      // Stable
+      if (changes.length === 0) {
+        return { action: 'stable' }
+      }
+
+      // Update
+      await ctx.db.replace(existing._id, item)
+      return { action: 'update' }
     })
   },
 })
