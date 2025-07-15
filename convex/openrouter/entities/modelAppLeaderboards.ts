@@ -67,21 +67,15 @@ export const upsert = internalMutation({
 export const get = query({
   args: {
     permaslug: v.string(),
-    snapshot_at: v.optional(v.number()),
+    variants: v.array(v.string()),
   },
-  handler: async (ctx, { permaslug, snapshot_at }) => {
+  handler: async (ctx, { permaslug, variants }) => {
     const results = await ctx.db
-      .query('or_model_app_leaderboards')
-      .withIndex('by_permaslug_snapshot_at', (q) => {
-        return snapshot_at
-          ? q.eq('model_permaslug', permaslug).eq('snapshot_at', snapshot_at)
-          : q.eq('model_permaslug', permaslug)
-      })
+      .query(OrModelAppLeaderboards.name)
+      .withIndex('by_permaslug_variant', (q) => q.eq('model_permaslug', permaslug))
       .order('desc')
       .collect()
 
-    return [...Map.groupBy(results, (r) => r.model_variant)].map(
-      ([key, items]) => [key, items[0]] as const,
-    )
+    return variants.map((variant) => results.find((r) => r.model_variant === variant) ?? null)
   },
 })

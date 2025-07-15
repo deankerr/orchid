@@ -65,20 +65,20 @@ export function useEndpointUptimes(endpoint_uuid: string) {
   )
 }
 
-export function useModelAppsLeaderboards(permaslug?: string) {
-  const result = useCachedQuery(
-    api.openrouter.entities.modelAppLeaderboards.get,
-    permaslug ? { permaslug } : 'skip',
-    `useModelAppsLeaderboard (${permaslug})`,
-  )
+type Nullish<T> = T | null | undefined
 
-  return result ? new Map(result) : undefined
+export function useModelAppsLeaderboards(args: Nullish<{ permaslug: string; variants: string[] }>) {
+  return useCachedQuery(
+    api.openrouter.entities.modelAppLeaderboards.get,
+    args ? { permaslug: args.permaslug, variants: args.variants } : 'skip',
+    `useModelAppsLeaderboard (${args?.permaslug}, ${args?.variants.join(', ')})`,
+  )
 }
 
-export function useModelTokenStats(args?: { permaslug: string; variants: string[] }) {
+export function useModelTokenStats(args: Nullish<{ permaslug: string; variants: string[] }>) {
   return useCachedQuery(
     api.openrouter.entities.modelTokenStats.get,
-    args ?? 'skip',
+    args ? { permaslug: args.permaslug, variants: args.variants } : 'skip',
     `useModelTokenStats (${args?.permaslug}, ${args?.variants.join(', ')})`,
   )
 }

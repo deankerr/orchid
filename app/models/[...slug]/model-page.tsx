@@ -26,11 +26,8 @@ import { formatIsoDate } from '@/lib/utils'
 
 export function ModelPage({ slug }: { slug: string }) {
   const model = useModelData(slug)
-
-  const leaderboardsMap = useModelAppsLeaderboards(model?.permaslug)
-  const modelTokenStats = useModelTokenStats(
-    model ? { permaslug: model.permaslug, variants: model.variants } : undefined,
-  )
+  const appLeaderboards = useModelAppsLeaderboards(model)
+  const modelTokenStats = useModelTokenStats(model)
 
   if (!model) {
     if (model === null) {
@@ -124,27 +121,14 @@ export function ModelPage({ slug }: { slug: string }) {
       )}
 
       {/* Apps leaderboards */}
-      {leaderboardsMap === undefined ? (
+      {appLeaderboards === undefined ? (
         <DataStreamLoader label="Loading applications..." />
       ) : (
-        [...leaderboardsMap.values()].map((leaderboard) => (
-          <ModelAppsLeaderboard key={leaderboard._id} leaderboard={leaderboard} />
-        ))
+        appLeaderboards.map(
+          (leaderboard) =>
+            leaderboard && <ModelAppsLeaderboard key={leaderboard._id} leaderboard={leaderboard} />,
+        )
       )}
-
-      {/* Token metrics charts */}
-      {/* {modelTokenMetrics === undefined ? (
-        <DataStreamLoader label="Loading metrics..." />
-      ) : (
-        model.variants.map((variant) => (
-          <ModelTokenChart
-            key={variant}
-            data={modelTokenMetrics[variant] ?? []}
-            variant={variant}
-            title={`Tokens: ${model.slug}${variant !== 'standard' ? `:${variant}` : ''}`}
-          />
-        ))
-      )} */}
 
       {/* Token stats charts */}
       {modelTokenStats === undefined ? (
