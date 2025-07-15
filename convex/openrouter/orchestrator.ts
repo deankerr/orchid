@@ -5,7 +5,7 @@ import { runPipelines } from './pipelineRunner'
 import { appsPipeline } from './pipelines/apps'
 import { endpointsPipeline } from './pipelines/endpoints'
 import { modelsPipeline } from './pipelines/models'
-import { modelTokenMetricsPipeline } from './pipelines/modelTokenMetrics'
+import { modelTokenStatsPipeline } from './pipelines/modelTokenStats'
 import { providersPipeline } from './pipelines/providers'
 import { OpenRouter } from './sources'
 
@@ -80,8 +80,8 @@ export async function orchestrator(ctx: ActionCtx) {
         models,
         source: { apps: OpenRouter.fetch.apps },
       }),
-    modelTokenMetrics: () =>
-      modelTokenMetricsPipeline(ctx, {
+    modelTokenStats: () =>
+      modelTokenStatsPipeline(ctx, {
         snapshot_at,
         run_id,
         models,

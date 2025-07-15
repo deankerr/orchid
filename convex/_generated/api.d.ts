@@ -25,6 +25,7 @@ import type * as openrouter_entities_endpointUptimes from "../openrouter/entitie
 import type * as openrouter_entities_endpoints from "../openrouter/entities/endpoints.js";
 import type * as openrouter_entities_modelAppLeaderboards from "../openrouter/entities/modelAppLeaderboards.js";
 import type * as openrouter_entities_modelTokenMetrics from "../openrouter/entities/modelTokenMetrics.js";
+import type * as openrouter_entities_modelTokenStats from "../openrouter/entities/modelTokenStats.js";
 import type * as openrouter_entities_models from "../openrouter/entities/models.js";
 import type * as openrouter_entities_providers from "../openrouter/entities/providers.js";
 import type * as openrouter_orchestrator from "../openrouter/orchestrator.js";
@@ -33,6 +34,7 @@ import type * as openrouter_pipelineRunner from "../openrouter/pipelineRunner.js
 import type * as openrouter_pipelines_apps from "../openrouter/pipelines/apps.js";
 import type * as openrouter_pipelines_endpoints from "../openrouter/pipelines/endpoints.js";
 import type * as openrouter_pipelines_modelTokenMetrics from "../openrouter/pipelines/modelTokenMetrics.js";
+import type * as openrouter_pipelines_modelTokenStats from "../openrouter/pipelines/modelTokenStats.js";
 import type * as openrouter_pipelines_models from "../openrouter/pipelines/models.js";
 import type * as openrouter_pipelines_providers from "../openrouter/pipelines/providers.js";
 import type * as openrouter_schedule from "../openrouter/schedule.js";
@@ -45,6 +47,7 @@ import type * as openrouter_validators_dataPolicy from "../openrouter/validators
 import type * as openrouter_validators_endpointUptimesMetrics from "../openrouter/validators/endpointUptimesMetrics.js";
 import type * as openrouter_validators_endpoints from "../openrouter/validators/endpoints.js";
 import type * as openrouter_validators_modelTokenMetrics from "../openrouter/validators/modelTokenMetrics.js";
+import type * as openrouter_validators_modelTokenStats from "../openrouter/validators/modelTokenStats.js";
 import type * as openrouter_validators_models from "../openrouter/validators/models.js";
 import type * as openrouter_validators_providers from "../openrouter/validators/providers.js";
 import type * as shared from "../shared.js";
@@ -72,6 +75,7 @@ declare const fullApi: ApiFromModules<{
   "openrouter/entities/endpoints": typeof openrouter_entities_endpoints;
   "openrouter/entities/modelAppLeaderboards": typeof openrouter_entities_modelAppLeaderboards;
   "openrouter/entities/modelTokenMetrics": typeof openrouter_entities_modelTokenMetrics;
+  "openrouter/entities/modelTokenStats": typeof openrouter_entities_modelTokenStats;
   "openrouter/entities/models": typeof openrouter_entities_models;
   "openrouter/entities/providers": typeof openrouter_entities_providers;
   "openrouter/orchestrator": typeof openrouter_orchestrator;
@@ -80,6 +84,7 @@ declare const fullApi: ApiFromModules<{
   "openrouter/pipelines/apps": typeof openrouter_pipelines_apps;
   "openrouter/pipelines/endpoints": typeof openrouter_pipelines_endpoints;
   "openrouter/pipelines/modelTokenMetrics": typeof openrouter_pipelines_modelTokenMetrics;
+  "openrouter/pipelines/modelTokenStats": typeof openrouter_pipelines_modelTokenStats;
   "openrouter/pipelines/models": typeof openrouter_pipelines_models;
   "openrouter/pipelines/providers": typeof openrouter_pipelines_providers;
   "openrouter/schedule": typeof openrouter_schedule;
@@ -92,6 +97,7 @@ declare const fullApi: ApiFromModules<{
   "openrouter/validators/endpointUptimesMetrics": typeof openrouter_validators_endpointUptimesMetrics;
   "openrouter/validators/endpoints": typeof openrouter_validators_endpoints;
   "openrouter/validators/modelTokenMetrics": typeof openrouter_validators_modelTokenMetrics;
+  "openrouter/validators/modelTokenStats": typeof openrouter_validators_modelTokenStats;
   "openrouter/validators/models": typeof openrouter_validators_models;
   "openrouter/validators/providers": typeof openrouter_validators_providers;
   shared: typeof shared;
