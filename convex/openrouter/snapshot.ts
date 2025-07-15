@@ -62,7 +62,7 @@ export async function getCurrentSnapshotTimestamp(ctx: QueryCtx) {
   const latestRun = await ctx.db
     .query('snapshot_runs')
     .order('desc')
-    .filter((q) => q.neq(q.field('ended_at'), undefined))
+    .filter((q) => q.and(q.neq(q.field('ended_at'), undefined), q.eq(q.field('ok'), true)))
     .first()
   return latestRun?.snapshot_at ?? 0
 }
