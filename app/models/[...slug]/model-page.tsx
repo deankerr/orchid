@@ -21,14 +21,16 @@ import {
 } from '@/components/ui/accordion'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
-import { useModelAppsLeaderboards, useModelData, useModelTokenMetrics } from '@/hooks/api'
+import { useModelAppsLeaderboards, useModelData, useModelTokenStats } from '@/hooks/api'
 import { formatIsoDate } from '@/lib/utils'
 
 export function ModelPage({ slug }: { slug: string }) {
   const model = useModelData(slug)
 
   const leaderboardsMap = useModelAppsLeaderboards(model?.permaslug)
-  const modelTokenMetrics = useModelTokenMetrics(model?.permaslug)
+  const modelTokenStats = useModelTokenStats(
+    model ? { permaslug: model.permaslug, variants: model.variants } : undefined,
+  )
 
   if (!model) {
     if (model === null) {
@@ -131,7 +133,7 @@ export function ModelPage({ slug }: { slug: string }) {
       )}
 
       {/* Token metrics charts */}
-      {modelTokenMetrics === undefined ? (
+      {/* {modelTokenMetrics === undefined ? (
         <DataStreamLoader label="Loading metrics..." />
       ) : (
         model.variants.map((variant) => (
@@ -142,6 +144,15 @@ export function ModelPage({ slug }: { slug: string }) {
             title={`Tokens: ${model.slug}${variant !== 'standard' ? `:${variant}` : ''}`}
           />
         ))
+      )} */}
+
+      {/* Token stats charts */}
+      {modelTokenStats === undefined ? (
+        <DataStreamLoader label="Loading stats..." />
+      ) : (
+        modelTokenStats.map(
+          (stats) => stats && <ModelTokenChart key={stats.model_variant} modelTokenStats={stats} />,
+        )
       )}
 
       <Accordion type="single" collapsible className="bg-muted/30">

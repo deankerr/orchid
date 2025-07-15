@@ -2,7 +2,7 @@
 
 import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts'
 
-import type { OrModelTokenMetric } from '@/convex/types'
+import type { Doc } from '@/convex/_generated/dataModel'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartConfig, ChartContainer, ChartTooltip } from '@/components/ui/chart'
@@ -11,15 +11,15 @@ import { formatIsoDate } from '@/lib/utils'
 import { Separator } from './ui/separator'
 
 const chartConfig = {
-  input_tokens: {
+  input: {
     label: 'input',
     color: 'var(--chart-1)',
   },
-  output_tokens: {
+  output: {
     label: 'output',
     color: 'var(--chart-2)',
   },
-  reasoning_tokens: {
+  reasoning: {
     label: 'reasoning',
     color: 'var(--chart-3)',
   },
@@ -91,24 +91,22 @@ function CustomTooltipContent({
   )
 }
 
-interface ModelTokenChartProps {
-  data: OrModelTokenMetric[]
-  variant: string
-  title?: string
-}
-
-export function ModelTokenChart({ data, variant, title }: ModelTokenChartProps) {
-  // Sort data by timestamp (oldest first for proper chart display)
-  const sortedData = [...data].sort((a, b) => a.timestamp - b.timestamp)
+export function ModelTokenChart({
+  modelTokenStats,
+}: {
+  modelTokenStats: Doc<'or_model_token_stats'>
+}) {
+  const { stats, model_slug, model_variant } = modelTokenStats
+  const variantSlug = model_variant === 'standard' ? model_slug : `${model_slug}:${model_variant}`
 
   // Get the first data point
-  const first = sortedData[0]
+  const first = stats[0]
 
   if (!first) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="font-mono text-sm">{title || 'Token Usage'}</CardTitle>
+          <CardTitle className="font-mono text-sm">{variantSlug}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="font-mono text-sm text-muted-foreground">No data available</div>
@@ -117,35 +115,30 @@ export function ModelTokenChart({ data, variant, title }: ModelTokenChartProps) 
     )
   }
 
-  // Pad the start if needed
-  let chartData = [...sortedData].map((metric) => ({
-    date: new Date(metric.timestamp).toISOString().split('T')[0],
-    timestamp: metric.timestamp,
-    input_tokens: metric.input_tokens,
-    output_tokens: metric.output_tokens,
-    reasoning_tokens: metric.reasoning_tokens,
-  }))
+  const pads: Doc<'or_model_token_stats'>['stats'] = []
 
-  if (chartData.length < 7) {
+  if (stats.length < 7) {
     const MS_PER_DAY = 24 * 60 * 60 * 1000
-    const pads = []
-    for (let i = chartData.length; i < 7; i++) {
-      const padTimestamp = first.timestamp - MS_PER_DAY * (i - chartData.length + 1)
+    for (let i = stats.length; i < 7; i++) {
       pads.unshift({
-        date: new Date(padTimestamp).toISOString().split('T')[0],
-        timestamp: padTimestamp,
-        input_tokens: 0,
-        output_tokens: 0,
-        reasoning_tokens: 0,
+        timestamp: first.timestamp - MS_PER_DAY * (i - stats.length + 1),
+        input: 0,
+        output: 0,
+        reasoning: 0,
+        requests: 0,
       })
     }
-    chartData = [...pads, ...chartData]
   }
+
+  const chartData = [...pads, ...stats].map((s) => ({
+    ...s,
+    date: new Date(s.timestamp).toISOString().split('T')[0],
+  }))
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-mono text-sm">{title ?? `Token Usage (${variant})`}</CardTitle>
+        <CardTitle className="font-mono text-sm">{`tokens processed - ${variantSlug}`}</CardTitle>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="aspect-auto h-[250px] w-full font-mono">
@@ -173,17 +166,12 @@ export function ModelTokenChart({ data, variant, title }: ModelTokenChartProps) 
               }}
             />
 
+            <Bar dataKey="input" stackId="tokens" fill="var(--color-input)" radius={[0, 0, 2, 2]} />
+            <Bar dataKey="output" stackId="tokens" fill="var(--color-output)" />
             <Bar
-              dataKey="input_tokens"
+              dataKey="reasoning"
               stackId="tokens"
-              fill="var(--color-input_tokens)"
-              radius={[0, 0, 2, 2]}
-            />
-            <Bar dataKey="output_tokens" stackId="tokens" fill="var(--color-output_tokens)" />
-            <Bar
-              dataKey="reasoning_tokens"
-              stackId="tokens"
-              fill="var(--color-reasoning_tokens)"
+              fill="var(--color-reasoning)"
               radius={[2, 2, 0, 0]}
             />
 

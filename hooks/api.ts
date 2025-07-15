@@ -83,6 +83,14 @@ export function useModelTokenMetrics(permaslug?: string) {
   )
 }
 
+export function useModelTokenStats(args?: { permaslug: string; variants: string[] }) {
+  return useCachedQuery(
+    api.openrouter.entities.modelTokenStats.get,
+    args ?? 'skip',
+    `useModelTokenStats (${args?.permaslug}, ${args?.variants.join(', ')})`,
+  )
+}
+
 export function useProvidersList() {
   return useCachedQuery(api.openrouter.entities.providers.list, {})
 }

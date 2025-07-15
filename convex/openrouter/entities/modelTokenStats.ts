@@ -2,7 +2,7 @@ import { v } from 'convex/values'
 
 import { diff as jsonDiff } from 'json-diff-ts'
 
-import { internalMutation } from '../../_generated/server'
+import { internalMutation, query } from '../../_generated/server'
 import { Table2 } from '../../table2'
 import type { UpsertResult } from '../output'
 
@@ -64,5 +64,21 @@ export const upsert = internalMutation({
     }
 
     return results
+  },
+})
+
+export const get = query({
+  args: {
+    permaslug: v.string(),
+    variants: v.array(v.string()),
+  },
+  handler: async (ctx, { permaslug, variants }) => {
+    const results = await ctx.db
+      .query(OrModelTokenStats.name)
+      .withIndex('by_permaslug_variant', (q) => q.eq('model_permaslug', permaslug))
+      .order('desc')
+      .collect()
+
+    return variants.map((variant) => results.find((r) => r.model_variant === variant) ?? null)
   },
 })
