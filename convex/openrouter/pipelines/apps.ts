@@ -1,12 +1,9 @@
-import * as R from 'remeda'
-
 import { internal } from '../../_generated/api'
 import type { ActionCtx } from '../../_generated/server'
 import { storeSnapshotData } from '../archive'
 import { OrApps } from '../entities/apps'
 import type { OrModelAppLeaderboards } from '../entities/modelAppLeaderboards'
 import { OrModels } from '../entities/models'
-import { batch, type UpsertResult } from '../output'
 import { validateArray, type Issue } from '../validation'
 import { AppStrictSchema, AppTransformSchema } from '../validators/apps'
 
@@ -88,27 +85,16 @@ export async function appsPipeline(
     data: rawAppResponses,
   })
 
-  const appResults = await batch({ items: apps }, async (items) => {
-    return await ctx.runMutation(internal.openrouter.entities.apps.upsert, {
-      items,
-    })
-  }).then((results) => {
-    return {
-      ...R.countBy(results, (v: UpsertResult) => v.action),
-      name: 'apps',
-    }
+  const appResults = await ctx.runMutation(internal.openrouter.entities.apps.upsert, {
+    items: apps,
   })
 
-  const leaderboardResults = await batch({ items: modelAppLeaderboards }, async (items) => {
-    return await ctx.runMutation(internal.openrouter.entities.modelAppLeaderboards.insert, {
-      items,
-    })
-  }).then((results) => {
-    return {
-      ...R.countBy(results as UpsertResult[], (v: UpsertResult) => v.action),
-      name: 'modelAppLeaderboards',
-    }
-  })
+  const leaderboardResults = await ctx.runMutation(
+    internal.openrouter.entities.modelAppLeaderboards.upsert,
+    {
+      items: modelAppLeaderboards,
+    },
+  )
 
   return {
     data: undefined,

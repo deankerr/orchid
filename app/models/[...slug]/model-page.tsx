@@ -21,14 +21,13 @@ import {
 } from '@/components/ui/accordion'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
-import { useModelAppsLeaderboards, useModelData, useModelTokenMetrics } from '@/hooks/api'
+import { useModelAppsLeaderboards, useModelData, useModelTokenStats } from '@/hooks/api'
 import { formatIsoDate } from '@/lib/utils'
 
 export function ModelPage({ slug }: { slug: string }) {
   const model = useModelData(slug)
-
-  const leaderboardsMap = useModelAppsLeaderboards(model?.permaslug)
-  const modelTokenMetrics = useModelTokenMetrics(model?.permaslug)
+  const appLeaderboards = useModelAppsLeaderboards(model)
+  const modelTokenStats = useModelTokenStats(model)
 
   if (!model) {
     if (model === null) {
@@ -122,26 +121,22 @@ export function ModelPage({ slug }: { slug: string }) {
       )}
 
       {/* Apps leaderboards */}
-      {leaderboardsMap === undefined ? (
+      {appLeaderboards === undefined ? (
         <DataStreamLoader label="Loading applications..." />
       ) : (
-        [...leaderboardsMap.values()].map((leaderboard) => (
-          <ModelAppsLeaderboard key={leaderboard._id} leaderboard={leaderboard} />
-        ))
+        appLeaderboards.map(
+          (leaderboard) =>
+            leaderboard && <ModelAppsLeaderboard key={leaderboard._id} leaderboard={leaderboard} />,
+        )
       )}
 
-      {/* Token metrics charts */}
-      {modelTokenMetrics === undefined ? (
-        <DataStreamLoader label="Loading metrics..." />
+      {/* Token stats charts */}
+      {modelTokenStats === undefined ? (
+        <DataStreamLoader label="Loading stats..." />
       ) : (
-        model.variants.map((variant) => (
-          <ModelTokenChart
-            key={variant}
-            data={modelTokenMetrics[variant] ?? []}
-            variant={variant}
-            title={`Tokens: ${model.slug}${variant !== 'standard' ? `:${variant}` : ''}`}
-          />
-        ))
+        modelTokenStats.map(
+          (stats) => stats && <ModelTokenChart key={stats.model_variant} modelTokenStats={stats} />,
+        )
       )}
 
       <Accordion type="single" collapsible className="bg-muted/30">

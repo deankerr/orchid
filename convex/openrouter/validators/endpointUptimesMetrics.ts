@@ -20,8 +20,7 @@ export const EndpointUptimeTransformSchema = z4
       .transform(R.pickBy(R.isNonNullish))
       .array(),
   })
-  .transform((rec) => rec.history)
-  .transform((history) =>
+  .transform(({ history }) =>
     history.map((item) => ({
       timestamp: item.date,
       uptime: item.uptime,

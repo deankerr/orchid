@@ -4,7 +4,7 @@ import Link from 'next/link'
 
 import { AlertTriangleIcon, FileIcon, ImageIcon } from 'lucide-react'
 
-import type { OrModel } from '@/convex/types'
+import type { Doc } from '@/convex/_generated/dataModel'
 
 import { formatIsoDate } from '@/lib/utils'
 
@@ -16,7 +16,7 @@ import { SnapshotAtBadge } from './snapshot-at-badge'
 import { Badge } from './ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
 
-export function ModelCard({ model }: { model: OrModel }) {
+export function ModelCard({ model }: { model: Doc<'or_models'> }) {
   return (
     <Card className="relative font-mono">
       <CardHeader>

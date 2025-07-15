@@ -7,19 +7,18 @@ import { internalMutation, query } from '../../_generated/server'
 import { Table2 } from '../../table2'
 import { countResults } from '../output'
 
-export const OrModelAppLeaderboards = Table2('or_model_app_leaderboards', {
+export const OrModelTokenStats = Table2('or_model_token_stats', {
+  model_slug: v.string(),
   model_permaslug: v.string(),
   model_variant: v.string(),
-  apps: v.array(
+
+  stats: v.array(
     v.object({
-      app_id: v.number(),
-      total_tokens: v.number(),
-      title: v.optional(v.string()),
-      description: v.optional(v.string()),
-      main_url: v.optional(v.string()),
-      origin_url: v.string(),
-      source_code_url: v.optional(v.string()),
-      or_created_at: v.number(),
+      timestamp: v.number(),
+      input: v.number(),
+      output: v.number(),
+      reasoning: v.number(),
+      requests: v.number(),
     }),
   ),
 
@@ -33,22 +32,21 @@ const diff = (a: unknown, b: unknown) =>
 
 export const upsert = internalMutation({
   args: {
-    items: v.array(OrModelAppLeaderboards.content),
+    items: v.array(OrModelTokenStats.content),
   },
   handler: async (ctx, { items }) => {
     const results = await asyncMap(items, async (item) => {
       const existing = await ctx.db
-        .query('or_model_app_leaderboards')
+        .query(OrModelTokenStats.name)
         .withIndex('by_permaslug_variant', (q) =>
           q.eq('model_permaslug', item.model_permaslug).eq('model_variant', item.model_variant),
         )
         .first()
-
       const changes = diff(existing ?? {}, item)
 
       // Insert
       if (!existing) {
-        await ctx.db.insert(OrModelAppLeaderboards.name, item)
+        await ctx.db.insert(OrModelTokenStats.name, item)
         return { action: 'insert' }
       }
 
@@ -62,11 +60,10 @@ export const upsert = internalMutation({
       return { action: 'update' }
     })
 
-    return countResults(results, 'modelAppLeaderboards')
+    return countResults(results, 'modelTokenStats')
   },
 })
 
-// * queries
 export const get = query({
   args: {
     permaslug: v.string(),
@@ -74,7 +71,7 @@ export const get = query({
   },
   handler: async (ctx, { permaslug, variants }) => {
     const results = await ctx.db
-      .query(OrModelAppLeaderboards.name)
+      .query(OrModelTokenStats.name)
       .withIndex('by_permaslug_variant', (q) => q.eq('model_permaslug', permaslug))
       .order('desc')
       .collect()

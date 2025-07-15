@@ -1,10 +1,11 @@
+import { asyncMap } from 'convex-helpers'
 import { v } from 'convex/values'
 
-import { diff, type IChange } from 'json-diff-ts'
+import { diff as jsonDiff, type IChange } from 'json-diff-ts'
 
-import { internalMutation, query, type MutationCtx, type QueryCtx } from '../../_generated/server'
+import { internalMutation, query, type MutationCtx } from '../../_generated/server'
 import { Table2 } from '../../table2'
-import { type UpsertResult } from '../output'
+import { countResults } from '../output'
 
 export const OrProviders = Table2('or_providers', {
   slug: v.string(),
@@ -42,7 +43,7 @@ export const OrProviders = Table2('or_providers', {
     free_models: v.optional(
       v.object({
         training: v.boolean(),
-        retains_prompts: v.boolean(),
+        retains_prompts: v.optional(v.boolean()),
         retention_days: v.optional(v.number()),
         can_publish: v.optional(v.boolean()),
       }),
@@ -58,66 +59,56 @@ export const OrProvidersChanges = Table2('or_providers_changes', {
   changes: v.array(v.record(v.string(), v.any())),
 })
 
-export const OrProvidersFn = {
-  get: async (ctx: QueryCtx, { slug }: { slug: string }) => {
-    return await ctx.db
-      .query(OrProviders.name)
-      .withIndex('by_slug', (q) => q.eq('slug', slug))
-      .first()
-  },
+const diff = (a: unknown, b: unknown) =>
+  jsonDiff(a, b, {
+    keysToSkip: ['_id', '_creationTime', 'snapshot_at'],
+    embeddedObjKeys: {
+      datacenters: '$value',
+    },
+  })
 
-  diff: (a: unknown, b: unknown) =>
-    diff(a, b, {
-      keysToSkip: ['_id', '_creationTime', 'snapshot_at'],
-      embeddedObjKeys: {
-        datacenters: '$value',
-      },
-    }),
-
-  recordChanges: async (
-    ctx: MutationCtx,
-    { content, changes }: { content: { slug: string; snapshot_at: number }; changes: IChange[] },
-  ) => {
-    if (changes.length === 0) return
-    const { slug, snapshot_at } = content
-    await ctx.db.insert(OrProvidersChanges.name, { slug, snapshot_at, changes })
-  },
+const recordChanges = async (
+  ctx: MutationCtx,
+  { content, changes }: { content: { slug: string; snapshot_at: number }; changes: IChange[] },
+) => {
+  if (changes.length === 0) return
+  const { slug, snapshot_at } = content
+  await ctx.db.insert(OrProvidersChanges.name, { slug, snapshot_at, changes })
 }
 
 export const upsert = internalMutation({
   args: {
     items: v.array(OrProviders.content),
   },
-  handler: async (ctx, { items }: { items: (typeof OrProviders.$content)[] }) => {
-    const results: UpsertResult[] = []
-    
-    for (const item of items) {
-      const existing = await OrProvidersFn.get(ctx, { slug: item.slug })
-      const changes = OrProvidersFn.diff(existing ?? {}, item)
+  handler: async (ctx, { items }) => {
+    const results = await asyncMap(items, async (item) => {
+      const existing = await ctx.db
+        .query(OrProviders.name)
+        .withIndex('by_slug', (q) => q.eq('slug', item.slug))
+        .first()
+      const changes = diff(existing ?? {}, item)
 
       // Record changes
-      await OrProvidersFn.recordChanges(ctx, { content: item, changes })
+      await recordChanges(ctx, { content: item, changes })
 
       // Insert
       if (!existing) {
         await ctx.db.insert(OrProviders.name, item)
-        results.push({ action: 'insert' })
-        continue
+        return { action: 'insert' }
       }
 
       // Stable - no changes
       if (changes.length === 0) {
         await ctx.db.patch(existing._id, { snapshot_at: item.snapshot_at })
-        results.push({ action: 'stable' })
-        continue
+        return { action: 'stable' }
       }
 
       // Update
       await ctx.db.replace(existing._id, item)
-      results.push({ action: 'update' })
-    }
+      return { action: 'update' }
+    })
 
-    return results
+    return countResults(results, 'providers')
   },
 })
 

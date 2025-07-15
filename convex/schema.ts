@@ -9,7 +9,7 @@ import { OrEndpointStats } from './openrouter/entities/endpointStats'
 import { OrEndpointUptimes } from './openrouter/entities/endpointUptimes'
 import { OrModelAppLeaderboards } from './openrouter/entities/modelAppLeaderboards'
 import { OrModels, OrModelsChanges } from './openrouter/entities/models'
-import { OrModelTokenMetrics } from './openrouter/entities/modelTokenMetrics'
+import { OrModelTokenStats } from './openrouter/entities/modelTokenStats'
 import { OrProviders, OrProvidersChanges } from './openrouter/entities/providers'
 import { SnapshotSchedule } from './openrouter/schedule'
 import { SnapshotRuns } from './openrouter/snapshot'
@@ -37,19 +37,15 @@ export const schema = defineSchema(
       'snapshot_at',
     ]),
 
-    or_model_app_leaderboards: OrModelAppLeaderboards.table.index('by_permaslug_snapshot_at', [
+    or_model_app_leaderboards: OrModelAppLeaderboards.table.index('by_permaslug_variant', [
       'model_permaslug',
-      'snapshot_at',
+      'model_variant',
     ]),
 
-    or_model_token_metrics: OrModelTokenMetrics.table
-      .index('by_model_permaslug_variant_timestamp', [
-        'model_permaslug',
-        'model_variant',
-        'timestamp',
-      ])
-      .index('by_permaslug_timestamp', ['model_permaslug', 'timestamp'])
-      .index('by_timestamp', ['timestamp']),
+    or_model_token_stats: OrModelTokenStats.table.index('by_permaslug_variant', [
+      'model_permaslug',
+      'model_variant',
+    ]),
 
     or_models: OrModels.table.index('by_slug', ['slug']),
     or_models_changes: OrModelsChanges.table,
