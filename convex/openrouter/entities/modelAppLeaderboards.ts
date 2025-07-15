@@ -64,7 +64,6 @@ export const upsert = internalMutation({
 })
 
 // * queries
-
 export const get = query({
   args: {
     permaslug: v.string(),

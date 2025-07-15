@@ -75,14 +75,6 @@ export function useModelAppsLeaderboards(permaslug?: string) {
   return result ? new Map(result) : undefined
 }
 
-export function useModelTokenMetrics(permaslug?: string) {
-  return useCachedQuery(
-    api.openrouter.entities.modelTokenMetrics.getLatest,
-    permaslug ? { permaslug } : 'skip',
-    `useModelTokenMetrics (${permaslug})`,
-  )
-}
-
 export function useModelTokenStats(args?: { permaslug: string; variants: string[] }) {
   return useCachedQuery(
     api.openrouter.entities.modelTokenStats.get,
