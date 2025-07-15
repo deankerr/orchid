@@ -2,7 +2,7 @@ import type { Doc } from '@/convex/_generated/dataModel'
 
 import { formatTokenPriceToK, formatTokenPriceToM } from '@/lib/utils'
 
-import { ProviderBrandIcon } from './brand-icon'
+import { BrandIcon } from './brand-icon/brand-icon'
 import { DataField } from './data-field'
 import { SnapshotAtBadge } from './snapshot-at-badge'
 import { Badge } from './ui/badge'
@@ -14,7 +14,7 @@ export function EndpointCard({ endpoint }: { endpoint: Doc<'or_endpoints'> }) {
   return (
     <div className="relative flex flex-col gap-6 rounded-sm border px-6 py-6 font-mono">
       <div className="flex flex-wrap items-center gap-2.5 text-sm">
-        <ProviderBrandIcon slug={endpoint.provider_slug} size={20} />
+        <BrandIcon slug={endpoint.provider_slug} size={20} />
         <div className="font-medium">{endpoint.provider_name}</div>
 
         {endpoint.model_variant !== 'standard' && (

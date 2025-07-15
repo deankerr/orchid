@@ -2,7 +2,7 @@
 
 import { AlertTriangleIcon, FileUpIcon, ImageUpIcon } from 'lucide-react'
 
-import { BrandIcon } from '@/components/brand-icon'
+import { BrandIcon } from '@/components/brand-icon/brand-icon'
 import { CopyButton } from '@/components/copy-button'
 import { EndpointCard } from '@/components/endpoint-card'
 import { EndpointDataTable } from '@/components/endpoint-tables/endpoint-data-table'
@@ -49,7 +49,7 @@ export function ModelPage({ slug }: { slug: string }) {
     <PageContainer className="space-y-7">
       <PageHeader>
         <PageTitle>
-          <BrandIcon slug={model.slug} size={24} fallback="model" />
+          <BrandIcon slug={model.slug} size={24} />
           {model.name}
           <CopyButton value={model.slug} variant="ghost" />
         </PageTitle>

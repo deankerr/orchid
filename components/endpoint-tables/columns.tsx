@@ -4,7 +4,7 @@ import { AlertTriangleIcon, OctagonXIcon } from 'lucide-react'
 import type { Endpoint } from '@/hooks/api'
 import { cn } from '@/lib/utils'
 
-import { ProviderBrandIcon } from '../brand-icon'
+import { BrandIcon } from '../brand-icon/brand-icon'
 import { Badge } from '../ui/badge'
 import {
   CapabilityBadge,
@@ -30,7 +30,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
       const endpoint = row.original
       return (
         <div className={cn('flex items-center gap-3 px-0.5')}>
-          <ProviderBrandIcon slug={endpoint.provider_slug} size={16} />
+          <BrandIcon slug={endpoint.provider_slug} size={16} />
           <span className="font-medium">{endpoint.provider_name}</span>
 
           {endpoint.is_disabled && (
