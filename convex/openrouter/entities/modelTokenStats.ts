@@ -1,10 +1,11 @@
+import { asyncMap } from 'convex-helpers'
 import { v } from 'convex/values'
 
 import { diff as jsonDiff } from 'json-diff-ts'
 
 import { internalMutation, query } from '../../_generated/server'
 import { Table2 } from '../../table2'
-import type { UpsertResult } from '../output'
+import { countResults } from '../output'
 
 export const OrModelTokenStats = Table2('or_model_token_stats', {
   model_slug: v.string(),
@@ -34,9 +35,7 @@ export const upsert = internalMutation({
     items: v.array(OrModelTokenStats.content),
   },
   handler: async (ctx, { items }) => {
-    const results: UpsertResult[] = []
-
-    for (const item of items) {
+    const results = await asyncMap(items, async (item) => {
       const existing = await ctx.db
         .query(OrModelTokenStats.name)
         .withIndex('by_permaslug_variant', (q) =>
@@ -48,22 +47,20 @@ export const upsert = internalMutation({
       // Insert
       if (!existing) {
         await ctx.db.insert(OrModelTokenStats.name, item)
-        results.push({ action: 'insert' })
-        continue
+        return { action: 'insert' }
       }
 
       // Stable
       if (changes.length === 0) {
-        results.push({ action: 'stable' })
-        continue
+        return { action: 'stable' }
       }
 
       // Update
       await ctx.db.replace(existing._id, item)
-      results.push({ action: 'update' })
-    }
+      return { action: 'update' }
+    })
 
-    return results
+    return countResults(results, 'modelTokenStats')
   },
 })
 

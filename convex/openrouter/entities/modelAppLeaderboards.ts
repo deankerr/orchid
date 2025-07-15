@@ -5,6 +5,7 @@ import { diff as jsonDiff } from 'json-diff-ts'
 
 import { internalMutation, query } from '../../_generated/server'
 import { Table2 } from '../../table2'
+import { countResults } from '../output'
 
 export const OrModelAppLeaderboards = Table2('or_model_app_leaderboards', {
   model_permaslug: v.string(),
@@ -35,7 +36,7 @@ export const upsert = internalMutation({
     items: v.array(OrModelAppLeaderboards.content),
   },
   handler: async (ctx, { items }) => {
-    return await asyncMap(items, async (item) => {
+    const results = await asyncMap(items, async (item) => {
       const existing = await ctx.db
         .query('or_model_app_leaderboards')
         .withIndex('by_permaslug_variant', (q) =>
@@ -60,6 +61,8 @@ export const upsert = internalMutation({
       await ctx.db.replace(existing._id, item)
       return { action: 'update' }
     })
+
+    return countResults(results, 'modelAppLeaderboards')
   },
 })
 

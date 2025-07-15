@@ -1,3 +1,4 @@
+import { asyncMap } from 'convex-helpers'
 import { v } from 'convex/values'
 import * as R from 'remeda'
 
@@ -6,7 +7,7 @@ import { diff as jsonDiff, type IChange } from 'json-diff-ts'
 import { internalMutation, query, type MutationCtx } from '../../_generated/server'
 import { hoursBetween } from '../../shared'
 import { Table2 } from '../../table2'
-import { type UpsertResult } from '../output'
+import { countResults } from '../output'
 import { getCurrentSnapshotTimestamp } from '../snapshot'
 
 export const OrEndpoints = Table2('or_endpoints', {
@@ -129,9 +130,7 @@ export const upsert = internalMutation({
     items: v.array(OrEndpoints.content),
   },
   handler: async (ctx, { items }) => {
-    const results: UpsertResult[] = []
-
-    for (const item of items) {
+    const results = await asyncMap(items, async (item) => {
       const existing = await ctx.db
         .query(OrEndpoints.name)
         .withIndex('by_uuid', (q) => q.eq('uuid', item.uuid))
@@ -144,8 +143,7 @@ export const upsert = internalMutation({
       // Insert
       if (!existing) {
         await ctx.db.insert(OrEndpoints.name, item)
-        results.push({ action: 'insert' })
-        continue
+        return { action: 'insert' }
       }
 
       // Stable - no changes, but update stats and uptime_average (excluded from diff)
@@ -155,16 +153,15 @@ export const upsert = internalMutation({
           stats: item.stats,
           uptime_average: item.uptime_average,
         })
-        results.push({ action: 'stable' })
-        continue
+        return { action: 'stable' }
       }
 
       // Update
       await ctx.db.replace(existing._id, item)
-      results.push({ action: 'update' })
-    }
+      return { action: 'update' }
+    })
 
-    return results
+    return countResults(results, 'endpoints')
   },
 })
 

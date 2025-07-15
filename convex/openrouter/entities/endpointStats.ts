@@ -4,6 +4,7 @@ import { v, type Infer } from 'convex/values'
 import { internalMutation, type QueryCtx } from '../../_generated/server'
 import { getDayAlignedTimestamp } from '../../shared'
 import { Table2 } from '../../table2'
+import { countResults } from '../output'
 
 const vEndpointStat = v.union(
   v.object({
@@ -127,6 +128,7 @@ export const upsert = internalMutation({
         return { action: 'insert' as const }
       }
     })
-    return results
+
+    return countResults(results, 'endpointStats')
   },
 })

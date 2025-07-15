@@ -1,10 +1,7 @@
-import * as R from 'remeda'
-
 import { internal } from '../../_generated/api'
 import type { ActionCtx } from '../../_generated/server'
 import { storeSnapshotData } from '../archive'
 import { OrProviders } from '../entities/providers'
-import type { UpsertResult } from '../output'
 import { validateArray, type Issue } from '../validation'
 import { ProviderStrictSchema, ProviderTransformSchema } from '../validators/providers'
 
@@ -53,12 +50,7 @@ export async function providersPipeline(
   return {
     data: undefined,
     metrics: {
-      entities: [
-        {
-          ...R.countBy(results, (v: UpsertResult) => v.action),
-          name: 'providers',
-        },
-      ],
+      entities: [results],
       issues,
       started_at,
       ended_at: Date.now(),

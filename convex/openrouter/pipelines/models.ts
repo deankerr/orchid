@@ -4,7 +4,6 @@ import type z4 from 'zod/v4'
 import { internal } from '../../_generated/api'
 import type { ActionCtx } from '../../_generated/server'
 import { storeSnapshotData } from '../archive'
-import type { UpsertResult } from '../output'
 import { validateArray } from '../validation'
 import { ModelStrictSchema, ModelTransformSchema } from '../validators/models'
 
@@ -48,12 +47,7 @@ export async function modelsPipeline(
   return {
     data: models,
     metrics: {
-      entities: [
-        {
-          ...R.countBy(results, (v: UpsertResult) => v.action),
-          name: 'models',
-        },
-      ],
+      entities: [results],
       issues,
       started_at,
       ended_at: Date.now(),

@@ -4,6 +4,7 @@ import { v } from 'convex/values'
 import { internalMutation, query, type QueryCtx } from '../../_generated/server'
 import { getDayAlignedTimestamp } from '../../shared'
 import { Table2 } from '../../table2'
+import { countResults } from '../output'
 
 export const OrEndpointUptimes = Table2('or_endpoint_uptimes', {
   endpoint_uuid: v.string(),
@@ -126,7 +127,7 @@ export const upsert = internalMutation({
       }
     })
 
-    return results
+    return countResults(results, 'endpointUptimes')
   },
 })
 

@@ -1,11 +1,8 @@
-import * as R from 'remeda'
-
 import { internal } from '../../_generated/api'
 import type { ActionCtx } from '../../_generated/server'
 import { OrAuthors } from '../entities/authors'
 import { OrModels } from '../entities/models'
 import type { OrModelTokenStats } from '../entities/modelTokenStats'
-import { type UpsertResult } from '../output'
 import { validateRecord, type Issue } from '../validation'
 import { AuthorStrictSchema, AuthorTransformSchema } from '../validators/authors'
 import {
@@ -53,21 +50,16 @@ export async function modelTokenStatsPipeline(
     authors.push({ ...authorItem, snapshot_at })
   }
 
-  const authorsResults = await ctx
-    .runMutation(internal.openrouter.entities.authors.upsert, {
-      items: authors,
-    })
-    .then((results) => {
-      return { ...R.countBy(results, (v: UpsertResult) => v.action), name: 'authors' }
-    })
+  const authorsResults = await ctx.runMutation(internal.openrouter.entities.authors.upsert, {
+    items: authors,
+  })
 
-  const modelTokenStatsResults = await ctx
-    .runMutation(internal.openrouter.entities.modelTokenStats.upsert, {
+  const modelTokenStatsResults = await ctx.runMutation(
+    internal.openrouter.entities.modelTokenStats.upsert,
+    {
       items: modelTokenStats,
-    })
-    .then((results) => {
-      return { ...R.countBy(results, (v: UpsertResult) => v.action), name: 'modelTokenStats' }
-    })
+    },
+  )
 
   // * model aggregate stats
   const modelStatsEntries = [...Map.groupBy(modelTokenStats, (m) => m.model_permaslug)].map(

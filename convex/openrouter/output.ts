@@ -1,10 +1,10 @@
 import * as R from 'remeda'
 
-/**
- * Result of an upsert operation
- */
-export interface UpsertResult {
-  action: 'insert' | 'update' | 'stable'
+export function countResults(results: { action: string }[], name: string) {
+  return {
+    ...R.countBy(results, (v) => v.action),
+    name,
+  }
 }
 
 /**
