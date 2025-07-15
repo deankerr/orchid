@@ -1,8 +1,9 @@
 ---
-description: 
-globs: 
+description:
+globs:
 alwaysApply: true
 ---
+
 # ORCHID Backend Data Reference
 
 This document serves as the authoritative reference for understanding ORCHID's data architecture, the OpenRouter ecosystem, and how our entities interact. It corrects common misconceptions and provides accurate context for development.
@@ -10,6 +11,7 @@ This document serves as the authoritative reference for understanding ORCHID's d
 ## ORCHID System Overview
 
 ### Core Purpose
+
 ORCHID aggregates and tracks AI model availability data from OpenRouter, creating a historical record of the evolving AI model ecosystem. We capture snapshots of what's available, when it changes, and how usage patterns evolve over time.
 
 ### Key Architectural Principles
@@ -20,25 +22,85 @@ ORCHID aggregates and tracks AI model availability data from OpenRouter, creatin
 4. **Query Optimization**: Data is denormalized appropriately for sub-second query performance
 
 ### Data Characteristics
+
 - **Lightweight Records**: Most entities contain simple strings, numbers, and identifiers
 - **Moderate Volume**: ~400 models, ~700 endpoints, ~60 providers - easily manageable
 - **High Change Frequency**: Daily changes in availability, pricing, and capabilities
 - **Historical Value**: Tracking when models appear/disappear provides unique insights
 
+## Statistical Analysis
+
+### Entity Counts & Distribution
+
+- **Models**: 395 total
+- **Endpoints**: 668 total
+- **Providers**: 63 unique providers
+- **Model-Endpoint Ratio**: 1.69 endpoints per model (2.52 excluding models with 0 endpoints)
+
+### Model-Endpoint Relationships
+
+- **Models with 0 endpoints**: 130 (32.9%) - Normal state for historical/removed models
+- **Models with endpoints**: 265 (67.1%)
+- **Distribution**: Most models have 1-2 endpoints
+  - 1 endpoint: 149 models (37.7%)
+  - 2 endpoints: 55 models (13.9%)
+  - 3+ endpoints: 61 models (15.4%)
+  - **Maximum**: 23 endpoints (Meta Llama 3.3 70B Instruct)
+
+### String Length Analysis (Frontend Design Considerations)
+
+#### Model Names
+
+- **Longest**: "Nous: DeepHermes 3 Llama 3 8B Preview (free)" (44 chars)
+
+#### Model Slugs (API Identifiers)
+
+- **Longest**: "sentientagi/dobby-mini-unhinged-plus-llama-3.1-8b" (49 chars)
+
+#### Model Permaslugs (Permanent Identifiers)
+
+- **Longest**: "sentientagi/dobby-mini-unhinged-plus-llama-3.1-8b" (49 chars)
+
+#### Provider Names
+
+- **Longest**: "Amazon Bedrock (US-WEST)" (24 chars)
+
+### Variant Analysis
+
+#### Variant Distribution
+
+- **standard**: 244 models (76.0%) - Default production variant
+- **free**: 60 models (18.7%) - Free tier offerings
+- **beta**: 11 models (3.4%) - Experimental versions
+- **thinking**: 4 models (1.2%) - Reasoning-focused variants
+- **extended**: 2 models (0.6%) - Enhanced versions
+
+#### Multi-Variant Models
+
+- **Total**: 55 models (13.9%) offer multiple variants
+
+### Provider Distribution
+
+- **Total Providers**: 63 (relatively small, stable dataset)
+- **Top 5 providers**: Host 44% of all endpoints (236/668)
+
 ## OpenRouter Ecosystem
 
 ### What OpenRouter Is
+
 - **Aggregator/Broker**: Connects users to multiple AI providers through a unified API
 - **Traffic Director**: Routes requests based on price and reliability
 - **Not a Host**: OpenRouter doesn't store or run models themselves
 
 ### How OpenRouter Works
+
 1. **Provider Integration**: Each provider (DeepInfra, Together, etc.) offers direct inference services
 2. **Unified Access**: OpenRouter provides single API for all providers
 3. **Smart Routing**: Cheaper endpoints preferred, slow/unstable endpoints deranked
 4. **Dynamic Availability**: Models and endpoints appear/disappear as providers change offerings
 
 ### Value Proposition
+
 - **For Users**: Single API, automatic failover, cost optimization
 - **For Providers**: Additional traffic, simplified billing, broader reach
 - **For ORCHID**: Rich dataset of model availability and usage patterns
@@ -50,15 +112,18 @@ Understanding how models are identified is crucial for working with ORCHID data.
 ### Slug vs Permaslug vs Variant
 
 **Slug**: Human-readable identifier pointing to the latest version
+
 - Example: `claude-3-5-sonnet`, `gpt-4`, `deepseek/deepseek-r1`
 - Updates automatically when model versions change
 
 **Permaslug**: Versioned identifier that never changes
+
 - Example: `claude-3-5-sonnet-20241022`, `gpt-4-2024-05-13`
 - Locked to specific version
 - Often identical to slug (most models don't version frequently)
 
 **Variant**: Different configurations of the same model
+
 - Types: `standard`, `free`, `beta`, `thinking`, `extended`
 - Example: `deepseek-r1` has both `standard` and `free` variants
 - The `standard` variant is omitted in user-facing APIs
@@ -67,227 +132,109 @@ Understanding how models are identified is crucial for working with ORCHID data.
 
 ```
 "anthropic/claude-3.5-sonnet"              # Latest version, standard variant
-"anthropic/claude-3.5-sonnet-20241022"     # Specific version, standard variant  
+"anthropic/claude-3.5-sonnet-20241022"     # Specific version, standard variant
 "anthropic/claude-3.5-sonnet:thinking"     # Latest version, thinking variant
 "anthropic/claude-3.5-sonnet-20241022:thinking"  # Most specific form
 ```
 
-**Key Insight**: OpenRouter returns separate entries for each variant, but ORCHID consolidates them into single models with variant arrays.
-
 ## Entity Reference
 
-### Core Query Table: or_endpoints
-
-**Purpose**: The primary table for querying available models. Contains denormalized data to minimize joins.
+### or_endpoints
 
 **Key Characteristics**:
-- **668 total records** (as of Jan 2025)
+
 - **Denormalized model data** included to avoid joins
 - **Primary query target** for finding available models
-- **UUID-based** for stable references
 - **Each endpoint** represents a specific deployment of a model variant on a provider
 
-**Counter-intuitive aspects**:
-- **Context length** may differ from the model's base context length
-- **Status field**: Negative values indicate deranked endpoints (performance issues)
-- **Pricing**: Already parsed into numeric values (not strings)
-- **Same model** can have vastly different pricing across providers
-
 **Critical Fields**:
+
 ```typescript
 {
-  uuid: string                    // Stable identifier
-  model_slug: string             // Links to model
-  model_permaslug: string        // Versioned model reference
-  model_variant: string          // standard/free/beta/etc
-  provider_name: string          // Human-readable provider
-  context_length: number         // May differ from model's base
-  pricing: {                     // Denormalized for queries
+  uuid: string // Stable identifier
+  model_slug: string // Links to model
+  model_permaslug: string // Versioned model reference
+  model_variant: string // standard/free/beta/etc
+  provider_name: string // Human-readable provider
+  context_length: number // May differ from model's base
+  pricing: {
+    // Denormalized for queries
     input: number
     output: number
     // ... other pricing fields
   }
-  capabilities: {                // What this deployment supports
+  capabilities: {
+    // What this deployment supports
     // ... capability flags
   }
-  status: number                 // Negative = deranked
+  status: number // Negative = deranked
 }
 ```
 
-**Query Patterns**:
-- Find all endpoints for a model variant
-- Filter by capabilities (multimodal, reasoning, etc.)
-- Sort by price or performance
-- Check availability status
+### or_models
 
-### Informational Table: or_models
-
-**Purpose**: Metadata about models, regardless of current availability. Historical record.
-
-**Key Characteristics**:
-- **395 total records**
-- **130 models (32.9%) have no current endpoints** - this is normal and expected
-- **Historical significance** - tracks influential models no longer available
-- **Not directly queried** in most user-facing operations
-- **Consolidates variants** - OpenRouter returns separate entries, we combine them
-
-**Counter-intuitive aspects**:
-- **Tokenizer field**: Actually represents the architecture family (e.g., "GPT", "Llama3")
-- **Variants array**: Includes `standard` even though it's hidden from users
-- **Created/Updated times**: From OpenRouter's perspective, not actual model release
-- **Description**: Only a few sentences, not detailed documentation
-
-**Why Models Without Endpoints Matter**:
-- **Historical Context**: `jondurbin/airoboros-l2-70b` - influential Llama 2 finetune, no longer available but historically important
-- **Recent Removals**: `qwen/qwen3-0.6b-04-28` - users can discover when/why their model stopped working
-- **Ecosystem Evolution**: Track which models survive vs disappear
+**Purpose**: Metadata about models, regardless of current availability.
 
 **Key Fields**:
+
 ```typescript
 {
   slug: string                   // Primary identifier
   permaslug: string             // Versioned identifier
   variants: string[]            // All known variants
-  context_length: number        // Base context window
-  tokenizer: string            // Architecture family
   or_created_at: number        // When first seen
-  description: string          // Few sentences only
 }
 ```
 
-### Linking Table: or_providers
+### or_providers
 
 **Purpose**: Links endpoints to data policies and provider metadata. Relatively static.
 
 **Key Characteristics**:
+
 - **63 total records** - one of our smallest datasets
 - **Low complexity** - simple metadata and policies
 - **Infrequently changing** - providers don't update often
-- **Not a query target** - used for enriching endpoint data
-
-**Key Fields**:
-```typescript
-{
-  slug: string                  // Primary identifier
-  name: string                 // Display name
-  data_policy: {               // Critical for compliance
-    training: boolean
-    retention_days?: number
-    // ... policy details
-  }
-  capabilities: {              // Provider-level capabilities
-    // ... capability flags
-  }
-}
-```
 
 ### Supporting Entities
 
 #### or_authors
+
 - **Purpose**: Organizations that created the models (OpenAI, Anthropic, Meta, etc.)
 - **Count**: ~30-40 organizations
-- **Identifiers**: Both UUID (primary key) and slug (e.g., `openai`, `anthropic`)
-- **Usage**: Grouping models by creator
 - **Note**: This data is practically useless because there's no information stored by OpenRouter apart from the author display name.
 
 #### or_apps
+
 - **Purpose**: Applications using models through OpenRouter
-- **Discovery**: Found through model usage patterns (not self-registered)
-- **Identifiers**: Numeric IDs (not UUIDs)
 - **Value**: Shows real-world adoption patterns
-- **Counter-intuitive**: Apps are discovered per model variant, not globally
 
 ### Metrics Tables (Time-Series)
 
-All metrics are stored as time-series data with appropriate timestamps:
+#### or_model_token_stats
 
-#### or_model_token_metrics
 - **Granularity**: Daily aggregates per model variant
 - **Source**: Returned with author data (can be backfilled)
 - **Key Insight**: Usage patterns by model/variant
-- **Counter-intuitive**: Includes reasoning tokens as separate field
-- **Note**: Request counts are daily totals
 
-#### or_endpoint_metrics
+#### or_endpoint_stats
+
 - **Granularity**: Point-in-time snapshot
 - **Content**: P50 latency/throughput statistics
-- **Source**: Returned with endpoint data
-- **Usage**: Performance comparison across providers
 
-#### or_endpoint_uptime_metrics
+#### or_endpoint_uptimes
+
 - **Granularity**: Hourly percentages
-- **Content**: Availability over time
-- **Value**: Track reliability patterns
-- **Note**: Requires separate API call per endpoint
 
-#### or_app_token_metrics
+#### or_model_app_leaderboards
+
 - **Content**: Total usage per app per model
-- **Source**: Returned with app data
 - **Purpose**: Track which apps drive model usage
-- **Note**: Cumulative totals, not time-series
-
-## Common Query Patterns
-
-### Finding Available Models
-```typescript
-// Primary pattern - query endpoints directly
-const available = await ctx.db
-  .query("or_endpoints")
-  .filter(q => q.gt(q.field("status"), 0))
-  .collect()
-```
-
-### Historical Analysis
-```typescript
-// When did a model disappear?
-// Check snapshot archives for last appearance
-const lastSeen = await findLastEndpointSnapshot(modelSlug)
-```
-
-### Price Comparison
-```typescript
-// Endpoints already contain pricing - no joins needed
-const cheapest = await ctx.db
-  .query("or_endpoints")
-  .filter(q => q.eq(q.field("model_slug"), slug))
-  .order("asc", "pricing.input")
-  .first()
-```
-
-## Data Flow Summary
-
-1. **Snapshot Collection**: Hourly captures of OpenRouter state
-2. **Transformation**: Raw data → normalized entities
-3. **Storage**: Both raw snapshots and processed views
-4. **Querying**: Primarily through or_endpoints with denormalized data
-5. **Analysis**: Historical tracking of availability and usage
 
 ## Key Insights
 
 ### Expected States
+
 - **Models without endpoints**: Normal - indicates historical models or recent removals
-- **Multiple endpoints per model**: Common - different providers compete
-- **Endpoint status < 0**: Deranked for performance issues
 - **Missing metrics**: Some models/endpoints have no usage data
 - **Identical slug/permaslug**: Most models don't version frequently
-
-### Identifier Relationships
-- **Provider slugs**: Use hyphens (e.g., `together-ai`) not underscores
-- **Model slugs**: May include organization prefix (e.g., `anthropic/claude-3-5-sonnet`)
-- **Endpoint UUIDs**: Only endpoints and authors use UUIDs as primary keys
-- **App IDs**: Numeric, not UUIDs or slugs
-
-### Design Rationale
-- **Denormalization in or_endpoints**: Optimizes common queries
-- **Snapshot preservation**: Enables "time travel" analysis
-- **Historical models retained**: Valuable for ecosystem understanding
-- **Lightweight records**: Storage is not a constraint
-
-### What ORCHID Provides
-1. **Current State**: What's available right now
-2. **Historical Context**: What was available and when it changed
-3. **Usage Patterns**: How models are actually being used
-4. **Reliability Data**: Which endpoints are stable vs problematic
-5. **Price Evolution**: How costs change over time
-
-This reference should guide development decisions and clarify the true nature of our data architecture. 

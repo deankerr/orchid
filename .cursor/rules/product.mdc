@@ -1,0 +1,47 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
+# Project Brief: ORCHID (OpenRouter Capability & Health Intelligence Dashboard)
+
+## Overview
+
+ORCHID is a comprehensive data aggregation, analysis, and visualization platform for AI models and providers available through the OpenRouter API. The system maintains a local database of model and provider information that updates regularly, allowing users to query, compare, and track changes over time.
+
+## Core Requirements
+
+- Regular fetching and storage of model/provider data from OpenRouter API
+- Track historical changes in model availability and capabilities
+- Provide search, filtering, and visualization of model information
+- Enable custom metadata enrichment and categorization
+- Monitor model performance and reliability across providers
+
+## Goals
+
+- Create a single source of truth for OpenRouter model capabilities
+- Provide insights into model reliability and performance
+- Enable data-driven model selection for specific use cases
+- Track the evolution of AI model capabilities over time
+
+## Project Scope
+
+- Data collection from OpenRouter API
+- Local database for storing and querying model information
+- Web interface for searching, filtering, and visualizing data
+- Performance monitoring and reliability metrics
+- Custom metadata enrichment
+
+# Product Context: ORCHID
+
+## Problem Statement
+
+As the AI model ecosystem grows more complex, users of OpenRouter face challenges in selecting the most appropriate models for their specific needs. Information about model capabilities, reliability, and performance is scattered and difficult to compare. There's no easy way to track changes in model availability or capabilities over time, or to verify advertised features actually work as expected.
+
+## User Experience Goals
+
+- Provide a clean, intuitive interface for discovering and comparing AI models
+- Create customizable views and filters to narrow down model selection
+- Offer performance insights that help users make informed decisions
+- Maintain a historical view of how models evolve over time
