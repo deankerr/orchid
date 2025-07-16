@@ -31,12 +31,12 @@ const endpoint = {
   transform: z4.object({
     ...provider.transform.shape,
     ...policyFields,
-    training: z4.boolean().optional(),
+    training: z4.boolean(),
   }),
   strict: z4.strictObject({
     ...provider.strict.shape,
     ...policyFields,
-    training: z4.boolean().optional(),
+    training: z4.boolean(),
   }),
 }
 

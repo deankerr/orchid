@@ -53,7 +53,7 @@ export const OrEndpoints = Table2('or_endpoints', {
   }),
 
   data_policy: v.object({
-    training: v.optional(v.boolean()),
+    training: v.boolean(),
     retains_prompts: v.optional(v.boolean()),
     retention_days: v.optional(v.number()),
     requires_user_ids: v.optional(v.boolean()),
