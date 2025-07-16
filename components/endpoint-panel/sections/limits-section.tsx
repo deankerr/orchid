@@ -1,39 +1,54 @@
 import type { Endpoint } from '@/hooks/api'
+import { metricFormats } from '@/lib/formatters'
 
-import { DataField } from '../data-field'
-import { NumericData } from '../numeric-data'
+import { NumericPropertyBox } from '../../property-box'
 
 export function LimitsSection({ limits }: { limits: Endpoint['limits'] }) {
   return (
     <div className="flex flex-wrap gap-3 empty:hidden">
       {limits.input_tokens && (
-        <DataField label="max input">
-          <NumericData unit="TOK">{limits.input_tokens}</NumericData>
-        </DataField>
+        <NumericPropertyBox
+          label="max input"
+          value={limits.input_tokens}
+          unit={metricFormats.tokens.unit}
+          digits={metricFormats.tokens.digits}
+        />
       )}
 
       {limits.images_per_prompt && (
-        <DataField label="images per prompt">
-          <NumericData unit="">{limits.images_per_prompt}</NumericData>
-        </DataField>
+        <NumericPropertyBox
+          label="images per prompt"
+          value={limits.images_per_prompt}
+          unit={metricFormats.count.unit}
+          digits={metricFormats.count.digits}
+        />
       )}
 
       {limits.tokens_per_image && (
-        <DataField label="tokens per image">
-          <NumericData unit="TOK">{limits.tokens_per_image}</NumericData>
-        </DataField>
+        <NumericPropertyBox
+          label="tokens per image"
+          value={limits.tokens_per_image}
+          unit={metricFormats.tokens.unit}
+          digits={metricFormats.tokens.digits}
+        />
       )}
 
       {limits.rpm && (
-        <DataField label="requests per minute">
-          <NumericData unit="">{limits.rpm}</NumericData>
-        </DataField>
+        <NumericPropertyBox
+          label="requests per minute"
+          value={limits.rpm}
+          unit={metricFormats.count.unit}
+          digits={metricFormats.count.digits}
+        />
       )}
 
       {limits.rpd && (
-        <DataField label="requests per day">
-          <NumericData unit="">{limits.rpd}</NumericData>
-        </DataField>
+        <NumericPropertyBox
+          label="requests per day"
+          value={limits.rpd}
+          unit={metricFormats.count.unit}
+          digits={metricFormats.count.digits}
+        />
       )}
     </div>
   )

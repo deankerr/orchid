@@ -1,24 +1,19 @@
 import type { Endpoint } from '@/hooks/api'
 
-import { Badge } from '../../ui/badge'
-import { DataField } from '../data-field'
+import { PropertyBox } from '../../property-box'
 
 export function CapabilitiesSection({ endpoint }: { endpoint: Endpoint }) {
   return (
     <div className="flex flex-wrap gap-3">
-      <DataField label="quantization">
-        {endpoint.quantization ? (
-          <Badge variant="outline" className="rounded-sm uppercase">
-            {endpoint.quantization}
-          </Badge>
-        ) : (
-          <span className="text-xs text-muted-foreground uppercase">no data</span>
+      <PropertyBox label="quantization">
+        {endpoint.quantization?.toUpperCase() ?? (
+          <span className="text-muted-foreground uppercase">no data</span>
         )}
-      </DataField>
+      </PropertyBox>
 
-      {endpoint.capabilities.completions && <DataField label="endpoint">COMPLETIONS</DataField>}
-      {endpoint.capabilities.chat_completions && <DataField label="endpoint">CHAT</DataField>}
-      {endpoint.capabilities.tools && <DataField label="parameters">TOOLS</DataField>}
+      {endpoint.capabilities.completions && <PropertyBox label="endpoint">COMPLETIONS</PropertyBox>}
+      {endpoint.capabilities.chat_completions && <PropertyBox label="endpoint">CHAT</PropertyBox>}
+      {endpoint.capabilities.tools && <PropertyBox label="parameters">TOOLS</PropertyBox>}
     </div>
   )
 }

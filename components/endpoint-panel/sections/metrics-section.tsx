@@ -1,34 +1,46 @@
-import * as R from 'remeda'
-
 import type { Endpoint } from '@/hooks/api'
+import { metricFormats, transforms } from '@/lib/formatters'
 
-import { DataField } from '../data-field'
-import { NumericData } from '../numeric-data'
+import { NumericPropertyBox } from '../../property-box'
 
 export function MetricsSection({ endpoint }: { endpoint: Endpoint }) {
   return (
     <div className="flex flex-wrap gap-3">
-      <DataField label="context">
-        <NumericData unit="TOK">{endpoint.context_length}</NumericData>
-      </DataField>
+      <NumericPropertyBox
+        label="context"
+        value={endpoint.context_length}
+        unit={metricFormats.tokens.unit}
+        digits={metricFormats.tokens.digits}
+      />
 
-      <DataField label="max output">
-        <NumericData unit="TOK">{endpoint.limits.output_tokens}</NumericData>
-      </DataField>
+      <NumericPropertyBox
+        label="max output"
+        value={endpoint.limits.output_tokens}
+        unit={metricFormats.tokens.unit}
+        digits={metricFormats.tokens.digits}
+      />
 
-      <DataField label="throughput">
-        <NumericData unit="TOK/S">{endpoint.stats?.p50_throughput}</NumericData>
-      </DataField>
+      <NumericPropertyBox
+        label="throughput"
+        value={endpoint.stats?.p50_throughput}
+        unit={metricFormats.tokensPerSecond.unit}
+        digits={metricFormats.tokensPerSecond.digits}
+      />
 
-      <DataField label="latency">
-        <NumericData unit="MS">{endpoint.stats?.p50_latency}</NumericData>
-      </DataField>
+      <NumericPropertyBox
+        label="latency"
+        value={endpoint.stats?.p50_latency}
+        unit={metricFormats.milliseconds.unit}
+        digits={metricFormats.milliseconds.digits}
+      />
 
-      <DataField label="traffic">
-        <NumericData unit="%">
-          {R.when(endpoint.traffic_share, R.isNumber, R.multiply(100))}
-        </NumericData>
-      </DataField>
+      <NumericPropertyBox
+        label="traffic"
+        value={endpoint.traffic_share}
+        unit={metricFormats.percentage.unit}
+        digits={metricFormats.percentage.digits}
+        transform={transforms.toPercent}
+      />
     </div>
   )
 }

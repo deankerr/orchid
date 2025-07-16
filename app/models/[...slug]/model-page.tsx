@@ -12,7 +12,7 @@ import { MarkdownLinks } from '@/components/markdown-links'
 import { ModelAppsLeaderboard } from '@/components/model-apps-leaderboard'
 import { ModelTokenChart } from '@/components/model-token-chart'
 import { PageContainer, PageHeader, PageLoading, PageTitle } from '@/components/page-container'
-import { Pill } from '@/components/pill'
+import { NumericPropertyBox, PropertyBox } from '@/components/property-box'
 import {
   Accordion,
   AccordionContent,
@@ -57,27 +57,30 @@ export function ModelPage({ slug }: { slug: string }) {
 
       <div className="flex flex-wrap gap-2 font-mono">
         {model.input_modalities.includes('image') && (
-          <Badge variant="outline">
+          <Badge variant="secondary" className="text-[15px]">
             <span>
-              <ImageUpIcon className="size-4" />
+              <ImageUpIcon className="size-5" />
             </span>
             images
           </Badge>
         )}
 
         {model.input_modalities.includes('file') && (
-          <Badge variant="outline">
+          <Badge variant="secondary" className="text-[15px]">
             <span>
-              <FileUpIcon className="size-4" />
+              <FileUpIcon className="size-5" />
             </span>
             pdf
           </Badge>
         )}
 
-        <Pill label="added">{formatIsoDate(model.or_created_at)}</Pill>
-        <Pill label="context_length">{model.context_length.toLocaleString()}</Pill>
-        <Pill label="tokenizer">{model.tokenizer}</Pill>
-        {model.instruct_type && <Pill label="instruct_type">{model.instruct_type}</Pill>}
+        <PropertyBox label="added">{formatIsoDate(model.or_created_at)}</PropertyBox>
+        <NumericPropertyBox label="context" value={model.context_length} unit="TOK" />
+        <PropertyBox label="tokenizer">{model.tokenizer}</PropertyBox>
+
+        {model.instruct_type && (
+          <PropertyBox label="instruct_type">{model.instruct_type}</PropertyBox>
+        )}
       </div>
 
       {/*  description */}

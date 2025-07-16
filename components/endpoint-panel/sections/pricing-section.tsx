@@ -2,62 +2,42 @@ import * as R from 'remeda'
 
 import type { Doc } from '@/convex/_generated/dataModel'
 
-import { DataField } from '../data-field'
-import { EndpointPricing } from '../endpoint-pricing'
+import { PricingPropertyBox } from '../../property-box'
 
 type Pricing = Doc<'or_endpoints'>['pricing']
 
 export function PricingSection({ pricing }: { pricing: Pricing }) {
   return (
     <div className="flex flex-wrap gap-3">
-      <DataField label="input">
-        <EndpointPricing pricing={pricing} field="input" />
-      </DataField>
-
-      <DataField label="output">
-        <EndpointPricing pricing={pricing} field="output" />
-      </DataField>
+      <PricingPropertyBox label="input" pricing={pricing} field="input" />
+      <PricingPropertyBox label="output" pricing={pricing} field="output" />
 
       {R.isDefined(pricing.image_input) && (
-        <DataField label="image">
-          <EndpointPricing pricing={pricing} field="image_input" />
-        </DataField>
+        <PricingPropertyBox label="image" pricing={pricing} field="image_input" />
       )}
 
       {R.isDefined(pricing.reasoning_output) && (
-        <DataField label="reasoning">
-          <EndpointPricing pricing={pricing} field="reasoning_output" />
-        </DataField>
+        <PricingPropertyBox label="reasoning" pricing={pricing} field="reasoning_output" />
       )}
 
       {R.isDefined(pricing.cache_read) && (
-        <DataField label="cache read">
-          <EndpointPricing pricing={pricing} field="cache_read" />
-        </DataField>
+        <PricingPropertyBox label="cache read" pricing={pricing} field="cache_read" />
       )}
 
       {R.isDefined(pricing.cache_write) && (
-        <DataField label="cache write">
-          <EndpointPricing pricing={pricing} field="cache_write" />
-        </DataField>
+        <PricingPropertyBox label="cache write" pricing={pricing} field="cache_write" />
       )}
 
       {R.isDefined(pricing.web_search) && (
-        <DataField label="web search">
-          <EndpointPricing pricing={pricing} field="web_search" />
-        </DataField>
+        <PricingPropertyBox label="web search" pricing={pricing} field="web_search" />
       )}
 
       {R.isDefined(pricing.per_request) && (
-        <DataField label="per request">
-          <EndpointPricing pricing={pricing} field="per_request" />
-        </DataField>
+        <PricingPropertyBox label="per request" pricing={pricing} field="per_request" />
       )}
 
       {R.isDefined(pricing.discount) && (
-        <DataField label="discount">
-          <EndpointPricing pricing={pricing} field="discount" />
-        </DataField>
+        <PricingPropertyBox label="discount" pricing={pricing} field="discount" />
       )}
     </div>
   )
