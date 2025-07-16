@@ -65,17 +65,17 @@ export const OrEndpoints = Table2('or_endpoints', {
     input: v.optional(v.number()),
     output: v.optional(v.number()),
     image_input: v.optional(v.number()),
-    reasoning_output: v.optional(v.number()),
+    reasoning_output: v.optional(v.number()), // (1) perplexity/sonar-deep-research
 
     cache_read: v.optional(v.number()),
     cache_write: v.optional(v.number()),
 
     // flat rate
-    web_search: v.optional(v.number()),
-    per_request: v.optional(v.number()),
+    web_search: v.optional(v.number()), // (3) perplexity/sonar-reasoning-pro perplexity/sonar-pro perplexity/sonar-deep-research
+    per_request: v.optional(v.number()), // (6) gpt-4o(-mini)-search-preview perplexity/sonar(-reasoning) perplexity/llama-3.1[...]
 
     // e.g. 0.25, already applied to the other pricing fields
-    discount: v.optional(v.number()),
+    discount: v.optional(v.number()), // rare
   }),
 
   variable_pricings: v.optional(

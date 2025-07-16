@@ -4,7 +4,7 @@ import { AlertTriangleIcon, FileUpIcon, ImageUpIcon } from 'lucide-react'
 
 import { BrandIcon } from '@/components/brand-icon/brand-icon'
 import { CopyButton } from '@/components/copy-button'
-import { EndpointCard } from '@/components/endpoint-card'
+import { EndpointPanel } from '@/components/endpoint-panel'
 import { EndpointDataTable } from '@/components/endpoint-tables/endpoint-data-table'
 import { ExternalLink } from '@/components/external-link'
 import { DataStreamLoader, EmptyState } from '@/components/loading'
@@ -113,7 +113,7 @@ export function ModelPage({ slug }: { slug: string }) {
           </Card>
 
           {model.endpoints.map((endpoint) => (
-            <EndpointCard key={endpoint._id} endpoint={endpoint} />
+            <EndpointPanel key={endpoint._id} endpoint={endpoint} />
           ))}
         </>
       ) : (

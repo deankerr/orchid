@@ -10,7 +10,7 @@ export function PageContainer({
   className?: string
   loading?: boolean
 }) {
-  return <div className={cn('space-y-4 py-8', className)}>{children}</div>
+  return <div className={cn('space-y-6 py-8', className)}>{children}</div>
 }
 
 export function PageLoading() {

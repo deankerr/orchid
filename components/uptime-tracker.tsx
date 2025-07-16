@@ -1,3 +1,5 @@
+import { memo } from 'react'
+
 import { getHourAlignedTimestamp } from '@/convex/shared'
 
 import { useEndpointUptimes } from '@/hooks/api'
@@ -5,7 +7,7 @@ import { formatTimestampToYMDHM } from '@/lib/utils'
 
 import { Tracker } from './tracker'
 
-export function UptimeTracker({ endpoint_uuid }: { endpoint_uuid: string }) {
+function UptimeTracker_({ endpoint_uuid }: { endpoint_uuid: string }) {
   const uptimeMetrics = useEndpointUptimes(endpoint_uuid)
 
   if (!uptimeMetrics) {
@@ -62,3 +64,5 @@ export function UptimeTracker({ endpoint_uuid }: { endpoint_uuid: string }) {
     </div>
   )
 }
+
+export const UptimeTracker = memo(UptimeTracker_)
