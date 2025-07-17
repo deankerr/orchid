@@ -31,7 +31,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
       return (
         <div className={cn('flex items-center gap-3 px-0.5')}>
           <BrandIcon slug={endpoint.provider_slug} size={16} />
-          <span className="font-medium">{endpoint.provider_name}</span>
+          <span>{endpoint.provider_name}</span>
 
           {endpoint.is_disabled && (
             <Badge variant="destructive" className="gap-1 text-[10px]">
@@ -70,7 +70,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
     ),
     accessorFn: (row) => row.context_length,
     cell: ({ row }) => (
-      <FormattedCell value={row.original.context_length} className="text-right" suffix="tok" />
+      <FormattedCell value={row.original.context_length} className="text-right" suffix="TOK" />
     ),
   },
 
@@ -83,7 +83,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
     ),
     accessorFn: (row) => row.limits.input_tokens,
     cell: ({ row }) => (
-      <FormattedCell value={row.original.limits.input_tokens} className="text-right" suffix="tok" />
+      <FormattedCell value={row.original.limits.input_tokens} className="text-right" suffix="TOK" />
     ),
   },
 
@@ -99,7 +99,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
       <FormattedCell
         value={row.original.limits.output_tokens ?? row.original.context_length}
         className="text-right"
-        suffix="tok"
+        suffix="TOK"
       />
     ),
   },
@@ -108,7 +108,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
     id: 'quantization',
     header: ({ column }) => <SortableHeader column={column}>quant</SortableHeader>,
     accessorFn: (row) => row.quantization,
-    cell: ({ row }) => <FormattedCell value={row.original.quantization} />,
+    cell: ({ row }) => <FormattedCell value={row.original.quantization?.toUpperCase()} />,
   },
 
   // === Performance ===
@@ -125,7 +125,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
         value={row.original.stats?.p50_throughput}
         className="text-right"
         decimals={1}
-        suffix="tok/s"
+        suffix="TOK/S"
       />
     ),
     sortingFn: createNullSafeSortingFn((row) => row.stats?.p50_throughput),
@@ -140,7 +140,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
     ),
     accessorFn: (row) => row.stats?.p50_latency,
     cell: ({ row }) => (
-      <FormattedCell value={row.original.stats?.p50_latency} className="text-right" suffix="ms" />
+      <FormattedCell value={row.original.stats?.p50_latency} className="text-right" suffix="MS" />
     ),
     sortingFn: createNullSafeSortingFn((row) => row.stats?.p50_latency),
   },
@@ -184,7 +184,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
         value={formatPriceToM(row.original.pricing.input)}
         className="text-right"
         prefix="$"
-        suffix="Mtok"
+        suffix="MTOK"
       />
     ),
   },
@@ -202,7 +202,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
         value={formatPriceToM(row.original.pricing.output)}
         className="text-right"
         prefix="$"
-        suffix="Mtok"
+        suffix="MTOK"
       />
     ),
   },
@@ -220,7 +220,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
         value={formatPriceToM(row.original.pricing.reasoning_output)}
         className="text-right"
         prefix="$"
-        suffix="Mtok"
+        suffix="MTOK"
       />
     ),
   },
@@ -256,7 +256,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
         value={formatPriceToM(row.original.pricing.cache_read)}
         className="text-right"
         prefix="$"
-        suffix="Mtok"
+        suffix="MTOK"
       />
     ),
   },
@@ -274,7 +274,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
         value={formatPriceToM(row.original.pricing.cache_write)}
         className="text-right"
         prefix="$"
-        suffix="Mtok"
+        suffix="MTOK"
       />
     ),
   },
@@ -343,9 +343,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
       </SortableHeader>
     ),
     accessorFn: (row) => row.limits.rpm,
-    cell: ({ row }) => (
-      <FormattedCell value={row.original.limits.rpm} className="text-right" suffix="req/min" />
-    ),
+    cell: ({ row }) => <FormattedCell value={row.original.limits.rpm} className="text-right" />,
   },
 
   {
@@ -356,9 +354,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
       </SortableHeader>
     ),
     accessorFn: (row) => row.limits.rpd,
-    cell: ({ row }) => (
-      <FormattedCell value={row.original.limits.rpd} className="text-right" suffix="req/day" />
-    ),
+    cell: ({ row }) => <FormattedCell value={row.original.limits.rpd} className="text-right" />,
   },
 
   {
@@ -373,7 +369,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
       <FormattedCell
         value={row.original.limits.images_per_prompt}
         className="text-right"
-        suffix="img"
+        suffix=""
       />
     ),
   },
@@ -390,7 +386,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
       <FormattedCell
         value={row.original.limits.tokens_per_image}
         className="text-right"
-        suffix="tok"
+        suffix="TOK"
       />
     ),
   },

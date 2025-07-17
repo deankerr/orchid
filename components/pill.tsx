@@ -1,5 +1,7 @@
 import { cn } from '@/lib/utils'
 
+import { Badge } from './ui/badge'
+
 export function Pill({
   label,
   className,
@@ -10,11 +12,10 @@ export function Pill({
   children: React.ReactNode
 }) {
   return (
-    <div
-      className={cn('flex w-fit rounded border border-border/80 text-xs font-medium', className)}
-    >
-      <div className="bg-secondary px-2 py-1 text-secondary-foreground">{label}</div>
-      <div className="px-2 py-1">{children}</div>
-    </div>
+    <Badge variant="outline" className={cn('rounded-none px-3 py-1', className)}>
+      <span className="text-foreground-dim uppercase">{label}</span>
+      <span className="mx-1 h-3 w-px bg-border/95 dark:bg-border" />
+      <span>{children}</span>
+    </Badge>
   )
 }

@@ -49,7 +49,7 @@ function UptimeTracker_({ endpoint_uuid }: { endpoint_uuid: string }) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <div className="font-mono text-sm font-medium text-muted-foreground">uptime</div>
+        <div className="font-mono text-sm font-medium text-muted-foreground">UPTIME</div>
         {validMetrics.length > 0 && (
           <div className="font-mono text-sm">{overallUptime.toFixed(2)}%</div>
         )}
@@ -58,8 +58,8 @@ function UptimeTracker_({ endpoint_uuid }: { endpoint_uuid: string }) {
       <Tracker data={slots} defaultBackgroundColor="bg-muted" />
 
       <div className="flex justify-between font-mono text-xs text-muted-foreground">
-        <span>{hours}h ago</span>
-        <span>now</span>
+        <span>{hours}H AGO</span>
+        <span>NOW</span>
       </div>
     </div>
   )

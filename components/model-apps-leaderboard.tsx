@@ -45,7 +45,7 @@ export function ModelAppsLeaderboard({
   return (
     <div className="relative rounded-sm border font-mono">
       <div className="border-b p-4">
-        <div className="flex items-center text-sm font-medium text-muted-foreground">
+        <div className="flex items-center text-sm font-medium">
           {title}
           {leaderboard.model_variant !== 'standard' && (
             <Badge variant="secondary" className="ml-2.5">

@@ -14,6 +14,7 @@ import {
   type SortingState,
   type VisibilityState,
 } from '@tanstack/react-table'
+import { Columns3CogIcon } from 'lucide-react'
 
 import type { Doc } from '@/convex/_generated/dataModel'
 
@@ -112,12 +113,13 @@ export function EndpointDataTable({ model: _model, endpoints }: EndpointDataTabl
   })
 
   return (
-    <div className="space-y-2 font-mono">
-      <div className="flex items-center justify-between px-3">
-        <div className="font-medium">Endpoints</div>
+    <div className="space-y-0.5 font-mono">
+      <div className="flex items-center justify-between">
+        <div className="text-base font-medium">Endpoint Comparison</div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="font-mono text-xs">
+            <Button variant="ghost" size="sm" className="rounded-none font-mono text-xs">
+              <Columns3CogIcon />
               Columns
             </Button>
           </DropdownMenuTrigger>
@@ -144,14 +146,14 @@ export function EndpointDataTable({ model: _model, endpoints }: EndpointDataTabl
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="hover:bg-transparent">
+            <TableRow key={headerGroup.id} className="border-b-transparent hover:bg-transparent">
               {headerGroup.headers.map((header) => {
                 // Skip rendering TableHead for variant column since it's only used for grouping
                 if (header.column.id === 'model_variant_slug') {
                   return null
                 }
                 return (
-                  <TableHead key={header.id} className="text-xs">
+                  <TableHead key={header.id} className="first:pl-0">
                     {header.isPlaceholder
                       ? null
                       : flexRender(header.column.columnDef.header, header.getContext())}
@@ -181,7 +183,7 @@ export function EndpointDataTable({ model: _model, endpoints }: EndpointDataTabl
                       return (
                         <TableCell
                           key={cell.id}
-                          className="border-b px-2.5 text-xs font-medium text-muted-foreground"
+                          className="border-b pb-1 text-xs font-medium text-muted-foreground first:pl-1"
                           colSpan={table.getVisibleLeafColumns().length}
                         >
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -197,7 +199,7 @@ export function EndpointDataTable({ model: _model, endpoints }: EndpointDataTabl
                     return null
                   }
                   return (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="first:pl-0">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   )

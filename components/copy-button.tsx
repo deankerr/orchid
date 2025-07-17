@@ -4,8 +4,9 @@ import { CheckIcon, CopyIcon } from 'lucide-react'
 
 import { Button } from './ui/button'
 
-export function CopyButton({
+export function CopyToClipboardButton({
   value,
+  children,
   ...props
 }: { value: string } & React.ComponentProps<typeof Button>) {
   const [copied, setCopied] = useState(false)
@@ -21,8 +22,8 @@ export function CopyButton({
   }
 
   return (
-    <Button onClick={handleCopy} size="icon" {...props}>
-      {copied ? <CheckIcon /> : <CopyIcon />}
+    <Button onClick={handleCopy} {...props}>
+      {children} {copied ? <CheckIcon /> : <CopyIcon />}
     </Button>
   )
 }

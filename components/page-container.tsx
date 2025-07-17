@@ -23,16 +23,12 @@ export function PageLoading() {
 
 export function PageHeader({ children, className, ...props }: React.ComponentProps<'div'>) {
   return (
-    <div className={cn('flex items-center justify-between gap-4', className)} {...props}>
+    <div className={cn('space-y-3', className)} {...props}>
       {children}
     </div>
   )
 }
 
 export function PageTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <h1 className="flex items-center gap-3 font-mono text-2xl font-medium tracking-tight">
-      {children}
-    </h1>
-  )
+  return <h1 className="flex items-center gap-3 font-mono text-2xl tracking-tight">{children}</h1>
 }

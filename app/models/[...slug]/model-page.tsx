@@ -1,9 +1,9 @@
 'use client'
 
-import { AlertTriangleIcon, FileUpIcon, ImageUpIcon } from 'lucide-react'
+import { AlertTriangleIcon } from 'lucide-react'
 
 import { BrandIcon } from '@/components/brand-icon/brand-icon'
-import { CopyButton } from '@/components/copy-button'
+import { CopyToClipboardButton } from '@/components/copy-button'
 import { EndpointPanel } from '@/components/endpoint-panel'
 import { EndpointDataTable } from '@/components/endpoint-tables/endpoint-data-table'
 import { ExternalLink } from '@/components/external-link'
@@ -12,15 +12,13 @@ import { MarkdownLinks } from '@/components/markdown-links'
 import { ModelAppsLeaderboard } from '@/components/model-apps-leaderboard'
 import { ModelTokenChart } from '@/components/model-token-chart'
 import { PageContainer, PageHeader, PageLoading, PageTitle } from '@/components/page-container'
-import { NumericPropertyBox, PropertyBox } from '@/components/property-box'
+import { Pill } from '@/components/pill'
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
-import { Badge } from '@/components/ui/badge'
-import { Card } from '@/components/ui/card'
 import { useModelAppsLeaderboards, useModelData, useModelTokenStats } from '@/hooks/api'
 import { formatIsoDate } from '@/lib/utils'
 
@@ -46,74 +44,67 @@ export function ModelPage({ slug }: { slug: string }) {
   }
 
   return (
-    <PageContainer className="space-y-7">
+    <PageContainer className="space-y-12">
       <PageHeader>
         <PageTitle>
           <BrandIcon slug={model.slug} size={24} />
           {model.name}
-          <CopyButton value={model.slug} variant="ghost" />
         </PageTitle>
       </PageHeader>
 
-      <div className="flex flex-wrap gap-2 font-mono">
-        {model.input_modalities.includes('image') && (
-          <Badge variant="secondary" className="text-[15px]">
-            <span>
-              <ImageUpIcon className="size-5" />
-            </span>
-            images
-          </Badge>
-        )}
+      {/* Model Data */}
+      <div className="-mt-6 space-y-3">
+        <CopyToClipboardButton
+          value={model.slug}
+          variant="ghost"
+          size="sm"
+          className="rounded-sm font-mono has-[>svg]:px-1"
+        >
+          {model.slug}
+        </CopyToClipboardButton>
+        {/* model attributes */}
+        <div className="flex flex-wrap items-center gap-2 font-mono">
+          <Pill label="Added">{formatIsoDate(model.or_created_at)}</Pill>
+          <Pill label="Context">{model.context_length.toLocaleString()}</Pill>
+          {model.instruct_type && <Pill label="Instruct Type">{model.instruct_type}</Pill>}
+          {model.tokenizer && <Pill label="Tokenizer">{model.tokenizer}</Pill>}
 
-        {model.input_modalities.includes('file') && (
-          <Badge variant="secondary" className="text-[15px]">
-            <span>
-              <FileUpIcon className="size-5" />
-            </span>
-            pdf
-          </Badge>
-        )}
+          {model.input_modalities.includes('image') && <Pill label="Modality">IMAGE</Pill>}
 
-        <PropertyBox label="added">{formatIsoDate(model.or_created_at)}</PropertyBox>
-        <NumericPropertyBox label="context" value={model.context_length} unit="TOK" />
-        <PropertyBox label="tokenizer">{model.tokenizer}</PropertyBox>
-
-        {model.instruct_type && (
-          <PropertyBox label="instruct_type">{model.instruct_type}</PropertyBox>
-        )}
-      </div>
-
-      {/*  description */}
-      {model.description && (
-        <p className="text-sm text-muted-foreground">
-          <MarkdownLinks>{model.description}</MarkdownLinks>
-        </p>
-      )}
-
-      {model.warning_message && (
-        <div className="flex items-center gap-2 rounded border border-warning px-3 py-2.5 text-sm text-warning">
-          <AlertTriangleIcon className="size-5" />
-          <div>
-            <MarkdownLinks>{model.warning_message}</MarkdownLinks>
-          </div>
+          {model.input_modalities.includes('file') && <Pill label="Modality">PDF</Pill>}
         </div>
-      )}
 
-      <div className="flex gap-4 font-mono text-sm">
-        <ExternalLink href={`https://openrouter.ai/${model.slug}`}>OpenRouter</ExternalLink>
-        {model.hugging_face_id && (
-          <ExternalLink href={`https://huggingface.co/${model.hugging_face_id}`}>
-            HuggingFace
-          </ExternalLink>
+        {/*  description */}
+        {model.description && (
+          <p className="py-2 text-sm text-foreground-dim">
+            <MarkdownLinks>{model.description}</MarkdownLinks>
+          </p>
         )}
+
+        {model.warning_message && (
+          <div className="flex items-center gap-2 rounded border border-warning px-3 py-2.5 text-sm text-warning">
+            <AlertTriangleIcon className="size-5" />
+            <div>
+              <MarkdownLinks>{model.warning_message}</MarkdownLinks>
+            </div>
+          </div>
+        )}
+
+        {/* External links */}
+        <div className="flex gap-4 text-sm">
+          <ExternalLink href={`https://openrouter.ai/${model.slug}`}>OpenRouter</ExternalLink>
+          {model.hugging_face_id && (
+            <ExternalLink href={`https://huggingface.co/${model.hugging_face_id}`}>
+              HuggingFace
+            </ExternalLink>
+          )}
+        </div>
       </div>
 
       {/* Endpoints  */}
       {model.endpoints && model.endpoints.length > 0 ? (
         <>
-          <Card className="rounded-none py-2">
-            <EndpointDataTable model={model} endpoints={model.endpoints} />
-          </Card>
+          <EndpointDataTable model={model} endpoints={model.endpoints} />
 
           {model.endpoints.map((endpoint) => (
             <EndpointPanel key={endpoint._id} endpoint={endpoint} />

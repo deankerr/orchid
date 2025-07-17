@@ -26,7 +26,7 @@ export function EndpointPanel({ endpoint }: { endpoint: Endpoint }) {
       <DataPolicySection dataPolicy={endpoint.data_policy} />
 
       <ParametersSection parameters={endpoint.supported_parameters} />
-      <div className="max-w-lg">
+      <div className="max-w-xl">
         <UptimeTracker endpoint_uuid={endpoint.uuid} />
       </div>
     </div>

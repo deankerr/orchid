@@ -50,7 +50,7 @@ function TableSortButton({
       tabIndex={0}
       onClick={onClick}
       className={cn(
-        'flex w-full items-center gap-1 border-none bg-transparent py-0.5 text-xs font-medium text-muted-foreground transition-colors outline-none select-none focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-ring/50',
+        'flex w-full items-center gap-1 border-none bg-transparent py-0.5 text-xs font-medium text-muted-foreground uppercase transition-colors outline-none select-none focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-ring/50',
         'hover:bg-accent/40',
         align === 'right' && 'justify-end',
         align === 'center' && 'justify-center',
@@ -128,16 +128,16 @@ export function FormattedCell({
     <div
       className={cn(
         'flex flex-row items-baseline px-0.5',
-        R.isNullish(value) && 'text-muted-foreground',
+        R.isNullish(value) && 'text-foreground-dim',
         className,
       )}
     >
-      <span className={cn('pr-2 text-right align-middle text-xs text-muted-foreground')}>
+      <span className={cn('pr-2 text-right align-middle text-xs text-foreground-dim')}>
         {prefix || ''}
       </span>
       <span className="flex-1 text-right">{formatted}</span>
       {suffix && (
-        <span className="ml-0.5 align-middle text-[10px] text-muted-foreground">{suffix}</span>
+        <span className="ml-0.5 align-middle text-[10px] text-foreground-dim">{suffix}</span>
       )}
     </div>
   )

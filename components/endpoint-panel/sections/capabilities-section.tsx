@@ -7,7 +7,7 @@ export function CapabilitiesSection({ endpoint }: { endpoint: Endpoint }) {
     <div className="flex flex-wrap gap-3">
       <PropertyBox label="quantization">
         {endpoint.quantization?.toUpperCase() ?? (
-          <span className="text-muted-foreground uppercase">no data</span>
+          <span className="text-foreground-dim uppercase">no data</span>
         )}
       </PropertyBox>
 

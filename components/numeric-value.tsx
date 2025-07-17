@@ -32,7 +32,7 @@ export function NumericValue({
     <div className="text-right">
       {currency && <span className="mr-0.5 text-[15px]">$</span>}
       <span>{R.isNumber(displayValue) ? formatNumber(displayValue, digits) : ' - '}</span>
-      {unit && <span className="mx-0.5 text-xs">{unit}</span>}
+      {unit && <span className="mx-0.5 text-xs text-foreground-dim">{unit}</span>}
     </div>
   )
 }
