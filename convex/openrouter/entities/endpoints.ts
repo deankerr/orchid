@@ -5,7 +5,7 @@ import * as R from 'remeda'
 import { diff as jsonDiff, type IChange } from 'json-diff-ts'
 
 import { internalMutation, query, type MutationCtx } from '../../_generated/server'
-import { hoursBetween } from '../../shared'
+import { getModelVariantSlug, hoursBetween } from '../../shared'
 import { Table2 } from '../../table2'
 import { countResults } from '../output'
 import { getCurrentSnapshotTimestamp } from '../snapshot'
@@ -182,9 +182,7 @@ export const list = query({
             .filter((endp) => endp.staleness_hours < 1), // NOTE: remove all stale endpoints
       )
 
-    return Map.groupBy(results, (r) =>
-      r.model_variant === 'standard' ? r.model_slug : `${r.model_slug}:${r.model_variant}`,
-    )
+    return Map.groupBy(results, (r) => getModelVariantSlug(r.model_slug, r.model_variant))
       .entries()
       .flatMap(([model_variant_slug, endpoints]) => {
         const totalRequests = endpoints.reduce(

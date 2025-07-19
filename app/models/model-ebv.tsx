@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { BrainIcon, FileUpIcon, ImageUpIcon, ToolCaseIcon } from 'lucide-react'
 
 import { BrandIcon } from '@/components/brand-icon/brand-icon'
+import { ModelVariantBadge } from '@/components/model-variant-badge'
 import { Badge } from '@/components/ui/badge'
 import { type EndpointsByVariant } from '@/hooks/api'
 import { cn, formatIsoDate } from '@/lib/utils'
@@ -35,11 +36,7 @@ function ModelEBV_({ ebv }: { ebv: EndpointsByVariant[number] }) {
           <BrandIcon slug={ebv.model_variant_slug} size={24} />
 
           <div className="truncate font-semibold">{ebv.model.name}</div>
-          {ebv.model_variant && (
-            <Badge variant="default" className="font-mono">
-              :{ebv.model_variant}
-            </Badge>
-          )}
+          <ModelVariantBadge modelVariant={ebv.model_variant} />
         </Link>
 
         <div className="flex grow items-center justify-between font-mono text-sm">

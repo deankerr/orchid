@@ -7,6 +7,7 @@ import type { Endpoint } from '@/hooks/api'
 import { cn } from '@/lib/utils'
 
 import { BrandIcon } from '../brand-icon/brand-icon'
+import { ModelVariantBadge } from '../model-variant-badge'
 import { NumericValue, PricingProperty } from '../numeric-value'
 import { Badge } from '../ui/badge'
 import { createNullSafeSortingFn, SortableHeader } from './table-components'
@@ -23,9 +24,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
         <div className={cn('flex items-center gap-3 px-0.5')}>
           <BrandIcon slug={endpoint.provider_slug} size={16} />
           <span>{endpoint.provider_name}</span>
-          {endpoint.model_variant !== 'standard' && (
-            <Badge variant="outline">:{endpoint.model_variant}</Badge>
-          )}
+          <ModelVariantBadge modelVariant={endpoint.model_variant} />
 
           {endpoint.is_disabled && (
             <Badge variant="destructive">

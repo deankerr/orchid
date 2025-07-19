@@ -3,7 +3,6 @@ import type { Doc } from '@/convex/_generated/dataModel'
 import { formatTokenCount } from '@/lib/utils'
 
 import { ExternalLink } from './external-link'
-import { Badge } from './ui/badge'
 
 function LeaderboardItem({
   app,
@@ -45,14 +44,7 @@ export function ModelAppsLeaderboard({
   return (
     <div className="relative rounded-sm border font-mono">
       <div className="border-b p-4">
-        <div className="flex items-center text-sm font-medium">
-          {title}
-          {leaderboard.model_variant !== 'standard' && (
-            <Badge variant="secondary" className="ml-2.5">
-              {leaderboard.model_variant}
-            </Badge>
-          )}
-        </div>
+        <div className="flex items-center text-sm font-medium">{title}</div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 md:divide-x">

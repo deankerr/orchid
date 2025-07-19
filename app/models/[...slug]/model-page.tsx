@@ -56,7 +56,7 @@ export function ModelPage({ slug }: { slug: string }) {
         {/* slug copy buttons */}
         <div className="flex items-center gap-2 font-mono">
           {model.variants.map((v) => {
-            const variantSlug = getModelVariantSlug(model, v)
+            const variantSlug = getModelVariantSlug(model.slug, v)
             return (
               <CopyToClipboardButton
                 key={variantSlug}
@@ -130,7 +130,13 @@ export function ModelPage({ slug }: { slug: string }) {
       ) : (
         appLeaderboards.map(
           (leaderboard) =>
-            leaderboard && <ModelAppsLeaderboard key={leaderboard._id} leaderboard={leaderboard} />,
+            leaderboard && (
+              <ModelAppsLeaderboard
+                key={leaderboard._id}
+                leaderboard={leaderboard}
+                title={`Apps Leaderboard: ${getModelVariantSlug(model.slug, leaderboard.model_variant)}`}
+              />
+            ),
         )
       )}
 
