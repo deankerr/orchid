@@ -13,17 +13,19 @@ import { PricingSection } from './sections/pricing-section'
 
 export function EndpointPanel({ endpoint }: { endpoint: Endpoint }) {
   return (
-    <div className="space-y-5 font-mono">
+    <div className="space-y-6 font-mono">
       <div className="flex items-center gap-2 border-b pb-1.5">
         <ProviderLogoTitle slug={endpoint.provider_slug} name={endpoint.provider_name} />
         {endpoint.status < 0 && <AlertTriangleIcon className="h-4 w-4 text-destructive" />}
       </div>
 
-      <MetricsSection endpoint={endpoint} />
-      <PricingSection pricing={endpoint.pricing} />
-      <CapabilitiesSection endpoint={endpoint} />
-      <LimitsSection limits={endpoint.limits} />
-      <DataPolicySection dataPolicy={endpoint.data_policy} />
+      <div className="-mt-3 space-y-3">
+        <MetricsSection endpoint={endpoint} />
+        <PricingSection pricing={endpoint.pricing} />
+        <CapabilitiesSection endpoint={endpoint} />
+        <LimitsSection limits={endpoint.limits} />
+        <DataPolicySection dataPolicy={endpoint.data_policy} />
+      </div>
 
       <ParametersSection parameters={endpoint.supported_parameters} />
       <div className="max-w-xl">

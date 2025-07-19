@@ -13,3 +13,7 @@ export function getDayAlignedTimestamp(now = Date.now()) {
 export function hoursBetween(from: number, to: number) {
   return Math.floor((to - from) / (1000 * 60 * 60))
 }
+
+export function getModelVariantSlug(model: { slug: string }, variant: string) {
+  return variant === 'standard' ? model.slug : `${model.slug}:${variant}`
+}

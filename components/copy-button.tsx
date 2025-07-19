@@ -23,7 +23,7 @@ export function CopyToClipboardButton({
 
   return (
     <Button onClick={handleCopy} {...props}>
-      {children} {copied ? <CheckIcon /> : <CopyIcon />}
+      {children} {copied ? <CheckIcon className="size-3" /> : <CopyIcon className="size-3" />}
     </Button>
   )
 }

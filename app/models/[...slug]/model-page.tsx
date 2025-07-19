@@ -2,6 +2,8 @@
 
 import { AlertTriangleIcon } from 'lucide-react'
 
+import { getModelVariantSlug } from '@/convex/shared'
+
 import { BrandIcon } from '@/components/brand-icon/brand-icon'
 import { CopyToClipboardButton } from '@/components/copy-button'
 import { EndpointPanel } from '@/components/endpoint-panel'
@@ -50,24 +52,32 @@ export function ModelPage({ slug }: { slug: string }) {
           <BrandIcon slug={model.slug} size={24} />
           {model.name}
         </PageTitle>
+
+        {/* slug copy buttons */}
+        <div className="flex items-center gap-2 font-mono">
+          {model.variants.map((v) => {
+            const variantSlug = getModelVariantSlug(model, v)
+            return (
+              <CopyToClipboardButton
+                key={variantSlug}
+                value={variantSlug}
+                variant="secondary"
+                size="sm"
+                className="rounded-sm [&_svg]:size-3"
+              >
+                {variantSlug}
+              </CopyToClipboardButton>
+            )
+          })}
+        </div>
       </PageHeader>
 
       {/* Model Data */}
-      <div className="-mt-6 space-y-3">
-        <CopyToClipboardButton
-          value={model.slug}
-          variant="ghost"
-          size="sm"
-          className="rounded-sm font-mono has-[>svg]:px-1"
-        >
-          {model.slug}
-        </CopyToClipboardButton>
+      <div>
         {/* model attributes */}
         <div className="flex flex-wrap items-center gap-2 font-mono">
           <Pill label="Added">{formatIsoDate(model.or_created_at)}</Pill>
           <Pill label="Context">{model.context_length.toLocaleString()}</Pill>
-          {model.instruct_type && <Pill label="Instruct Type">{model.instruct_type}</Pill>}
-          {model.tokenizer && <Pill label="Tokenizer">{model.tokenizer}</Pill>}
 
           {model.input_modalities.includes('image') && <Pill label="Modality">IMAGE</Pill>}
 
