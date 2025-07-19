@@ -3,7 +3,8 @@ import Link from 'next/link'
 
 import { BrainIcon, FileUpIcon, ImageUpIcon, ToolCaseIcon } from 'lucide-react'
 
-import { BrandIcon, ProviderBrandIcon } from '@/components/brand-icon'
+import { BrandIcon } from '@/components/brand-icon/brand-icon'
+import { ModelVariantBadge } from '@/components/model-variant-badge'
 import { Badge } from '@/components/ui/badge'
 import { type EndpointsByVariant } from '@/hooks/api'
 import { cn, formatIsoDate } from '@/lib/utils'
@@ -32,14 +33,10 @@ function ModelEBV_({ ebv }: { ebv: EndpointsByVariant[number] }) {
           href={`/models/${ebv.model.slug}`}
           className="flex items-center gap-3 underline-offset-2 hover:underline"
         >
-          <BrandIcon slug={ebv.model_variant_slug} size={24} fallback="model" />
+          <BrandIcon slug={ebv.model_variant_slug} size={24} />
 
           <div className="truncate font-semibold">{ebv.model.name}</div>
-          {ebv.model_variant && (
-            <Badge variant="default" className="font-mono">
-              :{ebv.model_variant}
-            </Badge>
-          )}
+          <ModelVariantBadge modelVariant={ebv.model_variant} />
         </Link>
 
         <div className="flex grow items-center justify-between font-mono text-sm">
@@ -95,7 +92,7 @@ function ModelEBV_({ ebv }: { ebv: EndpointsByVariant[number] }) {
           >
             {/* icon / name */}
             <div className="flex grow items-center gap-3 pl-0.5">
-              <ProviderBrandIcon slug={endp.provider_slug} size={18} />
+              <BrandIcon slug={endp.provider_slug} size={18} />
               <div className="truncate text-sm font-medium">{endp.provider_name}</div>
             </div>
 

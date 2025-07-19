@@ -1,41 +1,34 @@
+import * as R from 'remeda'
+
 import type { ColumnDef } from '@tanstack/react-table'
-import { AlertTriangleIcon, OctagonXIcon } from 'lucide-react'
+import { AlertTriangleIcon, Code2Icon, OctagonXIcon, ToolCaseIcon, XCircleIcon } from 'lucide-react'
 
 import type { Endpoint } from '@/hooks/api'
 import { cn } from '@/lib/utils'
 
-import { ProviderBrandIcon } from '../brand-icon'
+import { BrandIcon } from '../brand-icon/brand-icon'
+import { ModelVariantBadge } from '../model-variant-badge'
+import { NumericValue, PricingProperty } from '../numeric-value'
 import { Badge } from '../ui/badge'
-import {
-  CapabilityBadge,
-  createNullSafeSortingFn,
-  DataPolicyIndicator,
-  formatPriceToK,
-  formatPriceToM,
-  FormattedCell,
-  SortableHeader,
-} from './table-components'
+import { createNullSafeSortingFn, SortableHeader } from './table-components'
 
 export const endpointColumns: ColumnDef<Endpoint>[] = [
   // === Basic Info ===
   {
     id: 'provider',
-    header: ({ column }) => (
-      <SortableHeader column={column} className="ml-1">
-        provider
-      </SortableHeader>
-    ),
+    header: ({ column }) => <SortableHeader column={column}>provider</SortableHeader>,
     accessorFn: (row) => row.provider_name,
     cell: ({ row }) => {
       const endpoint = row.original
       return (
         <div className={cn('flex items-center gap-3 px-0.5')}>
-          <ProviderBrandIcon slug={endpoint.provider_slug} size={16} />
-          <span className="font-medium">{endpoint.provider_name}</span>
+          <BrandIcon slug={endpoint.provider_slug} size={16} />
+          <span>{endpoint.provider_name}</span>
+          <ModelVariantBadge modelVariant={endpoint.model_variant} />
 
           {endpoint.is_disabled && (
-            <Badge variant="destructive" className="gap-1 text-[10px]">
-              <OctagonXIcon className="size-3" />
+            <Badge variant="destructive">
+              <OctagonXIcon />
               DISABLED
             </Badge>
           )}
@@ -48,15 +41,56 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
   },
 
   {
-    id: 'staleness',
+    id: 'capabilities',
     header: ({ column }) => (
-      <SortableHeader column={column} align="right">
-        staleness
+      <SortableHeader column={column} align="center">
+        capabilities
       </SortableHeader>
     ),
-    accessorFn: (row) => row.staleness_hours,
+    cell: ({ row }) => {
+      const caps = row.original.capabilities
+      const params = row.original.supported_parameters
+      return (
+        <div className="flex gap-1">
+          {caps.tools ? (
+            <Badge variant="secondary" className="-my-0.5">
+              <ToolCaseIcon />
+              TOOLS
+            </Badge>
+          ) : (
+            <Badge variant="secondary" className="-my-0.5 bg-transparent opacity-30">
+              <XCircleIcon />
+              TOOLS
+            </Badge>
+          )}
+          {params.includes('response_format') ? (
+            <Badge variant="secondary" className="-my-0.5">
+              <Code2Icon />
+              JSON
+            </Badge>
+          ) : (
+            <Badge variant="secondary" className="-my-0.5 bg-transparent opacity-30">
+              <XCircleIcon />
+              JSON
+            </Badge>
+          )}
+        </div>
+      )
+    },
+  },
+
+  {
+    id: 'quantization',
+    header: ({ column }) => (
+      <SortableHeader column={column} align="center">
+        quant
+      </SortableHeader>
+    ),
+    accessorFn: (row) => row.quantization,
     cell: ({ row }) => (
-      <FormattedCell value={row.original.staleness_hours} className="text-right" />
+      <div className="text-center">
+        {row.original.quantization?.toUpperCase() ?? <span className="text-foreground-dim">?</span>}
+      </div>
     ),
   },
 
@@ -69,9 +103,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
       </SortableHeader>
     ),
     accessorFn: (row) => row.context_length,
-    cell: ({ row }) => (
-      <FormattedCell value={row.original.context_length} className="text-right" suffix="tok" />
-    ),
+    cell: ({ row }) => <NumericValue value={row.original.context_length} unit="TOK" />,
   },
 
   {
@@ -82,9 +114,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
       </SortableHeader>
     ),
     accessorFn: (row) => row.limits.input_tokens,
-    cell: ({ row }) => (
-      <FormattedCell value={row.original.limits.input_tokens} className="text-right" suffix="tok" />
-    ),
+    cell: ({ row }) => <NumericValue value={row.original.limits.input_tokens} unit="TOK" />,
   },
 
   {
@@ -95,20 +125,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
       </SortableHeader>
     ),
     accessorFn: (row) => row.limits.output_tokens,
-    cell: ({ row }) => (
-      <FormattedCell
-        value={row.original.limits.output_tokens ?? row.original.context_length}
-        className="text-right"
-        suffix="tok"
-      />
-    ),
-  },
-
-  {
-    id: 'quantization',
-    header: ({ column }) => <SortableHeader column={column}>quant</SortableHeader>,
-    accessorFn: (row) => row.quantization,
-    cell: ({ row }) => <FormattedCell value={row.original.quantization} />,
+    cell: ({ row }) => <NumericValue value={row.original.limits.output_tokens} unit="TOK" />,
   },
 
   // === Performance ===
@@ -120,14 +137,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
       </SortableHeader>
     ),
     accessorFn: (row) => row.stats?.p50_throughput,
-    cell: ({ row }) => (
-      <FormattedCell
-        value={row.original.stats?.p50_throughput}
-        className="text-right"
-        decimals={1}
-        suffix="tok/s"
-      />
-    ),
+    cell: ({ row }) => <NumericValue value={row.original.stats?.p50_throughput} unit="TOK/S" />,
     sortingFn: createNullSafeSortingFn((row) => row.stats?.p50_throughput),
   },
 
@@ -139,9 +149,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
       </SortableHeader>
     ),
     accessorFn: (row) => row.stats?.p50_latency,
-    cell: ({ row }) => (
-      <FormattedCell value={row.original.stats?.p50_latency} className="text-right" suffix="ms" />
-    ),
+    cell: ({ row }) => <NumericValue value={row.original.stats?.p50_latency} unit="MS" />,
     sortingFn: createNullSafeSortingFn((row) => row.stats?.p50_latency),
   },
 
@@ -155,18 +163,10 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
     accessorFn: (row) => row.uptime_average,
     cell: ({ row }) => {
       const uptime = row.original.uptime_average
-      return (
-        <FormattedCell
-          value={uptime}
-          className={cn(
-            uptime && uptime < 95 && 'text-warning',
-            uptime && uptime < 90 && 'text-destructive',
-            'text-right',
-          )}
-          decimals={1}
-          suffix="%"
-        />
-      )
+      const textColor =
+        R.isDefined(uptime) &&
+        (uptime >= 99 ? '' : uptime >= 85 ? 'text-warning' : 'text-destructive')
+      return <NumericValue value={uptime} unit="%" digits={1} className={cn(textColor)} />
     },
   },
 
@@ -179,14 +179,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
       </SortableHeader>
     ),
     accessorFn: (row) => row.pricing.input ?? 0,
-    cell: ({ row }) => (
-      <FormattedCell
-        value={formatPriceToM(row.original.pricing.input)}
-        className="text-right"
-        prefix="$"
-        suffix="Mtok"
-      />
-    ),
+    cell: ({ row }) => <PricingProperty pricing={row.original.pricing} field="input" />,
   },
 
   {
@@ -197,14 +190,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
       </SortableHeader>
     ),
     accessorFn: (row) => row.pricing.output ?? 0,
-    cell: ({ row }) => (
-      <FormattedCell
-        value={formatPriceToM(row.original.pricing.output)}
-        className="text-right"
-        prefix="$"
-        suffix="Mtok"
-      />
-    ),
+    cell: ({ row }) => <PricingProperty pricing={row.original.pricing} field="output" />,
   },
 
   {
@@ -215,14 +201,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
       </SortableHeader>
     ),
     accessorFn: (row) => row.pricing.reasoning_output,
-    cell: ({ row }) => (
-      <FormattedCell
-        value={formatPriceToM(row.original.pricing.reasoning_output)}
-        className="text-right"
-        prefix="$"
-        suffix="Mtok"
-      />
-    ),
+    cell: ({ row }) => <PricingProperty pricing={row.original.pricing} field="reasoning_output" />,
   },
 
   {
@@ -233,14 +212,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
       </SortableHeader>
     ),
     accessorFn: (row) => row.pricing.image_input,
-    cell: ({ row }) => (
-      <FormattedCell
-        value={formatPriceToK(row.original.pricing.image_input)}
-        className="text-right"
-        prefix="$"
-        suffix="Ktok"
-      />
-    ),
+    cell: ({ row }) => <PricingProperty pricing={row.original.pricing} field="image_input" />,
   },
 
   {
@@ -251,14 +223,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
       </SortableHeader>
     ),
     accessorFn: (row) => row.pricing.cache_read,
-    cell: ({ row }) => (
-      <FormattedCell
-        value={formatPriceToM(row.original.pricing.cache_read)}
-        className="text-right"
-        prefix="$"
-        suffix="Mtok"
-      />
-    ),
+    cell: ({ row }) => <PricingProperty pricing={row.original.pricing} field="cache_read" />,
   },
 
   {
@@ -269,14 +234,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
       </SortableHeader>
     ),
     accessorFn: (row) => row.pricing.cache_write,
-    cell: ({ row }) => (
-      <FormattedCell
-        value={formatPriceToM(row.original.pricing.cache_write)}
-        className="text-right"
-        prefix="$"
-        suffix="Mtok"
-      />
-    ),
+    cell: ({ row }) => <PricingProperty pricing={row.original.pricing} field="cache_write" />,
   },
 
   {
@@ -287,14 +245,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
       </SortableHeader>
     ),
     accessorFn: (row) => row.pricing.web_search,
-    cell: ({ row }) => (
-      <FormattedCell
-        value={row.original.pricing.web_search}
-        className="text-right"
-        decimals={6}
-        prefix="$"
-      />
-    ),
+    cell: ({ row }) => <PricingProperty pricing={row.original.pricing} field="web_search" />,
   },
 
   {
@@ -305,35 +256,10 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
       </SortableHeader>
     ),
     accessorFn: (row) => row.pricing.per_request,
-    cell: ({ row }) => (
-      <FormattedCell
-        value={row.original.pricing.per_request}
-        className="text-right"
-        decimals={6}
-        prefix="$"
-      />
-    ),
+    cell: ({ row }) => <PricingProperty pricing={row.original.pricing} field="per_request" />,
   },
 
-  // === Capabilities & Limits ===
-  {
-    id: 'capabilities',
-    header: ({ column }) => <SortableHeader column={column}>capabilities</SortableHeader>,
-    cell: ({ row }) => {
-      const caps = row.original.capabilities
-      return (
-        <div className="flex gap-1">
-          <CapabilityBadge enabled={caps.byok} label="byok" />
-          <CapabilityBadge enabled={caps.chat_completions} label="chat" />
-          <CapabilityBadge enabled={caps.completions} label="completions" />
-          <CapabilityBadge enabled={caps.multipart_messages} label="multipart" />
-          <CapabilityBadge enabled={caps.stream_cancellation} label="cancel" />
-          <CapabilityBadge enabled={caps.tools} label="tools" />
-        </div>
-      )
-    },
-    enableSorting: false,
-  },
+  // === Limits ===
 
   {
     id: 'rpm_limit',
@@ -343,9 +269,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
       </SortableHeader>
     ),
     accessorFn: (row) => row.limits.rpm,
-    cell: ({ row }) => (
-      <FormattedCell value={row.original.limits.rpm} className="text-right" suffix="req/min" />
-    ),
+    cell: ({ row }) => <NumericValue value={row.original.limits.rpm} unit="" />,
   },
 
   {
@@ -356,9 +280,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
       </SortableHeader>
     ),
     accessorFn: (row) => row.limits.rpd,
-    cell: ({ row }) => (
-      <FormattedCell value={row.original.limits.rpd} className="text-right" suffix="req/day" />
-    ),
+    cell: ({ row }) => <NumericValue value={row.original.limits.rpd} unit="" />,
   },
 
   {
@@ -369,13 +291,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
       </SortableHeader>
     ),
     accessorFn: (row) => row.limits.images_per_prompt,
-    cell: ({ row }) => (
-      <FormattedCell
-        value={row.original.limits.images_per_prompt}
-        className="text-right"
-        suffix="img"
-      />
-    ),
+    cell: ({ row }) => <NumericValue value={row.original.limits.images_per_prompt} unit="" />,
   },
 
   {
@@ -386,50 +302,50 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
       </SortableHeader>
     ),
     accessorFn: (row) => row.limits.tokens_per_image,
-    cell: ({ row }) => (
-      <FormattedCell
-        value={row.original.limits.tokens_per_image}
-        className="text-right"
-        suffix="tok"
-      />
-    ),
+    cell: ({ row }) => <NumericValue value={row.original.limits.tokens_per_image} unit="TOK" />,
   },
 
   {
     id: 'data_policy',
-    header: ({ column }) => <SortableHeader column={column}>data policy</SortableHeader>,
-    cell: ({ row }) => <DataPolicyIndicator policy={row.original.data_policy} />,
-    enableSorting: false,
+    header: ({ column }) => (
+      <SortableHeader column={column} align="center">
+        data policy
+      </SortableHeader>
+    ),
+    cell: ({ row }) => (
+      <div className="flex gap-1">
+        {row.original.data_policy.training && (
+          <Badge variant="outline" className="-my-0.5 border-warning text-warning">
+            <AlertTriangleIcon />
+            TRAINS
+          </Badge>
+        )}
+        {row.original.data_policy.can_publish && (
+          <Badge variant="outline" className="-my-0.5 border-warning text-warning">
+            <AlertTriangleIcon />
+            PUBLISH
+          </Badge>
+        )}
+      </div>
+    ),
   },
 
   {
     id: 'is_moderated',
-    header: ({ column }) => <SortableHeader column={column}>moderated</SortableHeader>,
+    header: ({ column }) => (
+      <SortableHeader column={column} align="center">
+        moderated
+      </SortableHeader>
+    ),
     accessorFn: (row) => row.is_moderated,
     cell: ({ row }) => {
       if (!row.original.is_moderated) return null
       return (
-        <Badge variant="outline" className="gap-1 text-[10px] text-warning">
-          <AlertTriangleIcon className="size-3" />
-          moderated
+        <Badge variant="outline" className="-my-0.5 border-warning text-warning">
+          <AlertTriangleIcon />
+          TRUE
         </Badge>
       )
     },
-  },
-
-  {
-    id: 'traffic',
-    header: ({ column }) => (
-      <SortableHeader column={column} align="right">
-        traffic
-      </SortableHeader>
-    ),
-    accessorFn: (row) => row.traffic_share,
-    cell: ({ row }) => {
-      const traffic = row.original.traffic_share
-      const value = traffic ? traffic * 100 : traffic
-      return <FormattedCell value={value} className="text-right" decimals={1} suffix="%" />
-    },
-    sortingFn: createNullSafeSortingFn((row) => row.traffic_share),
   },
 ]

@@ -1,35 +1,62 @@
 ---
-description:
-globs: app/**/*,components/**/*,hooks/**/*,lib/**/*
+description: Frontend structure, style guide, conventions, colors, tokens, tips
 alwaysApply: false
 ---
 
-# Frontend Guide
+# Frontend Development Guide
 
-- Our audience is highly technical and knowledgable about working with OpenRouter and LLMs in general.
-- They know what variables, parameters, context lengths, quantization etc. are.
-- They're interested in the all of the details of pricing - cache reads, reasoning tokens, etc.
-- We don't need to try to make this information seem "friendly", in fact the opposite is kinda cool.
-- We can make it easily accessible, comparable, grokable.
-- It is appropriate to show raw variable names/object keys at times - these values could be copied and pasted by users into their own code, e.g. `response_format`, `structured_outputs`.
-- This most importantly includes model slugs, which are used directly by programmers.
-- Mobile use isn't a focus right now, while we establish more data-heavy patterns.
+## Target Audience
 
-## Style
+ORCHID serves highly technical users who work with OpenRouter and LLMs professionally:
 
-- We're going for a stark, technical, functional look at this stage. Monospace fonts, monochromatic colors, pointy corners, less padding.
-- Think "modern terminal aesthetic", (but not literal shell character etc.). shadcn/ui will naturally lend to this with little customization.
-- Text is a good place to feature some color, e.g. status, variant labels.
-- Icons can be used where appropriate.
-- Avoid shadows.
+- Deep understanding of AI model concepts (variables, parameters, context lengths, quantization)
+- Interested in comprehensive pricing details (cache reads, reasoning tokens, structured outputs)
+- Value technical precision over "friendly" explanations
+- Need data that's easily accessible, comparable, and actionable
+- Will copy/paste values (model slugs, API parameters) directly into their code
 
-## Libraries/Components
+## Design Philosophy
 
-- All shadcn/ui components are installed.
-- We use Tailwind v4 - much is the same, but there is no longer a javascript config file. It is all defined in [globals.css](mdc:app/globals.css).
-- Use the standard shadcn/ui theme variables. Do not add custom colors, background colors, border radius, etc.
-- We can and should add more colors to our theme as needed - e.g. "success", "warning", etc. (but more specific to our needs). Always refer to [globals.css](mdc:app/globals.css) when considering breaking from the basic theme.
-- Do not add components to the components/ui folder - leave this for shadcn/ui.
-- Add components to the root components folder for now.
-- `border-border` is already the default border color, you don't need to specify it.
-- `text-xs` is the default for Badge.
+### Technical Aesthetic
+
+- **Stark, functional appearance**: Modern terminal aesthetic without literal shell elements
+- **Typography**: Monospace fonts for technical content
+- **Color palette**: Monochromatic base with strategic color usage
+- **Spacing**: Minimal padding, clean layouts
+- **Geometry**: Sharp corners, avoid rounded elements
+
+### Color Strategy
+
+- **Text**: Primary place for color (status indicators, variant labels)
+- **Branding**: Model and provider logos provide natural color accents
+- **Backgrounds**: Minimal use of background colors
+- **Effects**: Avoid shadows and other visual effects
+
+### Content Presentation
+
+- **Raw values**: Display technical identifiers (model slugs, API parameters) directly
+- **Data density**: Prioritize information density over mobile optimization
+- **Comparability**: Structure data for easy comparison across models/providers
+
+## Component Guidelines
+
+### UI Components
+
+- **Theme adherence**: Use standard shadcn/ui theme variables exclusively
+- **No customization**: Avoid custom colors, background colors, border radius
+- **Theme extensions**: Add new theme colors to [globals.css](mdc:app/globals.css) when needed
+- **Component location**: Add custom components to root `components/` folder, not `components/ui/`
+
+### Default Styling
+
+- Values like `font-mono` are defined at the root level of components where in use, allowing it to cascade down into sub-components like Buttons, Badges, etc. Do not add these classes to every internal element.
+- `border-border` is default, no need to specify anywhere
+- Badges: `text-xs` is the default size
+- Follow established patterns across the application
+
+## Development Priorities
+
+- **Desktop-first**: Mobile optimization is not a current focus
+- **Data-heavy patterns**: Optimize for information-dense interfaces
+- **Technical accuracy**: Prioritize correctness over simplification
+- **Developer experience**: Enable easy copying of technical values

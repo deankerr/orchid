@@ -3,6 +3,7 @@
 import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts'
 
 import type { Doc } from '@/convex/_generated/dataModel'
+import { getModelVariantSlug } from '@/convex/shared'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartConfig, ChartContainer, ChartTooltip } from '@/components/ui/chart'
@@ -97,7 +98,7 @@ export function ModelTokenChart({
   modelTokenStats: Doc<'or_model_token_stats'>
 }) {
   const { stats, model_slug, model_variant } = modelTokenStats
-  const variantSlug = model_variant === 'standard' ? model_slug : `${model_slug}:${model_variant}`
+  const variantSlug = getModelVariantSlug(model_slug, model_variant)
 
   // Get the first data point
   const first = stats[0]
@@ -138,7 +139,7 @@ export function ModelTokenChart({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-mono text-sm">{`tokens processed - ${variantSlug}`}</CardTitle>
+        <CardTitle className="font-mono text-sm">{`Tokens Processed: ${variantSlug}`}</CardTitle>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="aspect-auto h-[250px] w-full font-mono">

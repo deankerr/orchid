@@ -1,63 +1,26 @@
 ---
-description: 
-globs: 
 alwaysApply: true
 ---
-# Project Brief: ORCHID (OpenRouter Capability & Health Intelligence Dashboard)
 
-## Overview
+# Project Notes
 
-ORCHID is a comprehensive data aggregation, analysis, and visualization platform for AI models and providers available through the OpenRouter API. The system maintains a local database of model and provider information that updates regularly, allowing users to query, compare, and track changes over time.
+## Environment
 
-## Core Requirements
+- bun is the package manager, and script runner. The bun runtime is never actually used.
+- `bun check` to typecheck and lint your work.
+- Don't try to start the dev server. It's already running in my terminal.
 
-- Regular fetching and storage of model/provider data from OpenRouter API
-- Track historical changes in model availability and capabilities
-- Provide search, filtering, and visualization of model information
-- Enable custom metadata enrichment and categorization
-- Monitor model performance and reliability across providers
+## Libraries
 
-## Goals
+- zod v4 has been released, we're using `z4` imported like `import z4 from 'zod/v4'` to make this clear.
+- remeda is in use in the frontend and backend - useful during data processing/transformation.
+- Next.js 15 (React 19). RSCs and Next.js server features aren't used, in favour of Convex.
+- Tailwind v4 - the javascript config file is no longer used, everything is defined in [globals.css](mdc:app/globals.css).
+- All shadcn/ui components are installed.
 
-- Create a single source of truth for OpenRouter model capabilities
-- Provide insights into model reliability and performance
-- Enable data-driven model selection for specific use cases
-- Track the evolution of AI model capabilities over time
+### Convex
 
-## Project Scope
-
-In scope:
-
-- Data collection from OpenRouter API
-- Local database for storing and querying model information
-- Web interface for searching, filtering, and visualizing data
-- Performance monitoring and reliability metrics
-- Custom metadata enrichment
-
-Out of scope:
-
-- Model hosting or inference
-- Training or fine-tuning capabilities
-- Direct integration with other model providers outside OpenRouter
-
-# Product Context: ORCHID
-
-## Problem Statement
-
-As the AI model ecosystem grows more complex, users of OpenRouter face challenges in selecting the most appropriate models for their specific needs. Information about model capabilities, reliability, and performance is scattered and difficult to compare. There's no easy way to track changes in model availability or capabilities over time, or to verify advertised features actually work as expected.
-
-## User Experience Goals
-
-- Provide a clean, intuitive interface for discovering and comparing AI models
-- Enable natural language querying to find models based on capabilities [?]
-- Create customizable views and filters to narrow down model selection
-- Offer performance insights that help users make informed decisions
-- Maintain a historical view of how models evolve over time
-
-## Success Metrics
-
-- Ability to find models matching specific capability requirements in under 1 minute
-- Successfully identify reliability issues with specific models/providers
-- Complete data coverage of all OpenRouter models and their capabilities
-- User satisfaction with search and discovery features
-- Accuracy of capability verification tests
+- Convex uses their own V8 runtime, similar to Cloudflare Workers, but with better support for language features.
+- Map.groupBy is supported, and it is an incredible way to group then iterate through items, but we can't use it in the browser.
+- Convex will throw during compile if it finds any dir/file with a dash in it (e.g. `my-file.ts`), so use camelCase.
+- Convex queries/mutations/actions can't be used in files with dots in the name (e.g. `my.file.ts`), so use camelCase.

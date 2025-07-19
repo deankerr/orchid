@@ -5,7 +5,7 @@ import * as R from 'remeda'
 import { diff as jsonDiff, type IChange } from 'json-diff-ts'
 
 import { internalMutation, query, type MutationCtx } from '../../_generated/server'
-import { hoursBetween } from '../../shared'
+import { getModelVariantSlug, hoursBetween } from '../../shared'
 import { Table2 } from '../../table2'
 import { countResults } from '../output'
 import { getCurrentSnapshotTimestamp } from '../snapshot'
@@ -53,7 +53,7 @@ export const OrEndpoints = Table2('or_endpoints', {
   }),
 
   data_policy: v.object({
-    training: v.optional(v.boolean()),
+    training: v.boolean(),
     retains_prompts: v.optional(v.boolean()),
     retention_days: v.optional(v.number()),
     requires_user_ids: v.optional(v.boolean()),
@@ -65,17 +65,17 @@ export const OrEndpoints = Table2('or_endpoints', {
     input: v.optional(v.number()),
     output: v.optional(v.number()),
     image_input: v.optional(v.number()),
-    reasoning_output: v.optional(v.number()),
+    reasoning_output: v.optional(v.number()), // (1) perplexity/sonar-deep-research
 
     cache_read: v.optional(v.number()),
     cache_write: v.optional(v.number()),
 
     // flat rate
-    web_search: v.optional(v.number()),
-    per_request: v.optional(v.number()),
+    web_search: v.optional(v.number()), // (3) perplexity/sonar-reasoning-pro perplexity/sonar-pro perplexity/sonar-deep-research
+    per_request: v.optional(v.number()), // (6) gpt-4o(-mini)-search-preview perplexity/sonar(-reasoning) perplexity/llama-3.1[...]
 
     // e.g. 0.25, already applied to the other pricing fields
-    discount: v.optional(v.number()),
+    discount: v.optional(v.number()), // rare
   }),
 
   variable_pricings: v.optional(
@@ -182,9 +182,7 @@ export const list = query({
             .filter((endp) => endp.staleness_hours < 1), // NOTE: remove all stale endpoints
       )
 
-    return Map.groupBy(results, (r) =>
-      r.model_variant === 'standard' ? r.model_slug : `${r.model_slug}:${r.model_variant}`,
-    )
+    return Map.groupBy(results, (r) => getModelVariantSlug(r.model_slug, r.model_variant))
       .entries()
       .flatMap(([model_variant_slug, endpoints]) => {
         const totalRequests = endpoints.reduce(

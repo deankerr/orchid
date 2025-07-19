@@ -1,10 +1,12 @@
 'use client'
 
-import { AlertTriangleIcon, FileUpIcon, ImageUpIcon } from 'lucide-react'
+import { AlertTriangleIcon } from 'lucide-react'
 
-import { BrandIcon } from '@/components/brand-icon'
-import { CopyButton } from '@/components/copy-button'
-import { EndpointCard } from '@/components/endpoint-card'
+import { getModelVariantSlug } from '@/convex/shared'
+
+import { BrandIcon } from '@/components/brand-icon/brand-icon'
+import { CopyToClipboardButton } from '@/components/copy-button'
+import { EndpointPanel } from '@/components/endpoint-panel'
 import { EndpointDataTable } from '@/components/endpoint-tables/endpoint-data-table'
 import { ExternalLink } from '@/components/external-link'
 import { DataStreamLoader, EmptyState } from '@/components/loading'
@@ -19,8 +21,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
-import { Badge } from '@/components/ui/badge'
-import { Card } from '@/components/ui/card'
 import { useModelAppsLeaderboards, useModelData, useModelTokenStats } from '@/hooks/api'
 import { formatIsoDate } from '@/lib/utils'
 
@@ -46,74 +46,78 @@ export function ModelPage({ slug }: { slug: string }) {
   }
 
   return (
-    <PageContainer className="space-y-7">
+    <PageContainer className="space-y-12">
       <PageHeader>
         <PageTitle>
-          <BrandIcon slug={model.slug} size={24} fallback="model" />
+          <BrandIcon slug={model.slug} size={24} />
           {model.name}
-          <CopyButton value={model.slug} variant="ghost" />
         </PageTitle>
+
+        {/* slug copy buttons */}
+        <div className="flex items-center gap-2 font-mono">
+          {model.variants.map((v) => {
+            const variantSlug = getModelVariantSlug(model.slug, v)
+            return (
+              <CopyToClipboardButton
+                key={variantSlug}
+                value={variantSlug}
+                variant="secondary"
+                size="sm"
+                className="rounded-sm [&_svg]:size-3"
+              >
+                {variantSlug}
+              </CopyToClipboardButton>
+            )
+          })}
+        </div>
       </PageHeader>
 
-      <div className="flex flex-wrap gap-2 font-mono">
-        {model.input_modalities.includes('image') && (
-          <Badge variant="outline">
-            <span>
-              <ImageUpIcon className="size-4" />
-            </span>
-            images
-          </Badge>
-        )}
+      {/* Model Data */}
+      <div>
+        {/* model attributes */}
+        <div className="flex flex-wrap items-center gap-2 font-mono">
+          <Pill label="Added">{formatIsoDate(model.or_created_at)}</Pill>
+          <Pill label="Context">{model.context_length.toLocaleString()}</Pill>
 
-        {model.input_modalities.includes('file') && (
-          <Badge variant="outline">
-            <span>
-              <FileUpIcon className="size-4" />
-            </span>
-            pdf
-          </Badge>
-        )}
+          {model.input_modalities.includes('image') && <Pill label="Modality">IMAGE</Pill>}
 
-        <Pill label="added">{formatIsoDate(model.or_created_at)}</Pill>
-        <Pill label="context_length">{model.context_length.toLocaleString()}</Pill>
-        <Pill label="tokenizer">{model.tokenizer}</Pill>
-        {model.instruct_type && <Pill label="instruct_type">{model.instruct_type}</Pill>}
-      </div>
-
-      {/*  description */}
-      {model.description && (
-        <p className="text-sm text-muted-foreground">
-          <MarkdownLinks>{model.description}</MarkdownLinks>
-        </p>
-      )}
-
-      {model.warning_message && (
-        <div className="flex items-center gap-2 rounded border border-warning px-3 py-2.5 text-sm text-warning">
-          <AlertTriangleIcon className="size-5" />
-          <div>
-            <MarkdownLinks>{model.warning_message}</MarkdownLinks>
-          </div>
+          {model.input_modalities.includes('file') && <Pill label="Modality">PDF</Pill>}
         </div>
-      )}
 
-      <div className="flex gap-4 font-mono text-sm">
-        <ExternalLink href={`https://openrouter.ai/${model.slug}`}>OpenRouter</ExternalLink>
-        {model.hugging_face_id && (
-          <ExternalLink href={`https://huggingface.co/${model.hugging_face_id}`}>
-            HuggingFace
-          </ExternalLink>
+        {/*  description */}
+        {model.description && (
+          <p className="py-2 text-sm text-foreground-dim">
+            <MarkdownLinks>{model.description}</MarkdownLinks>
+          </p>
         )}
+
+        {model.warning_message && (
+          <div className="flex items-center gap-2 rounded border border-warning px-3 py-2.5 text-sm text-warning">
+            <AlertTriangleIcon className="size-5" />
+            <div>
+              <MarkdownLinks>{model.warning_message}</MarkdownLinks>
+            </div>
+          </div>
+        )}
+
+        {/* External links */}
+        <div className="flex gap-4 text-sm">
+          <ExternalLink href={`https://openrouter.ai/${model.slug}`}>OpenRouter</ExternalLink>
+          {model.hugging_face_id && (
+            <ExternalLink href={`https://huggingface.co/${model.hugging_face_id}`}>
+              HuggingFace
+            </ExternalLink>
+          )}
+        </div>
       </div>
 
       {/* Endpoints  */}
       {model.endpoints && model.endpoints.length > 0 ? (
         <>
-          <Card className="rounded-none py-2">
-            <EndpointDataTable model={model} endpoints={model.endpoints} />
-          </Card>
+          <EndpointDataTable model={model} endpoints={model.endpoints} />
 
           {model.endpoints.map((endpoint) => (
-            <EndpointCard key={endpoint._id} endpoint={endpoint} />
+            <EndpointPanel key={endpoint._id} endpoint={endpoint} />
           ))}
         </>
       ) : (
@@ -126,7 +130,13 @@ export function ModelPage({ slug }: { slug: string }) {
       ) : (
         appLeaderboards.map(
           (leaderboard) =>
-            leaderboard && <ModelAppsLeaderboard key={leaderboard._id} leaderboard={leaderboard} />,
+            leaderboard && (
+              <ModelAppsLeaderboard
+                key={leaderboard._id}
+                leaderboard={leaderboard}
+                title={`Apps Leaderboard: ${getModelVariantSlug(model.slug, leaderboard.model_variant)}`}
+              />
+            ),
         )
       )}
 

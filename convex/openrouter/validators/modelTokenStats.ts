@@ -48,7 +48,8 @@ export const ModelTokenStatsTransformSchema = z4
               reasoning: s.total_native_tokens_reasoning,
               requests: s.count,
             }))
-            .slice(0, 90),
+            .slice(0, 90)
+            .reverse(),
         }
       })
     })
