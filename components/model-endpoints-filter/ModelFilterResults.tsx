@@ -4,196 +4,43 @@ import Link from 'next/link'
 
 import { useEndpointsList, useModelsList } from '@/hooks/api'
 
+import { BrandIcon } from '../brand-icon/brand-icon'
+import { NumericValue, PricingProperty } from '../numeric-value'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
 import { Card, CardContent } from '../ui/card'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
 import { type FilterResult } from './types'
 
+// Internal tooltip wrapper component for consistent styling
+function TooltipWrapper({
+  children,
+  content,
+  className,
+}: {
+  children: React.ReactNode
+  content: string
+  className?: string
+}) {
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className={`${className} cursor-help font-mono whitespace-pre`}>{children}</div>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p className="font-mono">{content}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  )
+}
+
 interface ModelFilterResultsProps {
   results: FilterResult[]
   isLoading?: boolean
   hasMore?: boolean
   onShowMore?: () => void
-}
-
-// Shared token abbreviation logic
-const formatTokens = (tokens: number): string => {
-  if (tokens >= 1_000_000_000_000) {
-    return `${(tokens / 1_000_000_000_000).toFixed(1)}T`
-  }
-  if (tokens >= 100_000_000_000) {
-    return `${(tokens / 1_000_000_000).toFixed(1)}B`
-  }
-  if (tokens >= 1_000_000_000) {
-    return `${(tokens / 1_000_000_000).toFixed(1)}B`
-  }
-  if (tokens >= 100_000_000) {
-    return `${(tokens / 1_000_000).toFixed(0)}M`
-  }
-  if (tokens >= 1_000_000) {
-    return `${(tokens / 1_000_000).toFixed(0)}M`
-  }
-  if (tokens >= 100_000) {
-    return `${(tokens / 1000).toFixed(0)}k`
-  }
-  if (tokens >= 1000) {
-    return `${(tokens / 1000).toFixed(0)}k`
-  }
-  return `${tokens}`
-}
-
-// Smart formatting utilities for robust display
-const formatters = {
-  // Context length with smart abbreviations
-  contextLength: (tokens: number): { display: string; full: string } => {
-    const fullText = `${tokens.toLocaleString()} tokens`
-    const abbreviated = formatTokens(tokens)
-    return { display: `${abbreviated} ctx`, full: fullText }
-  },
-
-  // Total tokens with support for trillions
-  totalTokens: (tokens: number): { display: string; full: string } => {
-    const fullText = `${tokens.toLocaleString()} tokens (7d)`
-    const abbreviated = formatTokens(tokens)
-    return { display: `${abbreviated} tokens (7d)`, full: fullText }
-  },
-
-  // Throughput - always integer tokens/sec for easy comparison
-  throughput: (tokensPerSec?: number): { display: string; full: string } => {
-    if (!tokensPerSec || tokensPerSec === 0) {
-      return { display: '— tok/s', full: 'No throughput data available' }
-    }
-
-    const fullText = `${tokensPerSec.toFixed(2)} tokens/second`
-    const rounded = Math.round(tokensPerSec)
-
-    return { display: `${rounded} tok/s`, full: fullText }
-  },
-
-  // Latency - always in seconds with 2 decimal places for consistency
-  latency: (milliseconds?: number): { display: string; full: string } => {
-    if (!milliseconds || milliseconds === 0) {
-      return { display: '— s', full: 'No latency data available' }
-    }
-
-    const seconds = milliseconds / 1000
-    const fullText = `${milliseconds.toFixed(2)} milliseconds`
-
-    return { display: `${seconds.toFixed(2)}s`, full: fullText }
-  },
-}
-
-// Specialized pricing component with consistent monospace layout
-function PricingValue({
-  inputPrice,
-  outputPrice,
-  className,
-}: {
-  inputPrice?: number
-  outputPrice?: number
-  className?: string
-}) {
-  if (!inputPrice || !outputPrice) {
-    // Use dash with spacing to maintain accounting-style alignment
-    return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className={`${className} cursor-help font-mono whitespace-pre`}>
-              {'     '.padStart(5)} • {'     '.padStart(5)} /MTok
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p className="font-mono">No pricing data available</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    )
-  }
-
-  const inputPerMTok = inputPrice * 1_000_000
-  const outputPerMTok = outputPrice * 1_000_000
-  const fullText = `Input: $${inputPerMTok.toFixed(6)} per MTok, Output: $${outputPerMTok.toFixed(6)} per MTok`
-
-  // Handle free pricing - visually distinct from missing data
-  if (inputPerMTok === 0 && outputPerMTok === 0) {
-    return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className={`${className} cursor-help font-mono whitespace-pre`}>
-              {'FREE'.padStart(8)}
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p className="font-mono">Free to use</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    )
-  }
-
-  // Format pricing with consistent spacing
-  const formatPrice = (price: number) => {
-    if (price >= 1000) return `${(price / 1000).toFixed(2)}k`
-    return price.toFixed(2)
-  }
-
-  const inputFormatted = `$${formatPrice(inputPerMTok)}`
-  const outputFormatted = `$${formatPrice(outputPerMTok)}`
-
-  // Ensure consistent spacing using padding
-  const inputPadded = inputFormatted.padStart(5)
-  const outputPadded = outputFormatted.padStart(5)
-
-  const displayText = `${inputPadded} • ${outputPadded} /MTok`
-
-  if (displayText.length <= 20) {
-    // No truncation needed
-    return <div className={`${className} font-mono whitespace-pre`}>{displayText}</div>
-  }
-
-  return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className={`${className} cursor-help font-mono whitespace-pre`}>{displayText}</div>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p className="font-mono">{fullText}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  )
-}
-
-// Tooltip wrapper for truncated values with monospace for numeric data
-function MetricValue({
-  display,
-  full,
-  className,
-}: {
-  display: string
-  full: string
-  className?: string
-}) {
-  if (display === full) {
-    return <div className={`${className} font-mono`}>{display}</div>
-  }
-
-  return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className={`${className} cursor-help font-mono`}>{display}</div>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p className="font-mono">{full}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  )
 }
 
 export function ModelFilterResults({
@@ -248,142 +95,120 @@ export function ModelFilterResults({
           0,
         )
 
-        const tokensFormatted = totalTokens7d > 0 ? formatters.totalTokens(totalTokens7d) : null
-
         return (
-          <Card key={result.modelId}>
-            <CardContent className="">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="mb-2 flex items-center gap-3">
-                    <h3 className="text-lg font-semibold">
-                      <Link
-                        href={`/models/${encodeURIComponent(model.slug)}`}
-                        className="transition-colors hover:text-primary"
-                      >
-                        {model.name}
-                      </Link>
-                    </h3>
+          <div key={result.modelId} className="border p-2">
+            <div className="mb-2 flex items-center gap-3">
+              <BrandIcon slug={model.slug} size={20} />
 
-                    {/* Capability badges */}
-                    <div className="flex gap-1">
-                      {model.input_modalities.includes('image') && (
-                        <Badge variant="secondary" className="text-xs">
-                          image
-                        </Badge>
-                      )}
-                      {model.input_modalities.includes('file') && (
-                        <Badge variant="secondary" className="text-xs">
-                          file
-                        </Badge>
-                      )}
-                      {model.reasoning_config && (
-                        <Badge variant="secondary" className="text-xs">
-                          reasoning
-                        </Badge>
-                      )}
+              <div className="text-lg font-semibold">
+                <Link
+                  href={`/models/${encodeURIComponent(model.slug)}`}
+                  className="transition-colors hover:text-primary"
+                >
+                  {model.short_name}
+                </Link>
+              </div>
+
+              {/* Capability badges */}
+              <div className="flex gap-1">
+                {model.input_modalities.includes('image') && (
+                  <Badge variant="secondary" className="text-xs">
+                    image
+                  </Badge>
+                )}
+                {model.input_modalities.includes('file') && (
+                  <Badge variant="secondary" className="text-xs">
+                    file
+                  </Badge>
+                )}
+                {model.reasoning_config && (
+                  <Badge variant="secondary" className="text-xs">
+                    reasoning
+                  </Badge>
+                )}
+              </div>
+            </div>
+
+            <div className="mb-4 text-sm text-muted-foreground">
+              {model.author_name} • Created {new Date(model.or_created_at).toLocaleDateString()}
+            </div>
+
+            {/* Endpoints */}
+            <div className="min-w-0 space-y-2">
+              {modelEndpoints.map((endpoint) => {
+                return (
+                  <div
+                    key={endpoint._id}
+                    className="flex items-center gap-2 rounded-lg bg-muted/50 p-2 text-xs tabular-nums md:text-sm"
+                  >
+                    {/* Provider */}
+                    <BrandIcon slug={endpoint.provider_slug} size={16} />
+                    <div className="min-w-0 flex-shrink truncate font-medium">
+                      {endpoint.provider_name}
+                    </div>
+
+                    {/* Variant */}
+                    {endpoint.model_variant !== 'standard' && (
+                      <Badge variant="outline">{endpoint.model_variant}</Badge>
+                    )}
+
+                    {/* Spacer */}
+                    <div className="flex-1" />
+
+                    {/* Metrics */}
+                    {/* Context Length */}
+                    <div className="w-18">
+                      <NumericValue value={endpoint.context_length} unit={'TOK'} abbreviate />
+                    </div>
+
+                    <div className="w-18">
+                      <NumericValue value={endpoint.limits.output_tokens} abbreviate unit={'TOK'} />
+                    </div>
+
+                    {/* Throughput */}
+                    <div className="w-18">
+                      <NumericValue
+                        value={endpoint.stats?.p50_throughput}
+                        digits={0}
+                        abbreviate
+                        unit="TOK/S"
+                      />
+                    </div>
+
+                    {/* Latency */}
+                    <div className="hidden w-18 md:block">
+                      <NumericValue
+                        value={endpoint.stats?.p50_latency}
+                        digits={2}
+                        transform={(v) => v / 1000}
+                        unit="SEC"
+                      />
+                    </div>
+
+                    {/* Pricing  */}
+                    <div className="w-24">
+                      <PricingProperty pricing={endpoint.pricing} field="input" fallbackToZero />
+                    </div>
+
+                    <div className="w-24">
+                      <PricingProperty pricing={endpoint.pricing} field="output" fallbackToZero />
                     </div>
                   </div>
+                )
+              })}
 
-                  <div className="mb-4 text-sm text-muted-foreground">
-                    {model.author_name} • Created{' '}
-                    {new Date(model.or_created_at).toLocaleDateString()}
-                    {tokensFormatted && (
-                      <>
-                        {' • '}
-                        {tokensFormatted.display === tokensFormatted.full ? (
-                          <span className="font-mono">{tokensFormatted.display}</span>
-                        ) : (
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <span className="cursor-help font-mono">
-                                  {tokensFormatted.display}
-                                </span>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p className="font-mono">{tokensFormatted.full}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        )}
-                      </>
-                    )}
-                  </div>
-
-                  {/* Endpoints */}
-                  <div className="space-y-2">
-                    {modelEndpoints.map((endpoint) => {
-                      // Pre-format all values - always show containers with fallbacks
-                      const contextFormatted = formatters.contextLength(endpoint.context_length)
-                      const throughputFormatted = formatters.throughput(
-                        endpoint.stats?.p50_throughput,
-                      )
-                      const latencyFormatted = formatters.latency(endpoint.stats?.p50_latency)
-
-                      return (
-                        <div
-                          key={endpoint._id}
-                          className="flex items-center justify-between rounded-lg bg-muted/50 p-3"
-                        >
-                          <div className="flex items-center gap-3">
-                            <span className="font-medium">{endpoint.provider_name}</span>
-                            {endpoint.model_variant !== 'standard' && (
-                              <Badge variant="outline" className="text-xs">
-                                {endpoint.model_variant}
-                              </Badge>
-                            )}
-                          </div>
-
-                          {/* Always show all metric containers for consistent alignment */}
-                          <div className="flex items-center text-sm text-muted-foreground">
-                            {/* Context Length */}
-                            <MetricValue
-                              display={contextFormatted.display}
-                              full={contextFormatted.full}
-                              className="w-24 truncate text-right"
-                            />
-
-                            {/* Throughput - always shown */}
-                            <MetricValue
-                              display={throughputFormatted.display}
-                              full={throughputFormatted.full}
-                              className="ml-6 w-28 truncate text-right"
-                            />
-
-                            {/* Latency - always shown */}
-                            <MetricValue
-                              display={latencyFormatted.display}
-                              full={latencyFormatted.full}
-                              className="ml-6 w-20 truncate text-right"
-                            />
-
-                            {/* Pricing - specialized component */}
-                            <PricingValue
-                              inputPrice={endpoint.pricing.input}
-                              outputPrice={endpoint.pricing.output}
-                              className="ml-6 w-48 truncate text-right"
-                            />
-                          </div>
-                        </div>
-                      )
-                    })}
-
-                    {model.variants.length > modelEndpoints.length && (
-                      <div className="pt-2">
-                        <Link
-                          href={`/models/${encodeURIComponent(model.slug)}`}
-                          className="text-sm text-primary hover:underline"
-                        >
-                          → View all {model.variants.length} endpoints
-                        </Link>
-                      </div>
-                    )}
-                  </div>
+              {model.variants.length > modelEndpoints.length && (
+                <div className="pt-2">
+                  <Link
+                    href={`/models/${encodeURIComponent(model.slug)}`}
+                    className="text-sm text-primary hover:underline"
+                  >
+                    → View all {model.variants.length} endpoints
+                  </Link>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              )}
+            </div>
+          </div>
         )
       })}
 

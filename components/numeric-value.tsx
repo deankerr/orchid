@@ -2,15 +2,8 @@ import * as R from 'remeda'
 
 import type { Doc } from '@/convex/_generated/dataModel'
 
-import { pricingFormats } from '@/lib/formatters'
+import { formatAbbreviation, formatNumber, pricingFormats } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
-
-function formatNumber(value: number, decimals: number) {
-  return new Intl.NumberFormat('en-US', {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  }).format(value)
-}
 
 interface NumericValueProps {
   value?: number | null
@@ -18,6 +11,7 @@ interface NumericValueProps {
   digits?: number
   currency?: boolean
   transform?: (value: number) => number
+  abbreviate?: boolean
   className?: string
 }
 
@@ -31,6 +25,7 @@ export function NumericValue({
   digits = 0,
   currency = false,
   transform = R.identity(),
+  abbreviate = false,
   className,
 }: NumericValueProps) {
   const displayValue = R.when(value, R.isNumber, transform)
@@ -40,7 +35,13 @@ export function NumericValue({
       {currency && R.isNumber(displayValue) && (
         <span className="mr-0.5 text-[0.8em] text-foreground-dim">$</span>
       )}
-      <span>{R.isNumber(displayValue) ? formatNumber(displayValue, digits) : ' - '}</span>
+      <span>
+        {R.isNumber(displayValue)
+          ? abbreviate
+            ? formatAbbreviation(displayValue)
+            : formatNumber(displayValue, digits)
+          : ' - '}
+      </span>
       {unit && <span className="mx-0.5 text-[0.8em] text-foreground-dim">{unit}</span>}
     </div>
   )
@@ -52,6 +53,7 @@ type PricingField = keyof typeof pricingFormats
 interface PricingPropertyProps {
   pricing: Pricing
   field: PricingField
+  fallbackToZero?: boolean
   className?: string
 }
 
@@ -59,13 +61,18 @@ interface PricingPropertyProps {
  * PricingProperty displays a specific pricing field with appropriate formatting.
  * It automatically applies the correct unit, transformation, and decimal places.
  */
-export function PricingProperty({ pricing, field, className }: PricingPropertyProps) {
+export function PricingProperty({
+  pricing,
+  field,
+  fallbackToZero,
+  className,
+}: PricingPropertyProps) {
   const format = pricingFormats[field]
   const value = pricing[field]
 
   return (
     <NumericValue
-      value={value}
+      value={value ?? (fallbackToZero ? 0 : undefined)}
       unit={format.unit}
       digits={format.digits}
       transform={format.transform}

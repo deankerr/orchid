@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
+import { DevBreakpointIndicator } from '@/components/dev-breakpoint-indicator'
 import { SnapshotStatus } from '@/components/snapshot-status'
 import { Button } from '@/components/ui/button'
 import { ThemeButton } from '@/components/ui/theme-button'
@@ -45,6 +46,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
       </header>
       {children}
+      <DevBreakpointIndicator />
     </div>
   )
 }
