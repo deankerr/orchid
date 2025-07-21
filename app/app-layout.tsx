@@ -39,7 +39,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </nav>
 
         <div className="flex items-center justify-end gap-3">
-          <Link href="/snapshots">
+          <Link href="/snapshots" className="hidden md:block">
             <SnapshotStatus />
           </Link>
           <ThemeButton />

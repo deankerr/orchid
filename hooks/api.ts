@@ -35,6 +35,7 @@ export function useEndpointsByVariant() {
   return endpointsByVariant
 }
 
+export type Model = NonNullable<ReturnType<typeof useModelsList>>[number]
 export function useModelsList() {
   return useCachedQuery(api.openrouter.entities.models.list, {}, 'useModelsList')
 }

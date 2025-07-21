@@ -1,8 +1,8 @@
 'use client'
 
 import { Button } from '../ui/button'
-import { ModelFilterItem } from './results/model-filter-item'
-import { type FilterResult } from './types'
+import { type FilterResult } from './filter'
+import { ModelSummaryCard } from './results/model-summary-card'
 
 interface ModelFilterResultsProps {
   results: FilterResult[]
@@ -43,14 +43,14 @@ export function ModelFilterResults({
   return (
     <div className="space-y-4">
       {results.map((result) => (
-        <ModelFilterItem key={result.modelId} result={result} />
+        <ModelSummaryCard key={result.modelId} result={result} />
       ))}
 
       {/* Show More Button */}
       {hasMore && onShowMore && (
         <div className="pt-4 text-center">
           <Button variant="outline" onClick={onShowMore} size="lg">
-            Show 20 more models
+            Load more
           </Button>
         </div>
       )}

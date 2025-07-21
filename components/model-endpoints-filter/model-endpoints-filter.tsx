@@ -27,7 +27,7 @@ export function ModelEndpointsFilter() {
   const filters = useMemo(() => urlStateToFilterState(urlState), [urlState])
 
   // Apply filtering logic
-  const { filteredResults, totalCount } = useMemo(() => {
+  const { filteredResults } = useMemo(() => {
     if (!models || !endpoints) {
       return { filteredResults: [], totalCount: 0 }
     }
@@ -66,7 +66,7 @@ export function ModelEndpointsFilter() {
 
   return (
     <div className="space-y-6">
-      <ModelFilterControls resultCount={filteredResults.length} totalCount={totalCount} />
+      <ModelFilterControls />
       <ModelFilterResults
         results={displayedResults}
         isLoading={isLoading}

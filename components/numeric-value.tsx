@@ -42,7 +42,11 @@ export function NumericValue({
             : formatNumber(displayValue, digits)
           : ' - '}
       </span>
-      {unit && <span className="mx-0.5 text-[0.8em] text-foreground-dim">{unit}</span>}
+      {unit && (
+        <span data-slot="unit" className="mx-0.5 text-[0.8em] text-foreground-dim">
+          {unit}
+        </span>
+      )}
     </div>
   )
 }

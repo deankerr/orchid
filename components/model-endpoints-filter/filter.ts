@@ -1,6 +1,70 @@
 import * as R from 'remeda'
 
-import { type FilterResult, type FilterState, type SortDirection, type SortOption } from './types'
+import type { Endpoint, Model } from '@/hooks/api'
+
+import { type SortDirection, type SortOption } from './sort'
+
+export type FilterState = {
+  // Text search
+  search: string
+
+  // Model capabilities (from model.input_modalities)
+  hasImageInput: boolean
+  hasFileInput: boolean
+  hasReasoning: boolean
+
+  // Endpoint features
+  hasTools: boolean
+  hasJsonResponse: boolean
+  hasFreeVariant: boolean
+  hasPromptCaching: boolean
+}
+
+export interface FilterResult {
+  modelId: string // model._id
+  endpointIds: string[] // endpoint._id for each variant to display
+}
+
+// Type for model capabilities
+export type ModelCapabilities = {
+  // Model-level capabilities
+  hasImageInput: boolean
+  hasFileInput: boolean
+  hasReasoning: boolean
+
+  // Endpoint-level capabilities (aggregated)
+  hasTools: boolean
+  hasJsonResponse: boolean
+  hasFreeVariant: boolean
+  hasPromptCaching: boolean
+}
+
+/**
+ * Get all capabilities for a model based on its properties and available endpoints.
+ *
+ * Model-level capabilities are derived directly from the model properties.
+ * Endpoint-level capabilities are aggregated - returns true if ANY endpoint has the capability.
+ *
+ * This is the single source of truth for capability checking across the application.
+ */
+export function getModelCapabilities(model: Model, endpoints: Endpoint[]): ModelCapabilities {
+  return {
+    // Model-level capabilities
+    hasImageInput: model.input_modalities.includes('image'),
+    hasFileInput: model.input_modalities.includes('file'),
+    hasReasoning: endpoints.some((endpoint) => endpoint.capabilities.reasoning), // is technically model level
+
+    // Endpoint-level capabilities (true if ANY endpoint has the capability)
+    hasTools: endpoints.some((endpoint) => endpoint.capabilities.tools),
+    hasJsonResponse: endpoints.some((endpoint) =>
+      endpoint.supported_parameters.includes('response_format'),
+    ),
+    hasFreeVariant: endpoints.some((endpoint) => endpoint.model_variant === 'free'),
+    hasPromptCaching: endpoints.some(
+      (endpoint) => !!endpoint.pricing.cache_read && !!endpoint.pricing.cache_write,
+    ),
+  }
+}
 
 // Convert URL state to FilterState format
 export function urlStateToFilterState(urlState: {
@@ -53,13 +117,12 @@ function fuzzyMatch(query: string, text: string): boolean {
 }
 
 // Select best endpoint based on sort criteria
-function selectBestEndpoint(endpoints: any[], sortBy: SortOption): any {
+function selectBestEndpoint(endpoints: Endpoint[], sortBy: SortOption): Endpoint | null {
   if (endpoints.length === 0) return null
 
   switch (sortBy) {
     case 'created':
     case 'tokens_7d':
-    case 'tokens_30d':
     case 'alphabetical':
       // Model-level sorts use traffic_share for endpoint selection
       return endpoints.sort((a, b) => (b.traffic_share ?? 0) - (a.traffic_share ?? 0))[0]
@@ -101,8 +164,8 @@ function selectBestEndpoint(endpoints: any[], sortBy: SortOption): any {
 
 // Main filter function
 export function filterModels(
-  models: any[],
-  endpoints: any[],
+  models: Model[],
+  endpoints: Endpoint[],
   filters: FilterState,
   sortBy: SortOption,
   direction: SortDirection = 'desc',
@@ -117,19 +180,22 @@ export function filterModels(
       return false
     }
 
-    // Model-level capabilities
-    if (filters.hasImageInput && !model.input_modalities.includes('image')) {
-      return false
-    }
-    if (filters.hasFileInput && !model.input_modalities.includes('file')) {
-      return false
-    }
-    if (filters.hasReasoning && !model.reasoning_config) {
-      return false
-    }
-
-    // Must have at least one endpoint passing endpoint filters
+    // Get all model endpoints
     const modelEndpoints = endpointsByModel[model.slug] || []
+
+    // Check capabilities using centralized function
+    const capabilities = getModelCapabilities(model, modelEndpoints)
+
+    // Apply capability filters
+    if (filters.hasImageInput && !capabilities.hasImageInput) return false
+    if (filters.hasFileInput && !capabilities.hasFileInput) return false
+    if (filters.hasReasoning && !capabilities.hasReasoning) return false
+    if (filters.hasTools && !capabilities.hasTools) return false
+    if (filters.hasJsonResponse && !capabilities.hasJsonResponse) return false
+    if (filters.hasFreeVariant && !capabilities.hasFreeVariant) return false
+    if (filters.hasPromptCaching && !capabilities.hasPromptCaching) return false
+
+    // Must have at least one valid endpoint after individual endpoint filtering
     const validEndpoints = modelEndpoints.filter((endpoint) => {
       if (filters.hasTools && !endpoint.capabilities.tools) return false
       if (filters.hasJsonResponse && !endpoint.supported_parameters.includes('response_format'))
@@ -170,7 +236,7 @@ export function filterModels(
 
       const selectedEndpoints = Object.entries(variantGroups)
         .map(([_variant, endpoints]) => selectBestEndpoint(endpoints, sortBy))
-        .filter(Boolean)
+        .filter(R.isNonNullish)
 
       return {
         modelId: model._id,
@@ -197,19 +263,6 @@ export function filterModels(
         )
         const tokensB = Object.values(modelB.stats || {}).reduce(
           (sum: number, variant: any) => sum + (variant.tokens_7d || 0),
-          0,
-        )
-        comparison = tokensB - tokensA
-        break
-      }
-
-      case 'tokens_30d': {
-        const tokensA = Object.values(modelA.stats || {}).reduce(
-          (sum: number, variant: any) => sum + (variant.tokens_30d || 0),
-          0,
-        )
-        const tokensB = Object.values(modelB.stats || {}).reduce(
-          (sum: number, variant: any) => sum + (variant.tokens_30d || 0),
           0,
         )
         comparison = tokensB - tokensA
