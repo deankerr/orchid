@@ -16,31 +16,28 @@ export type FilterState = {
 
 export type SortDirection = 'asc' | 'desc'
 
-export type SortOption =
-  | 'created' // model.or_created_at
-  | 'tokens_7d' // sum of all variant tokens
-  | 'tokens_30d' // sum of all variant tokens
-  | 'alphabetical' // model.name
-  | 'input_price' // endpoint.pricing.input
-  | 'output_price' // endpoint.pricing.output
-  | 'context' // endpoint.context_length
-  | 'throughput' // endpoint.stats.p50_throughput
-  | 'latency' // endpoint.stats.p50_latency
+// Single consolidated sort record
+export const SORT_CONFIG = {
+  created: { label: 'Recently Added', naturalDirection: 'desc' },
+  tokens_7d: { label: 'Tokens (7d)', naturalDirection: 'desc' },
+  tokens_30d: { label: 'Tokens (30d)', naturalDirection: 'desc' },
+  alphabetical: { label: 'Alphabetical', naturalDirection: 'asc' },
+  input_price: { label: 'Input Price', naturalDirection: 'asc' },
+  output_price: { label: 'Output Price', naturalDirection: 'asc' },
+  context: { label: 'Context Length', naturalDirection: 'desc' },
+  throughput: { label: 'Throughput', naturalDirection: 'desc' },
+  latency: { label: 'Latency', naturalDirection: 'asc' },
+} as const
+
+// Derived type
+export type SortOption = keyof typeof SORT_CONFIG
+
+export const SORT_OPTIONS = Object.entries(SORT_CONFIG).map(([value, config]) => ({
+  value: value as SortOption,
+  label: config.label,
+}))
 
 export interface FilterResult {
   modelId: string // model._id
   endpointIds: string[] // endpoint._id for each variant to display
-}
-
-// Natural sort directions for each option
-export const NATURAL_SORT_DIRECTIONS: Record<SortOption, SortDirection> = {
-  created: 'desc', // newest first
-  tokens_7d: 'desc', // highest usage first
-  tokens_30d: 'desc', // highest usage first
-  alphabetical: 'asc', // A-Z
-  input_price: 'asc', // cheapest first
-  output_price: 'asc', // cheapest first
-  context: 'desc', // highest context first
-  throughput: 'desc', // fastest first
-  latency: 'asc', // lowest latency first
 }

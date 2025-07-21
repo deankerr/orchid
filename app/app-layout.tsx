@@ -27,7 +27,7 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mx-auto flex min-h-screen max-w-7xl flex-col px-3 sm:px-6 lg:px-12">
+    <div className="mx-auto flex min-h-screen max-w-7xl flex-col px-3 md:px-6 lg:px-12">
       <header className="flex items-center justify-start gap-6 py-4">
         <Button variant="link" className="-ml-4 font-mono text-base" asChild>
           <Link href="/">ORCHID</Link>

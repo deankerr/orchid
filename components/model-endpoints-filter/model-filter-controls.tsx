@@ -6,21 +6,10 @@ import { parseAsBoolean, parseAsString, parseAsStringEnum, useQueryStates } from
 import { SearchInput } from '../search-input'
 import { Button } from '../ui/button'
 import { Card, CardContent } from '../ui/card'
+import { Checkbox } from '../ui/checkbox'
+import { Label } from '../ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
-import { FilterCheckbox } from './FilterCheckbox'
-import { NATURAL_SORT_DIRECTIONS, type SortDirection, type SortOption } from './types'
-
-const sortOptions: { value: SortOption; label: string }[] = [
-  { value: 'created', label: 'Recently Added' },
-  { value: 'tokens_7d', label: 'Tokens (7d)' },
-  { value: 'tokens_30d', label: 'Tokens (30d)' },
-  { value: 'alphabetical', label: 'Alphabetical' },
-  { value: 'input_price', label: 'Input Price' },
-  { value: 'output_price', label: 'Output Price' },
-  { value: 'context', label: 'Context Length' },
-  { value: 'throughput', label: 'Throughput' },
-  { value: 'latency', label: 'Latency' },
-]
+import { SORT_CONFIG, SORT_OPTIONS, type SortDirection, type SortOption } from './types'
 
 const filterParsers = {
   // Text search
@@ -38,7 +27,7 @@ const filterParsers = {
   cache: parseAsBoolean.withDefault(false),
 
   // Sort
-  sort: parseAsStringEnum<SortOption>(sortOptions.map((o) => o.value)).withDefault('tokens_7d'),
+  sort: parseAsStringEnum<SortOption>(SORT_OPTIONS.map((o) => o.value)).withDefault('tokens_7d'),
   dir: parseAsStringEnum<SortDirection>(['asc', 'desc']).withDefault('desc'),
 }
 
@@ -63,7 +52,7 @@ export function ModelFilterControls({ resultCount, totalCount }: ModelFilterCont
 
   const handleSortChange = (value: SortOption) => {
     // Set sort and reset to natural direction
-    const naturalDirection = NATURAL_SORT_DIRECTIONS[value]
+    const naturalDirection = SORT_CONFIG[value].naturalDirection
     setFilters({
       sort: value,
       dir: naturalDirection,
@@ -94,7 +83,7 @@ export function ModelFilterControls({ resultCount, totalCount }: ModelFilterCont
                 <SelectValue placeholder="Sort by..." />
               </SelectTrigger>
               <SelectContent>
-                {sortOptions.map((option) => (
+                {SORT_OPTIONS.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
                   </SelectItem>
@@ -176,3 +165,24 @@ export function ModelFilterControls({ resultCount, totalCount }: ModelFilterCont
 
 // Export the parsers for use in the main page component
 export { filterParsers }
+
+interface FilterCheckboxProps {
+  label: string
+  checked: boolean
+  onChange: (checked: boolean) => void
+}
+
+function FilterCheckbox({ label, checked, onChange }: FilterCheckboxProps) {
+  return (
+    <div className="flex items-center space-x-2">
+      <Checkbox
+        id={label}
+        checked={checked}
+        onCheckedChange={(checked) => onChange(checked === true)}
+      />
+      <Label htmlFor={label} className="cursor-pointer text-sm font-normal">
+        {label}
+      </Label>
+    </div>
+  )
+}

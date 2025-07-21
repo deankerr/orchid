@@ -6,11 +6,11 @@ import { useQueryStates } from 'nuqs'
 
 import { useEndpointsList, useModelsList } from '@/hooks/api'
 
-import { filterParsers, ModelFilterControls } from './ModelFilterControls'
-import { ModelFilterResults } from './ModelFilterResults'
-import { filterModels, urlStateToFilterState } from './utils'
+import { filterModels, urlStateToFilterState } from './filter'
+import { filterParsers, ModelFilterControls } from './model-filter-controls'
+import { ModelFilterResults } from './model-filter-results'
 
-export function ModelEndpointsFilterWithData() {
+export function ModelEndpointsFilter() {
   const [displayCount, setDisplayCount] = useState(20)
 
   // Get data from API

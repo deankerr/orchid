@@ -1,6 +1,6 @@
 'use client'
 
-import { ModelEndpointsFilterWithData } from '@/components/model-endpoints-filter'
+import { ModelEndpointsFilter } from '@/components/model-endpoints-filter'
 import { PageContainer, PageHeader, PageTitle } from '@/components/page-container'
 
 export function ModelListPage() {
@@ -13,7 +13,7 @@ export function ModelListPage() {
         </p>
       </PageHeader>
 
-      <ModelEndpointsFilterWithData />
+      <ModelEndpointsFilter />
     </PageContainer>
   )
 }
