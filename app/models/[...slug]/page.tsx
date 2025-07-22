@@ -11,7 +11,7 @@ type Props = {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const slug = (await params).slug.join('/')
+  const slug = decodeURIComponent((await params).slug.join('/'))
 
   try {
     const model = await fetchQuery(api.openrouter.entities.models.get, { slug })
@@ -36,6 +36,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function Page({ params }: Props) {
-  const slug = (await params).slug.join('/')
+  const slug = decodeURIComponent((await params).slug.join('/'))
   return <ModelPage slug={slug} />
 }

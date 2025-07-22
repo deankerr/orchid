@@ -1,5 +1,7 @@
 import * as R from 'remeda'
 
+import fuzzysort from 'fuzzysort'
+
 import type { Endpoint, Model } from '@/hooks/api'
 
 import { type SortDirection, type SortOption } from './sort'
@@ -23,6 +25,7 @@ export type FilterState = {
 export interface FilterResult {
   modelId: string // model._id
   endpointIds: string[] // endpoint._id for each variant to display
+  score?: number // fuzzy search score (higher is better)
 }
 
 // Type for model capabilities
@@ -107,15 +110,6 @@ export function hasActiveFilters(filters: FilterState): boolean {
   )
 }
 
-// Fuzzy search helper
-function fuzzyMatch(query: string, text: string): boolean {
-  const normalizedQuery = query.toLowerCase()
-  const normalizedText = text.toLowerCase()
-
-  // Simple contains match for now - could be enhanced with more sophisticated matching
-  return normalizedText.includes(normalizedQuery)
-}
-
 // Select best endpoint based on sort criteria
 function selectBestEndpoint(endpoints: Endpoint[], sortBy: SortOption): Endpoint | null {
   if (endpoints.length === 0) return null
@@ -128,33 +122,25 @@ function selectBestEndpoint(endpoints: Endpoint[], sortBy: SortOption): Endpoint
       return endpoints.sort((a, b) => (b.traffic_share ?? 0) - (a.traffic_share ?? 0))[0]
 
     case 'input_price':
-      return endpoints.sort(
-        (a, b) =>
-          (a.pricing.input ?? Number.POSITIVE_INFINITY) -
-          (b.pricing.input ?? Number.POSITIVE_INFINITY),
-      )[0]
+      return endpoints.sort((a, b) => (a.pricing.input ?? 0) - (b.pricing.input ?? 0))[0]
 
     case 'output_price':
-      return endpoints.sort(
-        (a, b) =>
-          (a.pricing.output ?? Number.POSITIVE_INFINITY) -
-          (b.pricing.output ?? Number.POSITIVE_INFINITY),
-      )[0]
+      return endpoints.sort((a, b) => (a.pricing.output ?? 0) - (b.pricing.output ?? 0))[0]
 
     case 'context':
       return endpoints.sort((a, b) => b.context_length - a.context_length)[0]
 
-    case 'throughput':
-      return endpoints.sort(
-        (a, b) => (b.stats?.p50_throughput ?? 0) - (a.stats?.p50_throughput ?? 0),
-      )[0]
+    case 'throughput': {
+      const validEndpoints = endpoints.filter((e) => e.stats?.p50_throughput != null)
+      if (validEndpoints.length === 0) return null
+      return validEndpoints.sort((a, b) => b.stats!.p50_throughput - a.stats!.p50_throughput)[0]
+    }
 
-    case 'latency':
-      return endpoints.sort(
-        (a, b) =>
-          (a.stats?.p50_latency ?? Number.POSITIVE_INFINITY) -
-          (b.stats?.p50_latency ?? Number.POSITIVE_INFINITY),
-      )[0]
+    case 'latency': {
+      const validEndpoints = endpoints.filter((e) => e.stats?.p50_latency != null)
+      if (validEndpoints.length === 0) return null
+      return validEndpoints.sort((a, b) => a.stats!.p50_latency - b.stats!.p50_latency)[0]
+    }
 
     default:
       const _exhaustive: never = sortBy
@@ -170,16 +156,14 @@ export function filterModels(
   sortBy: SortOption,
   direction: SortDirection = 'desc',
 ): FilterResult[] {
+  // Trim search string once at the top
+  const searchQuery = filters.search.trim()
+
   // Group endpoints by model slug
   const endpointsByModel = R.groupBy(endpoints, (endpoint) => endpoint.model_slug)
 
-  // Filter models based on criteria
-  const filteredModels = models.filter((model) => {
-    // Text search (fuzzy match on name)
-    if (filters.search && !fuzzyMatch(filters.search, model.name)) {
-      return false
-    }
-
+  // Apply capability filters first (non-search filters)
+  const capabilityFilteredModels = models.filter((model) => {
     // Get all model endpoints
     const modelEndpoints = endpointsByModel[model.slug] || []
 
@@ -212,9 +196,16 @@ export function filterModels(
     return validEndpoints.length > 0
   })
 
+  // Apply fuzzy search if there's a search query
+  const filteredModels = searchQuery
+    ? fuzzysort
+        .go(searchQuery, capabilityFilteredModels, { key: 'name', all: true })
+        .map((result) => ({ model: result.obj, score: Math.round(result.score * 10) / 10 }))
+    : capabilityFilteredModels.map((model) => ({ model, score: 0 }))
+
   // Create result with selected endpoints per variant
   const results: FilterResult[] = filteredModels
-    .map((model) => {
+    .map(({ model, score }) => {
       const modelEndpoints = endpointsByModel[model.slug] || []
 
       // Apply endpoint filters
@@ -241,6 +232,7 @@ export function filterModels(
       return {
         modelId: model._id,
         endpointIds: selectedEndpoints.map((endpoint) => endpoint._id),
+        score, // Include fuzzy search score for sorting
       }
     })
     .filter((result) => result.endpointIds.length > 0) // Only include models with valid endpoints
@@ -249,6 +241,18 @@ export function filterModels(
   const sortedResults = results.sort((a, b) => {
     const modelA = models.find((m) => m._id === a.modelId)!
     const modelB = models.find((m) => m._id === b.modelId)!
+
+    // If there's a search query, prioritize fuzzy search score bands first
+    if (searchQuery && a.score !== undefined && b.score !== undefined) {
+      const aTruncatedScore = Math.floor(a.score * 10) / 10
+      const bTruncatedScore = Math.floor(b.score * 10) / 10
+
+      // Sort by truncated fuzzysort score in descending order (higher score is better)
+      if (aTruncatedScore !== bTruncatedScore) {
+        return bTruncatedScore - aTruncatedScore
+      }
+    }
+
     let comparison = 0
 
     switch (sortBy) {
@@ -276,8 +280,8 @@ export function filterModels(
       case 'input_price': {
         const endpointA = endpoints.find((e) => e._id === a.endpointIds[0])
         const endpointB = endpoints.find((e) => e._id === b.endpointIds[0])
-        const priceA = endpointA?.pricing.input ?? Number.POSITIVE_INFINITY
-        const priceB = endpointB?.pricing.input ?? Number.POSITIVE_INFINITY
+        const priceA = endpointA?.pricing.input ?? 0
+        const priceB = endpointB?.pricing.input ?? 0
         comparison = priceA - priceB
         break
       }
@@ -285,8 +289,8 @@ export function filterModels(
       case 'output_price': {
         const endpointA = endpoints.find((e) => e._id === a.endpointIds[0])
         const endpointB = endpoints.find((e) => e._id === b.endpointIds[0])
-        const priceA = endpointA?.pricing.output ?? Number.POSITIVE_INFINITY
-        const priceB = endpointB?.pricing.output ?? Number.POSITIVE_INFINITY
+        const priceA = endpointA?.pricing.output ?? 0
+        const priceB = endpointB?.pricing.output ?? 0
         comparison = priceA - priceB
         break
       }
@@ -301,18 +305,40 @@ export function filterModels(
       case 'throughput': {
         const endpointA = endpoints.find((e) => e._id === a.endpointIds[0])
         const endpointB = endpoints.find((e) => e._id === b.endpointIds[0])
-        const throughputA = endpointA?.stats?.p50_throughput ?? 0
-        const throughputB = endpointB?.stats?.p50_throughput ?? 0
-        comparison = throughputB - throughputA
+        const hasStatsA = endpointA?.stats?.p50_throughput != null
+        const hasStatsB = endpointB?.stats?.p50_throughput != null
+
+        // If only one has stats, prioritize the one with stats
+        if (hasStatsA && !hasStatsB) return -1
+        if (!hasStatsA && hasStatsB) return 1
+
+        // If both have stats, compare them
+        if (hasStatsA && hasStatsB) {
+          comparison = endpointB!.stats!.p50_throughput - endpointA!.stats!.p50_throughput
+        } else {
+          // Both lack stats, maintain original order
+          comparison = 0
+        }
         break
       }
 
       case 'latency': {
         const endpointA = endpoints.find((e) => e._id === a.endpointIds[0])
         const endpointB = endpoints.find((e) => e._id === b.endpointIds[0])
-        const latencyA = endpointA?.stats?.p50_latency ?? Number.POSITIVE_INFINITY
-        const latencyB = endpointB?.stats?.p50_latency ?? Number.POSITIVE_INFINITY
-        comparison = latencyA - latencyB
+        const hasStatsA = endpointA?.stats?.p50_latency != null
+        const hasStatsB = endpointB?.stats?.p50_latency != null
+
+        // If only one has stats, prioritize the one with stats
+        if (hasStatsA && !hasStatsB) return -1
+        if (!hasStatsA && hasStatsB) return 1
+
+        // If both have stats, compare them
+        if (hasStatsA && hasStatsB) {
+          comparison = endpointA!.stats!.p50_latency - endpointB!.stats!.p50_latency
+        } else {
+          // Both lack stats, maintain original order
+          comparison = 0
+        }
         break
       }
 

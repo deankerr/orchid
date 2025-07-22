@@ -60,10 +60,7 @@ export const ModelSummaryCard = memo<ModelSummaryCardProps>(({ result }) => {
             <BrandIcon slug={model.slug} size={20} />
 
             <div className="text-base font-semibold md:text-lg">
-              <Link
-                href={`/models/${encodeURIComponent(model.slug)}`}
-                className="transition-colors hover:text-primary"
-              >
+              <Link href={`/models/${model.slug}`} className="transition-colors hover:text-primary">
                 {model.short_name}
               </Link>
             </div>
@@ -127,7 +124,7 @@ interface EndpointItemProps {
 
 const EndpointItem = memo<EndpointItemProps>(({ endpoint }) => {
   return (
-    <div className="grid grid-cols-8 gap-1 bg-muted/50 py-2 font-mono text-sm">
+    <div className="grid grid-cols-8 gap-1 rounded-sm bg-secondary py-2 font-mono text-sm">
       <div className={cn('col-span-2 flex items-center gap-2 font-sans')}>
         {/* Provider */}
         <BrandIcon slug={endpoint.provider_slug} size={16} />
