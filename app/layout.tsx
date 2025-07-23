@@ -4,6 +4,8 @@ import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 
 import { ThemeProvider } from '@/app/theme-provider'
+import { Analytics } from '@vercel/analytics/next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
 
 import { AppLayout } from './app-layout'
@@ -44,6 +46,8 @@ export default function RootLayout({
             </ThemeProvider>
           </ConvexClientProvider>
         </NuqsAdapter>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   )
