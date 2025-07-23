@@ -1,6 +1,6 @@
 import type { Doc } from '@/convex/_generated/dataModel'
 
-import { formatTokenCount } from '@/lib/utils'
+import { formatCompactNumber } from '@/lib/formatters'
 
 import { ExternalLink } from './external-link'
 
@@ -25,7 +25,7 @@ function LeaderboardItem({
       </div>
 
       <div className="flex-shrink-0 text-right">
-        <div className="text-sm font-medium">{formatTokenCount(app.total_tokens)}</div>
+        <div className="text-sm font-medium">{formatCompactNumber(app.total_tokens)}</div>
         <div className="text-xs text-muted-foreground">tokens</div>
       </div>
     </div>

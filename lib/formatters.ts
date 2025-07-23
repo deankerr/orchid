@@ -1,3 +1,17 @@
+export function formatCompactNumber(value: number, digits = 1): string {
+  return new Intl.NumberFormat('en-US', {
+    notation: 'compact',
+    maximumFractionDigits: digits,
+  }).format(value)
+}
+
+export function formatNumber(value: number, decimals: number) {
+  return new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  }).format(value)
+}
+
 /**
  * Common number transformations used throughout the app
  */

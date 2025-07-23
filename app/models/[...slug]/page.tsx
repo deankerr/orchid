@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import type { Metadata } from 'next'
 
 import { fetchQuery } from 'convex/nextjs'
@@ -11,7 +12,7 @@ type Props = {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const slug = (await params).slug.join('/')
+  const slug = decodeURIComponent((await params).slug.join('/'))
 
   try {
     const model = await fetchQuery(api.openrouter.entities.models.get, { slug })
@@ -36,6 +37,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function Page({ params }: Props) {
-  const slug = (await params).slug.join('/')
-  return <ModelPage slug={slug} />
+  const slug = decodeURIComponent((await params).slug.join('/'))
+  return (
+    <Suspense>
+      <ModelPage slug={slug} />
+    </Suspense>
+  )
 }

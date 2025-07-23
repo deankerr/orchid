@@ -7,6 +7,7 @@ import { api } from '@/convex/_generated/api'
 import { useCachedQuery } from './use-cached-query'
 
 export type EndpointsByVariant = NonNullable<ReturnType<typeof useEndpointsByVariant>>
+// NOTE: DEPRECATED
 export function useEndpointsByVariant() {
   const models = useModelsList()
   const endpoints = useEndpointsList()
@@ -34,6 +35,7 @@ export function useEndpointsByVariant() {
   return endpointsByVariant
 }
 
+export type Model = NonNullable<ReturnType<typeof useModelsList>>[number]
 export function useModelsList() {
   return useCachedQuery(api.openrouter.entities.models.list, {}, 'useModelsList')
 }

@@ -87,7 +87,7 @@ function FallbackIcon({
   }
 
   if (providers && !url) {
-    return <BoxIcon className="m-auto opacity-95" strokeWidth={1.5} />
+    return <BoxIcon className="m-auto size-full opacity-95" strokeWidth={1.5} />
   }
 }
 

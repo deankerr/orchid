@@ -17,7 +17,7 @@ export function SearchInput({ value, onChange, placeholder, className }: SearchI
         type="text"
         placeholder={placeholder}
         value={value}
-        onChange={(e) => onChange(e.target.value.trim())}
+        onChange={(e) => onChange(e.target.value)}
         className="pr-10 pl-10 font-mono text-sm"
       />
       {value && (

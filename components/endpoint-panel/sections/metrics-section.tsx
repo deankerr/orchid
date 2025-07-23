@@ -1,7 +1,7 @@
 import type { Endpoint } from '@/hooks/api'
 import { metricFormats } from '@/lib/formatters'
 
-import { NumericPropertyBox } from '../../property-box'
+import { NumericPropertyBox, PropertyBox } from '../../property-box'
 
 export function MetricsSection({ endpoint }: { endpoint: Endpoint }) {
   return (
@@ -30,9 +30,16 @@ export function MetricsSection({ endpoint }: { endpoint: Endpoint }) {
       <NumericPropertyBox
         label="latency"
         value={endpoint.stats?.p50_latency}
-        unit={metricFormats.milliseconds.unit}
-        digits={metricFormats.milliseconds.digits}
+        unit="S"
+        digits={2}
+        transform={(value) => value / 1000}
       />
+
+      {endpoint.status < 0 && (
+        <PropertyBox label="status">
+          <span className="text-warning">deranked</span>
+        </PropertyBox>
+      )}
     </div>
   )
 }

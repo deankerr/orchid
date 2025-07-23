@@ -1,7 +1,7 @@
 import * as R from 'remeda'
 
 import type { ColumnDef } from '@tanstack/react-table'
-import { AlertTriangleIcon, Code2Icon, OctagonXIcon, ToolCaseIcon, XCircleIcon } from 'lucide-react'
+import { AlertTriangleIcon, BracesIcon, OctagonXIcon, WrenchIcon } from 'lucide-react'
 
 import type { Endpoint } from '@/hooks/api'
 import { cn } from '@/lib/utils'
@@ -21,7 +21,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
     cell: ({ row }) => {
       const endpoint = row.original
       return (
-        <div className={cn('flex items-center gap-3 px-0.5')}>
+        <div className={cn('flex items-center gap-3 px-0.5 font-sans font-medium')}>
           <BrandIcon slug={endpoint.provider_slug} size={16} />
           <span>{endpoint.provider_name}</span>
           <ModelVariantBadge modelVariant={endpoint.model_variant} />
@@ -52,28 +52,23 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
       const params = row.original.supported_parameters
       return (
         <div className="flex gap-1">
-          {caps.tools ? (
-            <Badge variant="secondary" className="-my-0.5">
-              <ToolCaseIcon />
-              TOOLS
-            </Badge>
-          ) : (
-            <Badge variant="secondary" className="-my-0.5 bg-transparent opacity-30">
-              <XCircleIcon />
-              TOOLS
-            </Badge>
-          )}
-          {params.includes('response_format') ? (
-            <Badge variant="secondary" className="-my-0.5">
-              <Code2Icon />
-              JSON
-            </Badge>
-          ) : (
-            <Badge variant="secondary" className="-my-0.5 bg-transparent opacity-30">
-              <XCircleIcon />
-              JSON
-            </Badge>
-          )}
+          <Badge
+            variant="secondary"
+            className={cn('-my-0.5', !caps.tools && 'bg-transparent opacity-30')}
+          >
+            <WrenchIcon />
+            TOOLS
+          </Badge>
+          <Badge
+            variant="secondary"
+            className={cn(
+              '-my-0.5',
+              !params.includes('response_format') && 'bg-transparent opacity-30',
+            )}
+          >
+            <BracesIcon />
+            JSON
+          </Badge>
         </div>
       )
     },
@@ -88,9 +83,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
     ),
     accessorFn: (row) => row.quantization,
     cell: ({ row }) => (
-      <div className="text-center">
-        {row.original.quantization?.toUpperCase() ?? <span className="text-foreground-dim">?</span>}
-      </div>
+      <div className="text-center">{row.original.quantization?.toUpperCase() ?? '?'}</div>
     ),
   },
 
@@ -149,7 +142,14 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
       </SortableHeader>
     ),
     accessorFn: (row) => row.stats?.p50_latency,
-    cell: ({ row }) => <NumericValue value={row.original.stats?.p50_latency} unit="MS" />,
+    cell: ({ row }) => (
+      <NumericValue
+        value={row.original.stats?.p50_latency}
+        transform={(value) => value / 1000}
+        digits={2}
+        unit="S"
+      />
+    ),
     sortingFn: createNullSafeSortingFn((row) => row.stats?.p50_latency),
   },
 

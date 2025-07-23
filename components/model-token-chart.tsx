@@ -7,6 +7,7 @@ import { getModelVariantSlug } from '@/convex/shared'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartConfig, ChartContainer, ChartTooltip } from '@/components/ui/chart'
+import { formatCompactNumber } from '@/lib/formatters'
 import { formatIsoDate } from '@/lib/utils'
 
 import { Separator } from './ui/separator'
@@ -28,10 +29,7 @@ const chartConfig = {
 
 // Format numbers with K/M/B suffixes
 const formatNumber = (value: number) => {
-  if (value >= 1e9) return `${(value / 1e9).toFixed(1)}B`
-  if (value >= 1e6) return `${(value / 1e6).toFixed(1)}M`
-  if (value >= 1e3) return `${(value / 1e3).toFixed(1)}K`
-  return value.toString()
+  return formatCompactNumber(value)
 }
 
 // Custom tooltip component for better control

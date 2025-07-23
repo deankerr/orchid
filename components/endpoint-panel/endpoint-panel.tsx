@@ -1,5 +1,3 @@
-import { AlertTriangleIcon } from 'lucide-react'
-
 import type { Endpoint } from '@/hooks/api'
 
 import { ModelVariantBadge } from '../model-variant-badge'
@@ -15,10 +13,9 @@ import { PricingSection } from './sections/pricing-section'
 export function EndpointPanel({ endpoint }: { endpoint: Endpoint }) {
   return (
     <div className="space-y-6 font-mono">
-      <div className="flex items-center gap-2 border-b pb-1.5">
+      <div className="flex items-center gap-2 border-b pb-1.5 font-sans">
         <ProviderLogoTitle slug={endpoint.provider_slug} name={endpoint.provider_name} />
         <ModelVariantBadge modelVariant={endpoint.model_variant} />
-        {endpoint.status < 0 && <AlertTriangleIcon className="h-4 w-4 text-destructive" />}
       </div>
 
       <div className="-mt-3 space-y-3">
