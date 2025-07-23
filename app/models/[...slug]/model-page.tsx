@@ -11,7 +11,8 @@ import { ModelAppsLeaderboard } from '@/components/model-apps-leaderboard'
 import { ModelTokenChart } from '@/components/model-token-chart'
 import { CopyToClipboardButton } from '@/components/shared/copy-to-clipboard-button'
 import { ExternalLink } from '@/components/shared/external-link'
-import { DataStreamLoader, EmptyState } from '@/components/shared/loading'
+import { LoaderBadge } from '@/components/shared/loader'
+import { EmptyState } from '@/components/shared/loading'
 import { MarkdownLinks } from '@/components/shared/markdown-links'
 import {
   PageContainer,
@@ -129,7 +130,7 @@ export function ModelPage({ slug }: { slug: string }) {
 
       {/* Apps leaderboards */}
       {appLeaderboards === undefined ? (
-        <DataStreamLoader label="Loading applications..." />
+        <LoaderBadge />
       ) : (
         appLeaderboards.map(
           (leaderboard) =>
@@ -145,7 +146,7 @@ export function ModelPage({ slug }: { slug: string }) {
 
       {/* Token stats charts */}
       {modelTokenStats === undefined ? (
-        <DataStreamLoader label="Loading stats..." />
+        <LoaderBadge />
       ) : (
         modelTokenStats.map(
           (stats) => stats && <ModelTokenChart key={stats.model_variant} modelTokenStats={stats} />,
