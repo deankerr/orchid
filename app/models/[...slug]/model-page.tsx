@@ -70,10 +70,8 @@ export function ModelPage({ slug }: { slug: string }) {
             )
           })}
         </div>
-      </PageHeader>
 
-      {/* Model Data */}
-      <div>
+        {/* Model Data */}
         {/* model attributes */}
         <div className="flex flex-wrap items-center gap-2 font-mono">
           <Pill label="Added">{formatIsoDate(model.or_created_at)}</Pill>
@@ -109,7 +107,7 @@ export function ModelPage({ slug }: { slug: string }) {
             </ExternalLink>
           )}
         </div>
-      </div>
+      </PageHeader>
 
       {/* Endpoints  */}
       {model.endpoints && model.endpoints.length > 0 ? (

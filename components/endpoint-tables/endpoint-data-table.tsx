@@ -75,7 +75,7 @@ export function EndpointDataTable({ model: _model, endpoints }: EndpointDataTabl
   return (
     <div className="space-y-0.5 font-mono">
       <div className="flex items-center justify-between gap-2 border-b pb-1">
-        <div className="text-base font-medium">Endpoint Comparison</div>
+        <div className="font-sans text-base font-medium">Endpoint Overview</div>
         <ColumnVisibilityMenu table={table} />
       </div>
 

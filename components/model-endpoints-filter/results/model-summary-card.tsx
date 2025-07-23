@@ -5,7 +5,8 @@ import Link from 'next/link'
 
 import { Pill } from '@/components/pill'
 import { useEndpointsList, useModelsList } from '@/hooks/api'
-import { cn, formatIsoDate, formatTokenCount } from '@/lib/utils'
+import { formatCompactNumber } from '@/lib/formatters'
+import { cn, formatIsoDate } from '@/lib/utils'
 
 import { BrandIcon } from '../../brand-icon/brand-icon'
 import { NumericValue, PricingProperty } from '../../numeric-value'
@@ -55,7 +56,7 @@ export const ModelSummaryCard = memo<ModelSummaryCardProps>(({ result }) => {
   return (
     <div className="space-y-5 rounded-sm border bg-card py-4 text-card-foreground">
       <div className="space-y-4 px-3">
-        <div className="flex items-center justify-between px-1">
+        <div className="flex items-center justify-between pl-1">
           <div className="flex items-center gap-3">
             <BrandIcon slug={model.slug} size={20} />
 
@@ -70,8 +71,8 @@ export const ModelSummaryCard = memo<ModelSummaryCardProps>(({ result }) => {
             <Pill label="Added" className="rounded-sm">
               {formatIsoDate(model.or_created_at)}
             </Pill>
-            <Pill label="Tokens 7D" className="rounded-sm [&>span]:last:min-w-11">
-              {formatTokenCount(tokens7d)}
+            <Pill label="Tokens 7D" className="rounded-sm">
+              {formatCompactNumber(tokens7d)}
             </Pill>
           </div>
         </div>

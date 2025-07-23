@@ -1,17 +1,8 @@
-export function formatAbbreviation(value: number): string {
-  if (value >= 1_000_000_000_000) {
-    return `${(value / 1_000_000_000_000).toFixed(1)}T`
-  }
-  if (value >= 1_000_000_000) {
-    return `${(value / 1_000_000_000).toFixed(1)}B`
-  }
-  if (value >= 1_000_000) {
-    return `${(value / 1_000_000).toFixed(0)}M`
-  }
-  if (value >= 1000) {
-    return `${(value / 1000).toFixed(0)}K`
-  }
-  return `${value.toFixed(0)}`
+export function formatCompactNumber(value: number, digits = 1): string {
+  return new Intl.NumberFormat('en-US', {
+    notation: 'compact',
+    maximumFractionDigits: digits,
+  }).format(value)
 }
 
 export function formatNumber(value: number, decimals: number) {

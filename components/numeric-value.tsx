@@ -2,7 +2,7 @@ import * as R from 'remeda'
 
 import type { Doc } from '@/convex/_generated/dataModel'
 
-import { formatAbbreviation, formatNumber, pricingFormats } from '@/lib/formatters'
+import { formatCompactNumber, formatNumber, pricingFormats } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 
 interface NumericValueProps {
@@ -33,17 +33,17 @@ export function NumericValue({
   return (
     <div className={cn('text-right', className)}>
       {currency && R.isNumber(displayValue) && (
-        <span className="mr-0.5 text-[0.8em] text-foreground-dim">$</span>
+        <span className="mr-0.5 text-[0.8em] text-muted-foreground">$</span>
       )}
       <span>
         {R.isNumber(displayValue)
           ? abbreviate
-            ? formatAbbreviation(displayValue)
+            ? formatCompactNumber(displayValue, digits)
             : formatNumber(displayValue, digits)
           : ' - '}
       </span>
       {unit && (
-        <span data-slot="unit" className="mx-0.5 text-[0.8em] text-foreground-dim">
+        <span data-slot="unit" className="mx-0.5 text-[0.8em] text-muted-foreground">
           {unit}
         </span>
       )}

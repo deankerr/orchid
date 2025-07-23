@@ -26,9 +26,9 @@ export function ColumnVisibilityMenu({ table }: ColumnVisibilityMenuProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="rounded-none font-mono text-xs">
+        <Button variant="ghost" size="icon" className="rounded-none">
           <Columns3CogIcon />
-          Columns
+          <span className="sr-only">Columns</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[200px]">
