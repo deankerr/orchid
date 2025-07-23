@@ -1,5 +1,3 @@
-import { AlertTriangleIcon } from 'lucide-react'
-
 import type { Endpoint } from '@/hooks/api'
 
 import { ModelVariantBadge } from '../model-variant-badge'

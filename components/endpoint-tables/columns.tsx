@@ -1,7 +1,7 @@
 import * as R from 'remeda'
 
 import type { ColumnDef } from '@tanstack/react-table'
-import { AlertTriangleIcon, BracesIcon, OctagonXIcon, WrenchIcon, XCircleIcon } from 'lucide-react'
+import { AlertTriangleIcon, BracesIcon, OctagonXIcon, WrenchIcon } from 'lucide-react'
 
 import type { Endpoint } from '@/hooks/api'
 import { cn } from '@/lib/utils'
