@@ -12,7 +12,6 @@ import { ModelTokenChart } from '@/components/model-token-chart'
 import { CopyToClipboardButton } from '@/components/shared/copy-to-clipboard-button'
 import { ExternalLink } from '@/components/shared/external-link'
 import { LoaderBadge } from '@/components/shared/loader'
-import { EmptyState } from '@/components/shared/loading'
 import { MarkdownLinks } from '@/components/shared/markdown-links'
 import {
   PageContainer,
@@ -84,7 +83,6 @@ export function ModelPage({ slug }: { slug: string }) {
           <Pill label="Context">{model.context_length.toLocaleString()}</Pill>
 
           {model.input_modalities.includes('image') && <Pill label="Modality">IMAGE</Pill>}
-
           {model.input_modalities.includes('file') && <Pill label="Modality">PDF</Pill>}
         </div>
 
@@ -119,13 +117,12 @@ export function ModelPage({ slug }: { slug: string }) {
       {model.endpoints && model.endpoints.length > 0 ? (
         <>
           <EndpointDataTable model={model} endpoints={model.endpoints} />
-
           {model.endpoints.map((endpoint) => (
             <EndpointPanel key={endpoint._id} endpoint={endpoint} />
           ))}
         </>
       ) : (
-        <EmptyState message="No endpoints available" icon="⚡" />
+        <p className="text-muted-foreground">No endpoints found.</p>
       )}
 
       {/* Apps leaderboards */}
