@@ -6,9 +6,9 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useSnapshotRuns, useSnapshotStatus } from '@/hooks/api'
 
-import { ErrorState } from '../loading'
-import { PageContainer, PageHeader, PageLoading, PageTitle } from '../page-container'
-import { SnapshotAtBadge } from '../snapshot-at-badge'
+import { ErrorState } from '../shared/loading'
+import { PageContainer, PageHeader, PageLoading, PageTitle } from '../shared/page-container'
+import { SnapshotAtBadge } from '../shared/snapshot-at-badge'
 import { SnapshotRunDetail } from './snapshot-run-detail'
 import { SnapshotRunsList } from './snapshot-runs-list'
 

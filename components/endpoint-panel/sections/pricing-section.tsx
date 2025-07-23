@@ -2,7 +2,7 @@ import * as R from 'remeda'
 
 import type { Doc } from '@/convex/_generated/dataModel'
 
-import { PricingPropertyBox } from '../../property-box'
+import { PricingPropertyBox } from '../../shared/property-box'
 
 type Pricing = Doc<'or_endpoints'>['pricing']
 

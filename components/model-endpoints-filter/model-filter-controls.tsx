@@ -3,7 +3,7 @@
 import { ArrowDown, ArrowUp } from 'lucide-react'
 import { parseAsBoolean, parseAsString, parseAsStringEnum, useQueryStates } from 'nuqs'
 
-import { SearchInput } from '../search-input'
+import { SearchInput } from '../shared/search-input'
 import { Button } from '../ui/button'
 import { Checkbox } from '../ui/checkbox'
 import { Label } from '../ui/label'

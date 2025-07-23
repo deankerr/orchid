@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import { CheckIcon, CopyIcon } from 'lucide-react'
 
-import { Button } from './ui/button'
+import { Button } from '../ui/button'
 
 export function CopyToClipboardButton({
   value,

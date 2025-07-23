@@ -1,7 +1,7 @@
 import type { Endpoint } from '@/hooks/api'
 import { metricFormats } from '@/lib/formatters'
 
-import { NumericPropertyBox } from '../../property-box'
+import { NumericPropertyBox } from '../../shared/property-box'
 
 export function LimitsSection({ limits }: { limits: Endpoint['limits'] }) {
   return (

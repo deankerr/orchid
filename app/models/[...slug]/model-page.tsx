@@ -5,16 +5,21 @@ import { AlertTriangleIcon } from 'lucide-react'
 import { getModelVariantSlug } from '@/convex/shared'
 
 import { BrandIcon } from '@/components/brand-icon/brand-icon'
-import { CopyToClipboardButton } from '@/components/copy-button'
-import { EndpointPanel } from '@/components/endpoint-panel'
-import { EndpointDataTable } from '@/components/endpoint-tables/endpoint-data-table'
-import { ExternalLink } from '@/components/external-link'
-import { DataStreamLoader, EmptyState } from '@/components/loading'
-import { MarkdownLinks } from '@/components/markdown-links'
+import { EndpointDataTable } from '@/components/endpoint-data-table/endpoint-data-table'
+import { EndpointPanel } from '@/components/endpoint-panel/endpoint-panel'
 import { ModelAppsLeaderboard } from '@/components/model-apps-leaderboard'
 import { ModelTokenChart } from '@/components/model-token-chart'
-import { PageContainer, PageHeader, PageLoading, PageTitle } from '@/components/page-container'
-import { Pill } from '@/components/pill'
+import { CopyToClipboardButton } from '@/components/shared/copy-to-clipboard-button'
+import { ExternalLink } from '@/components/shared/external-link'
+import { DataStreamLoader, EmptyState } from '@/components/shared/loading'
+import { MarkdownLinks } from '@/components/shared/markdown-links'
+import {
+  PageContainer,
+  PageHeader,
+  PageLoading,
+  PageTitle,
+} from '@/components/shared/page-container'
+import { Pill } from '@/components/shared/pill'
 import {
   Accordion,
   AccordionContent,

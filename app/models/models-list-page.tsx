@@ -1,7 +1,7 @@
 'use client'
 
 import { ModelEndpointsFilter } from '@/components/model-endpoints-filter/model-endpoints-filter'
-import { PageContainer, PageHeader, PageTitle } from '@/components/page-container'
+import { PageContainer, PageHeader, PageTitle } from '@/components/shared/page-container'
 
 export function ModelListPage() {
   return (

@@ -7,8 +7,8 @@ import type { Endpoint } from '@/hooks/api'
 import { cn } from '@/lib/utils'
 
 import { BrandIcon } from '../brand-icon/brand-icon'
-import { ModelVariantBadge } from '../model-variant-badge'
-import { NumericValue, PricingProperty } from '../numeric-value'
+import { ModelVariantBadge } from '../shared/model-variant-badge'
+import { NumericValue, PricingProperty } from '../shared/numeric-value'
 import { Badge } from '../ui/badge'
 import { createNullSafeSortingFn, SortableHeader } from './table-components'
 

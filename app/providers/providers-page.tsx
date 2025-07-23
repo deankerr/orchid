@@ -1,8 +1,13 @@
 'use client'
 
 import { BrandIcon } from '@/components/brand-icon/brand-icon'
-import { ErrorState } from '@/components/loading'
-import { PageContainer, PageHeader, PageLoading, PageTitle } from '@/components/page-container'
+import { ErrorState } from '@/components/shared/loading'
+import {
+  PageContainer,
+  PageHeader,
+  PageLoading,
+  PageTitle,
+} from '@/components/shared/page-container'
 import { useProvidersList } from '@/hooks/api'
 
 export function ProvidersPage() {
