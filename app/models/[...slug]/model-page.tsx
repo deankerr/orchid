@@ -30,7 +30,7 @@ import { useModelAppsLeaderboards, useModelData, useModelTokenStats } from '@/ho
 import { formatIsoDate } from '@/lib/utils'
 
 export function ModelPage({ slug }: { slug: string }) {
-  const model = useModelData(decodeURIComponent(slug))
+  const model = useModelData(slug)
   const appLeaderboards = useModelAppsLeaderboards(model)
   const modelTokenStats = useModelTokenStats(model)
 

@@ -1,7 +1,6 @@
 'use client'
 
 import { BrandIcon } from '@/components/brand-icon/brand-icon'
-import { ErrorState } from '@/components/shared/loading'
 import {
   PageContainer,
   PageHeader,
@@ -14,13 +13,6 @@ export function ProvidersPage() {
   const providers = useProvidersList()
 
   if (!providers) {
-    if (providers === null) {
-      return (
-        <PageContainer>
-          <ErrorState message="Failed to load providers" />
-        </PageContainer>
-      )
-    }
     return <PageLoading />
   }
 
