@@ -3,7 +3,6 @@ import Link from 'next/link'
 import { DevBreakpointIndicator } from '@/components/dev-utils/dev-breakpoint-indicator'
 import { SnapshotStatusIndicator } from '@/components/snapshot-status-indicator'
 import { Button } from '@/components/ui/button'
-import { ThemeButton } from '@/components/ui/theme-button'
 
 import { AppNav } from './app-nav'
 
@@ -19,7 +18,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
         <div className="flex items-center justify-end gap-3">
           <SnapshotStatusIndicator />
-          <ThemeButton />
         </div>
       </header>
       {children}
