@@ -1,17 +1,16 @@
 'use client'
 
-import { SnapshotAtBadge } from '@/components/snapshot-at-badge'
 import { useSnapshotStatus } from '@/hooks/api'
 import { cn } from '@/lib/utils'
 
-export function SnapshotStatus() {
+export function SnapshotStatusIndicator() {
   const status = useSnapshotStatus()
 
   const statusStyles = {
-    ok: 'bg-green-500',
-    issues: 'bg-yellow-500',
-    in_progress: 'bg-green-500 animate-pulse',
-    error: 'bg-red-500',
+    ok: 'bg-success',
+    issues: 'bg-warning',
+    in_progress: 'bg-success animate-pulse',
+    error: 'bg-destructive',
     unknown: 'bg-muted-foreground/50',
   } as const
 
@@ -22,11 +21,6 @@ export function SnapshotStatus() {
 
   return (
     <div className="flex items-center gap-2">
-      <SnapshotAtBadge
-        snapshot_at={status?.snapshot_at}
-        loading={!status}
-        className="static h-auto font-mono"
-      />
       <div className={cn('h-2 w-2 rounded-full', dotStyle)} />
     </div>
   )

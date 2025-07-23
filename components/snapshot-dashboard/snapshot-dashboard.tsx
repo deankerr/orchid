@@ -4,14 +4,16 @@ import { parseAsString, useQueryState } from 'nuqs'
 
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { useSnapshotRuns } from '@/hooks/api'
+import { useSnapshotRuns, useSnapshotStatus } from '@/hooks/api'
 
 import { ErrorState } from '../loading'
 import { PageContainer, PageHeader, PageLoading, PageTitle } from '../page-container'
+import { SnapshotAtBadge } from '../snapshot-at-badge'
 import { SnapshotRunDetail } from './snapshot-run-detail'
 import { SnapshotRunsList } from './snapshot-runs-list'
 
 export function SnapshotDashboard() {
+  const status = useSnapshotStatus()
   const runs = useSnapshotRuns(100)
   const [selectedRunId, setSelectedRunId] = useQueryState('run', parseAsString)
   const selectedRun = runs?.find((r) => r._id === selectedRunId)
@@ -39,6 +41,7 @@ export function SnapshotDashboard() {
           <Badge variant="outline" className="font-mono">
             {runs.filter((run) => run.ok && run.ended_at).length} with archives
           </Badge>
+          <SnapshotAtBadge snapshot_at={status?.snapshot_at} loading={!status} />
         </div>
       </PageHeader>
 
