@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import type { Metadata } from 'next'
 
 import { ModelListPage } from './models-list-page'
@@ -8,5 +9,9 @@ export const metadata: Metadata = {
 }
 
 export default function Page() {
-  return <ModelListPage />
+  return (
+    <Suspense>
+      <ModelListPage />
+    </Suspense>
+  )
 }

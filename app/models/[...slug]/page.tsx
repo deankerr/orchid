@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import type { Metadata } from 'next'
 
 import { fetchQuery } from 'convex/nextjs'
@@ -37,5 +38,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function Page({ params }: Props) {
   const slug = decodeURIComponent((await params).slug.join('/'))
-  return <ModelPage slug={slug} />
+  return (
+    <Suspense>
+      <ModelPage slug={slug} />
+    </Suspense>
+  )
 }
