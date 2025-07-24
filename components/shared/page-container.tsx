@@ -15,9 +15,9 @@ export function PageContainer({
 
 export function PageLoading() {
   return (
-    <PageContainer className="grid grow place-content-center pt-0">
+    <div className="pointer-events-none absolute inset-0 grid grow place-content-center">
       <LoaderSquare />
-    </PageContainer>
+    </div>
   )
 }
 
