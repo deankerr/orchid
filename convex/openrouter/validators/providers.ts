@@ -6,6 +6,7 @@ import { DataPolicySchemas } from './dataPolicy'
 const iconFields = {
   url: z4.string(),
   invertRequired: z4.boolean().optional(),
+  className: z4.string().optional(),
 }
 
 const fields = {
@@ -39,7 +40,7 @@ export const ProviderStrictSchema = z4.strictObject({
 export const ProviderTransformSchema = z4
   .object({
     ...fields,
-    icon: z4.object(iconFields),
+    icon: z4.object(R.omit(iconFields, ['className'])),
     dataPolicy: DataPolicySchemas.provider.transform,
   })
   .transform(R.pickBy(R.isNonNullish))

@@ -3,7 +3,7 @@ import * as R from 'remeda'
 import type { Endpoint } from '@/hooks/api'
 import { cn } from '@/lib/utils'
 
-import { NumericPropertyBox, PropertyBox } from '../../property-box'
+import { NumericPropertyBox, PropertyBox } from '../../shared/property-box'
 
 export function DataPolicySection({ dataPolicy }: { dataPolicy: Endpoint['data_policy'] }) {
   return (

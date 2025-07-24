@@ -2,7 +2,7 @@ import type { Doc } from '@/convex/_generated/dataModel'
 
 import { formatCompactNumber } from '@/lib/formatters'
 
-import { ExternalLink } from './external-link'
+import { ExternalLink } from './shared/external-link'
 
 function LeaderboardItem({
   app,

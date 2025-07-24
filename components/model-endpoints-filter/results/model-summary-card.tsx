@@ -3,13 +3,13 @@
 import { memo } from 'react'
 import Link from 'next/link'
 
-import { Pill } from '@/components/pill'
+import { Pill } from '@/components/shared/pill'
 import { useEndpointsList, useModelsList } from '@/hooks/api'
 import { formatCompactNumber } from '@/lib/formatters'
 import { cn, formatIsoDate } from '@/lib/utils'
 
 import { BrandIcon } from '../../brand-icon/brand-icon'
-import { NumericValue, PricingProperty } from '../../numeric-value'
+import { NumericValue, PricingProperty } from '../../shared/numeric-value'
 import { Badge } from '../../ui/badge'
 import { getModelCapabilities, type FilterResult } from '../filter'
 import {

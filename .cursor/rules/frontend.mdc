@@ -1,5 +1,5 @@
 ---
-description: Frontend structure, style guide, conventions, colors, tokens, tips
+description: Must read when using or modifying frontend related directories; app. components, hooks, lib, public
 alwaysApply: false
 ---
 
@@ -34,9 +34,9 @@ ORCHID serves highly technical users who work with OpenRouter and LLMs professio
 
 ### Content Presentation
 
-- **Raw values**: Display technical identifiers (model slugs, API parameters) directly
-- **Data density**: Prioritize information density over mobile optimization
 - **Comparability**: Structure data for easy comparison across models/providers
+- **Desktop-first**: Mobile optimization is not a current focus
+- **Data-heavy patterns**: Optimize for information-dense interfaces
 
 ## Component Guidelines
 
@@ -45,7 +45,6 @@ ORCHID serves highly technical users who work with OpenRouter and LLMs professio
 - **Theme adherence**: Use standard shadcn/ui theme variables exclusively
 - **No customization**: Avoid custom colors, background colors, border radius
 - **Theme extensions**: Add new theme colors to [globals.css](mdc:app/globals.css) when needed
-- **Component location**: Add custom components to root `components/` folder, not `components/ui/`
 
 ### Default Styling
 
@@ -54,9 +53,12 @@ ORCHID serves highly technical users who work with OpenRouter and LLMs professio
 - Badges: `text-xs` is the default size
 - Follow established patterns across the application
 
-## Development Priorities
+## Component File Structure/Locations
 
-- **Desktop-first**: Mobile optimization is not a current focus
-- **Data-heavy patterns**: Optimize for information-dense interfaces
-- **Technical accuracy**: Prioritize correctness over simplification
-- **Developer experience**: Enable easy copying of technical values
+- Route components (layouts, pages): `app/[relevant directory]`
+- Major single file/unique components: `components/`
+- Major multi-file components: `components/<component-name>`
+- Shared/custom UI components: `components/shared`
+- shadcn/ui components only: `components/ui`
+- Mixed/unclear: `components/`
+- No barrel files

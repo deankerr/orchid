@@ -1,21 +1,18 @@
 'use client'
 
 import { BrandIcon } from '@/components/brand-icon/brand-icon'
-import { ErrorState } from '@/components/loading'
-import { PageContainer, PageHeader, PageLoading, PageTitle } from '@/components/page-container'
+import {
+  PageContainer,
+  PageHeader,
+  PageLoading,
+  PageTitle,
+} from '@/components/shared/page-container'
 import { useProvidersList } from '@/hooks/api'
 
 export function ProvidersPage() {
   const providers = useProvidersList()
 
   if (!providers) {
-    if (providers === null) {
-      return (
-        <PageContainer>
-          <ErrorState message="Failed to load providers" />
-        </PageContainer>
-      )
-    }
     return <PageLoading />
   }
 

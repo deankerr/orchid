@@ -1,6 +1,6 @@
 import type { Endpoint } from '@/hooks/api'
 
-import { PropertyBox } from '../../property-box'
+import { PropertyBox } from '../../shared/property-box'
 
 export function CapabilitiesSection({ endpoint }: { endpoint: Endpoint }) {
   return (

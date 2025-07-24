@@ -1,6 +1,6 @@
 import type { Endpoint } from '@/hooks/api'
 
-import { ModelVariantBadge } from '../model-variant-badge'
+import { ModelVariantBadge } from '../shared/model-variant-badge'
 import { UptimeTracker } from '../uptime-tracker'
 import { ProviderLogoTitle } from './provider-logo-title'
 import { CapabilitiesSection } from './sections/capabilities-section'

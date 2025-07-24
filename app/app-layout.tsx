@@ -1,29 +1,11 @@
-'use client'
-
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
 
-import { DevBreakpointIndicator } from '@/components/dev-breakpoint-indicator'
-import { SnapshotStatus } from '@/components/snapshot-status'
+import { DevBreakpointIndicator } from '@/components/dev-utils/dev-breakpoint-indicator'
+import { SnapshotStatusIndicator } from '@/components/snapshot-status-indicator'
 import { Button } from '@/components/ui/button'
 import { ThemeButton } from '@/components/ui/theme-button'
-import { cn } from '@/lib/utils'
 
-function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
-  const pathname = usePathname()
-  const isActive = pathname.startsWith(href)
-  return (
-    <Button
-      variant="ghost"
-      className={cn(
-        isActive ? 'bg-accent text-accent-foreground dark:bg-accent/50' : 'text-muted-foreground',
-      )}
-      asChild
-    >
-      <Link href={href}>{children}</Link>
-    </Button>
-  )
-}
+import { AppNav } from './app-nav'
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -33,15 +15,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <Link href="/">ORCHID</Link>
         </Button>
 
-        <nav className="flex grow items-center gap-2 text-sm font-medium">
-          <NavLink href="/models">Models</NavLink>
-          <NavLink href="/providers">Providers</NavLink>
-        </nav>
+        <AppNav />
 
         <div className="flex items-center justify-end gap-3">
-          <Link href="/snapshots" className="hidden md:block">
-            <SnapshotStatus />
-          </Link>
+          <SnapshotStatusIndicator />
           <ThemeButton />
         </div>
       </header>

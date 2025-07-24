@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils'
 
-import { Badge } from './ui/badge'
+import { Badge } from '../ui/badge'
 
 export function Pill({
   label,

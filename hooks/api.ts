@@ -1,39 +1,8 @@
 import { useMemo } from 'react'
 
-import * as R from 'remeda'
-
 import { api } from '@/convex/_generated/api'
 
 import { useCachedQuery } from './use-cached-query'
-
-export type EndpointsByVariant = NonNullable<ReturnType<typeof useEndpointsByVariant>>
-// NOTE: DEPRECATED
-export function useEndpointsByVariant() {
-  const models = useModelsList()
-  const endpoints = useEndpointsList()
-
-  if (models === null || endpoints === null) return null
-  if (!(models && endpoints)) return
-
-  const endpointsByVariant = Object.entries(
-    R.groupBy(endpoints, (endp) => endp.model_variant_slug),
-  ).map(([model_variant_slug, endpoints]) => {
-    const [model_slug, model_variant] = model_variant_slug.split(':')
-    const model = models.find((m) => m.slug === model_slug)!
-
-    endpoints.sort((a, b) => (b.traffic_share ?? 0) - (a.traffic_share ?? 0))
-
-    return {
-      model_variant_slug,
-      model,
-      model_variant,
-      tokens_7d: model.stats?.[model_variant ?? 'standard']?.tokens_7d ?? 0,
-      endpoints,
-    }
-  })
-
-  return endpointsByVariant
-}
 
 export type Model = NonNullable<ReturnType<typeof useModelsList>>[number]
 export function useModelsList() {

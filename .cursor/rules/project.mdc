@@ -24,3 +24,10 @@ alwaysApply: true
 - Map.groupBy is supported, and it is an incredible way to group then iterate through items, but we can't use it in the browser.
 - Convex will throw during compile if it finds any dir/file with a dash in it (e.g. `my-file.ts`), so use camelCase.
 - Convex queries/mutations/actions can't be used in files with dots in the name (e.g. `my.file.ts`), so use camelCase.
+
+## Status
+
+- Production version has been soft-launched and is publicly available at a temporary URL.
+- The snapshot system is running, creating production and archived data.
+- There are no public links to the site, nor has it been promoted - traffic is negligible.
+- It's acceptable to launch features in an alpha/beta state, as we gain feedback from product testers.

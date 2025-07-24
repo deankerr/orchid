@@ -5,16 +5,21 @@ import { AlertTriangleIcon } from 'lucide-react'
 import { getModelVariantSlug } from '@/convex/shared'
 
 import { BrandIcon } from '@/components/brand-icon/brand-icon'
-import { CopyToClipboardButton } from '@/components/copy-button'
-import { EndpointPanel } from '@/components/endpoint-panel'
-import { EndpointDataTable } from '@/components/endpoint-tables/endpoint-data-table'
-import { ExternalLink } from '@/components/external-link'
-import { DataStreamLoader, EmptyState } from '@/components/loading'
-import { MarkdownLinks } from '@/components/markdown-links'
+import { EndpointDataTable } from '@/components/endpoint-data-table/endpoint-data-table'
+import { EndpointPanel } from '@/components/endpoint-panel/endpoint-panel'
 import { ModelAppsLeaderboard } from '@/components/model-apps-leaderboard'
 import { ModelTokenChart } from '@/components/model-token-chart'
-import { PageContainer, PageHeader, PageLoading, PageTitle } from '@/components/page-container'
-import { Pill } from '@/components/pill'
+import { CopyToClipboardButton } from '@/components/shared/copy-to-clipboard-button'
+import { ExternalLink } from '@/components/shared/external-link'
+import { LoaderBadge } from '@/components/shared/loader'
+import { MarkdownLinks } from '@/components/shared/markdown-links'
+import {
+  PageContainer,
+  PageHeader,
+  PageLoading,
+  PageTitle,
+} from '@/components/shared/page-container'
+import { Pill } from '@/components/shared/pill'
 import {
   Accordion,
   AccordionContent,
@@ -25,7 +30,7 @@ import { useModelAppsLeaderboards, useModelData, useModelTokenStats } from '@/ho
 import { formatIsoDate } from '@/lib/utils'
 
 export function ModelPage({ slug }: { slug: string }) {
-  const model = useModelData(decodeURIComponent(slug))
+  const model = useModelData(slug)
   const appLeaderboards = useModelAppsLeaderboards(model)
   const modelTokenStats = useModelTokenStats(model)
 
@@ -78,7 +83,6 @@ export function ModelPage({ slug }: { slug: string }) {
           <Pill label="Context">{model.context_length.toLocaleString()}</Pill>
 
           {model.input_modalities.includes('image') && <Pill label="Modality">IMAGE</Pill>}
-
           {model.input_modalities.includes('file') && <Pill label="Modality">PDF</Pill>}
         </div>
 
@@ -113,18 +117,17 @@ export function ModelPage({ slug }: { slug: string }) {
       {model.endpoints && model.endpoints.length > 0 ? (
         <>
           <EndpointDataTable model={model} endpoints={model.endpoints} />
-
           {model.endpoints.map((endpoint) => (
             <EndpointPanel key={endpoint._id} endpoint={endpoint} />
           ))}
         </>
       ) : (
-        <EmptyState message="No endpoints available" icon="⚡" />
+        <p className="text-muted-foreground">No endpoints found.</p>
       )}
 
       {/* Apps leaderboards */}
       {appLeaderboards === undefined ? (
-        <DataStreamLoader label="Loading applications..." />
+        <LoaderBadge />
       ) : (
         appLeaderboards.map(
           (leaderboard) =>
@@ -140,7 +143,7 @@ export function ModelPage({ slug }: { slug: string }) {
 
       {/* Token stats charts */}
       {modelTokenStats === undefined ? (
-        <DataStreamLoader label="Loading stats..." />
+        <LoaderBadge />
       ) : (
         modelTokenStats.map(
           (stats) => stats && <ModelTokenChart key={stats.model_variant} modelTokenStats={stats} />,

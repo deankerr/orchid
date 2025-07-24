@@ -1,7 +1,7 @@
 import type { Endpoint } from '@/hooks/api'
 import { metricFormats } from '@/lib/formatters'
 
-import { NumericPropertyBox, PropertyBox } from '../../property-box'
+import { NumericPropertyBox, PropertyBox } from '../../shared/property-box'
 
 export function MetricsSection({ endpoint }: { endpoint: Endpoint }) {
   return (
