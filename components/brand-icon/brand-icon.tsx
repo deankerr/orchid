@@ -45,24 +45,13 @@ function getIconSlug(slug: string) {
 
 function LobeIcon({ slug, size, alt = '' }: { slug: string; size: number; alt?: string }) {
   return (
-    <>
-      <Image
-        src={`https://unpkg.com/@lobehub/icons-static-png@latest/dark/${slug}.png`}
-        alt={alt}
-        fill
-        sizes={`${size}px`}
-        style={{ objectFit: 'contain' }}
-        className="hidden dark:block"
-      />
-      <Image
-        src={`https://unpkg.com/@lobehub/icons-static-png@latest/light/${slug}.png`}
-        alt={alt}
-        fill
-        sizes={`${size}px`}
-        style={{ objectFit: 'contain' }}
-        className="block dark:hidden"
-      />
-    </>
+    <Image
+      src={`https://unpkg.com/@lobehub/icons-static-png@latest/dark/${slug}.png`}
+      alt={alt}
+      fill
+      sizes={`${size}px`}
+      style={{ objectFit: 'contain' }}
+    />
   )
 }
 

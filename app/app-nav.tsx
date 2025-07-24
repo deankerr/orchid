@@ -12,9 +12,7 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
   return (
     <Button
       variant="ghost"
-      className={cn(
-        isActive ? 'bg-accent text-accent-foreground dark:bg-accent/50' : 'text-muted-foreground',
-      )}
+      className={cn(isActive ? 'bg-accent/50 text-accent-foreground' : 'text-muted-foreground')}
       asChild
     >
       <Link href={href}>{children}</Link>
