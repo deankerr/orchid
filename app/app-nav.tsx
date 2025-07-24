@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
+import { FeatureFlag } from '@/components/dev-utils/feature-flag'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -24,8 +25,14 @@ export function AppNav() {
   return (
     <nav className="flex grow items-center gap-2 text-sm font-medium">
       <NavLink href="/models">Models</NavLink>
-      <NavLink href="/providers">Providers</NavLink>
-      <NavLink href="/snapshots">Snapshots</NavLink>
+
+      <FeatureFlag flag="providers">
+        <NavLink href="/providers">Providers</NavLink>
+      </FeatureFlag>
+
+      <FeatureFlag flag="snapshots">
+        <NavLink href="/snapshots">Snapshots</NavLink>
+      </FeatureFlag>
     </nav>
   )
 }
