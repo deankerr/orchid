@@ -62,3 +62,11 @@ ORCHID serves highly technical users who work with OpenRouter and LLMs professio
 - shadcn/ui components only: `components/ui`
 - Mixed/unclear: `components/`
 - No barrel files
+
+## Feature Flags
+
+- The FeatureFlag component is used to conditionally render features based on a localStorage value
+- By design, our frontend does not expose any mutations or sensitive internal data at all
+- There is no risk in any unverified user discovering and toggling feature flags
+- We use it to hide live feature prototypes where using with production data is useful
+- We also use it to hide links to the snapshot dashboard which is not designed for end-users
