@@ -1,9 +1,11 @@
+import type { Infer } from 'convex/values'
+
 import { internal } from '../../_generated/api'
 import type { ActionCtx } from '../../_generated/server'
+import * as ORModels from '../../db/or/models'
 import { storeSnapshotData } from '../archive'
 import { OrEndpoints } from '../entities/endpoints'
 import { type EndpointStat } from '../entities/endpointStats'
-import { OrModels } from '../entities/models'
 import { validateArray, validateRecord, type Issue } from '../validation'
 import { EndpointStrictSchema, EndpointTransformSchema } from '../validators/endpoints'
 import {
@@ -35,7 +37,7 @@ export async function endpointsPipeline(
   }: {
     snapshot_at: number
     run_id: string
-    models: (typeof OrModels.$content)[]
+    models: Infer<typeof ORModels.vTable.validator>[]
     source: {
       endpoints: (args: { permaslug: string; variant: string }) => Promise<unknown[]>
       endpointUptimes: (args: { uuid: string }) => Promise<unknown>

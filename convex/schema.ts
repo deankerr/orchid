@@ -1,6 +1,7 @@
 import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
+import * as ORModels from './db/or/models'
 import { SnapshotArchives } from './openrouter/archive'
 import { OrApps, OrAppsChanges } from './openrouter/entities/apps'
 import { OrAuthors, OrAuthorsChanges } from './openrouter/entities/authors'
@@ -8,7 +9,6 @@ import { OrEndpoints, OrEndpointsChanges } from './openrouter/entities/endpoints
 import { OrEndpointStats } from './openrouter/entities/endpointStats'
 import { OrEndpointUptimes } from './openrouter/entities/endpointUptimes'
 import { OrModelAppLeaderboards } from './openrouter/entities/modelAppLeaderboards'
-import { OrModels, OrModelsChanges } from './openrouter/entities/models'
 import { OrModelTokenStats } from './openrouter/entities/modelTokenStats'
 import { OrProviders, OrProvidersChanges } from './openrouter/entities/providers'
 import { SnapshotSchedule } from './openrouter/schedule'
@@ -47,8 +47,8 @@ export const schema = defineSchema(
       'model_variant',
     ]),
 
-    or_models: OrModels.table.index('by_slug', ['slug']),
-    or_models_changes: OrModelsChanges.table,
+    or_models: ORModels.table,
+    or_models_changes: ORModels.changesTable,
 
     or_providers: OrProviders.table.index('by_slug', ['slug']),
     or_providers_changes: OrProvidersChanges.table,

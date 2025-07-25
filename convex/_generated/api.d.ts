@@ -14,7 +14,10 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as crons from "../crons.js";
+import type * as db_or_endpoints from "../db/or/endpoints.js";
+import type * as db_or_models from "../db/or/models.js";
 import type * as dev from "../dev.js";
+import type * as fnHelper from "../fnHelper.js";
 import type * as http from "../http.js";
 import type * as openrouter_archive from "../openrouter/archive.js";
 import type * as openrouter_entities_apps from "../openrouter/entities/apps.js";
@@ -48,6 +51,7 @@ import type * as openrouter_validators_models from "../openrouter/validators/mod
 import type * as openrouter_validators_providers from "../openrouter/validators/providers.js";
 import type * as shared from "../shared.js";
 import type * as table2 from "../table2.js";
+import type * as table3 from "../table3.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -59,7 +63,10 @@ import type * as table2 from "../table2.js";
  */
 declare const fullApi: ApiFromModules<{
   crons: typeof crons;
+  "db/or/endpoints": typeof db_or_endpoints;
+  "db/or/models": typeof db_or_models;
   dev: typeof dev;
+  fnHelper: typeof fnHelper;
   http: typeof http;
   "openrouter/archive": typeof openrouter_archive;
   "openrouter/entities/apps": typeof openrouter_entities_apps;
@@ -93,6 +100,7 @@ declare const fullApi: ApiFromModules<{
   "openrouter/validators/providers": typeof openrouter_validators_providers;
   shared: typeof shared;
   table2: typeof table2;
+  table3: typeof table3;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

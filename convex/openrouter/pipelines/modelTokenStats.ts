@@ -1,7 +1,9 @@
+import type { Infer } from 'convex/values'
+
 import { internal } from '../../_generated/api'
 import type { ActionCtx } from '../../_generated/server'
+import * as ORModels from '../../db/or/models'
 import { OrAuthors } from '../entities/authors'
-import { OrModels } from '../entities/models'
 import type { OrModelTokenStats } from '../entities/modelTokenStats'
 import { validateRecord, type Issue } from '../validation'
 import { AuthorStrictSchema, AuthorTransformSchema } from '../validators/authors'
@@ -19,7 +21,7 @@ export async function modelTokenStatsPipeline(
   }: {
     snapshot_at: number
     run_id: string
-    models: (typeof OrModels.$content)[]
+    models: Infer<typeof ORModels.vTable.validator>[]
     source: {
       authors: (args: { authorSlug: string }) => Promise<unknown>
     }
