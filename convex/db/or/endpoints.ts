@@ -1,11 +1,12 @@
 import { asyncMap } from 'convex-helpers'
 import { defineTable } from 'convex/server'
-import { v, type Infer } from 'convex/values'
+import { v } from 'convex/values'
 import * as R from 'remeda'
 
 import { diff as jsonDiff, type IChange } from 'json-diff-ts'
 
-import { type MutationCtx, type QueryCtx } from '../../_generated/server'
+import { type MutationCtx } from '../../_generated/server'
+import { fnInternalMutation, fnQuery } from '../../fnHelper'
 import { countResults } from '../../openrouter/output'
 import { getCurrentSnapshotTimestamp } from '../../openrouter/snapshot'
 import { getModelVariantSlug, hoursBetween } from '../../shared'
@@ -105,7 +106,7 @@ export const table = defineTable({
   .index('by_uuid', ['uuid'])
   .index('by_model_slug', ['model_slug'])
 
-export const vOREndpoints = createTableVHelper('or_endpoints', table.validator)
+export const vTable = createTableVHelper('or_endpoints', table.validator)
 
 const diff = (a: unknown, b: unknown) =>
   jsonDiff(a, b, {
@@ -122,10 +123,7 @@ export const changesTable = defineTable({
   changes: v.array(v.record(v.string(), v.any())),
 })
 
-export const vOREndpointsChanges = createTableVHelper(
-  'or_endpoints_changes',
-  changesTable.validator,
-)
+export const vChangesTable = createTableVHelper('or_endpoints_changes', changesTable.validator)
 
 const recordChanges = async (
   ctx: MutationCtx,
@@ -133,83 +131,85 @@ const recordChanges = async (
 ) => {
   if (changes.length === 0) return
   const { uuid, snapshot_at } = content
-  await ctx.db.insert(vOREndpointsChanges.name, { uuid, snapshot_at, changes })
+  await ctx.db.insert(vChangesTable.name, { uuid, snapshot_at, changes })
 }
 
 // * queries
-export async function list(ctx: QueryCtx) {
-  const snapshot_at = await getCurrentSnapshotTimestamp(ctx)
-  const results = await ctx.db
-    .query('or_endpoints')
-    .collect()
-    .then(
-      (res) =>
-        res
-          .map((endp) => ({
-            ...endp,
-            staleness_hours: hoursBetween(endp.snapshot_at, snapshot_at),
-          }))
-          .filter((endp) => endp.staleness_hours < 1), // NOTE: remove all stale endpoints
-    )
-
-  return Map.groupBy(results, (r) => getModelVariantSlug(r.model_slug, r.model_variant))
-    .entries()
-    .flatMap(([model_variant_slug, endpoints]) => {
-      const totalRequests = endpoints.reduce(
-        (sum, endp) => sum + (endp.stats?.request_count ?? 0),
-        0,
+export const list = fnQuery({
+  handler: async (ctx) => {
+    const snapshot_at = await getCurrentSnapshotTimestamp(ctx)
+    const results = await ctx.db
+      .query('or_endpoints')
+      .collect()
+      .then(
+        (res) =>
+          res
+            .map((endp) => ({
+              ...endp,
+              staleness_hours: hoursBetween(endp.snapshot_at, snapshot_at),
+            }))
+            .filter((endp) => endp.staleness_hours < 1), // NOTE: remove all stale endpoints
       )
 
-      return endpoints.map((endp) => ({
-        ...endp,
-        limits: {
-          ...endp.limits,
-          output_tokens: endp.limits.output_tokens ?? endp.context_length,
-        },
-        model_variant_slug,
-        traffic_share: R.isDefined(endp.stats?.request_count)
-          ? (endp.stats?.request_count ?? 0) / totalRequests
-          : undefined,
-      }))
-    })
-    .toArray()
-}
+    return Map.groupBy(results, (r) => getModelVariantSlug(r.model_slug, r.model_variant))
+      .entries()
+      .flatMap(([model_variant_slug, endpoints]) => {
+        const totalRequests = endpoints.reduce(
+          (sum, endp) => sum + (endp.stats?.request_count ?? 0),
+          0,
+        )
+
+        return endpoints.map((endp) => ({
+          ...endp,
+          limits: {
+            ...endp.limits,
+            output_tokens: endp.limits.output_tokens ?? endp.context_length,
+          },
+          model_variant_slug,
+          traffic_share: R.isDefined(endp.stats?.request_count)
+            ? (endp.stats?.request_count ?? 0) / totalRequests
+            : undefined,
+        }))
+      })
+      .toArray()
+  },
+})
 
 // * snapshots
-export async function upsert(
-  ctx: MutationCtx,
-  args: { items: Infer<typeof vOREndpoints.validator>[] },
-) {
-  const results = await asyncMap(args.items, async (item) => {
-    const existing = await ctx.db
-      .query(vOREndpoints.name)
-      .withIndex('by_uuid', (q) => q.eq('uuid', item.uuid))
-      .first()
-    const changes = diff(existing ?? {}, item)
+export const upsert = fnInternalMutation({
+  args: { items: v.array(vTable.validator) },
+  handler: async (ctx, args) => {
+    const results = await asyncMap(args.items, async (item) => {
+      const existing = await ctx.db
+        .query(vTable.name)
+        .withIndex('by_uuid', (q) => q.eq('uuid', item.uuid))
+        .first()
+      const changes = diff(existing ?? {}, item)
 
-    // Record changes
-    await recordChanges(ctx, { content: item, changes })
+      // Record changes
+      await recordChanges(ctx, { content: item, changes })
 
-    // Insert
-    if (!existing) {
-      await ctx.db.insert(vOREndpoints.name, item)
-      return { action: 'insert' }
-    }
+      // Insert
+      if (!existing) {
+        await ctx.db.insert(vTable.name, item)
+        return { action: 'insert' }
+      }
 
-    // Stable - no changes, but update stats and uptime_average (excluded from diff)
-    if (changes.length === 0) {
-      await ctx.db.patch(existing._id, {
-        snapshot_at: item.snapshot_at,
-        stats: item.stats,
-        uptime_average: item.uptime_average,
-      })
-      return { action: 'stable' }
-    }
+      // Stable - no changes, but update stats and uptime_average (excluded from diff)
+      if (changes.length === 0) {
+        await ctx.db.patch(existing._id, {
+          snapshot_at: item.snapshot_at,
+          stats: item.stats,
+          uptime_average: item.uptime_average,
+        })
+        return { action: 'stable' }
+      }
 
-    // Update
-    await ctx.db.replace(existing._id, item)
-    return { action: 'update' }
-  })
+      // Update
+      await ctx.db.replace(existing._id, item)
+      return { action: 'update' }
+    })
 
-  return countResults(results, 'endpoints')
-}
+    return countResults(results, 'endpoints')
+  },
+})

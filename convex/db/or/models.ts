@@ -1,10 +1,11 @@
 import { asyncMap } from 'convex-helpers'
 import { defineTable } from 'convex/server'
-import { v, type Infer } from 'convex/values'
+import { v } from 'convex/values'
 
 import { diff as jsonDiff, type IChange } from 'json-diff-ts'
 
-import type { MutationCtx, QueryCtx } from '../../_generated/server'
+import type { MutationCtx } from '../../_generated/server'
+import { fnInternalMutation, fnQuery } from '../../fnHelper'
 import { countResults } from '../../openrouter/output'
 import { getCurrentSnapshotTimestamp } from '../../openrouter/snapshot'
 import { hoursBetween } from '../../shared'
@@ -86,95 +87,103 @@ const recordChanges = async (
 }
 
 // * queries
-export async function get(ctx: QueryCtx, args: { slug: string }) {
-  return await ctx.db
-    .query('or_models')
-    .withIndex('by_slug', (q) => q.eq('slug', args.slug))
-    .first()
-}
+export const get = fnQuery({
+  args: { slug: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query('or_models')
+      .withIndex('by_slug', (q) => q.eq('slug', args.slug))
+      .first()
+  },
+})
 
-export async function list(ctx: QueryCtx) {
-  const snapshot_at = await getCurrentSnapshotTimestamp(ctx)
-  const authors = await ctx.db.query('or_authors').collect()
+export const list = fnQuery({
+  handler: async (ctx) => {
+    const snapshot_at = await getCurrentSnapshotTimestamp(ctx)
+    const authors = await ctx.db.query('or_authors').collect()
 
-  const models = await ctx.db
-    .query('or_models')
-    .collect()
-    .then(
-      (res) =>
-        res
-          .map((m) => ({
-            ...m,
-            staleness_hours: hoursBetween(m.snapshot_at, snapshot_at),
-          }))
-          .filter((m) => m.staleness_hours < 1), // NOTE: remove all stale models
-    )
+    const models = await ctx.db
+      .query('or_models')
+      .collect()
+      .then(
+        (res) =>
+          res
+            .map((m) => ({
+              ...m,
+              staleness_hours: hoursBetween(m.snapshot_at, snapshot_at),
+            }))
+            .filter((m) => m.staleness_hours < 1), // NOTE: remove all stale models
+      )
 
-  return models.map((m) => ({
-    ...m,
-    author_name: authors.find((a) => a.slug === m.author_slug)?.name ?? m.author_slug,
-  }))
-}
+    return models.map((m) => ({
+      ...m,
+      author_name: authors.find((a) => a.slug === m.author_slug)?.name ?? m.author_slug,
+    }))
+  },
+})
 
 // * snapshots
-export async function upsert(ctx: MutationCtx, args: { items: Infer<typeof vTable.validator>[] }) {
-  const results = await asyncMap(args.items, async (item) => {
-    const existing = await ctx.db
-      .query(vTable.name)
-      .withIndex('by_slug', (q) => q.eq('slug', item.slug))
-      .first()
-    const changes = diff(existing ?? {}, item)
+export const upsert = fnInternalMutation({
+  args: { items: v.array(vTable.validator) },
+  handler: async (ctx, args) => {
+    const results = await asyncMap(args.items, async (item) => {
+      const existing = await ctx.db
+        .query(vTable.name)
+        .withIndex('by_slug', (q) => q.eq('slug', item.slug))
+        .first()
+      const changes = diff(existing ?? {}, item)
 
-    // Preserve existing stats
-    if (existing) {
-      item.stats = existing.stats ?? {}
-    }
-
-    // Record changes
-    await recordChanges(ctx, { content: item, changes })
-
-    // Insert
-    if (!existing) {
-      await ctx.db.insert(vTable.name, item)
-      return { action: 'insert' }
-    }
-
-    // Stable - no changes
-    if (changes.length === 0) {
-      await ctx.db.patch(existing._id, { snapshot_at: item.snapshot_at })
-      return { action: 'stable' }
-    }
-
-    // Update
-    await ctx.db.replace(existing._id, item)
-    return { action: 'update' }
-  })
-
-  return countResults(results, 'models')
-}
-
-export async function updateStats(
-  ctx: MutationCtx,
-  args: { items: { permaslug: string; stats: Infer<typeof vModelStats> }[] },
-) {
-  const models = await ctx.db.query(vTable.name).collect()
-  const statsMap = new Map(args.items.map((item) => [item.permaslug, item.stats]))
-
-  for (const model of models) {
-    const newStats = statsMap.get(model.permaslug)
-
-    if (newStats) {
-      // We have stats for this model - check if they need updating
-      const changes = jsonDiff(model.stats ?? {}, newStats)
-
-      if (changes.length > 0) {
-        await ctx.db.patch(model._id, { stats: newStats })
+      // Preserve existing stats
+      if (existing) {
+        item.stats = existing.stats ?? {}
       }
-    } else {
-      // We don't have stats for this model - ensure it has empty stats
-      if (model.stats && Object.keys(model.stats).length > 0) {
-        await ctx.db.patch(model._id, { stats: {} })
+
+      // Record changes
+      await recordChanges(ctx, { content: item, changes })
+
+      // Insert
+      if (!existing) {
+        await ctx.db.insert(vTable.name, item)
+        return { action: 'insert' }
+      }
+
+      // Stable - no changes
+      if (changes.length === 0) {
+        await ctx.db.patch(existing._id, { snapshot_at: item.snapshot_at })
+        return { action: 'stable' }
+      }
+
+      // Update
+      await ctx.db.replace(existing._id, item)
+      return { action: 'update' }
+    })
+
+    return countResults(results, 'models')
+  },
+})
+
+export const updateStats = fnInternalMutation({
+  args: { items: v.array(v.object({ permaslug: v.string(), stats: vModelStats })) },
+  handler: async (ctx, args) => {
+    const models = await ctx.db.query(vTable.name).collect()
+    const statsMap = new Map(args.items.map((item) => [item.permaslug, item.stats]))
+
+    for (const model of models) {
+      const newStats = statsMap.get(model.permaslug)
+
+      if (newStats) {
+        // We have stats for this model - check if they need updating
+        const changes = jsonDiff(model.stats ?? {}, newStats)
+
+        if (changes.length > 0) {
+          await ctx.db.patch(model._id, { stats: newStats })
+        }
+      } else {
+        // We don't have stats for this model - ensure it has empty stats
+        if (model.stats && Object.keys(model.stats).length > 0) {
+          await ctx.db.patch(model._id, { stats: {} })
+        }
       }
     }
-  }
-}
+  },
+})

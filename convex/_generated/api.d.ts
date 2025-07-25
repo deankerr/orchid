@@ -14,12 +14,17 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as crons from "../crons.js";
+import type * as db_or_apps from "../db/or/apps.js";
+import type * as db_or_authors from "../db/or/authors.js";
+import type * as db_or_endpointStats from "../db/or/endpointStats.js";
+import type * as db_or_endpointUptimes from "../db/or/endpointUptimes.js";
 import type * as db_or_endpoints from "../db/or/endpoints.js";
+import type * as db_or_modelAppLeaderboards from "../db/or/modelAppLeaderboards.js";
+import type * as db_or_modelTokenStats from "../db/or/modelTokenStats.js";
 import type * as db_or_models from "../db/or/models.js";
+import type * as db_or_providers from "../db/or/providers.js";
 import type * as dev from "../dev.js";
 import type * as fnHelper from "../fnHelper.js";
-import type * as fnHelperDemo from "../fnHelperDemo.js";
-import type * as fnHelperR from "../fnHelperR.js";
 import type * as http from "../http.js";
 import type * as openrouter_archive from "../openrouter/archive.js";
 import type * as openrouter_entities_apps from "../openrouter/entities/apps.js";
@@ -65,12 +70,17 @@ import type * as table3 from "../table3.js";
  */
 declare const fullApi: ApiFromModules<{
   crons: typeof crons;
+  "db/or/apps": typeof db_or_apps;
+  "db/or/authors": typeof db_or_authors;
+  "db/or/endpointStats": typeof db_or_endpointStats;
+  "db/or/endpointUptimes": typeof db_or_endpointUptimes;
   "db/or/endpoints": typeof db_or_endpoints;
+  "db/or/modelAppLeaderboards": typeof db_or_modelAppLeaderboards;
+  "db/or/modelTokenStats": typeof db_or_modelTokenStats;
   "db/or/models": typeof db_or_models;
+  "db/or/providers": typeof db_or_providers;
   dev: typeof dev;
   fnHelper: typeof fnHelper;
-  fnHelperDemo: typeof fnHelperDemo;
-  fnHelperR: typeof fnHelperR;
   http: typeof http;
   "openrouter/archive": typeof openrouter_archive;
   "openrouter/entities/apps": typeof openrouter_entities_apps;

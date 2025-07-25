@@ -1,36 +1,9 @@
-import { v } from 'convex/values'
-
-import { internalMutation, query } from '../../_generated/server'
 import * as ORModels from '../../db/or/models'
 
 // * queries
-export const get = query({
-  args: {
-    slug: v.string(),
-  },
-  handler: ORModels.get,
-})
-
-export const list = query({
-  handler: ORModels.list,
-})
+export const get = ORModels.get.query
+export const list = ORModels.list.query
 
 // * snapshots
-export const upsert = internalMutation({
-  args: {
-    items: v.array(ORModels.vTable.validator),
-  },
-  handler: ORModels.upsert,
-})
-
-export const updateStats = internalMutation({
-  args: {
-    items: v.array(
-      v.object({
-        permaslug: v.string(),
-        stats: ORModels.vModelStats,
-      }),
-    ),
-  },
-  handler: ORModels.updateStats,
-})
+export const upsert = ORModels.upsert.internalMutation
+export const updateStats = ORModels.updateStats.internalMutation

@@ -2,10 +2,10 @@ import type { Infer } from 'convex/values'
 
 import { internal } from '../../_generated/api'
 import type { ActionCtx } from '../../_generated/server'
+import * as ORApps from '../../db/or/apps'
+import * as ORModelAppLeaderboards from '../../db/or/modelAppLeaderboards'
 import * as ORModels from '../../db/or/models'
 import { storeSnapshotData } from '../archive'
-import { OrApps } from '../entities/apps'
-import type { OrModelAppLeaderboards } from '../entities/modelAppLeaderboards'
 import { validateArray, type Issue } from '../validation'
 import { AppStrictSchema, AppTransformSchema } from '../validators/apps'
 
@@ -26,8 +26,8 @@ export async function appsPipeline(
   },
 ) {
   const started_at = Date.now()
-  const appsMap = new Map<number, typeof OrApps.$content>()
-  const modelAppLeaderboards: (typeof OrModelAppLeaderboards.$content)[] = []
+  const appsMap = new Map<number, Infer<typeof ORApps.vTable.validator>>()
+  const modelAppLeaderboards: Infer<typeof ORModelAppLeaderboards.vTable.validator>[] = []
 
   const issues: Issue[] = []
   const rawAppResponses: [string, unknown][] = []

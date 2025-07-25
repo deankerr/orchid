@@ -2,9 +2,9 @@ import type { Infer } from 'convex/values'
 
 import { internal } from '../../_generated/api'
 import type { ActionCtx } from '../../_generated/server'
+import * as ORAuthors from '../../db/or/authors'
 import * as ORModels from '../../db/or/models'
-import { OrAuthors } from '../entities/authors'
-import type { OrModelTokenStats } from '../entities/modelTokenStats'
+import * as ORModelTokenStats from '../../db/or/modelTokenStats'
 import { validateRecord, type Issue } from '../validation'
 import { AuthorStrictSchema, AuthorTransformSchema } from '../validators/authors'
 import {
@@ -28,8 +28,8 @@ export async function modelTokenStatsPipeline(
   },
 ) {
   const started_at = Date.now()
-  const modelTokenStats: (typeof OrModelTokenStats.$content)[] = []
-  const authors: (typeof OrAuthors.$content)[] = []
+  const modelTokenStats: Infer<typeof ORModelTokenStats.vTable.validator>[] = []
+  const authors: Infer<typeof ORAuthors.vTable.validator>[] = []
   const issues: Issue[] = []
 
   for (const authorSlug of new Set(models.map((m) => m.author_slug))) {
