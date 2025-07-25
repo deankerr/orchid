@@ -52,12 +52,12 @@ export async function modelTokenStatsPipeline(
     authors.push({ ...authorItem, snapshot_at })
   }
 
-  const authorsResults = await ctx.runMutation(internal.openrouter.entities.authors.upsert, {
+  const authorsResults = await ctx.runMutation(internal.openrouter.output.authors, {
     items: authors,
   })
 
   const modelTokenStatsResults = await ctx.runMutation(
-    internal.openrouter.entities.modelTokenStats.upsert,
+    internal.openrouter.output.modelTokenStats,
     {
       items: modelTokenStats,
     },
@@ -91,7 +91,7 @@ export async function modelTokenStatsPipeline(
   )
 
   // Update models with aggregated stats
-  await ctx.runMutation(internal.openrouter.entities.models.updateStats, {
+  await ctx.runMutation(internal.openrouter.output.modelStats, {
     items: modelStatsEntries,
   })
 

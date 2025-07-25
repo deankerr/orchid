@@ -6,8 +6,8 @@ import { diff as jsonDiff, type IChange } from 'json-diff-ts'
 
 import type { MutationCtx } from '../../_generated/server'
 import { fnInternalMutation, fnQuery } from '../../fnHelper'
-import { countResults } from '../../openrouter/output'
 import { getCurrentSnapshotTimestamp } from '../../openrouter/snapshot'
+import { countResults } from '../../openrouter/utils'
 import { hoursBetween } from '../../shared'
 import { createTableVHelper } from '../../table3'
 
@@ -91,7 +91,7 @@ export const get = fnQuery({
   args: { slug: v.string() },
   handler: async (ctx, args) => {
     return await ctx.db
-      .query('or_models')
+      .query(vTable.name)
       .withIndex('by_slug', (q) => q.eq('slug', args.slug))
       .first()
   },
@@ -103,7 +103,7 @@ export const list = fnQuery({
     const authors = await ctx.db.query('or_authors').collect()
 
     const models = await ctx.db
-      .query('or_models')
+      .query(vTable.name)
       .collect()
       .then(
         (res) =>

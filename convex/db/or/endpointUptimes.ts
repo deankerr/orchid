@@ -4,7 +4,7 @@ import { v } from 'convex/values'
 
 import type { QueryCtx } from '../../_generated/server'
 import { fnInternalMutation, fnQuery } from '../../fnHelper'
-import { countResults } from '../../openrouter/output'
+import { countResults } from '../../openrouter/utils'
 import { getDayAlignedTimestamp } from '../../shared'
 import { createTableVHelper } from '../../table3'
 
@@ -93,7 +93,7 @@ export const getLatest = fnQuery({
   args: {
     endpoint_uuid: v.string(),
   },
-  handler: async (ctx: QueryCtx, { endpoint_uuid }: { endpoint_uuid: string }) => {
+  handler: async (ctx, { endpoint_uuid }) => {
     return await ctx.db
       .query('or_endpoint_uptimes')
       .withIndex('by_endpoint_uuid_snapshot_at', (q) => q.eq('endpoint_uuid', endpoint_uuid))

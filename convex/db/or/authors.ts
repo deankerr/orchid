@@ -6,7 +6,7 @@ import { diff as jsonDiff, type IChange } from 'json-diff-ts'
 
 import type { MutationCtx } from '../../_generated/server'
 import { fnInternalMutation } from '../../fnHelper'
-import { countResults } from '../../openrouter/output'
+import { countResults } from '../../openrouter/utils'
 import { createTableVHelper } from '../../table3'
 
 export const table = defineTable({

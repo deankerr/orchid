@@ -5,7 +5,7 @@ import { v } from 'convex/values'
 import { diff as jsonDiff } from 'json-diff-ts'
 
 import { fnInternalMutation, fnQuery } from '../../fnHelper'
-import { countResults } from '../../openrouter/output'
+import { countResults } from '../../openrouter/utils'
 import { createTableVHelper } from '../../table3'
 
 export const table = defineTable({

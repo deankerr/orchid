@@ -136,20 +136,20 @@ export async function endpointsPipeline(
   })
 
   const endpointUptimesResults = await ctx.runMutation(
-    internal.openrouter.entities.endpointUptimes.upsert,
+    internal.openrouter.output.endpointUptimes,
     {
       items: endpointUptimes,
     },
   )
 
   const endpointStatsResults = await ctx.runMutation(
-    internal.openrouter.entities.endpointStats.upsert,
+    internal.openrouter.output.endpointStats,
     {
       items: endpointStats,
     },
   )
 
-  const endpointResults = await ctx.runMutation(internal.openrouter.entities.endpoints.upsert, {
+  const endpointResults = await ctx.runMutation(internal.openrouter.output.endpoints, {
     items: endpoints,
   })
 

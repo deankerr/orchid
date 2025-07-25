@@ -45,7 +45,7 @@ export async function providersPipeline(
     snapshot_at,
   }))
 
-  const results = await ctx.runMutation(internal.openrouter.entities.providers.upsert, {
+  const results = await ctx.runMutation(internal.openrouter.output.providers, {
     items: providers,
   })
 

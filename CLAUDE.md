@@ -4,23 +4,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Development Commands
 
-**Start development:**
+**IMPORTANT: When working on this codebase, DO NOT run the dev server or try to build the project. Use `bun check` to verify your work.**
+
+**Verification (use this to validate changes):**
 ```bash
-bun dev  # Runs Next.js with Turbopack + Convex dev server concurrently
+bun check      # Runs both typecheck and lint with zero warnings - USE THIS TO VERIFY YOUR WORK
 ```
 
-**Build and validation:**
+**Other available commands (for reference only):**
 ```bash
-bun build      # Next.js production build
+bun dev        # Runs Next.js with Turbopack + Convex dev server concurrently (DO NOT RUN)
+bun build      # Next.js production build (DO NOT RUN)
 bun typecheck  # TypeScript type checking (tsc --noEmit)
 bun lint       # Next.js ESLint
-bun check      # Runs both typecheck and lint with zero warnings
-```
-
-**Convex backend:**
-```bash
-convex dev     # Start Convex development server
-convex deploy  # Deploy Convex functions
+convex dev     # Start Convex development server (DO NOT RUN)
+convex deploy  # Deploy Convex functions (DO NOT RUN)
 ```
 
 ## Architecture Overview

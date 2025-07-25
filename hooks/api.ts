@@ -6,12 +6,12 @@ import { useCachedQuery } from './use-cached-query'
 
 export type Model = NonNullable<ReturnType<typeof useModelsList>>[number]
 export function useModelsList() {
-  return useCachedQuery(api.openrouter.entities.models.list, {}, 'useModelsList')
+  return useCachedQuery(api.public.models.list, {}, 'useModelsList')
 }
 
 export type Endpoint = NonNullable<ReturnType<typeof useEndpointsList>>[number]
 export function useEndpointsList() {
-  return useCachedQuery(api.openrouter.entities.endpoints.list, {}, 'useEndpointsList')
+  return useCachedQuery(api.public.endpoints.list, {}, 'useEndpointsList')
 }
 
 export function useModelData(slug: string) {
@@ -30,7 +30,7 @@ export function useModelData(slug: string) {
 
 export function useEndpointUptimes(endpoint_uuid: string) {
   return useCachedQuery(
-    api.openrouter.entities.endpointUptimes.getLatest,
+    api.public.endpointUptimes.getLatest,
     { endpoint_uuid },
     `useEndpointUptimes (${endpoint_uuid})`,
   )
@@ -40,7 +40,7 @@ type Nullish<T> = T | null | undefined
 
 export function useModelAppsLeaderboards(args: Nullish<{ permaslug: string; variants: string[] }>) {
   return useCachedQuery(
-    api.openrouter.entities.modelAppLeaderboards.get,
+    api.public.modelAppLeaderboards.get,
     args ? { permaslug: args.permaslug, variants: args.variants } : 'skip',
     `useModelAppsLeaderboard (${args?.permaslug}, ${args?.variants.join(', ')})`,
   )
@@ -48,14 +48,14 @@ export function useModelAppsLeaderboards(args: Nullish<{ permaslug: string; vari
 
 export function useModelTokenStats(args: Nullish<{ permaslug: string; variants: string[] }>) {
   return useCachedQuery(
-    api.openrouter.entities.modelTokenStats.get,
+    api.public.modelTokenStats.get,
     args ? { permaslug: args.permaslug, variants: args.variants } : 'skip',
     `useModelTokenStats (${args?.permaslug}, ${args?.variants.join(', ')})`,
   )
 }
 
 export function useProvidersList() {
-  return useCachedQuery(api.openrouter.entities.providers.list, {})
+  return useCachedQuery(api.public.providers.list, {})
 }
 
 export function useSnapshotStatus() {

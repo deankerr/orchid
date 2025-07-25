@@ -87,12 +87,12 @@ export async function appsPipeline(
     data: rawAppResponses,
   })
 
-  const appResults = await ctx.runMutation(internal.openrouter.entities.apps.upsert, {
+  const appResults = await ctx.runMutation(internal.openrouter.output.apps, {
     items: apps,
   })
 
   const leaderboardResults = await ctx.runMutation(
-    internal.openrouter.entities.modelAppLeaderboards.upsert,
+    internal.openrouter.output.modelAppLeaderboards,
     {
       items: modelAppLeaderboards,
     },

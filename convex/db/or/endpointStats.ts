@@ -4,7 +4,7 @@ import { v, type Infer } from 'convex/values'
 
 import type { QueryCtx } from '../../_generated/server'
 import { fnInternalMutation } from '../../fnHelper'
-import { countResults } from '../../openrouter/output'
+import { countResults } from '../../openrouter/utils'
 import { getDayAlignedTimestamp } from '../../shared'
 import { createTableVHelper } from '../../table3'
 

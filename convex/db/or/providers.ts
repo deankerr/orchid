@@ -6,7 +6,7 @@ import { diff as jsonDiff, type IChange } from 'json-diff-ts'
 
 import type { MutationCtx } from '../../_generated/server'
 import { fnInternalMutation, fnQuery } from '../../fnHelper'
-import { countResults } from '../../openrouter/output'
+import { countResults } from '../../openrouter/utils'
 import { createTableVHelper } from '../../table3'
 
 export const table = defineTable({
@@ -86,7 +86,7 @@ const recordChanges = async (
 // * queries
 export const list = fnQuery({
   handler: async (ctx) => {
-    return await ctx.db.query('or_providers').collect()
+    return await ctx.db.query(vTable.name).collect()
   },
 })
 
