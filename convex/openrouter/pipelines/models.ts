@@ -40,7 +40,7 @@ export async function modelsPipeline(
     stats: {},
   }))
 
-  const results = await ctx.runMutation(internal.openrouter.entities.models.upsert, {
+  const results = await ctx.runMutation(internal.openrouter.output.models, {
     items: models,
   })
 

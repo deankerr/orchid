@@ -1,7 +1,9 @@
+import type { Infer } from 'convex/values'
+
 import { internal } from '../../_generated/api'
 import type { ActionCtx } from '../../_generated/server'
+import * as ORProviders from '../../db/or/providers'
 import { storeSnapshotData } from '../archive'
-import { OrProviders } from '../entities/providers'
 import { validateArray, type Issue } from '../validation'
 import { ProviderStrictSchema, ProviderTransformSchema } from '../validators/providers'
 
@@ -38,12 +40,12 @@ export async function providersPipeline(
 
   issues.push(...validationIssues)
 
-  const providers: (typeof OrProviders.$content)[] = items.map((provider) => ({
+  const providers: Infer<typeof ORProviders.vTable.validator>[] = items.map((provider) => ({
     ...provider,
     snapshot_at,
   }))
 
-  const results = await ctx.runMutation(internal.openrouter.entities.providers.upsert, {
+  const results = await ctx.runMutation(internal.openrouter.output.providers, {
     items: providers,
   })
 

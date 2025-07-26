@@ -1,15 +1,17 @@
 import { asyncMap } from 'convex-helpers'
+import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
 import { diff as jsonDiff, type IChange } from 'json-diff-ts'
 
-import { internalMutation, query, type MutationCtx } from '../../_generated/server'
+import type { MutationCtx } from '../../_generated/server'
+import { fnInternalMutation, fnQuery } from '../../fnHelper'
+import { getCurrentSnapshotTimestamp } from '../../openrouter/snapshot'
+import { countResults } from '../../openrouter/utils'
 import { hoursBetween } from '../../shared'
-import { Table2 } from '../../table2'
-import { countResults } from '../output'
-import { getCurrentSnapshotTimestamp } from '../snapshot'
+import { createTableVHelper } from '../../table3'
 
-export const vModelStatsRecord = v.record(
+export const vModelStats = v.record(
   v.string(), // variant
   v.object({
     tokens_7d: v.number(),
@@ -21,7 +23,7 @@ export const vModelStatsRecord = v.record(
   }),
 )
 
-export const OrModels = Table2('or_models', {
+export const table = defineTable({
   slug: v.string(),
   permaslug: v.string(),
   variants: v.array(v.string()),
@@ -49,16 +51,12 @@ export const OrModels = Table2('or_models', {
   or_created_at: v.number(),
   or_updated_at: v.number(),
 
-  stats: vModelStatsRecord,
+  stats: vModelStats,
 
   snapshot_at: v.number(),
-})
+}).index('by_slug', ['slug'])
 
-export const OrModelsChanges = Table2('or_models_changes', {
-  slug: v.string(),
-  snapshot_at: v.number(),
-  changes: v.array(v.record(v.string(), v.any())),
-})
+export const vTable = createTableVHelper('or_models', table.validator)
 
 const diff = (a: unknown, b: unknown) =>
   jsonDiff(a, b, {
@@ -70,23 +68,67 @@ const diff = (a: unknown, b: unknown) =>
     },
   })
 
+// * changes
+export const changesTable = defineTable({
+  slug: v.string(),
+  snapshot_at: v.number(),
+  changes: v.array(v.record(v.string(), v.any())),
+})
+
+export const vChangesTable = createTableVHelper('or_models_changes', changesTable.validator)
+
 const recordChanges = async (
   ctx: MutationCtx,
   { content, changes }: { content: { slug: string; snapshot_at: number }; changes: IChange[] },
 ) => {
   if (changes.length === 0) return
   const { slug, snapshot_at } = content
-  await ctx.db.insert(OrModelsChanges.name, { slug, snapshot_at, changes })
+  await ctx.db.insert(vChangesTable.name, { slug, snapshot_at, changes })
 }
 
-export const upsert = internalMutation({
-  args: {
-    items: v.array(OrModels.content),
+// * queries
+export const get = fnQuery({
+  args: { slug: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query(vTable.name)
+      .withIndex('by_slug', (q) => q.eq('slug', args.slug))
+      .first()
   },
-  handler: async (ctx, { items }) => {
-    const results = await asyncMap(items, async (item) => {
+})
+
+export const list = fnQuery({
+  handler: async (ctx) => {
+    const snapshot_at = await getCurrentSnapshotTimestamp(ctx)
+    const authors = await ctx.db.query('or_authors').collect()
+
+    const models = await ctx.db
+      .query(vTable.name)
+      .collect()
+      .then(
+        (res) =>
+          res
+            .map((m) => ({
+              ...m,
+              staleness_hours: hoursBetween(m.snapshot_at, snapshot_at),
+            }))
+            .filter((m) => m.staleness_hours < 1), // NOTE: remove all stale models
+      )
+
+    return models.map((m) => ({
+      ...m,
+      author_name: authors.find((a) => a.slug === m.author_slug)?.name ?? m.author_slug,
+    }))
+  },
+})
+
+// * snapshots
+export const upsert = fnInternalMutation({
+  args: { items: v.array(vTable.validator) },
+  handler: async (ctx, args) => {
+    const results = await asyncMap(args.items, async (item) => {
       const existing = await ctx.db
-        .query(OrModels.name)
+        .query(vTable.name)
         .withIndex('by_slug', (q) => q.eq('slug', item.slug))
         .first()
       const changes = diff(existing ?? {}, item)
@@ -101,7 +143,7 @@ export const upsert = internalMutation({
 
       // Insert
       if (!existing) {
-        await ctx.db.insert(OrModels.name, item)
+        await ctx.db.insert(vTable.name, item)
         return { action: 'insert' }
       }
 
@@ -120,18 +162,11 @@ export const upsert = internalMutation({
   },
 })
 
-export const updateStats = internalMutation({
-  args: {
-    items: v.array(
-      v.object({
-        permaslug: v.string(),
-        stats: vModelStatsRecord,
-      }),
-    ),
-  },
-  handler: async (ctx, { items }) => {
-    const models = await ctx.db.query(OrModels.name).collect()
-    const statsMap = new Map(items.map((item) => [item.permaslug, item.stats]))
+export const updateStats = fnInternalMutation({
+  args: { items: v.array(v.object({ permaslug: v.string(), stats: vModelStats })) },
+  handler: async (ctx, args) => {
+    const models = await ctx.db.query(vTable.name).collect()
+    const statsMap = new Map(args.items.map((item) => [item.permaslug, item.stats]))
 
     for (const model of models) {
       const newStats = statsMap.get(model.permaslug)
@@ -150,44 +185,5 @@ export const updateStats = internalMutation({
         }
       }
     }
-  },
-})
-
-// * queries
-
-export const get = query({
-  args: {
-    slug: v.string(),
-  },
-  handler: async (ctx, args) => {
-    return await ctx.db
-      .query('or_models')
-      .withIndex('by_slug', (q) => q.eq('slug', args.slug))
-      .first()
-  },
-})
-
-export const list = query({
-  handler: async (ctx) => {
-    const snapshot_at = await getCurrentSnapshotTimestamp(ctx)
-    const authors = await ctx.db.query('or_authors').collect()
-
-    const models = await ctx.db
-      .query('or_models')
-      .collect()
-      .then(
-        (res) =>
-          res
-            .map((m) => ({
-              ...m,
-              staleness_hours: hoursBetween(m.snapshot_at, snapshot_at),
-            }))
-            .filter((m) => m.staleness_hours < 1), // NOTE: remove all stale models
-      )
-
-    return models.map((m) => ({
-      ...m,
-      author_name: authors.find((a) => a.slug === m.author_slug)?.name ?? m.author_slug,
-    }))
   },
 })

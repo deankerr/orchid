@@ -1,13 +1,15 @@
 import { asyncMap } from 'convex-helpers'
+import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
 import { diff as jsonDiff, type IChange } from 'json-diff-ts'
 
-import { internalMutation, type MutationCtx } from '../../_generated/server'
-import { Table2 } from '../../table2'
-import { countResults } from '../output'
+import type { MutationCtx } from '../../_generated/server'
+import { fnInternalMutation } from '../../fnHelper'
+import { countResults } from '../../openrouter/utils'
+import { createTableVHelper } from '../../table3'
 
-export const OrApps = Table2('or_apps', {
+export const table = defineTable({
   app_id: v.number(),
   title: v.optional(v.string()),
   description: v.optional(v.string()),
@@ -17,18 +19,23 @@ export const OrApps = Table2('or_apps', {
   or_created_at: v.number(),
 
   snapshot_at: v.number(),
-})
+}).index('by_app_id', ['app_id'])
 
-export const OrAppsChanges = Table2('or_apps_changes', {
-  app_id: v.number(),
-  snapshot_at: v.number(),
-  changes: v.array(v.record(v.string(), v.any())),
-})
+export const vTable = createTableVHelper('or_apps', table.validator)
 
 const diff = (a: unknown, b: unknown) =>
   jsonDiff(a, b, {
     keysToSkip: ['_id', '_creationTime', 'snapshot_at'],
   })
+
+// * changes
+export const changesTable = defineTable({
+  app_id: v.number(),
+  snapshot_at: v.number(),
+  changes: v.array(v.record(v.string(), v.any())),
+})
+
+export const vChangesTable = createTableVHelper('or_apps_changes', changesTable.validator)
 
 const recordChanges = async (
   ctx: MutationCtx,
@@ -36,17 +43,16 @@ const recordChanges = async (
 ) => {
   if (changes.length === 0) return
   const { app_id, snapshot_at } = content
-  await ctx.db.insert(OrAppsChanges.name, { app_id, snapshot_at, changes })
+  await ctx.db.insert(vChangesTable.name, { app_id, snapshot_at, changes })
 }
 
-export const upsert = internalMutation({
-  args: {
-    items: v.array(OrApps.content),
-  },
-  handler: async (ctx, { items }) => {
-    const results = await asyncMap(items, async (item) => {
+// * snapshots
+export const upsert = fnInternalMutation({
+  args: { items: v.array(vTable.validator) },
+  handler: async (ctx, args) => {
+    const results = await asyncMap(args.items, async (item) => {
       const existing = await ctx.db
-        .query(OrApps.name)
+        .query(vTable.name)
         .withIndex('by_app_id', (q) => q.eq('app_id', item.app_id))
         .first()
       const changes = diff(existing ?? {}, item)
@@ -56,7 +62,7 @@ export const upsert = internalMutation({
 
       // Insert
       if (!existing) {
-        await ctx.db.insert(OrApps.name, item)
+        await ctx.db.insert(vTable.name, item)
         return { action: 'insert' }
       }
 

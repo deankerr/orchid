@@ -1,9 +1,11 @@
+import type { Infer } from 'convex/values'
+
 import { internal } from '../../_generated/api'
 import type { ActionCtx } from '../../_generated/server'
+import * as OREndpoints from '../../db/or/endpoints'
+import { type EndpointStat } from '../../db/or/endpointStats'
+import * as ORModels from '../../db/or/models'
 import { storeSnapshotData } from '../archive'
-import { OrEndpoints } from '../entities/endpoints'
-import { type EndpointStat } from '../entities/endpointStats'
-import { OrModels } from '../entities/models'
 import { validateArray, validateRecord, type Issue } from '../validation'
 import { EndpointStrictSchema, EndpointTransformSchema } from '../validators/endpoints'
 import {
@@ -25,6 +27,7 @@ type NewEndpointUptime = {
     uptime?: number
   }[]
 }
+
 export async function endpointsPipeline(
   ctx: ActionCtx,
   {
@@ -35,7 +38,7 @@ export async function endpointsPipeline(
   }: {
     snapshot_at: number
     run_id: string
-    models: (typeof OrModels.$content)[]
+    models: Infer<typeof ORModels.vTable.validator>[]
     source: {
       endpoints: (args: { permaslug: string; variant: string }) => Promise<unknown[]>
       endpointUptimes: (args: { uuid: string }) => Promise<unknown>
@@ -43,7 +46,7 @@ export async function endpointsPipeline(
   },
 ) {
   const started_at = Date.now()
-  const endpoints: (typeof OrEndpoints.$content)[] = []
+  const endpoints: Infer<typeof OREndpoints.vTable.validator>[] = []
   const endpointStats: NewEndpointStat[] = []
   const endpointUptimes: NewEndpointUptime[] = []
   const issues: Issue[] = []
@@ -133,20 +136,20 @@ export async function endpointsPipeline(
   })
 
   const endpointUptimesResults = await ctx.runMutation(
-    internal.openrouter.entities.endpointUptimes.upsert,
+    internal.openrouter.output.endpointUptimes,
     {
       items: endpointUptimes,
     },
   )
 
   const endpointStatsResults = await ctx.runMutation(
-    internal.openrouter.entities.endpointStats.upsert,
+    internal.openrouter.output.endpointStats,
     {
       items: endpointStats,
     },
   )
 
-  const endpointResults = await ctx.runMutation(internal.openrouter.entities.endpoints.upsert, {
+  const endpointResults = await ctx.runMutation(internal.openrouter.output.endpoints, {
     items: endpoints,
   })
 

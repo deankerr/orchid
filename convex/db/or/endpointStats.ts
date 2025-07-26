@@ -1,10 +1,12 @@
 import { asyncMap } from 'convex-helpers'
+import { defineTable } from 'convex/server'
 import { v, type Infer } from 'convex/values'
 
-import { internalMutation, type QueryCtx } from '../../_generated/server'
+import type { QueryCtx } from '../../_generated/server'
+import { fnInternalMutation } from '../../fnHelper'
+import { countResults } from '../../openrouter/utils'
 import { getDayAlignedTimestamp } from '../../shared'
-import { Table2 } from '../../table2'
-import { countResults } from '../output'
+import { createTableVHelper } from '../../table3'
 
 const vEndpointStat = v.union(
   v.object({
@@ -19,13 +21,15 @@ const vEndpointStat = v.union(
 )
 export type EndpointStat = Infer<typeof vEndpointStat>
 
-export const OrEndpointStats = Table2('or_endpoint_stats', {
+export const table = defineTable({
   endpoint_uuid: v.string(),
   snapshot_at: v.number(),
 
   latest_72h: v.array(vEndpointStat),
   average_30d: v.array(vEndpointStat),
-})
+}).index('by_endpoint_uuid_snapshot_at', ['endpoint_uuid', 'snapshot_at'])
+
+export const vTable = createTableVHelper('or_endpoint_stats', table.validator)
 
 // Helper: fetch latest stats doc for endpoint
 async function getLatestHelper(ctx: QueryCtx, { endpoint_uuid }: { endpoint_uuid: string }) {
@@ -91,7 +95,8 @@ function updateDailyAverages(
   return [...deduplicated.values()].sort((a, b) => a.timestamp - b.timestamp).slice(-30)
 }
 
-export const upsert = internalMutation({
+// * snapshots
+export const upsert = fnInternalMutation({
   args: {
     items: v.array(
       v.object({
@@ -101,8 +106,8 @@ export const upsert = internalMutation({
       }),
     ),
   },
-  handler: async (ctx, { items }) => {
-    const results = await asyncMap(items, async (item) => {
+  handler: async (ctx, args) => {
+    const results = await asyncMap(args.items, async (item) => {
       const existing = await getLatestHelper(ctx, { endpoint_uuid: item.endpoint_uuid })
 
       if (existing) {
@@ -119,7 +124,7 @@ export const upsert = internalMutation({
         // Calculate initial daily averages from hourly data
         const latest_72h = item.stat ? [item.stat] : []
         const average_30d = updateDailyAverages([], latest_72h)
-        await ctx.db.insert(OrEndpointStats.name, {
+        await ctx.db.insert(vTable.name, {
           endpoint_uuid: item.endpoint_uuid,
           snapshot_at: item.snapshot_at,
           latest_72h,

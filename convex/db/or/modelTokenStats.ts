@@ -1,13 +1,14 @@
 import { asyncMap } from 'convex-helpers'
+import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
 import { diff as jsonDiff } from 'json-diff-ts'
 
-import { internalMutation, query } from '../../_generated/server'
-import { Table2 } from '../../table2'
-import { countResults } from '../output'
+import { fnInternalMutation, fnQuery } from '../../fnHelper'
+import { countResults } from '../../openrouter/utils'
+import { createTableVHelper } from '../../table3'
 
-export const OrModelTokenStats = Table2('or_model_token_stats', {
+export const table = defineTable({
   model_slug: v.string(),
   model_permaslug: v.string(),
   model_variant: v.string(),
@@ -23,21 +24,39 @@ export const OrModelTokenStats = Table2('or_model_token_stats', {
   ),
 
   snapshot_at: v.number(),
-})
+}).index('by_permaslug_variant', ['model_permaslug', 'model_variant'])
+
+export const vTable = createTableVHelper('or_model_token_stats', table.validator)
 
 const diff = (a: unknown, b: unknown) =>
   jsonDiff(a, b, {
     keysToSkip: ['_id', '_creationTime'],
   })
 
-export const upsert = internalMutation({
+// * queries
+export const get = fnQuery({
   args: {
-    items: v.array(OrModelTokenStats.content),
+    permaslug: v.string(),
+    variants: v.array(v.string()),
   },
-  handler: async (ctx, { items }) => {
-    const results = await asyncMap(items, async (item) => {
+  handler: async (ctx, { permaslug, variants }) => {
+    const results = await ctx.db
+      .query(vTable.name)
+      .withIndex('by_permaslug_variant', (q) => q.eq('model_permaslug', permaslug))
+      .order('desc')
+      .collect()
+
+    return variants.map((variant) => results.find((r) => r.model_variant === variant) ?? null)
+  },
+})
+
+// * snapshots
+export const upsert = fnInternalMutation({
+  args: { items: v.array(vTable.validator) },
+  handler: async (ctx, args) => {
+    const results = await asyncMap(args.items, async (item) => {
       const existing = await ctx.db
-        .query(OrModelTokenStats.name)
+        .query(vTable.name)
         .withIndex('by_permaslug_variant', (q) =>
           q.eq('model_permaslug', item.model_permaslug).eq('model_variant', item.model_variant),
         )
@@ -46,7 +65,7 @@ export const upsert = internalMutation({
 
       // Insert
       if (!existing) {
-        await ctx.db.insert(OrModelTokenStats.name, item)
+        await ctx.db.insert(vTable.name, item)
         return { action: 'insert' }
       }
 
@@ -61,21 +80,5 @@ export const upsert = internalMutation({
     })
 
     return countResults(results, 'modelTokenStats')
-  },
-})
-
-export const get = query({
-  args: {
-    permaslug: v.string(),
-    variants: v.array(v.string()),
-  },
-  handler: async (ctx, { permaslug, variants }) => {
-    const results = await ctx.db
-      .query(OrModelTokenStats.name)
-      .withIndex('by_permaslug_variant', (q) => q.eq('model_permaslug', permaslug))
-      .order('desc')
-      .collect()
-
-    return variants.map((variant) => results.find((r) => r.model_variant === variant) ?? null)
   },
 })

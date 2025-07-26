@@ -1,12 +1,14 @@
 import { asyncMap } from 'convex-helpers'
+import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
-import { internalMutation, query, type QueryCtx } from '../../_generated/server'
+import type { QueryCtx } from '../../_generated/server'
+import { fnInternalMutation, fnQuery } from '../../fnHelper'
+import { countResults } from '../../openrouter/utils'
 import { getDayAlignedTimestamp } from '../../shared'
-import { Table2 } from '../../table2'
-import { countResults } from '../output'
+import { createTableVHelper } from '../../table3'
 
-export const OrEndpointUptimes = Table2('or_endpoint_uptimes', {
+export const table = defineTable({
   endpoint_uuid: v.string(),
   snapshot_at: v.number(),
 
@@ -25,14 +27,9 @@ export const OrEndpointUptimes = Table2('or_endpoint_uptimes', {
       uptime: v.optional(v.number()),
     }),
   ),
-})
+}).index('by_endpoint_uuid_snapshot_at', ['endpoint_uuid', 'snapshot_at'])
 
-export async function getLatestHelper(ctx: QueryCtx, { endpoint_uuid }: { endpoint_uuid: string }) {
-  return await ctx.db
-    .query('or_endpoint_uptimes')
-    .withIndex('by_endpoint_uuid_snapshot_at', (q) => q.eq('endpoint_uuid', endpoint_uuid))
-    .first()
-}
+export const vTable = createTableVHelper('or_endpoint_uptimes', table.validator)
 
 function updateHourlyData(
   existingData: Array<{ timestamp: number; uptime?: number }>,
@@ -91,14 +88,28 @@ function updateDailyAverages(
   return [...deduplicated.values()].sort((a, b) => a.timestamp - b.timestamp).slice(-30)
 }
 
-export const upsert = internalMutation({
+// * queries
+export const getLatest = fnQuery({
   args: {
-    items: v.array(OrEndpointUptimes.content.omit('average_30d')),
+    endpoint_uuid: v.string(),
+  },
+  handler: async (ctx, { endpoint_uuid }) => {
+    return await ctx.db
+      .query('or_endpoint_uptimes')
+      .withIndex('by_endpoint_uuid_snapshot_at', (q) => q.eq('endpoint_uuid', endpoint_uuid))
+      .first()
+  },
+})
+
+// * snapshots
+export const upsert = fnInternalMutation({
+  args: {
+    items: v.array(vTable.validator.omit('average_30d')),
   },
   // Maintains rolling windows with hard guarantees: max 72 hourly + max 30 daily data points
-  handler: async (ctx, { items }) => {
-    const results = await asyncMap(items, async (item) => {
-      const existing = await getLatestHelper(ctx, { endpoint_uuid: item.endpoint_uuid })
+  handler: async (ctx, args) => {
+    const results = await asyncMap(args.items, async (item) => {
+      const existing = await getLatest(ctx, { endpoint_uuid: item.endpoint_uuid })
 
       if (existing) {
         // Merge with existing data using rolling window logic
@@ -118,7 +129,7 @@ export const upsert = internalMutation({
         const average_30d = updateDailyAverages([], item.latest_72h)
 
         // Create new document
-        await ctx.db.insert(OrEndpointUptimes.name, {
+        await ctx.db.insert(vTable.name, {
           ...item,
           average_30d,
         })
@@ -129,13 +140,4 @@ export const upsert = internalMutation({
 
     return countResults(results, 'endpointUptimes')
   },
-})
-
-// * queries
-
-export const getLatest = query({
-  args: {
-    endpoint_uuid: v.string(),
-  },
-  handler: getLatestHelper,
 })

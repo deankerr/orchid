@@ -1,8 +1,10 @@
+import type { Infer } from 'convex/values'
+
 import { internal } from '../../_generated/api'
 import type { ActionCtx } from '../../_generated/server'
-import { OrAuthors } from '../entities/authors'
-import { OrModels } from '../entities/models'
-import type { OrModelTokenStats } from '../entities/modelTokenStats'
+import * as ORAuthors from '../../db/or/authors'
+import * as ORModels from '../../db/or/models'
+import * as ORModelTokenStats from '../../db/or/modelTokenStats'
 import { validateRecord, type Issue } from '../validation'
 import { AuthorStrictSchema, AuthorTransformSchema } from '../validators/authors'
 import {
@@ -19,15 +21,15 @@ export async function modelTokenStatsPipeline(
   }: {
     snapshot_at: number
     run_id: string
-    models: (typeof OrModels.$content)[]
+    models: Infer<typeof ORModels.vTable.validator>[]
     source: {
       authors: (args: { authorSlug: string }) => Promise<unknown>
     }
   },
 ) {
   const started_at = Date.now()
-  const modelTokenStats: (typeof OrModelTokenStats.$content)[] = []
-  const authors: (typeof OrAuthors.$content)[] = []
+  const modelTokenStats: Infer<typeof ORModelTokenStats.vTable.validator>[] = []
+  const authors: Infer<typeof ORAuthors.vTable.validator>[] = []
   const issues: Issue[] = []
 
   for (const authorSlug of new Set(models.map((m) => m.author_slug))) {
@@ -50,12 +52,12 @@ export async function modelTokenStatsPipeline(
     authors.push({ ...authorItem, snapshot_at })
   }
 
-  const authorsResults = await ctx.runMutation(internal.openrouter.entities.authors.upsert, {
+  const authorsResults = await ctx.runMutation(internal.openrouter.output.authors, {
     items: authors,
   })
 
   const modelTokenStatsResults = await ctx.runMutation(
-    internal.openrouter.entities.modelTokenStats.upsert,
+    internal.openrouter.output.modelTokenStats,
     {
       items: modelTokenStats,
     },
@@ -89,7 +91,7 @@ export async function modelTokenStatsPipeline(
   )
 
   // Update models with aggregated stats
-  await ctx.runMutation(internal.openrouter.entities.models.updateStats, {
+  await ctx.runMutation(internal.openrouter.output.modelStats, {
     items: modelStatsEntries,
   })
 
