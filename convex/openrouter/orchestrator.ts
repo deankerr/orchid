@@ -14,7 +14,7 @@ export async function orchestrator(ctx: ActionCtx) {
   // Record snapshot run start
   // ------------------------------------------------------------
   const snapshot_at = getHourAlignedTimestamp()
-  const run_id = await ctx.runMutation(internal.openrouter.snapshot.insertRun, {
+  const run_id = await ctx.runMutation(internal.openrouter.output.insertSnapshotRun, {
     snapshot_at,
     started_at: Date.now(),
   })
@@ -47,7 +47,7 @@ export async function orchestrator(ctx: ActionCtx) {
 
   // If models failed, abort the run early.
   if (!stage1.models.ok) {
-    await ctx.runMutation(internal.openrouter.snapshot.updateRun, {
+    await ctx.runMutation(internal.openrouter.output.updateSnapshotRun, {
       run_id,
       ended_at: Date.now(),
       ok: false,
@@ -99,7 +99,7 @@ export async function orchestrator(ctx: ActionCtx) {
   const allPipelines = [...stage1Pipelines, ...stage2Pipelines]
   const ok = allPipelines.every((p) => p.ok)
 
-  await ctx.runMutation(internal.openrouter.snapshot.updateRun, {
+  await ctx.runMutation(internal.openrouter.output.updateSnapshotRun, {
     run_id,
     ended_at: Date.now(),
     ok,

@@ -8,6 +8,8 @@ import * as ORModelAppLeaderboards from '../db/or/modelAppLeaderboards'
 import * as ORModels from '../db/or/models'
 import * as ORModelTokenStats from '../db/or/modelTokenStats'
 import * as ORProviders from '../db/or/providers'
+import * as SnapshotArchives from '../db/snapshot/archives'
+import * as SnapshotRuns from '../db/snapshot/runs'
 
 // * Entity upsert functions
 export const apps = internalMutation(ORApps.upsert.define())
@@ -20,3 +22,8 @@ export const models = internalMutation(ORModels.upsert.define())
 export const modelStats = internalMutation(ORModels.updateStats.define())
 export const modelTokenStats = internalMutation(ORModelTokenStats.upsert.define())
 export const providers = internalMutation(ORProviders.upsert.define())
+
+// * Snapshot functions
+export const insertSnapshotRun = internalMutation(SnapshotRuns.insertRun.define())
+export const updateSnapshotRun = internalMutation(SnapshotRuns.updateRun.define())
+export const insertSnapshotArchive = internalMutation(SnapshotArchives.insertArchiveRecord.define())

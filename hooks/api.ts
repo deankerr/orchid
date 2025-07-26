@@ -59,16 +59,16 @@ export function useProvidersList() {
 }
 
 export function useSnapshotStatus() {
-  return useCachedQuery(api.openrouter.snapshot.getSnapshotStatus, {}, 'useSnapshotStatus')
+  return useCachedQuery(api.public.snapshots.getSnapshotStatus, {}, 'useSnapshotStatus')
 }
 
 export function useSnapshotRuns(limit?: number) {
-  return useCachedQuery(api.openrouter.snapshot.getSnapshotRuns, { limit }, 'useSnapshotRuns')
+  return useCachedQuery(api.public.snapshots.getSnapshotRuns, { limit }, 'useSnapshotRuns')
 }
 
 export function useSnapshotArchives(snapshot_at: number) {
   return useCachedQuery(
-    api.openrouter.snapshot.getSnapshotArchives,
+    api.public.snapshots.getSnapshotArchives,
     { snapshot_at },
     `useSnapshotArchives (${snapshot_at})`,
   )

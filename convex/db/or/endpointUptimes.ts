@@ -2,7 +2,6 @@ import { asyncMap } from 'convex-helpers'
 import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
-import type { QueryCtx } from '../../_generated/server'
 import { fnMutationLite, fnQueryLite } from '../../fnHelperLite'
 import { countResults } from '../../openrouter/utils'
 import { getDayAlignedTimestamp } from '../../shared'

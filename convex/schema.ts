@@ -10,9 +10,9 @@ import * as ORModelAppLeaderboards from './db/or/modelAppLeaderboards'
 import * as ORModels from './db/or/models'
 import * as ORModelTokenStats from './db/or/modelTokenStats'
 import * as ORProviders from './db/or/providers'
-import { SnapshotArchives } from './openrouter/archive'
-import { SnapshotSchedule } from './openrouter/schedule'
-import { SnapshotRuns } from './openrouter/snapshot'
+import * as SnapshotArchives from './db/snapshot/archives'
+import * as SnapshotRuns from './db/snapshot/runs'
+import * as SnapshotSchedule from './db/snapshot/schedule'
 
 export const schema = defineSchema(
   {
@@ -39,7 +39,7 @@ export const schema = defineSchema(
     or_providers: ORProviders.table,
     or_providers_changes: ORProviders.changesTable,
 
-    snapshot_archives: SnapshotArchives.table.index('by_snapshot_at', ['snapshot_at']),
+    snapshot_archives: SnapshotArchives.table,
     snapshot_runs: SnapshotRuns.table,
     snapshot_schedule: SnapshotSchedule.table,
 
