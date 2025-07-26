@@ -25,7 +25,7 @@ export function LoaderSquare({ className, ...props }: React.ComponentProps<'div'
 
 export function LoaderBadge({ className, ...props }: React.ComponentProps<typeof Badge>) {
   return (
-    <Badge variant="outline" className={cn('font-mono', className)} {...props}>
+    <Badge variant="outline" className={cn('flex font-mono', className)} {...props}>
       <Loader2Icon className="animate-spin" />
       Loading
     </Badge>

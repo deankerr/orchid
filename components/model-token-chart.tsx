@@ -103,7 +103,7 @@ export function ModelTokenChart({
 
   if (!first) {
     return (
-      <Card>
+      <Card className="rounded-sm">
         <CardHeader>
           <CardTitle className="font-mono text-sm">{variantSlug}</CardTitle>
         </CardHeader>
@@ -135,7 +135,7 @@ export function ModelTokenChart({
   }))
 
   return (
-    <Card>
+    <Card className="rounded-sm">
       <CardHeader>
         <CardTitle className="font-mono text-sm">{`Tokens Processed: ${variantSlug}`}</CardTitle>
       </CardHeader>

@@ -5,6 +5,7 @@ import { AlertTriangleIcon } from 'lucide-react'
 import { getModelVariantSlug } from '@/convex/shared'
 
 import { BrandIcon } from '@/components/brand-icon/brand-icon'
+import { FeatureFlag } from '@/components/dev-utils/feature-flag'
 import { EndpointDataTable } from '@/components/endpoint-data-table/endpoint-data-table'
 import { EndpointPanel } from '@/components/endpoint-panel/endpoint-panel'
 import { ModelAppsLeaderboard } from '@/components/model-apps-leaderboard'
@@ -117,12 +118,24 @@ export function ModelPage({ slug }: { slug: string }) {
       {model.endpoints && model.endpoints.length > 0 ? (
         <>
           <EndpointDataTable model={model} endpoints={model.endpoints} />
-          {model.endpoints.map((endpoint) => (
-            <EndpointPanel key={endpoint._id} endpoint={endpoint} />
-          ))}
+
+          <FeatureFlag flag="endpoint-panels">
+            {model.endpoints.map((endpoint) => (
+              <EndpointPanel key={endpoint._id} endpoint={endpoint} />
+            ))}
+          </FeatureFlag>
         </>
       ) : (
         <p className="text-muted-foreground">No endpoints found.</p>
+      )}
+
+      {/* Token stats charts */}
+      {modelTokenStats === undefined ? (
+        <LoaderBadge />
+      ) : (
+        modelTokenStats.map(
+          (stats) => stats && <ModelTokenChart key={stats.model_variant} modelTokenStats={stats} />,
+        )
       )}
 
       {/* Apps leaderboards */}
@@ -141,25 +154,18 @@ export function ModelPage({ slug }: { slug: string }) {
         )
       )}
 
-      {/* Token stats charts */}
-      {modelTokenStats === undefined ? (
-        <LoaderBadge />
-      ) : (
-        modelTokenStats.map(
-          (stats) => stats && <ModelTokenChart key={stats.model_variant} modelTokenStats={stats} />,
-        )
-      )}
-
-      <Accordion type="single" collapsible className="bg-muted/30">
-        <AccordionItem value="model-data" className="border-b-0">
-          <AccordionTrigger className="px-4 font-mono text-sm">Raw</AccordionTrigger>
-          <AccordionContent className="px-4">
-            <pre className="text-xs whitespace-pre-wrap text-muted-foreground">
-              {JSON.stringify(model, null, 2)}
-            </pre>
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
+      <FeatureFlag flag="snapshots">
+        <Accordion type="single" collapsible className="bg-muted/30">
+          <AccordionItem value="model-data" className="border-b-0">
+            <AccordionTrigger className="px-4 font-mono text-sm">Raw</AccordionTrigger>
+            <AccordionContent className="px-4">
+              <pre className="text-xs whitespace-pre-wrap text-muted-foreground">
+                {JSON.stringify(model, null, 2)}
+              </pre>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </FeatureFlag>
     </PageContainer>
   )
 }

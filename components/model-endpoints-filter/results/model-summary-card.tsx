@@ -62,7 +62,7 @@ export const ModelSummaryCard = memo<ModelSummaryCardProps>(({ result }) => {
 
             <div className="text-base font-semibold md:text-lg">
               <Link href={`/models/${model.slug}`} className="transition-colors hover:text-primary">
-                {model.short_name}
+                {model.name}
               </Link>
             </div>
           </div>

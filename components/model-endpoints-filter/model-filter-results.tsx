@@ -19,10 +19,10 @@ export function ModelFilterResults({
 }: ModelFilterResultsProps) {
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        {Array.from({ length: 5 }).map((_, i) => (
+      <div className="space-y-3">
+        {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="animate-pulse">
-            <div className="h-32 rounded-lg bg-muted" />
+            <div className="h-40 rounded-lg bg-muted" />
           </div>
         ))}
       </div>
@@ -41,7 +41,7 @@ export function ModelFilterResults({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {results.map((result) => (
         <ModelSummaryCard key={result.modelId} result={result} />
       ))}
