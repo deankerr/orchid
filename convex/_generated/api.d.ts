@@ -23,6 +23,9 @@ import type * as db_or_modelAppLeaderboards from "../db/or/modelAppLeaderboards.
 import type * as db_or_modelTokenStats from "../db/or/modelTokenStats.js";
 import type * as db_or_models from "../db/or/models.js";
 import type * as db_or_providers from "../db/or/providers.js";
+import type * as db_snapshot_archives from "../db/snapshot/archives.js";
+import type * as db_snapshot_runs from "../db/snapshot/runs.js";
+import type * as db_snapshot_schedule from "../db/snapshot/schedule.js";
 import type * as dev from "../dev.js";
 import type * as fnHelperLite from "../fnHelperLite.js";
 import type * as http from "../http.js";
@@ -54,8 +57,8 @@ import type * as public_modelAppLeaderboards from "../public/modelAppLeaderboard
 import type * as public_modelTokenStats from "../public/modelTokenStats.js";
 import type * as public_models from "../public/models.js";
 import type * as public_providers from "../public/providers.js";
+import type * as public_snapshots from "../public/snapshots.js";
 import type * as shared from "../shared.js";
-import type * as table2 from "../table2.js";
 import type * as table3 from "../table3.js";
 
 /**
@@ -77,6 +80,9 @@ declare const fullApi: ApiFromModules<{
   "db/or/modelTokenStats": typeof db_or_modelTokenStats;
   "db/or/models": typeof db_or_models;
   "db/or/providers": typeof db_or_providers;
+  "db/snapshot/archives": typeof db_snapshot_archives;
+  "db/snapshot/runs": typeof db_snapshot_runs;
+  "db/snapshot/schedule": typeof db_snapshot_schedule;
   dev: typeof dev;
   fnHelperLite: typeof fnHelperLite;
   http: typeof http;
@@ -108,8 +114,8 @@ declare const fullApi: ApiFromModules<{
   "public/modelTokenStats": typeof public_modelTokenStats;
   "public/models": typeof public_models;
   "public/providers": typeof public_providers;
+  "public/snapshots": typeof public_snapshots;
   shared: typeof shared;
-  table2: typeof table2;
   table3: typeof table3;
 }>;
 export declare const api: FilterApi<

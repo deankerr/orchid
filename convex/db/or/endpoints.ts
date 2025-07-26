@@ -7,7 +7,7 @@ import { diff as jsonDiff, type IChange } from 'json-diff-ts'
 
 import { type MutationCtx } from '../../_generated/server'
 import { fnMutationLite, fnQueryLite } from '../../fnHelperLite'
-import { getCurrentSnapshotTimestamp } from '../../openrouter/snapshot'
+import { getCurrentSnapshotTimestamp } from '../snapshot/runs'
 import { countResults } from '../../openrouter/utils'
 import { getModelVariantSlug, hoursBetween } from '../../shared'
 import { createTableVHelper } from '../../table3'

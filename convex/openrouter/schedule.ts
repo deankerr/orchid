@@ -1,19 +1,10 @@
-import { v } from 'convex/values'
-
 import { internal } from '../_generated/api'
 import { internalMutation } from '../_generated/server'
-import { Table2 } from '../table2'
-
-export const SnapshotSchedule = Table2('snapshot_schedule', {
-  enabled: v.boolean(),
-  interval_hours: v.number(),
-  delay_minutes: v.number(),
-  jitter_minutes: v.number(),
-})
+import * as SnapshotScheduleDB from '../db/snapshot/schedule'
 
 export default internalMutation({
   handler: async (ctx) => {
-    const config = await ctx.db.query(SnapshotSchedule.name).order('desc').first()
+    const config = await SnapshotScheduleDB.getLatest.run(ctx, {})
     if (!config) {
       console.log('No snapshot config found.')
       return
