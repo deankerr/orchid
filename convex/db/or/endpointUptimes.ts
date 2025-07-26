@@ -3,7 +3,7 @@ import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
 import type { QueryCtx } from '../../_generated/server'
-import { fnInternalMutation, fnQuery } from '../../fnHelper'
+import { fnMutationLite, fnQueryLite } from '../../fnHelperLite'
 import { countResults } from '../../openrouter/utils'
 import { getDayAlignedTimestamp } from '../../shared'
 import { createTableVHelper } from '../../table3'
@@ -89,7 +89,7 @@ function updateDailyAverages(
 }
 
 // * queries
-export const getLatest = fnQuery({
+export const getLatest = fnQueryLite({
   args: {
     endpoint_uuid: v.string(),
   },
@@ -102,14 +102,14 @@ export const getLatest = fnQuery({
 })
 
 // * snapshots
-export const upsert = fnInternalMutation({
+export const upsert = fnMutationLite({
   args: {
     items: v.array(vTable.validator.omit('average_30d')),
   },
   // Maintains rolling windows with hard guarantees: max 72 hourly + max 30 daily data points
   handler: async (ctx, args) => {
     const results = await asyncMap(args.items, async (item) => {
-      const existing = await getLatest(ctx, { endpoint_uuid: item.endpoint_uuid })
+      const existing = await getLatest.run(ctx, { endpoint_uuid: item.endpoint_uuid })
 
       if (existing) {
         // Merge with existing data using rolling window logic

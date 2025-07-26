@@ -24,7 +24,7 @@ import type * as db_or_modelTokenStats from "../db/or/modelTokenStats.js";
 import type * as db_or_models from "../db/or/models.js";
 import type * as db_or_providers from "../db/or/providers.js";
 import type * as dev from "../dev.js";
-import type * as fnHelper from "../fnHelper.js";
+import type * as fnHelperLite from "../fnHelperLite.js";
 import type * as http from "../http.js";
 import type * as openrouter_archive from "../openrouter/archive.js";
 import type * as openrouter_orchestrator from "../openrouter/orchestrator.js";
@@ -78,7 +78,7 @@ declare const fullApi: ApiFromModules<{
   "db/or/models": typeof db_or_models;
   "db/or/providers": typeof db_or_providers;
   dev: typeof dev;
-  fnHelper: typeof fnHelper;
+  fnHelperLite: typeof fnHelperLite;
   http: typeof http;
   "openrouter/archive": typeof openrouter_archive;
   "openrouter/orchestrator": typeof openrouter_orchestrator;

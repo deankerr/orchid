@@ -5,7 +5,7 @@ import { v } from 'convex/values'
 import { diff as jsonDiff, type IChange } from 'json-diff-ts'
 
 import type { MutationCtx } from '../../_generated/server'
-import { fnInternalMutation, fnQuery } from '../../fnHelper'
+import { fnMutationLite, fnQueryLite } from '../../fnHelperLite'
 import { getCurrentSnapshotTimestamp } from '../../openrouter/snapshot'
 import { countResults } from '../../openrouter/utils'
 import { hoursBetween } from '../../shared'
@@ -87,7 +87,7 @@ const recordChanges = async (
 }
 
 // * queries
-export const get = fnQuery({
+export const get = fnQueryLite({
   args: { slug: v.string() },
   handler: async (ctx, args) => {
     return await ctx.db
@@ -97,7 +97,7 @@ export const get = fnQuery({
   },
 })
 
-export const list = fnQuery({
+export const list = fnQueryLite({
   handler: async (ctx) => {
     const snapshot_at = await getCurrentSnapshotTimestamp(ctx)
     const authors = await ctx.db.query('or_authors').collect()
@@ -123,7 +123,7 @@ export const list = fnQuery({
 })
 
 // * snapshots
-export const upsert = fnInternalMutation({
+export const upsert = fnMutationLite({
   args: { items: v.array(vTable.validator) },
   handler: async (ctx, args) => {
     const results = await asyncMap(args.items, async (item) => {
@@ -162,7 +162,7 @@ export const upsert = fnInternalMutation({
   },
 })
 
-export const updateStats = fnInternalMutation({
+export const updateStats = fnMutationLite({
   args: { items: v.array(v.object({ permaslug: v.string(), stats: vModelStats })) },
   handler: async (ctx, args) => {
     const models = await ctx.db.query(vTable.name).collect()

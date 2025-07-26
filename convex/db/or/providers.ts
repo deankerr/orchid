@@ -5,7 +5,7 @@ import { v } from 'convex/values'
 import { diff as jsonDiff, type IChange } from 'json-diff-ts'
 
 import type { MutationCtx } from '../../_generated/server'
-import { fnInternalMutation, fnQuery } from '../../fnHelper'
+import { fnMutationLite, fnQueryLite } from '../../fnHelperLite'
 import { countResults } from '../../openrouter/utils'
 import { createTableVHelper } from '../../table3'
 
@@ -84,14 +84,14 @@ const recordChanges = async (
 }
 
 // * queries
-export const list = fnQuery({
+export const list = fnQueryLite({
   handler: async (ctx) => {
     return await ctx.db.query(vTable.name).collect()
   },
 })
 
 // * snapshots
-export const upsert = fnInternalMutation({
+export const upsert = fnMutationLite({
   args: { items: v.array(vTable.validator) },
   handler: async (ctx, args) => {
     const results = await asyncMap(args.items, async (item) => {

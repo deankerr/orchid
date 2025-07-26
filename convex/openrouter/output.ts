@@ -1,3 +1,4 @@
+import { internalMutation } from '../_generated/server'
 import * as ORApps from '../db/or/apps'
 import * as ORAuthors from '../db/or/authors'
 import * as OREndpoints from '../db/or/endpoints'
@@ -9,13 +10,13 @@ import * as ORModelTokenStats from '../db/or/modelTokenStats'
 import * as ORProviders from '../db/or/providers'
 
 // * Entity upsert functions
-export const apps = ORApps.upsert.internalMutation
-export const authors = ORAuthors.upsert.internalMutation
-export const endpoints = OREndpoints.upsert.internalMutation
-export const endpointStats = OREndpointStats.upsert.internalMutation
-export const endpointUptimes = OREndpointUptimes.upsert.internalMutation
-export const modelAppLeaderboards = ORModelAppLeaderboards.upsert.internalMutation
-export const models = ORModels.upsert.internalMutation
-export const modelStats = ORModels.updateStats.internalMutation
-export const modelTokenStats = ORModelTokenStats.upsert.internalMutation
-export const providers = ORProviders.upsert.internalMutation
+export const apps = internalMutation(ORApps.upsert.define())
+export const authors = internalMutation(ORAuthors.upsert.define())
+export const endpoints = internalMutation(OREndpoints.upsert.define())
+export const endpointStats = internalMutation(OREndpointStats.upsert.define())
+export const endpointUptimes = internalMutation(OREndpointUptimes.upsert.define())
+export const modelAppLeaderboards = internalMutation(ORModelAppLeaderboards.upsert.define())
+export const models = internalMutation(ORModels.upsert.define())
+export const modelStats = internalMutation(ORModels.updateStats.define())
+export const modelTokenStats = internalMutation(ORModelTokenStats.upsert.define())
+export const providers = internalMutation(ORProviders.upsert.define())
