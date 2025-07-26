@@ -29,12 +29,14 @@ const provider = {
 
 const endpoint = {
   transform: z4.object({
-    ...provider.transform.shape,
+    ...base,
     ...policyFields,
     training: z4.boolean(),
   }),
   strict: z4.strictObject({
-    ...provider.strict.shape,
+    ...base,
+    paidModels: z4.strictObject(policyFields).optional(),
+    freeModels: z4.strictObject(policyFields).optional(),
     ...policyFields,
     training: z4.boolean(),
   }),
