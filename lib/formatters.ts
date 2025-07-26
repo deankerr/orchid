@@ -1,8 +1,11 @@
 export function formatCompactNumber(value: number, digits = 1): string {
-  return new Intl.NumberFormat('en-US', {
+  const formatted = new Intl.NumberFormat('en-US', {
     notation: 'compact',
     maximumFractionDigits: digits,
   }).format(value)
+  
+  // Remove decimal part if integer portion has 3+ digits (e.g., "314.6B" → "314B")
+  return formatted.replace(/^(\d{3,})\.\d+([KMBT])$/, '$1$2')
 }
 
 export function formatNumber(value: number, decimals: number) {
