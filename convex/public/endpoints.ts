@@ -1,3 +1,4 @@
+import { query } from '../_generated/server'
 import * as OREndpoints from '../db/or/endpoints'
 
-export const list = OREndpoints.list.query
+export const list = query(OREndpoints.list.define())

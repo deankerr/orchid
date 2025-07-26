@@ -3,7 +3,7 @@ import { defineTable } from 'convex/server'
 import { v, type Infer } from 'convex/values'
 
 import type { QueryCtx } from '../../_generated/server'
-import { fnInternalMutation } from '../../fnHelper'
+import { fnMutationLite } from '../../fnHelperLite'
 import { countResults } from '../../openrouter/utils'
 import { getDayAlignedTimestamp } from '../../shared'
 import { createTableVHelper } from '../../table3'
@@ -96,7 +96,7 @@ function updateDailyAverages(
 }
 
 // * snapshots
-export const upsert = fnInternalMutation({
+export const upsert = fnMutationLite({
   args: {
     items: v.array(
       v.object({

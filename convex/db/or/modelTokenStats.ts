@@ -4,7 +4,7 @@ import { v } from 'convex/values'
 
 import { diff as jsonDiff } from 'json-diff-ts'
 
-import { fnInternalMutation, fnQuery } from '../../fnHelper'
+import { fnMutationLite, fnQueryLite } from '../../fnHelperLite'
 import { countResults } from '../../openrouter/utils'
 import { createTableVHelper } from '../../table3'
 
@@ -34,7 +34,7 @@ const diff = (a: unknown, b: unknown) =>
   })
 
 // * queries
-export const get = fnQuery({
+export const get = fnQueryLite({
   args: {
     permaslug: v.string(),
     variants: v.array(v.string()),
@@ -51,7 +51,7 @@ export const get = fnQuery({
 })
 
 // * snapshots
-export const upsert = fnInternalMutation({
+export const upsert = fnMutationLite({
   args: { items: v.array(vTable.validator) },
   handler: async (ctx, args) => {
     const results = await asyncMap(args.items, async (item) => {
