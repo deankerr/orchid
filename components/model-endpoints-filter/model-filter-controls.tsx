@@ -59,7 +59,7 @@ export function ModelFilterControls() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {/* Search and Sort Row */}
       <div className="flex items-center gap-2">
         <div className="flex-1">

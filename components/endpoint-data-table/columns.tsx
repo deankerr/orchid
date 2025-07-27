@@ -7,6 +7,7 @@ import type { Endpoint } from '@/hooks/api'
 import { cn } from '@/lib/utils'
 
 import { BrandIcon } from '../brand-icon/brand-icon'
+import { EndpointDerankedBadge } from '../shared/endpoint-deranked-badge'
 import { ModelVariantBadge } from '../shared/model-variant-badge'
 import { NumericValue, PricingProperty } from '../shared/numeric-value'
 import { Badge } from '../ui/badge'
@@ -33,7 +34,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
             </Badge>
           )}
 
-          {endpoint.status < 0 && <AlertTriangleIcon className="size-3.5 text-warning" />}
+          {endpoint.status < 0 && <EndpointDerankedBadge />}
         </div>
       )
     },

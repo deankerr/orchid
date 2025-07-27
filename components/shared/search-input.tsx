@@ -18,7 +18,7 @@ export function SearchInput({ value, onChange, placeholder, className }: SearchI
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="pr-10 pl-10 font-mono text-sm"
+        className="pr-10 pl-10 text-sm"
       />
       {value && (
         <button

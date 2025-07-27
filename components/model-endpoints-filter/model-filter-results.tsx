@@ -1,5 +1,6 @@
 'use client'
 
+import { PageLoading } from '../shared/page-container'
 import { Button } from '../ui/button'
 import { type FilterResult } from './filter'
 import { ModelSummaryCard } from './results/model-summary-card'
@@ -18,15 +19,7 @@ export function ModelFilterResults({
   onShowMore,
 }: ModelFilterResultsProps) {
   if (isLoading) {
-    return (
-      <div className="space-y-3">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="animate-pulse">
-            <div className="h-40 rounded-lg bg-muted" />
-          </div>
-        ))}
-      </div>
-    )
+    return <PageLoading />
   }
 
   if (results.length === 0) {
@@ -41,7 +34,7 @@ export function ModelFilterResults({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="relative space-y-3">
       {results.map((result) => (
         <ModelSummaryCard key={result.modelId} result={result} />
       ))}

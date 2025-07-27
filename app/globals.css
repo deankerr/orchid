@@ -41,7 +41,7 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
-  --color-warning: var(--color-orange-400);
+  --color-warning: var(--color-yellow-500);
   --color-success: var(--color-emerald-500);
   --color-info: var(--color-blue-500);
 }

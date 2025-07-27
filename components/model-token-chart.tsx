@@ -1,6 +1,6 @@
 'use client'
 
-import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts'
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 
 import type { Doc } from '@/convex/_generated/dataModel'
 import { getModelVariantSlug } from '@/convex/shared'
@@ -164,6 +164,7 @@ export function ModelTokenChart({
                 })
               }}
             />
+            <YAxis tickLine={false} axisLine={false} tickMargin={8} tickFormatter={formatNumber} />
 
             <Bar dataKey="input" stackId="tokens" fill="var(--color-input)" radius={[0, 0, 2, 2]} />
             <Bar dataKey="output" stackId="tokens" fill="var(--color-output)" />

@@ -48,7 +48,7 @@ function TableSortButton({
       tabIndex={0}
       onClick={onClick}
       className={cn(
-        'flex w-full items-center gap-1 border-none bg-transparent px-2 py-1 text-xs font-medium text-muted-foreground uppercase transition-colors outline-none select-none focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-ring/50',
+        'flex w-full cursor-pointer items-center gap-1 border-none bg-transparent px-2 py-1 text-xs font-medium text-muted-foreground uppercase transition-colors outline-none select-none focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-ring/50',
         'hover:bg-accent',
         align === 'right' && 'justify-end',
         align === 'center' && 'justify-center',
