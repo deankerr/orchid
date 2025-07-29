@@ -7,10 +7,10 @@ import { diff as jsonDiff, type IChange } from 'json-diff-ts'
 
 import { type MutationCtx } from '../../_generated/server'
 import { fnMutationLite, fnQueryLite } from '../../fnHelperLite'
-import { getCurrentSnapshotTimestamp } from '../snapshot/runs'
 import { countResults } from '../../openrouter/utils'
 import { getModelVariantSlug, hoursBetween } from '../../shared'
 import { createTableVHelper } from '../../table3'
+import { getCurrentSnapshotTimestamp } from '../snapshot/runs'
 
 export const table = defineTable({
   uuid: v.string(),
@@ -148,7 +148,8 @@ export const list = fnQueryLite({
               ...endp,
               staleness_hours: hoursBetween(endp.snapshot_at, snapshot_at),
             }))
-            .filter((endp) => endp.staleness_hours < 1), // NOTE: remove all stale endpoints
+            .filter((endp) => endp.staleness_hours < 1) // NOTE: remove all stale endpoints
+            .filter((endp) => !endp.is_disabled), // NOTE: remove disabled endpoints
       )
 
     return Map.groupBy(results, (r) => getModelVariantSlug(r.model_slug, r.model_variant))

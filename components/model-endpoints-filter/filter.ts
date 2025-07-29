@@ -18,7 +18,7 @@ export type FilterState = {
   // Endpoint features
   hasTools: boolean
   hasJsonResponse: boolean
-  hasFreeVariant: boolean
+  pricingFilter: 'all' | 'free' | 'paid'
   hasPromptCaching: boolean
 }
 
@@ -39,6 +39,7 @@ export type ModelCapabilities = {
   hasTools: boolean
   hasJsonResponse: boolean
   hasFreeVariant: boolean
+  hasPaidVariant: boolean
   hasPromptCaching: boolean
 }
 
@@ -63,6 +64,7 @@ export function getModelCapabilities(model: Model, endpoints: Endpoint[]): Model
       endpoint.supported_parameters.includes('response_format'),
     ),
     hasFreeVariant: endpoints.some((endpoint) => endpoint.model_variant === 'free'),
+    hasPaidVariant: endpoints.some((endpoint) => endpoint.model_variant !== 'free'),
     hasPromptCaching: endpoints.some(
       (endpoint) => !!endpoint.pricing.cache_read && !!endpoint.pricing.cache_write,
     ),
@@ -77,7 +79,7 @@ export function urlStateToFilterState(urlState: {
   reason: boolean
   tools: boolean
   json: boolean
-  free: boolean
+  pricing: 'all' | 'free' | 'paid'
   cache: boolean
   sort: SortOption
   dir: SortDirection
@@ -89,7 +91,7 @@ export function urlStateToFilterState(urlState: {
     hasReasoning: urlState.reason,
     hasTools: urlState.tools,
     hasJsonResponse: urlState.json,
-    hasFreeVariant: urlState.free,
+    pricingFilter: urlState.pricing,
     hasPromptCaching: urlState.cache,
     sort: urlState.sort,
     direction: urlState.dir,
@@ -105,7 +107,7 @@ export function hasActiveFilters(filters: FilterState): boolean {
     filters.hasReasoning ||
     filters.hasTools ||
     filters.hasJsonResponse ||
-    filters.hasFreeVariant ||
+    filters.pricingFilter !== 'all' ||
     filters.hasPromptCaching
   )
 }
@@ -176,7 +178,8 @@ export function filterModels(
     if (filters.hasReasoning && !capabilities.hasReasoning) return false
     if (filters.hasTools && !capabilities.hasTools) return false
     if (filters.hasJsonResponse && !capabilities.hasJsonResponse) return false
-    if (filters.hasFreeVariant && !capabilities.hasFreeVariant) return false
+    if (filters.pricingFilter === 'free' && !capabilities.hasFreeVariant) return false
+    if (filters.pricingFilter === 'paid' && !capabilities.hasPaidVariant) return false
     if (filters.hasPromptCaching && !capabilities.hasPromptCaching) return false
 
     // Must have at least one valid endpoint after individual endpoint filtering
@@ -184,7 +187,8 @@ export function filterModels(
       if (filters.hasTools && !endpoint.capabilities.tools) return false
       if (filters.hasJsonResponse && !endpoint.supported_parameters.includes('response_format'))
         return false
-      if (filters.hasFreeVariant && endpoint.model_variant !== 'free') return false
+      if (filters.pricingFilter === 'free' && endpoint.model_variant !== 'free') return false
+      if (filters.pricingFilter === 'paid' && endpoint.model_variant === 'free') return false
       if (
         filters.hasPromptCaching &&
         (!endpoint.pricing.cache_read || !endpoint.pricing.cache_write)
@@ -213,7 +217,8 @@ export function filterModels(
         if (filters.hasTools && !endpoint.capabilities.tools) return false
         if (filters.hasJsonResponse && !endpoint.supported_parameters.includes('response_format'))
           return false
-        if (filters.hasFreeVariant && endpoint.model_variant !== 'free') return false
+        if (filters.pricingFilter === 'free' && endpoint.model_variant !== 'free') return false
+        if (filters.pricingFilter === 'paid' && endpoint.model_variant === 'free') return false
         if (
           filters.hasPromptCaching &&
           (!endpoint.pricing.cache_read || !endpoint.pricing.cache_write)
