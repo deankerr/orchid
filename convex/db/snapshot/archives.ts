@@ -8,6 +8,7 @@ export const table = defineTable({
   run_id: v.string(),
   snapshot_at: v.number(),
   type: v.string(), // e.g. models/endpoints
+  params: v.optional(v.string()),
   size: v.number(), // original
   storage_id: v.id('_storage'),
   sha256: v.string(),
@@ -45,14 +46,7 @@ export const getBySnapshotAt = fnQueryLite({
 
 // * mutations
 export const insert = fnMutationLite({
-  args: {
-    run_id: v.string(),
-    snapshot_at: v.number(),
-    type: v.string(),
-    size: v.number(),
-    storage_id: v.id('_storage'),
-    sha256: v.string(),
-  },
+  args: vTable.validator.fields,
   handler: async (ctx, args) => {
     return await ctx.db.insert(vTable.name, args)
   },

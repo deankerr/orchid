@@ -59,6 +59,18 @@ import type * as public_models from "../public/models.js";
 import type * as public_providers from "../public/providers.js";
 import type * as public_snapshots from "../public/snapshots.js";
 import type * as shared from "../shared.js";
+import type * as snapshots_v2_archive from "../snapshots_v2/archive.js";
+import type * as snapshots_v2_processes_standard from "../snapshots_v2/processes/standard.js";
+import type * as snapshots_v2_snapshot from "../snapshots_v2/snapshot.js";
+import type * as snapshots_v2_sources from "../snapshots_v2/sources.js";
+import type * as snapshots_v2_transforms_apps from "../snapshots_v2/transforms/apps.js";
+import type * as snapshots_v2_transforms_dataPolicy from "../snapshots_v2/transforms/dataPolicy.js";
+import type * as snapshots_v2_transforms_endpoints from "../snapshots_v2/transforms/endpoints.js";
+import type * as snapshots_v2_transforms_modelAuthor from "../snapshots_v2/transforms/modelAuthor.js";
+import type * as snapshots_v2_transforms_models from "../snapshots_v2/transforms/models.js";
+import type * as snapshots_v2_transforms_providers from "../snapshots_v2/transforms/providers.js";
+import type * as snapshots_v2_transforms_uptimes from "../snapshots_v2/transforms/uptimes.js";
+import type * as snapshots_v2_types from "../snapshots_v2/types.js";
 import type * as table3 from "../table3.js";
 
 /**
@@ -116,6 +128,18 @@ declare const fullApi: ApiFromModules<{
   "public/providers": typeof public_providers;
   "public/snapshots": typeof public_snapshots;
   shared: typeof shared;
+  "snapshots_v2/archive": typeof snapshots_v2_archive;
+  "snapshots_v2/processes/standard": typeof snapshots_v2_processes_standard;
+  "snapshots_v2/snapshot": typeof snapshots_v2_snapshot;
+  "snapshots_v2/sources": typeof snapshots_v2_sources;
+  "snapshots_v2/transforms/apps": typeof snapshots_v2_transforms_apps;
+  "snapshots_v2/transforms/dataPolicy": typeof snapshots_v2_transforms_dataPolicy;
+  "snapshots_v2/transforms/endpoints": typeof snapshots_v2_transforms_endpoints;
+  "snapshots_v2/transforms/modelAuthor": typeof snapshots_v2_transforms_modelAuthor;
+  "snapshots_v2/transforms/models": typeof snapshots_v2_transforms_models;
+  "snapshots_v2/transforms/providers": typeof snapshots_v2_transforms_providers;
+  "snapshots_v2/transforms/uptimes": typeof snapshots_v2_transforms_uptimes;
+  "snapshots_v2/types": typeof snapshots_v2_types;
   table3: typeof table3;
 }>;
 export declare const api: FilterApi<
