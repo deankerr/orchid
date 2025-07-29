@@ -14,6 +14,7 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as crons from "../crons.js";
+import type * as db_index from "../db/index.js";
 import type * as db_or_apps from "../db/or/apps.js";
 import type * as db_or_authors from "../db/or/authors.js";
 import type * as db_or_endpointStats from "../db/or/endpointStats.js";
@@ -60,6 +61,8 @@ import type * as public_providers from "../public/providers.js";
 import type * as public_snapshots from "../public/snapshots.js";
 import type * as shared from "../shared.js";
 import type * as snapshots_v2_archive from "../snapshots_v2/archive.js";
+import type * as snapshots_v2_context from "../snapshots_v2/context.js";
+import type * as snapshots_v2_output from "../snapshots_v2/output.js";
 import type * as snapshots_v2_processes_standard from "../snapshots_v2/processes/standard.js";
 import type * as snapshots_v2_snapshot from "../snapshots_v2/snapshot.js";
 import type * as snapshots_v2_sources from "../snapshots_v2/sources.js";
@@ -71,6 +74,7 @@ import type * as snapshots_v2_transforms_models from "../snapshots_v2/transforms
 import type * as snapshots_v2_transforms_providers from "../snapshots_v2/transforms/providers.js";
 import type * as snapshots_v2_transforms_uptimes from "../snapshots_v2/transforms/uptimes.js";
 import type * as snapshots_v2_types from "../snapshots_v2/types.js";
+import type * as snapshots_v2_validation from "../snapshots_v2/validation.js";
 import type * as table3 from "../table3.js";
 
 /**
@@ -83,6 +87,7 @@ import type * as table3 from "../table3.js";
  */
 declare const fullApi: ApiFromModules<{
   crons: typeof crons;
+  "db/index": typeof db_index;
   "db/or/apps": typeof db_or_apps;
   "db/or/authors": typeof db_or_authors;
   "db/or/endpointStats": typeof db_or_endpointStats;
@@ -129,6 +134,8 @@ declare const fullApi: ApiFromModules<{
   "public/snapshots": typeof public_snapshots;
   shared: typeof shared;
   "snapshots_v2/archive": typeof snapshots_v2_archive;
+  "snapshots_v2/context": typeof snapshots_v2_context;
+  "snapshots_v2/output": typeof snapshots_v2_output;
   "snapshots_v2/processes/standard": typeof snapshots_v2_processes_standard;
   "snapshots_v2/snapshot": typeof snapshots_v2_snapshot;
   "snapshots_v2/sources": typeof snapshots_v2_sources;
@@ -140,6 +147,7 @@ declare const fullApi: ApiFromModules<{
   "snapshots_v2/transforms/providers": typeof snapshots_v2_transforms_providers;
   "snapshots_v2/transforms/uptimes": typeof snapshots_v2_transforms_uptimes;
   "snapshots_v2/types": typeof snapshots_v2_types;
+  "snapshots_v2/validation": typeof snapshots_v2_validation;
   table3: typeof table3;
 }>;
 export declare const api: FilterApi<

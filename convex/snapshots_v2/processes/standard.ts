@@ -1,80 +1,90 @@
+import { asyncMap } from 'convex-helpers'
+import type { Infer } from 'convex/values'
 import * as R from 'remeda'
-import type { ProcessContext } from '../types'
-import type { Sources } from '../sources'
 
-export async function standard(processCtx: ProcessContext<Sources>) {
+import * as DB from '@/convex/db'
+
+import type { ProcessContext } from '../context'
+import type { TransformTypes } from '../types'
+
+// Local type for consolidated models in this process
+type NewModel = Infer<typeof DB.OrModels.vTable.validator>
+type NewEndpoint = Infer<typeof DB.OrEndpoints.vTable.validator>
+
+export async function standard(processCtx: ProcessContext) {
   console.log('🔄 Running standard process...')
-  
-  // 1. Get models (already transformed)
-  const modelsSource = processCtx.sources.models
-  const modelsResults = await modelsSource.retrieve()
-  const validModels = modelsResults.filter(r => r.success).map(r => r.data)
-  
-  console.log(`📦 Got ${validModels.length} valid models (${modelsResults.length - validModels.length} errors)`)
-  
-  // 2. Consolidate variants
-  const consolidatedModels = consolidateVariants(validModels)
+
+  const consolidatedModels = await processCtx.sources.models().then(consolidateVariants)
+
   console.log(`🔀 Consolidated into ${consolidatedModels.length} unique models`)
-  
-  // 3. Process endpoints for each model/variant combination
-  const endpoints: any[] = []
-  
-  for (const model of consolidatedModels) {
-    for (const variant of model.variants) {
-      try {
-        const endpointsSource = processCtx.sources.endpoints({ 
-          permaslug: model.permaslug, 
-          variant 
-        })
-        
-        const endpointsResults = await endpointsSource.retrieve()
-        const validEndpoints = endpointsResults.filter(r => r.success).map(r => r.data)
-        
-        // Enhance endpoints with model data (similar to existing pipeline)
-        for (const endpoint of validEndpoints) {
-          endpoints.push({
-            ...endpoint,
-            model_slug: model.slug,
-            model_permaslug: model.permaslug,
-            capabilities: {
-              ...endpoint.capabilities,
-              image_input: model.input_modalities.includes('image'),
-              file_input: model.input_modalities.includes('file'),
-            },
-            or_model_created_at: model.or_created_at,
-            snapshot_at: processCtx.config.snapshot_at,
-          })
-        }
-        
-      } catch (error) {
-        console.log(`❌ Failed to process endpoints for ${model.slug}:${variant} - ${error}`)
-      }
+
+  // 3. Process endpoints for each model functionally
+  const modelEndpointResults = await asyncMap(consolidatedModels, async (cmodel) => {
+    const model: NewModel = {
+      ...cmodel,
+      snapshot_at: processCtx.config.snapshot_at,
+      stats: {},
     }
+
+    try {
+      return await processModelEndpoints(processCtx, model)
+    } catch (error) {
+      console.error(`❌ Failed to process endpoints for ${model.slug}`, error)
+      return { model, endpoints: [] }
+    }
+  })
+
+  for (const result of modelEndpointResults) {
+    await processCtx.outputs.modelEndpoints(result)
   }
-  
-  console.log(`🔗 Created ${endpoints.length} endpoint records`)
-  
+
   // 4. Output results
-  await processCtx.outputs.models?.(consolidatedModels)
-  await processCtx.outputs.endpoints?.(endpoints)
-  
   return {
     models: consolidatedModels.length,
-    endpoints: endpoints.length,
+    endpoints: modelEndpointResults.length,
   }
 }
 
-function consolidateVariants(models: any[]) {
+async function processModelEndpoints(processCtx: ProcessContext, model: NewModel) {
+  const endpoints: NewEndpoint[] = []
+
+  for (const variant of model.variants) {
+    const validEndpoints = await processCtx.sources.endpoints({
+      permaslug: model.permaslug,
+      variant,
+    })
+
+    // Enhance endpoints with model data (similar to existing pipeline)
+    for (const endpoint of validEndpoints) {
+      endpoints.push({
+        ...endpoint,
+        model_slug: model.slug,
+        model_permaslug: model.permaslug,
+        capabilities: {
+          ...endpoint.capabilities,
+          image_input: model.input_modalities.includes('image'),
+          file_input: model.input_modalities.includes('file'),
+        },
+        or_model_created_at: model.or_created_at,
+        snapshot_at: processCtx.config.snapshot_at,
+      })
+    }
+  }
+
+  return { model, endpoints }
+}
+
+function consolidateVariants(models: TransformTypes['models'][]) {
   // models are duplicated per variant, consolidate them into the single entity with a variants list
   // use the model with shortest name as the base, e.g. "DeepSeek R1" instead of "DeepSeek R1 (free)"
-  return Map.groupBy(models, (m: any) => m.slug)
+  return Map.groupBy(models, (m) => m.slug)
     .values()
     .map((variants) => {
-      const [first, ...rest] = variants.sort((a: any, b: any) => a.name.length - b.name.length)
+      const [first, ...rest] = variants.sort((a, b) => a.name.length - b.name.length)
       const { variant, ...base } = first
       return {
         ...base,
-        variants: R.pipe([variant, ...rest.map((m: any) => m.variant)], R.filter(R.isDefined)),
+        variants: R.pipe([variant, ...rest.map((m) => m.variant)], R.filter(R.isDefined)),
       }
     })
     .toArray()
