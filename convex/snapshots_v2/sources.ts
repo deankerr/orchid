@@ -2,8 +2,9 @@ import z4 from 'zod/v4'
 
 import { up } from 'up-fetch'
 
+import { api } from '../_generated/api'
 import type { ActionCtx } from '../_generated/server'
-import { storeSnapshotData } from './archive'
+import { retrieveArchive, storeSnapshotData } from './archive'
 import { apps } from './transforms/apps'
 import { endpoints } from './transforms/endpoints'
 import { modelAuthor } from './transforms/modelAuthor'
@@ -16,8 +17,7 @@ import type { Validator } from './validation'
 // Sources creation context - consistent interface for all source creation functions
 interface SourcesContext {
   ctx: ActionCtx
-  run_id: string
-  snapshot_at: number
+  config: RunConfig
   validator: Validator
 }
 
@@ -29,28 +29,16 @@ const orFetch = up(fetch, () => ({
   },
 }))
 
-// Create sources - unified function for both remote and archive sources
-export function createSources(args: { ctx: ActionCtx; config: RunConfig; validator: Validator }) {
-  const { ctx, config, validator } = args
-  const { run_id, snapshot_at, sources: sourceType } = config
+export type Sources = ReturnType<typeof createSources>
 
-  const sourcesCtx: SourcesContext = {
-    ctx,
-    run_id,
-    snapshot_at,
-    validator,
-  }
-
-  if (sourceType === 'archive') {
-    return createArchiveSources(sourcesCtx)
-  }
-
-  return createRemoteSources(sourcesCtx)
+export function createSources(args: SourcesContext) {
+  return args.config.sources === 'remote' ? createRemoteSources(args) : createArchiveSources(args)
 }
 
-// Create sources from remote APIs with archival
-function createRemoteSources(sourcesCtx: SourcesContext) {
-  const { ctx, run_id, snapshot_at, validator } = sourcesCtx
+export function createRemoteSources(args: SourcesContext) {
+  const { ctx, config, validator } = args
+  const { run_id, snapshot_at } = config
+
   return {
     models: async () => {
       const response = await orFetch('/api/frontend/models', {
@@ -188,51 +176,155 @@ function createRemoteSources(sourcesCtx: SourcesContext) {
   }
 }
 
-// Create sources from archived data
-function createArchiveSources(sourcesCtx: SourcesContext) {
-  const { run_id, validator } = sourcesCtx
+export async function createArchiveSources(sourcesCtx: SourcesContext) {
+  const { ctx, config, validator } = sourcesCtx
+  const { snapshot_at, run_id } = config
+
+  const archives = await ctx.runQuery(api.public.snapshots.getSnapshotArchives, { snapshot_at })
+
   return {
     models: async () => {
-      // TODO: read from stored file using retrieveArchive and apply transform
-      console.log(`[ARCHIVE_READ] Loading models from run ${run_id}`)
-      // When implemented, parse archive data and use validator for errors
-      return []
+      // Find archive matching our specific run_id and type
+      const archive = archives.find((a) => a.run_id === run_id && a.type === 'models')
+      if (!archive) {
+        throw new Error(
+          `No archived models data found for snapshot_at=${snapshot_at}, run_id=${run_id}`,
+        )
+      }
+
+      const archivedData = await retrieveArchive(ctx, archive.storage_id)
+
+      // Current format: API response object with data array
+      const rawModels = archivedData.data || []
+      const results = rawModels.map((raw: unknown) => models.safeParse(raw))
+
+      return validator.process(results, {
+        run_id,
+        snapshot_at,
+        source: 'models',
+      })
     },
 
     endpoints: async ({ permaslug, variant }: { permaslug: string; variant: string }) => {
-      // TODO: read from stored file using retrieveArchive with params and apply transform
       const params = `${permaslug}-${variant}`
-      console.log(`[ARCHIVE_READ] Loading endpoints ${params} from run ${run_id}`)
-      // When implemented, parse archive data and use validator for errors
-      return []
+
+      // Find archive matching our specific run_id, type, and params
+      const archive = archives.find(
+        (a) => a.run_id === run_id && a.type === 'endpoints' && a.params === params,
+      )
+      if (!archive) {
+        throw new Error(
+          `No archived endpoints data found for snapshot_at=${snapshot_at}, run_id=${run_id}, params=${params}`,
+        )
+      }
+
+      const archivedData = await retrieveArchive(ctx, archive.storage_id)
+
+      // Current format: API response object with data array
+      const rawEndpoints = archivedData.data || []
+      const results = rawEndpoints.map((raw: unknown) => endpoints.safeParse(raw))
+
+      return validator.process(results, {
+        run_id,
+        snapshot_at,
+        source: 'endpoints',
+        params,
+      })
     },
 
     apps: async ({ permaslug, variant }: { permaslug: string; variant: string }) => {
       const params = `${permaslug}-${variant}`
-      console.log(`[ARCHIVE_READ] Loading apps ${params} from run ${run_id}`)
-      // When implemented, parse archive data and use validator for errors
-      return []
+
+      // Find archive matching our specific run_id, type, and params
+      const archive = archives.find(
+        (a) => a.run_id === run_id && a.type === 'apps' && a.params === params,
+      )
+      if (!archive) {
+        throw new Error(
+          `No archived apps data found for snapshot_at=${snapshot_at}, run_id=${run_id}, params=${params}`,
+        )
+      }
+
+      const archivedData = await retrieveArchive(ctx, archive.storage_id)
+
+      // Current format: API response object with data array
+      const rawApps = archivedData.data || []
+      const results = rawApps.map((raw: unknown) => apps.safeParse(raw))
+
+      return validator.process(results, {
+        run_id,
+        snapshot_at,
+        source: 'apps',
+        params,
+      })
     },
 
     providers: async () => {
-      console.log(`[ARCHIVE_READ] Loading providers from run ${run_id}`)
-      // When implemented, parse archive data and use validator for errors
-      return []
+      // Find archive matching our specific run_id and type
+      const archive = archives.find((a) => a.run_id === run_id && a.type === 'providers')
+      if (!archive) {
+        throw new Error(
+          `No archived providers data found for snapshot_at=${snapshot_at}, run_id=${run_id}`,
+        )
+      }
+
+      const archivedData = await retrieveArchive(ctx, archive.storage_id)
+
+      // Current format: API response object with data array
+      const rawProviders = archivedData.data || []
+      const results = rawProviders.map((raw: unknown) => providers.safeParse(raw))
+
+      return validator.process(results, {
+        run_id,
+        snapshot_at,
+        source: 'providers',
+      })
     },
 
     uptimes: async ({ uuid }: { uuid: string }) => {
-      console.log(`[ARCHIVE_READ] Loading uptimes ${uuid} from run ${run_id}`)
-      // When implemented, parse archive data and use validator for errors
-      return []
+      // Find archive matching our specific run_id, type, and params
+      const archive = archives.find(
+        (a) => a.run_id === run_id && a.type === 'uptimes' && a.params === uuid,
+      )
+      if (!archive) {
+        throw new Error(
+          `No archived uptimes data found for snapshot_at=${snapshot_at}, run_id=${run_id}, params=${uuid}`,
+        )
+      }
+
+      const archivedData = await retrieveArchive(ctx, archive.storage_id)
+
+      // Current format: API response object with data field
+      const result = uptimes.safeParse(archivedData.data)
+      return validator.process([result], {
+        run_id,
+        snapshot_at,
+        source: 'uptimes',
+        params: uuid,
+      })
     },
 
     modelAuthor: async ({ authorSlug }: { authorSlug: string }) => {
-      console.log(`[ARCHIVE_READ] Loading modelAuthor ${authorSlug} from run ${run_id}`)
-      // When implemented, parse archive data and use validator for errors
-      return []
+      // Find archive matching our specific run_id, type, and params
+      const archive = archives.find(
+        (a) => a.run_id === run_id && a.type === 'modelAuthor' && a.params === authorSlug,
+      )
+      if (!archive) {
+        throw new Error(
+          `No archived modelAuthor data found for snapshot_at=${snapshot_at}, run_id=${run_id}, params=${authorSlug}`,
+        )
+      }
+
+      const archivedData = await retrieveArchive(ctx, archive.storage_id)
+
+      // Current format: API response object with data field
+      const result = modelAuthor.safeParse(archivedData.data)
+      return validator.process([result], {
+        run_id,
+        snapshot_at,
+        source: 'modelAuthor',
+        params: authorSlug,
+      })
     },
   }
 }
-
-// Export the inferred Sources type
-export type Sources = ReturnType<typeof createSources>

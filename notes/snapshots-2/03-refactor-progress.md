@@ -1,5 +1,7 @@
 **This is the master document and source of truth for design decisions made that differ from the proposals.**
 
+We're building a minimal version of the redesigned snapshot process.
+
 - "standard" model/endpoints process
 - `processContext`
   - `sources` - integrated archival

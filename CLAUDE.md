@@ -146,18 +146,4 @@ Enable via browser console or localStorage manipulation for development.
 
 ## Cursor Rules Reference
 
-The project includes detailed rules files in `.cursor/rules/` for specific development contexts:
-
-- **backend-data-reference.mdc** - Comprehensive reference for ORCHID's data architecture, OpenRouter ecosystem understanding, and entity relationships. Read when working with database schema, data processing, or needing to understand model/endpoint relationships.
-
-- **convex_rules.mdc** - Complete Convex development guidelines including function syntax, validators, pagination, and best practices. Read when working with any Convex functions, schema definitions, or database operations.
-
-- **frontend.mdc** - Frontend development guide covering design philosophy, component guidelines, React 19/Next.js 15 patterns, and UI standards. Read when working with app/, components/, or frontend styling.
-
-- **philosophy.mdc** - Core project principles including derived state philosophy, graceful degradation, and temporal awareness. Read when making architectural decisions or understanding system design rationale.
-
-- **product.mdc** - Project overview, goals, and user experience context. Read when understanding product requirements or user needs.
-
-- **project.mdc** - Environment setup, library usage, and current project status. Read when setting up development environment or understanding current state.
-
-- **snapshot-system-overview.mdc** - Detailed explanation of the data collection system architecture and OpenRouter API integration. Read when working with convex/openrouter/ or data collection pipelines.
+- When modifying code in the `convex` directory, you MUST read @notes/convex_rules.md

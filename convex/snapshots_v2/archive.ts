@@ -1,6 +1,7 @@
 import { gunzipSync, gzipSync } from 'fflate'
 
 import { internal } from '../_generated/api'
+import type { Id } from '../_generated/dataModel'
 import { type ActionCtx } from '../_generated/server'
 
 /**
@@ -50,10 +51,10 @@ export async function storeSnapshotData(
 /**
  * Retrieve and decompress archive data
  */
-export async function retrieveArchive(ctx: ActionCtx, storage_id: string) {
-  const blob = await ctx.storage.get(storage_id as any)
+export async function retrieveArchive(ctx: ActionCtx, storage_id: Id<'_storage'>) {
+  const blob = await ctx.storage.get(storage_id)
   if (!blob) {
-    throw new Error('Archive not found in storage')
+    throw new Error(`Archive not found in storage: ${storage_id}`)
   }
 
   // Get compressed data and decompress

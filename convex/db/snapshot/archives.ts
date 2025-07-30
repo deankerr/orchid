@@ -1,6 +1,7 @@
 import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
+import { internalQuery } from '../../_generated/server'
 import { fnMutationLite, fnQueryLite } from '../../fnHelperLite'
 import { createTableVHelper } from '../../table3'
 
@@ -41,6 +42,15 @@ export const getBySnapshotAt = fnQueryLite({
       .withIndex('by_snapshot_at', (q) => q.eq('snapshot_at', snapshot_at))
       .order('desc')
       .collect()
+  },
+})
+
+export const getById = internalQuery({
+  args: {
+    id: v.id('snapshot_archives'),
+  },
+  handler: async (ctx, { id }) => {
+    return await ctx.db.get(id)
   },
 })
 

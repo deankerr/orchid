@@ -3,7 +3,8 @@
     "allow": [
       "Bash(bun:*)",
       "Bash(mkdir:*)",
-      "Bash(jq:*)"
+      "Bash(jq:*)",
+      "Bash(rm:*)"
     ]
   },
   "enableAllProjectMcpServers": false

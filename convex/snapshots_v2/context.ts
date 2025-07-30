@@ -1,13 +1,13 @@
 import { type ActionCtx } from '../_generated/server'
 import { outputToDB } from './output'
-import { createSources } from './sources'
+import { createRemoteSources } from './sources'
 import type { RunConfig } from './types'
 import { createValidator } from './validation'
 
 export type ProcessContext = ReturnType<typeof createProcessContext>
 export function createProcessContext(ctx: ActionCtx, config: RunConfig) {
   const validator = createValidator()
-  const sources = createSources({ ctx, config, validator })
+  const sources = createRemoteSources({ ctx, config, validator })
   const outputs = outputToDB(ctx)
 
   return {

@@ -1,4 +1,8 @@
+import { v } from 'convex/values'
+
+import { internal } from '../_generated/api'
 import { internalAction, type ActionCtx } from '../_generated/server'
+import { getHourAlignedTimestamp } from '../shared'
 import { createProcessContext } from './context'
 import { standard } from './processes/standard'
 import type { RunConfig } from './types'
@@ -32,12 +36,57 @@ export async function runSnapshot(ctx: ActionCtx, config: RunConfig) {
 
 export const runDemo = internalAction({
   handler: async (ctx) => {
+    // NOTE: using v1 system for now
+    const snapshot_at = getHourAlignedTimestamp()
+    const run_id = await ctx.runMutation(internal.openrouter.output.insertSnapshotRun, {
+      snapshot_at,
+      started_at: Date.now(),
+    })
+
     const config: RunConfig = {
-      run_id: Date.now().toString(),
-      snapshot_at: Date.now(),
+      run_id,
+      snapshot_at,
       sources: 'remote',
     }
 
-    return await runSnapshot(ctx, config)
+    const results = await runSnapshot(ctx, config)
+
+    // NOTE: temp results
+    await ctx.runMutation(internal.openrouter.output.updateSnapshotRun, {
+      run_id,
+      ended_at: Date.now(),
+      ok: true,
+      pipelines: [],
+    })
+
+    return results
+  },
+})
+
+export const runArchiveDemo = internalAction({
+  args: {
+    snapshot_at: v.number(),
+    run_id: v.id('snapshot_runs'),
+  },
+  handler: async (ctx, { snapshot_at, run_id }) => {
+    // NOTE: using v1 system for now
+
+    const config: RunConfig = {
+      run_id,
+      snapshot_at,
+      sources: 'archive',
+    }
+
+    const results = await runSnapshot(ctx, config)
+
+    // NOTE: temp results
+    await ctx.runMutation(internal.openrouter.output.updateSnapshotRun, {
+      run_id,
+      ended_at: Date.now(),
+      ok: true,
+      pipelines: [],
+    })
+
+    return results
   },
 })

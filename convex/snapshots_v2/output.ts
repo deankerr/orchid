@@ -26,7 +26,6 @@ export function outputToDB(ctx: ActionCtx) {
       const r2: OutputResult = await ctx.runMutation(internal.openrouter.output.endpoints, {
         items: endpoints,
       })
-      console.log({ models: r1, endpoints: r2 })
     },
   }
 }
