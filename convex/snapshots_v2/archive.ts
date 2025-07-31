@@ -1,3 +1,5 @@
+import z4 from 'zod/v4'
+
 import { gunzipSync, gzipSync } from 'fflate'
 
 import { internal } from '../_generated/api'
@@ -51,7 +53,11 @@ export async function storeSnapshotData(
 /**
  * Retrieve and decompress archive data
  */
-export async function retrieveArchive(ctx: ActionCtx, storage_id: Id<'_storage'>) {
+export async function retrieveArchive<T>(
+  ctx: ActionCtx,
+  args: { storage_id: Id<'_storage'>; schema: z4.ZodType<T> },
+) {
+  const { storage_id, schema } = args
   const blob = await ctx.storage.get(storage_id)
   if (!blob) {
     throw new Error(`Archive not found in storage: ${storage_id}`)
@@ -63,5 +69,7 @@ export async function retrieveArchive(ctx: ActionCtx, storage_id: Id<'_storage'>
   const decompressed = gunzipSync(compressed)
 
   // Parse JSON
-  return JSON.parse(new TextDecoder().decode(decompressed))
+  const json = JSON.parse(new TextDecoder().decode(decompressed))
+
+  return schema.parse(json, { error: () => 'failed to parse archive' })
 }

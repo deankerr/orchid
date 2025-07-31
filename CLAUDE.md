@@ -2,6 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Rules
+
+- When modifying code in the `convex` directory, you MUST read @notes/convex_rules.md FIRST
+- Infinite type recursion issues are caused primarily by returning values from convex actions/internalActions. If there is no concrete reason to return data, don't do it.
+- zod version 4 is used, import it like `import z4 from 'zod/v4'`, keeping in mind that the schema API is similar but the zod types system has evolved.
+
 ## Development Commands
 
 **IMPORTANT: When working on this codebase, DO NOT run the dev server or try to build or deploy the project. Use `bun check` to verify your work.**
@@ -55,16 +61,7 @@ Located in `convex/openrouter/orchestrator.ts`, this system:
 - Archives compressed raw responses for historical analysis
 - Tracks changes and maintains rolling uptime windows
 
-**Feature Flags**:
-Use localStorage-based feature flags via `components/dev-utils/feature-flag.tsx`:
-
-```tsx
-<FeatureFlag flag="providers">
-  <ProvidersContent />
-</FeatureFlag>
-```
-
-Toggle in browser console: `toggleFeature('providers')`
+**THIS IS CURRENTLY BEING REFACTORED**
 
 **Data Fetching**:
 
@@ -84,9 +81,6 @@ Filtering and search state persists in URLs using `nuqs` for shareability
 - `or_endpoint_uptimes` - 72h hourly + 30d daily availability data
 - `or_endpoint_stats` - Historical performance metrics
 - `or_providers` - AI provider information
-
-**Change Tracking**:
-All entities have corresponding `*_changes` tables using JSON diff for audit trails
 
 **Pipeline Management**:
 
@@ -134,16 +128,3 @@ All raw API responses are gzip-compressed and stored with SHA256 checksums for h
 - URL state for filters/search using `nuqs`
 - Component state for UI interactions
 - Convex for all data persistence and real-time updates
-
-## Feature Flags
-
-Current feature flags control access to:
-
-- `providers` - Providers page visibility
-- `snapshots` - Pipeline monitoring dashboard
-
-Enable via browser console or localStorage manipulation for development.
-
-## Cursor Rules Reference
-
-- When modifying code in the `convex` directory, you MUST read @notes/convex_rules.md

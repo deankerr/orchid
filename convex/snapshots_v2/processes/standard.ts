@@ -5,6 +5,7 @@ import * as R from 'remeda'
 import * as DB from '@/convex/db'
 
 import type { ProcessContext } from '../context'
+import { diffItem } from '../differ'
 import type { TransformTypes } from '../types'
 
 // Local type for consolidated models in this process
@@ -19,11 +20,11 @@ export async function standard(processCtx: ProcessContext) {
   console.log(`🔀 Consolidated into ${consolidatedModels.length} unique models`)
 
   // 3. Process endpoints for each model functionally
-  const modelEndpointResults = await asyncMap(consolidatedModels, async (cmodel) => {
+  const modelEndpoints = await asyncMap(consolidatedModels, async (cmodel) => {
     const model: NewModel = {
       ...cmodel,
       snapshot_at: processCtx.config.snapshot_at,
-      stats: {},
+      stats: {}, // Empty stats - we don't care about these anymore
     }
 
     try {
@@ -34,14 +35,59 @@ export async function standard(processCtx: ProcessContext) {
     }
   })
 
-  for (const result of modelEndpointResults) {
-    await processCtx.outputs.modelEndpoints(result)
+  // Get existing data for diffing
+  const [existingModels, existingEndpoints] = await Promise.all([
+    processCtx.state.existingModels(),
+    processCtx.state.existingEndpoints(),
+  ])
+
+  // Create lookup maps for efficient diffing
+  const existingModelsMap = new Map(existingModels.map((m: any) => [m.slug, m]))
+  const existingEndpointsMap = new Map(existingEndpoints.map((e: any) => [e.uuid, e]))
+
+  // Initialize metrics
+  const metrics: Record<string, { insert: number; update: number; stable: number; name: string }> =
+    {}
+  function trackMetric(table: string, kind: string) {
+    if (!metrics[table]) {
+      metrics[table] = { insert: 0, update: 0, stable: 0, name: table }
+    }
+    metrics[table][kind as keyof (typeof metrics)[string]]++
   }
 
-  // 4. Output results
+  // Process models and endpoints with diffing
+  for (const { model, endpoints } of modelEndpoints) {
+    // Diff and emit model
+    const existingModel = existingModelsMap.get(model.slug)
+    const modelResult = diffItem('or_models', model, existingModel)
+
+    trackMetric(modelResult.table, modelResult.kind)
+
+    // Only emit insert/update to outputs (skip stable)
+    if (modelResult.kind !== 'stable') {
+      await processCtx.outputs.write(modelResult)
+    }
+
+    // Diff and emit endpoints
+    for (const endpoint of endpoints) {
+      const existingEndpoint = existingEndpointsMap.get(endpoint.uuid)
+      const endpointResult = diffItem('or_endpoints', endpoint, existingEndpoint)
+
+      trackMetric(endpointResult.table, endpointResult.kind)
+
+      // Only emit insert/update to outputs (skip stable)
+      if (endpointResult.kind !== 'stable') {
+        await processCtx.outputs.write(endpointResult)
+      }
+    }
+  }
+
+  // 4. Output results with metrics
+  const totalEndpoints = modelEndpoints.reduce((sum, { endpoints }) => sum + endpoints.length, 0)
   return {
     models: consolidatedModels.length,
-    endpoints: modelEndpointResults.length,
+    endpoints: totalEndpoints,
+    metrics,
   }
 }
 

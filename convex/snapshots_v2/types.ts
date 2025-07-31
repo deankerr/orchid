@@ -1,6 +1,5 @@
 import type { z } from 'zod/v4'
 
-import type { outputToDB } from './output'
 import { apps } from './transforms/apps'
 import { endpoints } from './transforms/endpoints'
 import { modelAuthor } from './transforms/modelAuthor'
@@ -18,12 +17,15 @@ export type TransformTypes = {
   modelAuthor: z.infer<typeof modelAuthor>
 }
 
-// Output handlers - simple functions that write arrays of items
-export type Outputs = ReturnType<typeof outputToDB>
-
 // Run configuration
 export interface RunConfig {
   run_id: string
   snapshot_at: number
-  sources: 'remote' | 'archive'
+  output: 'log-writer' | 'convex-writer'
+  
+  // If present, replay from this archived run instead of fetching live data
+  replay_from?: {
+    run_id: string
+    snapshot_at: number
+  }
 }

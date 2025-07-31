@@ -62,6 +62,8 @@ import type * as public_snapshots from "../public/snapshots.js";
 import type * as shared from "../shared.js";
 import type * as snapshots_v2_archive from "../snapshots_v2/archive.js";
 import type * as snapshots_v2_context from "../snapshots_v2/context.js";
+import type * as snapshots_v2_differ from "../snapshots_v2/differ.js";
+import type * as snapshots_v2_mutations from "../snapshots_v2/mutations.js";
 import type * as snapshots_v2_output from "../snapshots_v2/output.js";
 import type * as snapshots_v2_processes_standard from "../snapshots_v2/processes/standard.js";
 import type * as snapshots_v2_snapshot from "../snapshots_v2/snapshot.js";
@@ -135,6 +137,8 @@ declare const fullApi: ApiFromModules<{
   shared: typeof shared;
   "snapshots_v2/archive": typeof snapshots_v2_archive;
   "snapshots_v2/context": typeof snapshots_v2_context;
+  "snapshots_v2/differ": typeof snapshots_v2_differ;
+  "snapshots_v2/mutations": typeof snapshots_v2_mutations;
   "snapshots_v2/output": typeof snapshots_v2_output;
   "snapshots_v2/processes/standard": typeof snapshots_v2_processes_standard;
   "snapshots_v2/snapshot": typeof snapshots_v2_snapshot;

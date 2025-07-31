@@ -1,5 +1,6 @@
 import { httpRouter } from 'convex/server'
 import { v } from 'convex/values'
+import z4 from 'zod/v4'
 
 import { internal } from './_generated/api'
 import type { Id } from './_generated/dataModel'
@@ -35,7 +36,10 @@ export const getArchiveData = internalAction({
     }
 
     // Retrieve the archive data
-    const archivedData = await retrieveArchive(ctx, archive.storage_id)
+    const archivedData = await retrieveArchive(ctx, {
+      storage_id: archive.storage_id,
+      schema: z4.object({ data: z4.unknown() }),
+    })
 
     return {
       archive: {

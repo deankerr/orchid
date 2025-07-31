@@ -7,10 +7,10 @@ import { diff as jsonDiff, type IChange } from 'json-diff-ts'
 
 import { type MutationCtx } from '../../_generated/server'
 import { fnMutationLite, fnQueryLite } from '../../fnHelperLite'
-import { getCurrentSnapshotTimestamp } from '../snapshot/runs'
 import { countResults } from '../../openrouter/utils'
 import { getModelVariantSlug, hoursBetween } from '../../shared'
 import { createTableVHelper } from '../../table3'
+import { getCurrentSnapshotTimestamp } from '../snapshot/runs'
 
 export const table = defineTable({
   uuid: v.string(),
@@ -108,7 +108,7 @@ export const table = defineTable({
 
 export const vTable = createTableVHelper('or_endpoints', table.validator)
 
-const diff = (a: unknown, b: unknown) =>
+export const diff = (a: unknown, b: unknown) =>
   jsonDiff(a, b, {
     keysToSkip: ['_id', '_creationTime', 'snapshot_at', 'stats', 'uptime_average'],
     embeddedObjKeys: {
