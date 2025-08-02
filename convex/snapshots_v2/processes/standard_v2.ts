@@ -4,22 +4,24 @@ import * as R from 'remeda'
 
 import * as DB from '@/convex/db'
 
-import type { ProcessContext } from '../context'
-import { diffItem } from '../differ'
-import type { TransformTypes } from '../types'
+import { createMetricsCollector, decide } from '../comparison/decision'
+import type { ProcessContext, TransformTypes } from '../types'
 
-// Local type for consolidated models in this process
+// * Local types for consolidated models in this process
 type NewModel = Infer<typeof DB.OrModels.vTable.validator>
 type NewEndpoint = Infer<typeof DB.OrEndpoints.vTable.validator>
 
+// * Main standard process using new architecture
 export async function standard(processCtx: ProcessContext) {
-  console.log('🔄 Running standard process...')
+  console.log('🔄 Running standard process (v2)...')
 
+  const metrics = createMetricsCollector()
+
+  // * Step 1: Get and consolidate models
   const consolidatedModels = await processCtx.sources.models().then(consolidateVariants)
-
   console.log(`🔀 Consolidated into ${consolidatedModels.length} unique models`)
 
-  // 3. Process endpoints for each model functionally
+  // * Step 2: Process endpoints for each model
   const modelEndpoints = await asyncMap(consolidatedModels, async (cmodel) => {
     const model: NewModel = {
       ...cmodel,
@@ -35,62 +37,42 @@ export async function standard(processCtx: ProcessContext) {
     }
   })
 
-  // Get existing data for diffing
+  // * Step 3: Get existing data for comparison
   const [existingModels, existingEndpoints] = await Promise.all([
-    processCtx.state.existingModels(),
-    processCtx.state.existingEndpoints(),
+    processCtx.state.models(),
+    processCtx.state.endpoints(),
   ])
 
-  // Create lookup maps for efficient diffing
-  const existingModelsMap = new Map(existingModels.map((m: any) => [m.slug, m]))
-  const existingEndpointsMap = new Map(existingEndpoints.map((e: any) => [e.uuid, e]))
-
-  // Initialize metrics
-  const metrics: Record<string, { insert: number; update: number; stable: number; name: string }> =
-    {}
-  function trackMetric(table: string, kind: string) {
-    if (!metrics[table]) {
-      metrics[table] = { insert: 0, update: 0, stable: 0, name: table }
-    }
-    metrics[table][kind as keyof (typeof metrics)[string]]++
-  }
-
-  // Process models and endpoints with diffing
+  // * Step 4: Process models and endpoints with new decision logic
   for (const { model, endpoints } of modelEndpoints) {
-    // Diff and emit model
-    const existingModel = existingModelsMap.get(model.slug)
-    const modelResult = diffItem('or_models', model, existingModel)
+    // Decide what to do with the model
+    const modelOutcome = decide('or_models', model, existingModels, metrics)
+    
+    // Write the decision (skip stable items automatically)
+    await processCtx.outputs.write(modelOutcome)
 
-    trackMetric(modelResult.table, modelResult.kind)
-
-    // Only emit insert/update to outputs (skip stable)
-    if (modelResult.kind !== 'stable') {
-      await processCtx.outputs.write(modelResult)
-    }
-
-    // Diff and emit endpoints
+    // Process endpoints for this model
     for (const endpoint of endpoints) {
-      const existingEndpoint = existingEndpointsMap.get(endpoint.uuid)
-      const endpointResult = diffItem('or_endpoints', endpoint, existingEndpoint)
-
-      trackMetric(endpointResult.table, endpointResult.kind)
-
-      // Only emit insert/update to outputs (skip stable)
-      if (endpointResult.kind !== 'stable') {
-        await processCtx.outputs.write(endpointResult)
-      }
+      const endpointOutcome = decide('or_endpoints', endpoint, existingEndpoints, metrics)
+      await processCtx.outputs.write(endpointOutcome)
     }
   }
 
-  // 4. Output results with metrics
-  const totalEndpoints = modelEndpoints.reduce((sum, { endpoints }) => sum + endpoints.length, 0)
+  // * Step 5: Return metrics summary
+  const allMetrics = metrics.all()
+  const totalModels = allMetrics.find(m => m.name === 'or_models')?.total ?? 0
+  const totalEndpoints = allMetrics.find(m => m.name === 'or_endpoints')?.total ?? 0
+
+  console.log(`✅ Standard process completed: ${totalModels} models, ${totalEndpoints} endpoints`)
+
   return {
-    models: consolidatedModels.length,
+    models: totalModels,
     endpoints: totalEndpoints,
-    metrics,
+    metrics: allMetrics,
   }
 }
 
+// * Process endpoints for a single model (unchanged logic)
 async function processModelEndpoints(processCtx: ProcessContext, model: NewModel) {
   const endpoints: NewEndpoint[] = []
 
@@ -120,6 +102,7 @@ async function processModelEndpoints(processCtx: ProcessContext, model: NewModel
   return { model, endpoints }
 }
 
+// * Consolidate variants logic (unchanged)
 function consolidateVariants(models: TransformTypes['models'][]) {
   // models are duplicated per variant, consolidate them into the single entity with a variants list
   // use the model with shortest name as the base, e.g. "DeepSeek R1" instead of "DeepSeek R1 (free)"

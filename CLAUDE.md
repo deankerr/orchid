@@ -4,7 +4,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Rules
 
-- When modifying code in the `convex` directory, you MUST read @notes/convex_rules.md FIRST
 - Infinite type recursion issues are caused primarily by returning values from convex actions/internalActions. If there is no concrete reason to return data, don't do it.
 - zod version 4 is used, import it like `import z4 from 'zod/v4'`, keeping in mind that the schema API is similar but the zod types system has evolved.
 

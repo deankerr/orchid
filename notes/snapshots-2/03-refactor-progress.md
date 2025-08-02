@@ -12,7 +12,6 @@ We're building a minimal version of the redesigned snapshot process.
     - still using previous db upsert methods/endpoints
     - skip metrics collection for now
 
-current:
 - compute what needs to be updated in the process (rather than one by one in the mutation)
   - do the metrics here
   - ? either action individually creates/updates each item, or a single mutation handles a modelEndpoint
@@ -23,7 +22,7 @@ current:
 Here’s a concrete, near-term roadmap for evolving the new snapshot system. I’ve grouped tasks by theme and added rationale, required code touch-points, and suggested order of execution so you can turn this into tickets quickly.
 
 ──────────────────────────────────
-1. Output Design
+1. Output Design ✅
 ──────────────────────────────────
 Goal: replace the temporary “`outputToDB(ctx)`” helpers with a flexible, pluggable writer layer that can target Convex, log files, or dry-run console output.
 
@@ -51,8 +50,6 @@ B. Implement concrete handlers
       • Internal queue + batch insert (e.g. `chunksOf(100)`) to cut write-amplification
    2. `DryRunWriter`
       • Pretty-prints to `console.log`, useful for local dev/test fixtures
-   3. `FileWriter` (optional) _NO_
-      • Streams JSONL to Bun’s fs sfor offline analysis
 
 C. Modify `createProcessContext`
    • Accept a list of handlers (or config string → factory)  
@@ -143,18 +140,3 @@ E. Health checks & alerts
 F. Migration plan
    • Gradually redirect v1 cron to call `snapshots_v2.runDemo`  
    • Once parity is confirmed, delete v1 pipeline files and mutations.
-
-──────────────────────────────────
-5. Suggested Execution Order
-──────────────────────────────────
-1. OutputHandler interface + DryRunWriter (fast feedback loop)  
-2. ConvexWriter (reuse existing mutations, then optimise batching)  
-3. Integrate MetricsSink & emit basic events  
-4. Replace `outputToDB` in `standard.ts` with new handler call  
-5. Parallelise endpoint fetching + optimise consolidateVariants  
-6. Archive compaction + retention cron  
-7. Fixture Source Adapter + CI task  
-8. Frontend metrics dashboard + alert edge-case logic  
-9. Decommission legacy pipeline
-
-This plan should get the snapshot v2 system production-ready while preserving the rapid-iteration spirit of the current prototype.

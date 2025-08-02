@@ -61,13 +61,16 @@ import type * as public_providers from "../public/providers.js";
 import type * as public_snapshots from "../public/snapshots.js";
 import type * as shared from "../shared.js";
 import type * as snapshots_v2_archive from "../snapshots_v2/archive.js";
-import type * as snapshots_v2_context from "../snapshots_v2/context.js";
-import type * as snapshots_v2_differ from "../snapshots_v2/differ.js";
+import type * as snapshots_v2_comparison_decision from "../snapshots_v2/comparison/decision.js";
+import type * as snapshots_v2_engine from "../snapshots_v2/engine.js";
 import type * as snapshots_v2_mutations from "../snapshots_v2/mutations.js";
-import type * as snapshots_v2_output from "../snapshots_v2/output.js";
-import type * as snapshots_v2_processes_standard from "../snapshots_v2/processes/standard.js";
-import type * as snapshots_v2_snapshot from "../snapshots_v2/snapshot.js";
-import type * as snapshots_v2_sources from "../snapshots_v2/sources.js";
+import type * as snapshots_v2_outputs_convexWriter from "../snapshots_v2/outputs/convexWriter.js";
+import type * as snapshots_v2_outputs_index from "../snapshots_v2/outputs/index.js";
+import type * as snapshots_v2_outputs_logWriter from "../snapshots_v2/outputs/logWriter.js";
+import type * as snapshots_v2_processes_standard_v2 from "../snapshots_v2/processes/standard_v2.js";
+import type * as snapshots_v2_sources_archive from "../snapshots_v2/sources/archive.js";
+import type * as snapshots_v2_sources_index from "../snapshots_v2/sources/index.js";
+import type * as snapshots_v2_sources_remote from "../snapshots_v2/sources/remote.js";
 import type * as snapshots_v2_transforms_apps from "../snapshots_v2/transforms/apps.js";
 import type * as snapshots_v2_transforms_dataPolicy from "../snapshots_v2/transforms/dataPolicy.js";
 import type * as snapshots_v2_transforms_endpoints from "../snapshots_v2/transforms/endpoints.js";
@@ -76,7 +79,7 @@ import type * as snapshots_v2_transforms_models from "../snapshots_v2/transforms
 import type * as snapshots_v2_transforms_providers from "../snapshots_v2/transforms/providers.js";
 import type * as snapshots_v2_transforms_uptimes from "../snapshots_v2/transforms/uptimes.js";
 import type * as snapshots_v2_types from "../snapshots_v2/types.js";
-import type * as snapshots_v2_validation from "../snapshots_v2/validation.js";
+import type * as snapshots_v2_validation_validator from "../snapshots_v2/validation/validator.js";
 import type * as table3 from "../table3.js";
 
 /**
@@ -136,13 +139,16 @@ declare const fullApi: ApiFromModules<{
   "public/snapshots": typeof public_snapshots;
   shared: typeof shared;
   "snapshots_v2/archive": typeof snapshots_v2_archive;
-  "snapshots_v2/context": typeof snapshots_v2_context;
-  "snapshots_v2/differ": typeof snapshots_v2_differ;
+  "snapshots_v2/comparison/decision": typeof snapshots_v2_comparison_decision;
+  "snapshots_v2/engine": typeof snapshots_v2_engine;
   "snapshots_v2/mutations": typeof snapshots_v2_mutations;
-  "snapshots_v2/output": typeof snapshots_v2_output;
-  "snapshots_v2/processes/standard": typeof snapshots_v2_processes_standard;
-  "snapshots_v2/snapshot": typeof snapshots_v2_snapshot;
-  "snapshots_v2/sources": typeof snapshots_v2_sources;
+  "snapshots_v2/outputs/convexWriter": typeof snapshots_v2_outputs_convexWriter;
+  "snapshots_v2/outputs/index": typeof snapshots_v2_outputs_index;
+  "snapshots_v2/outputs/logWriter": typeof snapshots_v2_outputs_logWriter;
+  "snapshots_v2/processes/standard_v2": typeof snapshots_v2_processes_standard_v2;
+  "snapshots_v2/sources/archive": typeof snapshots_v2_sources_archive;
+  "snapshots_v2/sources/index": typeof snapshots_v2_sources_index;
+  "snapshots_v2/sources/remote": typeof snapshots_v2_sources_remote;
   "snapshots_v2/transforms/apps": typeof snapshots_v2_transforms_apps;
   "snapshots_v2/transforms/dataPolicy": typeof snapshots_v2_transforms_dataPolicy;
   "snapshots_v2/transforms/endpoints": typeof snapshots_v2_transforms_endpoints;
@@ -151,7 +157,7 @@ declare const fullApi: ApiFromModules<{
   "snapshots_v2/transforms/providers": typeof snapshots_v2_transforms_providers;
   "snapshots_v2/transforms/uptimes": typeof snapshots_v2_transforms_uptimes;
   "snapshots_v2/types": typeof snapshots_v2_types;
-  "snapshots_v2/validation": typeof snapshots_v2_validation;
+  "snapshots_v2/validation/validator": typeof snapshots_v2_validation_validator;
   table3: typeof table3;
 }>;
 export declare const api: FilterApi<
