@@ -42,11 +42,12 @@ export const run = internalAction({
     }
 
     // Calculate model stats from model author data if available
-    const { modelStatsMap, issues: modelStatsIssues } = await calculateModelStats(
-      ctx,
-      archives,
-      snapshot_at,
-    )
+    const {
+      modelStatsMap,
+      authorNameMap,
+      modelTokenStats,
+      issues: modelStatsIssues,
+    } = await calculateModelStats(ctx, archives, snapshot_at)
     issues.push(...modelStatsIssues)
 
     // --------------------------------------------------
@@ -65,11 +66,14 @@ export const run = internalAction({
       }
     }
 
-    const consolidatedModels = consolidateVariants(modelsVariants).map((m) => ({
-      ...m,
-      stats: modelStatsMap.get(m.permaslug) || {},
-      snapshot_at,
-    }))
+    const consolidatedModels = consolidateVariants(modelsVariants).map((m) => {
+      return {
+        ...m,
+        stats: modelStatsMap.get(m.permaslug) || {},
+        author_name: authorNameMap.get(m.author_slug) ?? m.author_slug,
+        snapshot_at,
+      }
+    })
 
     // --------------------------------------------------
     // 3. Endpoints
@@ -105,13 +109,12 @@ export const run = internalAction({
             model_permaslug: model.permaslug,
             snapshot_at,
             uptime_average,
-            // basic capability merges
             capabilities: {
               ...parsed.data.capabilities,
-              image_input: model.input_modalities?.includes('image') ?? false,
-              file_input: model.input_modalities?.includes('file') ?? false,
+              image_input: model.input_modalities.includes('image'),
+              file_input: model.input_modalities.includes('file'),
             },
-            or_model_created_at: model.or_created_at ?? snapshot_at,
+            or_model_created_at: model.or_created_at,
           }
 
           endpoints.push(endpoint)
@@ -142,7 +145,7 @@ export const run = internalAction({
       await ctx.runMutation(internal.db.or.endpoints.upsert, { items: endpoints })
 
     console.log(
-      `materialize: providers=${providers.length}, models=${consolidatedModels.length}, endpoints=${endpoints.length}, apps=${apps.length}, leaderboards=${modelAppLeaderboards.length}, issues=${issues.length}`,
+      `materialize: providers=${providers.length}, models=${consolidatedModels.length}, endpoints=${endpoints.length}, apps=${apps.length}, leaderboards=${modelAppLeaderboards.length}, modelTokenStats=${modelTokenStats.length}, issues=${issues.length}`,
     )
 
     if (issues.length) {

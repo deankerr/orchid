@@ -40,14 +40,14 @@ export function pick<T>(arr: T[], pred: (v: T) => boolean): T | undefined {
 }
 
 export function consolidateVariants(models: ReturnType<typeof Transforms.models.parse>[]) {
-  return Map.groupBy(models, (m: any) => m.slug)
+  return Map.groupBy(models, (m) => m.slug)
     .values()
-    .map((variants: any[]) => {
+    .map((variants) => {
       const [first, ...rest] = variants.sort((a, b) => a.name.length - b.name.length)
       const { variant, ...base } = first
       return {
         ...base,
-        variants: [variant, ...rest.map((m) => m.variant)].filter(Boolean),
+        variants: [variant, ...rest.map((m) => m.variant)].filter(Boolean) as string[],
       }
     })
     .toArray()

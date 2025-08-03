@@ -28,6 +28,7 @@ export const table = defineTable({
   variants: v.array(v.string()),
 
   author_slug: v.string(),
+  author_name: v.optional(v.string()),
 
   name: v.string(),
   short_name: v.string(),

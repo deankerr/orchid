@@ -20,14 +20,16 @@ const ModelsSchema = z4
     data: z4.array(
       z4.object({
         permaslug: z4.string(),
+        author: z4.string(),
         endpoint: z4.object({ variant: z4.string() }).nullable(),
       }),
     ),
   })
   .transform((v) =>
-    v.data.map(({ permaslug, endpoint }) => {
+    v.data.map(({ permaslug, author, endpoint }) => {
       return {
         permaslug,
+        author_slug: author,
         variant: endpoint?.variant,
       }
     }),
@@ -83,15 +85,18 @@ export const run = internalAction({
 
     // Extract author slugs and fetch model author data
     if (args.modelAuthors) {
-      const authorSlugs = new Set(
-        models.map((model) => model.permaslug.split('/')[0]).filter(Boolean),
-      )
+      const authorSlugs = new Set(models.map((model) => model.author_slug))
       tasks.push(fetchModelAuthors(ctx, crawlId, authorSlugs, args))
     }
 
     await Promise.all(tasks)
 
     console.log(`Completed crawl ${crawlId}`)
+
+    await ctx.scheduler.runAfter(1000, internal.snapshots_v3.materialize.materialize.run, {
+      crawlId,
+    })
+
     return crawlId
   },
 })

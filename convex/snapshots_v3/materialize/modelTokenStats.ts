@@ -33,6 +33,7 @@ export async function calculateModelStats(
 ) {
   const modelStatsMap = new Map<string, Infer<typeof DB.OrModels.vTable.validator>['stats']>()
   const modelTokenStats: Infer<typeof DB.OrModelTokenStats.vTable.validator>[] = []
+  const authorNameMap = new Map<string, string>()
   const issues: { source: string; error: z4.ZodError }[] = []
 
   const authorArchives = archives.filter((r) => r.path.includes('/api/frontend/model-author'))
@@ -45,6 +46,8 @@ export async function calculateModelStats(
       issues.push({ source: 'modelAuthor', error: parsed.error })
       continue
     }
+
+    authorNameMap.set(parsed.data.author.slug, parsed.data.author.name)
 
     for (const m of parsed.data.modelsWithStats) {
       const { model_permaslug, model_variant, stats } = m
@@ -69,5 +72,5 @@ export async function calculateModelStats(
   if (modelTokenStats.length)
     await ctx.runMutation(internal.db.or.modelTokenStats.upsert, { items: modelTokenStats })
 
-  return { modelStatsMap, issues }
+  return { modelStatsMap, authorNameMap, modelTokenStats, issues }
 }

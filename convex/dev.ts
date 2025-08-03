@@ -1,6 +1,5 @@
-import { v } from 'convex/values'
-
-import { internalMutation, query } from './_generated/server'
+import { internal } from './_generated/api'
+import { internalAction, internalMutation, query } from './_generated/server'
 
 export const sizes = internalMutation({
   args: {},
@@ -47,6 +46,19 @@ export const delAllModelEndpoints = internalMutation({
     })
     endpoints.forEach(async (e) => {
       await ctx.db.delete(e._id)
+    })
+  },
+})
+
+export const runAllCrawl = internalAction({
+  handler: async (ctx) => {
+    await ctx.runAction(internal.snapshots_v3.crawl.run, {
+      apps: true,
+      endpoints: true,
+      models: true,
+      providers: true,
+      uptimes: true,
+      modelAuthors: true,
     })
   },
 })
