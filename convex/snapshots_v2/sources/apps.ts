@@ -1,7 +1,9 @@
 import * as R from 'remeda'
 import z4 from 'zod/v4'
 
-export const apps = z4
+import { orFetch } from '../../openrouter/sources'
+
+export const transformSchema = z4
   .object({
     app_id: z4.number(),
     total_tokens: z4.coerce.number(),
@@ -31,3 +33,14 @@ export const apps = z4
       },
     }
   })
+
+export const apps = {
+  key: 'apps',
+  schema: transformSchema,
+  remote: async (params: { permaslug: string; variant: string }) => {
+    return await orFetch('/api/frontend/stats/app', { params: { ...params, limit: 20 } })
+  },
+  archiveKey: (params: { permaslug: string; variant: string }) => {
+    return { type: 'apps', params: `${params.permaslug}:${params.variant}` }
+  },
+}

@@ -1,7 +1,9 @@
 import * as R from 'remeda'
 import z4 from 'zod/v4'
 
-export const author = z4
+import { orFetch } from '../../openrouter/sources'
+
+const author = z4
   .object({
     id: z4.string(),
     slug: z4.string(),
@@ -23,7 +25,7 @@ export const author = z4
     }
   })
 
-export const modelsWithStats = z4
+const modelsWithStats = z4
   .object({
     slug: z4.string(),
     permaslug: z4.string(),
@@ -64,4 +66,21 @@ export const modelsWithStats = z4
     })
   })
 
-export const modelAuthor = z4.object({ author, modelsWithStats })
+export const transformSchema = z4.object({ author, modelsWithStats })
+
+export const modelAuthor = {
+  key: 'modelAuthor',
+  schema: transformSchema,
+  remote: async (params: { authorSlug: string }) => {
+    return await orFetch('/api/frontend/model-author', { 
+      params: { 
+        authorSlug: params.authorSlug, 
+        shouldIncludeStats: true, 
+        shouldIncludeVariants: false 
+      } 
+    })
+  },
+  archiveKey: (params: { authorSlug: string }) => {
+    return { type: 'modelAuthor', params: params.authorSlug }
+  },
+}

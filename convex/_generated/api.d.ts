@@ -70,12 +70,12 @@ import type * as snapshots_v2_outputs_index from "../snapshots_v2/outputs/index.
 import type * as snapshots_v2_outputs_logOutput from "../snapshots_v2/outputs/logOutput.js";
 import type * as snapshots_v2_processes_standard_v2 from "../snapshots_v2/processes/standard_v2.js";
 import type * as snapshots_v2_sources_apps from "../snapshots_v2/sources/apps.js";
-import type * as snapshots_v2_sources_dataPolicy from "../snapshots_v2/sources/dataPolicy.js";
 import type * as snapshots_v2_sources_endpoints from "../snapshots_v2/sources/endpoints.js";
 import type * as snapshots_v2_sources_index from "../snapshots_v2/sources/index.js";
 import type * as snapshots_v2_sources_modelAuthor from "../snapshots_v2/sources/modelAuthor.js";
 import type * as snapshots_v2_sources_models from "../snapshots_v2/sources/models.js";
 import type * as snapshots_v2_sources_providers from "../snapshots_v2/sources/providers.js";
+import type * as snapshots_v2_sources_shared from "../snapshots_v2/sources/shared.js";
 import type * as snapshots_v2_sources_uptimes from "../snapshots_v2/sources/uptimes.js";
 import type * as snapshots_v2_types from "../snapshots_v2/types.js";
 import type * as table3 from "../table3.js";
@@ -146,12 +146,12 @@ declare const fullApi: ApiFromModules<{
   "snapshots_v2/outputs/logOutput": typeof snapshots_v2_outputs_logOutput;
   "snapshots_v2/processes/standard_v2": typeof snapshots_v2_processes_standard_v2;
   "snapshots_v2/sources/apps": typeof snapshots_v2_sources_apps;
-  "snapshots_v2/sources/dataPolicy": typeof snapshots_v2_sources_dataPolicy;
   "snapshots_v2/sources/endpoints": typeof snapshots_v2_sources_endpoints;
   "snapshots_v2/sources/index": typeof snapshots_v2_sources_index;
   "snapshots_v2/sources/modelAuthor": typeof snapshots_v2_sources_modelAuthor;
   "snapshots_v2/sources/models": typeof snapshots_v2_sources_models;
   "snapshots_v2/sources/providers": typeof snapshots_v2_sources_providers;
+  "snapshots_v2/sources/shared": typeof snapshots_v2_sources_shared;
   "snapshots_v2/sources/uptimes": typeof snapshots_v2_sources_uptimes;
   "snapshots_v2/types": typeof snapshots_v2_types;
   table3: typeof table3;

@@ -10,8 +10,8 @@ import type { RunConfig, TransformTypes } from './types'
 export interface InputSpec<TOutput> {
   key: string
   schema: z4.ZodType<TOutput>
-  remote: (params?: any) => Promise<TOutput>
-  archiveKey: (params?: any) => { type: string; params?: string }
+  remote: (...args: any[]) => Promise<unknown>
+  archiveKey: (...args: any[]) => { type: string; params?: string }
 }
 
 // * responses are always wrapped in a `data` field, force results to be an array
@@ -27,21 +27,21 @@ export function makeInput<TOutput>(
     config: RunConfig
     filter: IssueFilter
   },
-): (params?: any) => Promise<TOutput[]> {
+): (...args: any[]) => Promise<TOutput[]> {
   const { spec, config, filter } = args
-  return async (params?: any) => {
+  return async (...args: any[]) => {
     // * Determine data source based on mode
     const raw = config.replay
       ? await getArchivedData(ctx, {
           replay: config.replay,
-          ...spec.archiveKey(params),
+          ...spec.archiveKey(...args),
         })
-      : await spec.remote(params)
+      : await spec.remote(...args)
 
     // * Store snapshot data if in remote mode and storage enabled
     if (!config.replay && config.outputType === 'db') {
       await storeSnapshotData(ctx, {
-        ...spec.archiveKey(params),
+        ...spec.archiveKey(...args),
         run_id: config.run_id,
         snapshot_at: config.snapshot_at,
         data: raw,
@@ -68,12 +68,6 @@ export function makeInput<TOutput>(
   }
 }
 
-// * Input interface - consistent API for all input types
-export interface InputMap {
-  models(): Promise<TransformTypes['models'][]>
-  endpoints(q: { permaslug: string; variant: string }): Promise<TransformTypes['endpoints'][]>
-}
-
 type IssueFilter = ReturnType<typeof createIssueFilter>
 
 function createIssueFilter() {
@@ -89,18 +83,22 @@ function createIssueFilter() {
   }
 }
 
+export interface InputMap {
+  models: ReturnType<typeof makeInput<TransformTypes['models']>>
+  endpoints: ReturnType<typeof makeInput<TransformTypes['endpoints']>>
+}
+
 // * Main inputs factory - creates InputMap based on config
-export function createInputs(
-  ctx: ActionCtx,
-  config: RunConfig,
-): { inputs: InputMap; filter: IssueFilter } {
+export function createInputs(ctx: ActionCtx, config: RunConfig) {
   const filter = createIssueFilter()
+
+  const inputs: InputMap = {
+    models: makeInput(ctx, { spec: models, config, filter }),
+    endpoints: makeInput(ctx, { spec: endpoints, config, filter }),
+  }
 
   return {
     filter,
-    inputs: {
-      models: makeInput(ctx, { spec: models, config, filter }),
-      endpoints: makeInput(ctx, { spec: endpoints, config, filter }),
-    },
+    inputs,
   }
 }

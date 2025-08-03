@@ -14,12 +14,12 @@ import { uptimes } from './sources/uptimes'
 
 // Transform result types - inferred from our transform schemas
 export type TransformTypes = {
-  models: z.infer<typeof models>
-  endpoints: z.infer<typeof endpoints>
-  apps: z.infer<typeof apps>
-  providers: z.infer<typeof providers>
-  uptimes: z.infer<typeof uptimes>
-  modelAuthor: z.infer<typeof modelAuthor>
+  models: z.infer<typeof models.schema>
+  endpoints: z.infer<typeof endpoints.schema>
+  apps: z.infer<typeof apps.schema>
+  providers: z.infer<typeof providers.schema>
+  uptimes: z.infer<typeof uptimes.schema>
+  modelAuthor: z.infer<typeof modelAuthor.schema>
 }
 
 // Run configuration
