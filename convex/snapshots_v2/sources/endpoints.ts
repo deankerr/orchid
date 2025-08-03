@@ -143,10 +143,10 @@ export const transformSchema = z4
 export const endpoints = {
   key: 'endpoints',
   schema: transformSchema,
-  remote: async ({ permaslug, variant }: { permaslug: string; variant: string }) => {
-    return await orFetch('/api/frontend/stats/endpoint', { params: { permaslug, variant } })
+  remote: async (params: { permaslug: string; variant: string }) => {
+    return await orFetch('/api/frontend/stats/endpoint', { params })
   },
-  archiveKey: ({ permaslug, variant }: { permaslug: string; variant: string }) => {
-    return { type: 'endpoint', params: `${permaslug}:${variant}` }
+  archiveKey: (params: { permaslug: string; variant: string }) => {
+    return { type: 'endpoint', params: `${params.permaslug}:${params.variant}` }
   },
 }

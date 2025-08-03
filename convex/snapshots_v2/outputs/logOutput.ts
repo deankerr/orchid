@@ -1,8 +1,8 @@
 import type { DecisionOutcome } from '../comparison/decision'
-import type { OutputHandler } from './convexWriter'
+import type { OutputHandler } from './dbOutput'
 
 // * Log writer implementation - for testing/debugging
-export class LogWriter implements OutputHandler {
+export class LogOutput implements OutputHandler {
   private counts: Record<string, { insert: number; update: number; stable: number }> = {}
 
   async init(): Promise<void> {
@@ -32,7 +32,9 @@ export class LogWriter implements OutputHandler {
     console.log('📊 LogWriter Summary:')
     for (const [table, counts] of Object.entries(this.counts)) {
       const total = counts.insert + counts.update + counts.stable
-      console.log(`  ${table}: ${total} total (${counts.insert} insert, ${counts.update} update, ${counts.stable} stable)`)
+      console.log(
+        `  ${table}: ${total} total (${counts.insert} insert, ${counts.update} update, ${counts.stable} stable)`,
+      )
     }
   }
 

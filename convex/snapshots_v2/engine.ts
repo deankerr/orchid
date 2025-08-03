@@ -5,7 +5,7 @@ import { internalAction, type ActionCtx } from '../_generated/server'
 import { getHourAlignedTimestamp } from '../shared'
 import type { EntityMetric } from './comparison/decision'
 import { createInputs } from './inputs'
-import { ConvexWriter, LogWriter } from './outputs'
+import { DbOutput, LogOutput } from './outputs'
 import { standard } from './processes/standard_v2'
 import type { ProcessContext, RunConfig, State } from './types'
 
@@ -36,14 +36,14 @@ export async function run(ctx: ActionCtx, config: RunConfig): Promise<RunReport>
   const startedAt = Date.now()
 
   console.log(
-    `🚀 Starting snapshot engine: ${config.run_id} (${config.replay_from ? 'archive' : 'remote'}, ${config.outputMethod})`,
+    `🚀 Starting snapshot engine: ${config.run_id} (${config.replay ? 'archive' : 'remote'}, ${config.outputType})`,
   )
 
   // * Step 1: Build sub-systems
   const { inputs, filter } = createInputs(ctx, config)
 
   // Create appropriate output handler based on config
-  const outputs = config.outputMethod === 'log-writer' ? new LogWriter() : new ConvexWriter(ctx)
+  const outputs = config.outputType === 'log' ? new LogOutput() : new DbOutput(ctx)
   const state = createState(ctx)
 
   // Initialize outputs
@@ -96,21 +96,12 @@ export async function run(ctx: ActionCtx, config: RunConfig): Promise<RunReport>
 // * Demo action to run the snapshot engine
 export const runDemo = internalAction({
   args: {
-    inputMethod: v.union(v.literal('remote'), v.literal('remote-no-store'), v.literal('archive')),
-    outputMethod: v.union(v.literal('log-writer'), v.literal('convex-writer')),
-    snapshot_at: v.optional(v.number()),
-
-    // For archive replay - specify which archived run to replay from
-    replay_from: v.optional(
-      v.object({
-        run_id: v.id('snapshot_runs'),
-        snapshot_at: v.number(),
-      }),
-    ),
+    replay: v.optional(v.id('snapshot_runs')),
+    outputType: v.union(v.literal('db'), v.literal('log')),
   },
   handler: async (ctx, args) => {
     // Use provided values or defaults
-    const snapshot_at = args.snapshot_at ?? getHourAlignedTimestamp()
+    const snapshot_at = getHourAlignedTimestamp()
 
     // Create a new snapshot run record
     const run_id = await ctx.runMutation(internal.openrouter.output.insertSnapshotRun, {
@@ -121,9 +112,8 @@ export const runDemo = internalAction({
     const config: RunConfig = {
       run_id,
       snapshot_at,
-      inputMethod: args.inputMethod,
-      outputMethod: args.outputMethod,
-      replay_from: args.replay_from,
+      outputType: args.outputType,
+      replay: args.replay,
     }
 
     // Run the snapshot engine

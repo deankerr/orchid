@@ -10,7 +10,7 @@ export interface OutputHandler {
 }
 
 // * Convex writer implementation - buffers items and flushes in chunks
-export class ConvexWriter implements OutputHandler {
+export class DbOutput implements OutputHandler {
   private ctx: ActionCtx
   private buffer: Map<string, DecisionOutcome[]> = new Map()
   private readonly chunkSize = 100
@@ -33,7 +33,7 @@ export class ConvexWriter implements OutputHandler {
     if (!this.buffer.has(item.table)) {
       this.buffer.set(item.table, [])
     }
-    
+
     const tableBuffer = this.buffer.get(item.table)!
     tableBuffer.push(item)
 
@@ -60,7 +60,7 @@ export class ConvexWriter implements OutputHandler {
     // Process items in chunks
     for (let i = 0; i < items.length; i += this.chunkSize) {
       const chunk = items.slice(i, i + this.chunkSize)
-      
+
       for (const item of chunk) {
         switch (item.kind) {
           case 'insert':

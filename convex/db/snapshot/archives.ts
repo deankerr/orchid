@@ -1,7 +1,7 @@
 import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
-import { internalQuery, query } from '../../_generated/server'
+import { internalQuery } from '../../_generated/server'
 import { fnMutationLite, fnQueryLite } from '../../fnHelperLite'
 import { createTableVHelper } from '../../table3'
 

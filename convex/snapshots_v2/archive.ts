@@ -80,23 +80,23 @@ export async function retrieveArchive<T>(
 export async function getArchivedData(
   ctx: ActionCtx,
   args: {
-    replay_from: { run_id: string; snapshot_at: number }
+    replay: Id<'snapshot_runs'>
     type: string
     params?: string
   },
 ) {
-  const { replay_from, type, params } = args
+  const { replay, type, params } = args
 
   // Find the specific archive record directly
   const archive = await ctx.runQuery(internal.db.snapshot.archives.getByRunIdTypeParams, {
-    run_id: replay_from.run_id,
+    run_id: replay,
     type,
     params,
   })
 
   if (!archive) {
     throw new Error(
-      `No archive found for run_id: ${replay_from.run_id}, type: ${type}, params: ${params || 'none'}`,
+      `No archive found for run_id: ${replay}, type: ${type}, params: ${params || 'none'}`,
     )
   }
 

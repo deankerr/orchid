@@ -65,9 +65,9 @@ import type * as snapshots_v2_comparison_decision from "../snapshots_v2/comparis
 import type * as snapshots_v2_engine from "../snapshots_v2/engine.js";
 import type * as snapshots_v2_inputs from "../snapshots_v2/inputs.js";
 import type * as snapshots_v2_mutations from "../snapshots_v2/mutations.js";
-import type * as snapshots_v2_outputs_convexWriter from "../snapshots_v2/outputs/convexWriter.js";
+import type * as snapshots_v2_outputs_dbOutput from "../snapshots_v2/outputs/dbOutput.js";
 import type * as snapshots_v2_outputs_index from "../snapshots_v2/outputs/index.js";
-import type * as snapshots_v2_outputs_logWriter from "../snapshots_v2/outputs/logWriter.js";
+import type * as snapshots_v2_outputs_logOutput from "../snapshots_v2/outputs/logOutput.js";
 import type * as snapshots_v2_processes_standard_v2 from "../snapshots_v2/processes/standard_v2.js";
 import type * as snapshots_v2_sources_apps from "../snapshots_v2/sources/apps.js";
 import type * as snapshots_v2_sources_dataPolicy from "../snapshots_v2/sources/dataPolicy.js";
@@ -141,9 +141,9 @@ declare const fullApi: ApiFromModules<{
   "snapshots_v2/engine": typeof snapshots_v2_engine;
   "snapshots_v2/inputs": typeof snapshots_v2_inputs;
   "snapshots_v2/mutations": typeof snapshots_v2_mutations;
-  "snapshots_v2/outputs/convexWriter": typeof snapshots_v2_outputs_convexWriter;
+  "snapshots_v2/outputs/dbOutput": typeof snapshots_v2_outputs_dbOutput;
   "snapshots_v2/outputs/index": typeof snapshots_v2_outputs_index;
-  "snapshots_v2/outputs/logWriter": typeof snapshots_v2_outputs_logWriter;
+  "snapshots_v2/outputs/logOutput": typeof snapshots_v2_outputs_logOutput;
   "snapshots_v2/processes/standard_v2": typeof snapshots_v2_processes_standard_v2;
   "snapshots_v2/sources/apps": typeof snapshots_v2_sources_apps;
   "snapshots_v2/sources/dataPolicy": typeof snapshots_v2_sources_dataPolicy;
