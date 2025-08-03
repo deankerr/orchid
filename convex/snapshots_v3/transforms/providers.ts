@@ -1,10 +1,9 @@
 import * as R from 'remeda'
 import z4 from 'zod/v4'
 
-import { orFetch } from '../../openrouter/sources'
 import { DataPolicySchemas } from './shared'
 
-export const transformSchema = z4
+export const providers = z4
   .object({
     displayName: z4.string(),
     slug: z4.string(), // primary key
@@ -66,14 +65,3 @@ export const transformSchema = z4
       },
     }
   })
-
-export const providers = {
-  key: 'providers',
-  schema: transformSchema,
-  remote: async () => {
-    return await orFetch('/api/frontend/all-providers')
-  },
-  archiveKey: () => {
-    return { type: 'providers' }
-  },
-}

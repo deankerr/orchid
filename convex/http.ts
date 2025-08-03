@@ -1,11 +1,9 @@
 import { httpRouter } from 'convex/server'
 import { v } from 'convex/values'
-import z4 from 'zod/v4'
 
 import { internal } from './_generated/api'
 import type { Id } from './_generated/dataModel'
 import { httpAction, internalAction } from './_generated/server'
-import { retrieveArchive } from './snapshots_v2/archive'
 
 const http = httpRouter()
 
@@ -35,12 +33,6 @@ export const getArchiveData = internalAction({
       return null
     }
 
-    // Retrieve the archive data
-    const archivedData = await retrieveArchive(ctx, {
-      storage_id: archive.storage_id,
-      schema: z4.object({ data: z4.unknown() }),
-    })
-
     return {
       archive: {
         type: archive.type,
@@ -49,7 +41,7 @@ export const getArchiveData = internalAction({
         sha256: archive.sha256,
         _creationTime: archive._creationTime,
       },
-      data: archivedData,
+      data: null, // TODO!!
     }
   },
 })

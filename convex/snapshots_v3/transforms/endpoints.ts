@@ -3,9 +3,7 @@ import z4 from 'zod/v4'
 
 import { DataPolicySchemas } from '@/convex/openrouter/validators/dataPolicy'
 
-import { orFetch } from '../../openrouter/sources'
-
-export const transformSchema = z4
+export const endpoints = z4
   .object({
     id: z4.string(), // primary key, uuid
     name: z4.string(), // internal id, `{provider_name} | {model_variant_slug}`
@@ -139,14 +137,3 @@ export const transformSchema = z4
 
     return endpoint
   })
-
-export const endpoints = {
-  key: 'endpoints',
-  schema: transformSchema,
-  remote: async (params: { permaslug: string; variant: string }) => {
-    return await orFetch('/api/frontend/stats/endpoint', { params })
-  },
-  archiveKey: (params: { permaslug: string; variant: string }) => {
-    return { type: 'endpoint', params: `${params.permaslug}:${params.variant}` }
-  },
-}

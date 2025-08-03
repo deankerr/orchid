@@ -3,16 +3,10 @@ import z4 from 'zod/v4'
 
 import { gunzipSync } from 'fflate'
 
-import * as DB from '@/convex/db'
-
 import { internal } from '../_generated/api'
 import { internalAction, type ActionCtx } from '../_generated/server'
 import { getHourAlignedTimestamp } from '../shared'
-import { transformSchema as EndpointTransform } from '../snapshots_v2/sources/endpoints'
-import { transformSchema as ModelAuthorTransform } from '../snapshots_v2/sources/modelAuthor'
-import { transformSchema as ModelTransform } from '../snapshots_v2/sources/models'
-import { transformSchema as ProviderTransform } from '../snapshots_v2/sources/providers'
-import { transformSchema as UptimesTransform } from '../snapshots_v2/sources/uptimes'
+import * as Transforms from './transforms'
 
 // ------------------------------------------------------------------------------------
 // Helpers
@@ -49,7 +43,7 @@ function pick<T>(arr: T[], pred: (v: T) => boolean): T | undefined {
   return undefined
 }
 
-function consolidateVariants(models: ReturnType<typeof ModelTransform.parse>[]): any[] {
+function consolidateVariants(models: ReturnType<typeof Transforms.models.parse>[]): any[] {
   // identical logic to v2 pipelines, trimmed
   return Map.groupBy(models, (m: any) => m.slug)
     .values()
@@ -83,7 +77,7 @@ async function calculateUptimeAverage(
     const { data: rawData } = await getFromStorage(ctx, uptimeRow.storage_id)
     if (!rawData || rawData.length === 0) return undefined
 
-    const parsed = UptimesTransform.safeParse(rawData[0])
+    const parsed = Transforms.uptimes.safeParse(rawData[0])
     if (!parsed.success) return undefined
 
     // Calculate uptime average from valid uptime values
@@ -144,7 +138,7 @@ async function calculateModelStats(
       const { data: rawData } = await getFromStorage(ctx, authorRow.storage_id)
       if (!rawData || rawData.length === 0) continue
 
-      const parsed = ModelAuthorTransform.safeParse(rawData[0])
+      const parsed = Transforms.modelAuthor.safeParse(rawData[0])
       if (!parsed.success) continue
 
       // Extract model stats from the author data
@@ -213,7 +207,7 @@ export const run = internalAction({
       const { data: items } = await getFromStorage(ctx, providerRow.storage_id)
       if (items) {
         for (const item of items) {
-          const parsed = ProviderTransform.safeParse(item)
+          const parsed = Transforms.providers.safeParse(item)
           if (parsed.success) providers.push({ ...parsed.data, snapshot_at })
           else issues.push({ source: 'providers', error: parsed.error })
         }
@@ -229,7 +223,7 @@ export const run = internalAction({
       const { data: items } = await getFromStorage(ctx, modelsRow.storage_id)
       if (items) {
         for (const item of items) {
-          const parsed = ModelTransform.safeParse(item)
+          const parsed = Transforms.models.safeParse(item)
           if (parsed.success) modelsVariants.push(parsed.data)
           else issues.push({ source: 'models', error: parsed.error })
         }
@@ -268,7 +262,7 @@ export const run = internalAction({
         const model = modelByPermaslug.get(permaslug)
 
         for (const item of items) {
-          const parsed = EndpointTransform.safeParse(item)
+          const parsed = Transforms.endpoints.safeParse(item)
           if (!parsed.success) {
             issues.push({ source: `endpoint:${permaslug}:${variant}`, error: parsed.error })
             continue

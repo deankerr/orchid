@@ -1,9 +1,7 @@
 import * as R from 'remeda'
 import z4 from 'zod/v4'
 
-import { orFetch } from '../../openrouter/sources'
-
-export const transformSchema = z4
+export const uptimes = z4
   .object({
     history: z4
       .object({
@@ -19,14 +17,3 @@ export const transformSchema = z4
       uptime: item.uptime,
     })),
   )
-
-export const uptimes = {
-  key: 'uptimes',
-  schema: transformSchema,
-  remote: async (params: { uuid: string }) => {
-    return await orFetch('/api/frontend/stats/uptime-hourly', { params: { id: params.uuid } })
-  },
-  archiveKey: (params: { uuid: string }) => {
-    return { type: 'uptimes', params: params.uuid }
-  },
-}

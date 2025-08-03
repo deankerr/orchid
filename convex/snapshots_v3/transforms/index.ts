@@ -1,4 +1,3 @@
-// Barrel file for sources
 export { models } from './models'
 export { endpoints } from './endpoints'
 export { apps } from './apps'
