@@ -11,6 +11,8 @@ import * as ORModels from './db/or/models'
 import * as ORModelTokenStats from './db/or/modelTokenStats'
 import * as ORProviders from './db/or/providers'
 import * as SnapshotArchives from './db/snapshot/archives'
+import * as SnapshotCrawlConfig from './db/snapshot/crawlConfig'
+import * as SnapshotRawArchives from './db/snapshot/rawArchives'
 import * as SnapshotRuns from './db/snapshot/runs'
 import * as SnapshotSchedule from './db/snapshot/schedule'
 
@@ -39,7 +41,9 @@ export const schema = defineSchema(
     or_providers: ORProviders.table,
     or_providers_changes: ORProviders.changesTable,
 
+    snapshot_crawl_config: SnapshotCrawlConfig.table,
     snapshot_archives: SnapshotArchives.table,
+    snapshot_raw_archives: SnapshotRawArchives.table,
     snapshot_runs: SnapshotRuns.table,
     snapshot_schedule: SnapshotSchedule.table,
 

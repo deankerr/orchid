@@ -1,6 +1,13 @@
+import { diff as jsonDiff } from 'json-diff-ts'
+
 import type { Id } from '../../_generated/dataModel'
 
-// * Decision outcome types - better naming than PipelineResult
+const diff = (a: unknown, b: unknown) =>
+  jsonDiff(a, b, {
+    keysToSkip: ['_id', '_creationTime', 'snapshot_at'],
+  })
+
+// * Decision outcome types
 export type DecisionOutcome =
   | { kind: 'insert'; table: string; value: any }
   | { kind: 'update'; table: string; value: any; id: Id<any> }
@@ -14,11 +21,11 @@ export interface MetricsCollector {
 
 // * Entity metric structure
 export interface EntityMetric {
-  name: string      // e.g. 'or_models'
-  total: number     // total examined for this entity type
+  name: string // e.g. 'or_models'
+  total: number // total examined for this entity type
   insert: number
   update: number
-  stable: number    // no-op
+  stable: number // no-op
 }
 
 // * Primary key extractors per table
@@ -33,27 +40,27 @@ export function decide<T extends keyof typeof primaryKeyExtractors>(
   table: T,
   next: any,
   prev: any[] | undefined,
-  metrics: MetricsCollector
+  metrics: MetricsCollector,
 ): DecisionOutcome {
   const keyExtractor = primaryKeyExtractors[table]
   const nextKey = keyExtractor(next)
-  
+
   // Find matching previous item by primary key
-  const existing = prev?.find(item => keyExtractor(item) === nextKey)
-  
+  const existing = prev?.find((item) => keyExtractor(item) === nextKey)
+
   if (!existing) {
     metrics.record(table, 'insert')
     return { kind: 'insert', table, value: next }
   }
-  
+
   // Deep equality check - fast path for primitives, JSON.stringify fallback
   const isEqual = deepEqual(existing, next)
-  
+
   if (isEqual) {
     metrics.record(table, 'stable')
     return { kind: 'stable', table, id: existing._id }
   }
-  
+
   metrics.record(table, 'update')
   return { kind: 'update', table, value: next, id: existing._id }
 }
@@ -62,10 +69,10 @@ export function decide<T extends keyof typeof primaryKeyExtractors>(
 function deepEqual(a: any, b: any): boolean {
   // Fast path for primitives and null/undefined
   if (a === b) return true
-  
+
   // Different types or one is null/undefined
   if (typeof a !== typeof b || a === null || b === null) return false
-  
+
   // For objects, use JSON.stringify comparison (acceptable for this use case)
   if (typeof a === 'object') {
     try {
@@ -74,7 +81,7 @@ function deepEqual(a: any, b: any): boolean {
       return false
     }
   }
-  
+
   return false
 }
 
@@ -93,7 +100,7 @@ export function createMetricsCollector(): MetricsCollector {
           stable: 0,
         })
       }
-      
+
       const metric = metrics.get(name)!
       metric.total++
       metric[kind]++
