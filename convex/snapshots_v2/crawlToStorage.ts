@@ -53,55 +53,55 @@ export const run = internalAction({
     modelAuthors: v.boolean(),
   },
   handler: async (ctx, args) => {
-    const runId = Date.now().toString()
+    const crawlId = Date.now().toString()
 
-    console.log(`Starting crawl ${runId}:`, args)
+    console.log(`Starting crawl ${crawlId}:`, args)
 
     // * Fetch providers first - independent of models
     if (args.providers) {
-      await fetchProviders(ctx, runId, args)
+      await fetchProviders(ctx, crawlId, args)
     }
 
     // * Fetch models if requested - exit early if not
     if (!args.models) {
-      console.log(`Completed crawl ${runId}: models disabled`)
-      return runId
+      console.log(`Completed crawl ${crawlId}: models disabled`)
+      return crawlId
     }
 
     const modelsPath = '/api/frontend/models'
     const modelsData = await orFetch(modelsPath)
-    await storeRawData(ctx, runId, modelsPath, modelsData)
+    await storeRawData(ctx, crawlId, modelsPath, modelsData)
     const models = ModelsSchema.parse(modelsData)
 
     console.log(`Models fetched: ${models.length}`)
 
     // * Process models for endpoints, apps, and uptimes
-    await processModels(ctx, runId, models, args)
+    await processModels(ctx, crawlId, models, args)
 
     // * Extract author slugs and fetch model author data
     if (args.modelAuthors) {
       const authorSlugs = new Set(
         models.map((model) => model.permaslug.split('/')[0]).filter(Boolean),
       )
-      await fetchModelAuthors(ctx, runId, authorSlugs, args)
+      await fetchModelAuthors(ctx, crawlId, authorSlugs, args)
     }
 
-    console.log(`Completed crawl ${runId}`)
-    return runId
+    console.log(`Completed crawl ${crawlId}`)
+    return crawlId
   },
 })
 
-async function fetchProviders(ctx: ActionCtx, runId: string, _args: any) {
+async function fetchProviders(ctx: ActionCtx, crawlId: string, _args: any) {
   try {
     const providersPath = '/api/frontend/all-providers'
     const providersData = await orFetch(providersPath)
-    await storeRawData(ctx, runId, providersPath, providersData)
+    await storeRawData(ctx, crawlId, providersPath, providersData)
   } catch (error) {
     console.error('Failed to fetch providers:', (error as Error).message)
   }
 }
 
-async function processModels(ctx: ActionCtx, runId: string, models: any[], args: any) {
+async function processModels(ctx: ActionCtx, crawlId: string, models: any[], args: any) {
   let processedCount = 0
   let errorCount = 0
   let uptimeCount = 0
@@ -118,7 +118,7 @@ async function processModels(ctx: ActionCtx, runId: string, models: any[], args:
           try {
             const endpointsPath = `/api/frontend/stats/endpoint?permaslug=${model.permaslug}&variant=${model.variant}`
             const endpointsData = await orFetch(endpointsPath)
-            await storeRawData(ctx, runId, endpointsPath, endpointsData)
+            await storeRawData(ctx, crawlId, endpointsPath, endpointsData)
 
             const endpoints = EndpointsSchema.parse(endpointsData)
             endpointUuids = endpoints
@@ -136,7 +136,7 @@ async function processModels(ctx: ActionCtx, runId: string, models: any[], args:
           try {
             const appsPath = `/api/frontend/stats/app?permaslug=${model.permaslug}&variant=${model.variant}`
             const appsData = await orFetch(appsPath)
-            await storeRawData(ctx, runId, appsPath, appsData)
+            await storeRawData(ctx, crawlId, appsPath, appsData)
           } catch (error) {
             console.error(
               `Failed apps for ${model.permaslug}:${model.variant}:`,
@@ -152,7 +152,7 @@ async function processModels(ctx: ActionCtx, runId: string, models: any[], args:
             try {
               const uptimesPath = `/api/frontend/stats/uptime-hourly?id=${uuid}`
               const uptimesData = await orFetch(uptimesPath)
-              await storeRawData(ctx, runId, uptimesPath, uptimesData)
+              await storeRawData(ctx, crawlId, uptimesPath, uptimesData)
               uptimeCount++
             } catch (error) {
               console.error(`Failed uptime for ${uuid}:`, (error as Error).message)
@@ -177,7 +177,7 @@ async function processModels(ctx: ActionCtx, runId: string, models: any[], args:
 
 async function fetchModelAuthors(
   ctx: ActionCtx,
-  runId: string,
+  crawlId: string,
   authorSlugs: Set<string>,
   _args: any,
 ) {
@@ -188,7 +188,7 @@ async function fetchModelAuthors(
     try {
       const authorPath = `/api/frontend/model-author?authorSlug=${authorSlug}&shouldIncludeStats=true&shouldIncludeVariants=false`
       const authorData = await orFetch(authorPath)
-      await storeRawData(ctx, runId, authorPath, authorData)
+      await storeRawData(ctx, crawlId, authorPath, authorData)
       successCount++
     } catch (error) {
       console.error(`Failed author ${authorSlug}:`, (error as Error).message)
@@ -199,7 +199,7 @@ async function fetchModelAuthors(
   console.log(`Authors: ${successCount} fetched, ${errorCount} errors`)
 }
 
-async function storeRawData(ctx: ActionCtx, runId: string, path: string, data: any) {
+async function storeRawData(ctx: ActionCtx, crawlId: string, path: string, data: any) {
   try {
     const jsonString = JSON.stringify(data)
     const compressed = gzipSync(new TextEncoder().encode(jsonString))
@@ -208,7 +208,7 @@ async function storeRawData(ctx: ActionCtx, runId: string, path: string, data: a
     const storageId = await ctx.storage.store(blob)
 
     await ctx.runMutation(internal.db.snapshot.rawArchives.insert, {
-      runId,
+      crawlId,
       path,
       storageId,
     })

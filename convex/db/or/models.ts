@@ -131,15 +131,6 @@ export const upsert = fnMutationLite({
         .query(vTable.name)
         .withIndex('by_slug', (q) => q.eq('slug', item.slug))
         .first()
-      const changes = diff(existing ?? {}, item)
-
-      // Preserve existing stats
-      if (existing) {
-        item.stats = existing.stats ?? {}
-      }
-
-      // Record changes
-      await recordChanges(ctx, { content: item, changes })
 
       // Insert
       if (!existing) {
@@ -147,14 +138,10 @@ export const upsert = fnMutationLite({
         return { action: 'insert' }
       }
 
-      // Stable - no changes
-      if (changes.length === 0) {
-        await ctx.db.patch(existing._id, { snapshot_at: item.snapshot_at })
-        return { action: 'stable' }
-      }
+      const stats = Object.keys(item.stats).length > 0 ? item.stats : existing.stats
 
       // Update
-      await ctx.db.replace(existing._id, item)
+      await ctx.db.replace(existing._id, { ...item, stats })
       return { action: 'update' }
     })
 

@@ -81,6 +81,7 @@ import type * as snapshots_v2_sources_providers from "../snapshots_v2/sources/pr
 import type * as snapshots_v2_sources_shared from "../snapshots_v2/sources/shared.js";
 import type * as snapshots_v2_sources_uptimes from "../snapshots_v2/sources/uptimes.js";
 import type * as snapshots_v2_types from "../snapshots_v2/types.js";
+import type * as snapshots_v3_materialize from "../snapshots_v3/materialize.js";
 import type * as table3 from "../table3.js";
 
 /**
@@ -160,6 +161,7 @@ declare const fullApi: ApiFromModules<{
   "snapshots_v2/sources/shared": typeof snapshots_v2_sources_shared;
   "snapshots_v2/sources/uptimes": typeof snapshots_v2_sources_uptimes;
   "snapshots_v2/types": typeof snapshots_v2_types;
+  "snapshots_v3/materialize": typeof snapshots_v3_materialize;
   table3: typeof table3;
 }>;
 export declare const api: FilterApi<

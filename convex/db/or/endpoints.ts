@@ -175,6 +175,16 @@ export const list = fnQueryLite({
   },
 })
 
+export const getByModelSlug = fnQueryLite({
+  args: { modelSlug: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query('or_endpoints')
+      .withIndex('by_model_slug', (q) => q.eq('model_slug', args.modelSlug))
+      .collect()
+  },
+})
+
 // * snapshots
 export const upsert = fnMutationLite({
   args: { items: v.array(vTable.validator) },
@@ -184,10 +194,6 @@ export const upsert = fnMutationLite({
         .query(vTable.name)
         .withIndex('by_uuid', (q) => q.eq('uuid', item.uuid))
         .first()
-      const changes = diff(existing ?? {}, item)
-
-      // Record changes
-      await recordChanges(ctx, { content: item, changes })
 
       // Insert
       if (!existing) {
@@ -195,18 +201,10 @@ export const upsert = fnMutationLite({
         return { action: 'insert' }
       }
 
-      // Stable - no changes, but update stats and uptime_average (excluded from diff)
-      if (changes.length === 0) {
-        await ctx.db.patch(existing._id, {
-          snapshot_at: item.snapshot_at,
-          stats: item.stats,
-          uptime_average: item.uptime_average,
-        })
-        return { action: 'stable' }
-      }
+      const uptime_average = item.uptime_average ?? existing.uptime_average
 
       // Update
-      await ctx.db.replace(existing._id, item)
+      await ctx.db.replace(existing._id, { ...item, uptime_average })
       return { action: 'update' }
     })
 
