@@ -75,16 +75,21 @@ export const run = internalAction({
 
     console.log(`Models fetched: ${models.length}`)
 
-    // * Process models for endpoints, apps, and uptimes
-    await processModels(ctx, crawlId, models, args)
+    // * Process models and model authors in parallel
+    const tasks: Promise<void>[] = []
 
-    // * Extract author slugs and fetch model author data
+    // Process models for endpoints, apps, and uptimes
+    tasks.push(processModels(ctx, crawlId, models, args))
+
+    // Extract author slugs and fetch model author data
     if (args.modelAuthors) {
       const authorSlugs = new Set(
         models.map((model) => model.permaslug.split('/')[0]).filter(Boolean),
       )
-      await fetchModelAuthors(ctx, crawlId, authorSlugs, args)
+      tasks.push(fetchModelAuthors(ctx, crawlId, authorSlugs, args))
     }
+
+    await Promise.all(tasks)
 
     console.log(`Completed crawl ${crawlId}`)
     return crawlId
