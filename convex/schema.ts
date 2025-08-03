@@ -19,15 +19,12 @@ import * as SnapshotSchedule from './db/snapshot/schedule'
 export const schema = defineSchema(
   {
     or_apps: ORApps.table,
-    or_apps_changes: ORApps.changesTable,
 
     or_authors: ORAuthors.table,
-    or_authors_changes: ORAuthors.changesTable,
 
     or_endpoint_stats: OREndpointStats.table,
 
     or_endpoints: OREndpoints.table,
-    or_endpoints_changes: OREndpoints.changesTable,
 
     or_endpoint_uptimes: OREndpointUptimes.table,
 
@@ -36,10 +33,8 @@ export const schema = defineSchema(
     or_model_token_stats: ORModelTokenStats.table,
 
     or_models: ORModels.table,
-    or_models_changes: ORModels.changesTable,
 
     or_providers: ORProviders.table,
-    or_providers_changes: ORProviders.changesTable,
 
     snapshot_crawl_config: SnapshotCrawlConfig.table,
     snapshot_archives: SnapshotArchives.table,

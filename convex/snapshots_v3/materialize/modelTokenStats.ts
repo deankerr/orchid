@@ -67,7 +67,7 @@ export async function calculateModelStats(
   }
 
   if (modelTokenStats.length)
-    await ctx.runMutation(internal.openrouter.output.modelTokenStats, { items: modelTokenStats })
+    await ctx.runMutation(internal.db.or.modelTokenStats.upsert, { items: modelTokenStats })
 
   return { modelStatsMap, issues }
 }

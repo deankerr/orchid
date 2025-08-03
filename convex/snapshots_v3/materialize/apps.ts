@@ -73,10 +73,10 @@ export async function calculateApps(
   const apps = Array.from(appsMap.values())
 
   // Persist apps and leaderboards
-  if (apps.length) await ctx.runMutation(internal.openrouter.output.apps, { items: apps })
+  if (apps.length) await ctx.runMutation(internal.db.or.apps.upsert, { items: apps })
 
   if (modelAppLeaderboards.length)
-    await ctx.runMutation(internal.openrouter.output.modelAppLeaderboards, {
+    await ctx.runMutation(internal.db.or.modelAppLeaderboards.upsert, {
       items: modelAppLeaderboards,
     })
 

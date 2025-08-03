@@ -2,10 +2,8 @@ import { asyncMap } from 'convex-helpers'
 import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
-import { diff as jsonDiff } from 'json-diff-ts'
-
-import { fnMutationLite, fnQueryLite } from '../../fnHelperLite'
-import { countResults } from '../../openrouter/utils'
+import { internalMutation } from '../../_generated/server'
+import { fnQueryLite } from '../../fnHelperLite'
 import { createTableVHelper } from '../../table3'
 
 export const table = defineTable({
@@ -29,11 +27,6 @@ export const table = defineTable({
 
 export const vTable = createTableVHelper('or_model_app_leaderboards', table.validator)
 
-const diff = (a: unknown, b: unknown) =>
-  jsonDiff(a, b, {
-    keysToSkip: ['_id', '_creationTime'],
-  })
-
 // * queries
 export const get = fnQueryLite({
   args: {
@@ -52,10 +45,10 @@ export const get = fnQueryLite({
 })
 
 // * snapshots
-export const upsert = fnMutationLite({
+export const upsert = internalMutation({
   args: { items: v.array(vTable.validator) },
   handler: async (ctx, args) => {
-    const results = await asyncMap(args.items, async (item) => {
+    await asyncMap(args.items, async (item) => {
       const existing = await ctx.db
         .query('or_model_app_leaderboards')
         .withIndex('by_permaslug_variant', (q) =>
@@ -63,24 +56,12 @@ export const upsert = fnMutationLite({
         )
         .first()
 
-      const changes = diff(existing ?? {}, item)
-
       // Insert
       if (!existing) {
-        await ctx.db.insert(vTable.name, item)
-        return { action: 'insert' }
+        return await ctx.db.insert(vTable.name, item)
       }
 
-      // Stable
-      if (changes.length === 0) {
-        return { action: 'stable' }
-      }
-
-      // Update
-      await ctx.db.replace(existing._id, item)
-      return { action: 'update' }
+      return await ctx.db.replace(existing._id, item)
     })
-
-    return countResults(results, 'modelAppLeaderboards')
   },
 })

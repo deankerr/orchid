@@ -1,7 +1,7 @@
 import * as R from 'remeda'
 import z4 from 'zod/v4'
 
-import { DataPolicySchemas } from '@/convex/openrouter/validators/dataPolicy'
+import { DataPolicySchemas } from './shared'
 
 export const endpoints = z4
   .object({

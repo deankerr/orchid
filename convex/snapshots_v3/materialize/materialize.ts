@@ -122,25 +122,24 @@ export const run = internalAction({
     // --------------------------------------------------
     // 4. Apps
     // --------------------------------------------------
-    const { apps, modelAppLeaderboards, issues: appsIssues } = await calculateApps(
-      ctx,
-      archives,
-      consolidatedModels,
-      snapshot_at,
-    )
+    const {
+      apps,
+      modelAppLeaderboards,
+      issues: appsIssues,
+    } = await calculateApps(ctx, archives, consolidatedModels, snapshot_at)
     issues.push(...appsIssues)
 
     // --------------------------------------------------
     // 5. Persist
     // --------------------------------------------------
     if (providers.length)
-      await ctx.runMutation(internal.openrouter.output.providers, { items: providers })
+      await ctx.runMutation(internal.db.or.providers.upsert, { items: providers })
 
     if (consolidatedModels.length)
-      await ctx.runMutation(internal.openrouter.output.models, { items: consolidatedModels })
+      await ctx.runMutation(internal.db.or.models.upsert, { items: consolidatedModels })
 
     if (endpoints.length)
-      await ctx.runMutation(internal.openrouter.output.endpoints, { items: endpoints })
+      await ctx.runMutation(internal.db.or.endpoints.upsert, { items: endpoints })
 
     console.log(
       `materialize: providers=${providers.length}, models=${consolidatedModels.length}, endpoints=${endpoints.length}, apps=${apps.length}, leaderboards=${modelAppLeaderboards.length}, issues=${issues.length}`,

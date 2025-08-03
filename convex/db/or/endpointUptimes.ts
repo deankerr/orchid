@@ -3,7 +3,6 @@ import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
 import { fnMutationLite, fnQueryLite } from '../../fnHelperLite'
-import { countResults } from '../../openrouter/utils'
 import { getDayAlignedTimestamp } from '../../shared'
 import { createTableVHelper } from '../../table3'
 
@@ -107,7 +106,7 @@ export const upsert = fnMutationLite({
   },
   // Maintains rolling windows with hard guarantees: max 72 hourly + max 30 daily data points
   handler: async (ctx, args) => {
-    const results = await asyncMap(args.items, async (item) => {
+    await asyncMap(args.items, async (item) => {
       const existing = await getLatest.run(ctx, { endpoint_uuid: item.endpoint_uuid })
 
       if (existing) {
@@ -136,7 +135,5 @@ export const upsert = fnMutationLite({
         return { action: 'insert' as const }
       }
     })
-
-    return countResults(results, 'endpointUptimes')
   },
 })
