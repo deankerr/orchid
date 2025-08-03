@@ -4,11 +4,10 @@ import { api, internal } from '../_generated/api'
 import { internalAction, type ActionCtx } from '../_generated/server'
 import { getHourAlignedTimestamp } from '../shared'
 import type { EntityMetric } from './comparison/decision'
+import { createInputs } from './inputs'
 import { ConvexWriter, LogWriter } from './outputs'
 import { standard } from './processes/standard_v2'
-import { createSources } from './sources'
 import type { ProcessContext, RunConfig, State } from './types'
-import { createValidator } from './validation/validator'
 
 // * Run report types
 export interface RunReport {
@@ -37,15 +36,14 @@ export async function run(ctx: ActionCtx, config: RunConfig): Promise<RunReport>
   const startedAt = Date.now()
 
   console.log(
-    `🚀 Starting snapshot engine: ${config.run_id} (${config.replay_from ? 'archive' : 'remote'}, ${config.output})`,
+    `🚀 Starting snapshot engine: ${config.run_id} (${config.replay_from ? 'archive' : 'remote'}, ${config.outputMethod})`,
   )
 
   // * Step 1: Build sub-systems
-  const validator = createValidator()
-  const sources = await createSources({ ctx, config, validator })
+  const { inputs, filter } = createInputs(ctx, config)
 
   // Create appropriate output handler based on config
-  const outputs = config.output === 'log-writer' ? new LogWriter() : new ConvexWriter(ctx)
+  const outputs = config.outputMethod === 'log-writer' ? new LogWriter() : new ConvexWriter(ctx)
   const state = createState(ctx)
 
   // Initialize outputs
@@ -53,8 +51,7 @@ export async function run(ctx: ActionCtx, config: RunConfig): Promise<RunReport>
 
   // * Step 2: Run Process
   const processCtx: ProcessContext = {
-    sources,
-    validator,
+    sources: inputs,
     outputs,
     state,
     config,
@@ -69,7 +66,7 @@ export async function run(ctx: ActionCtx, config: RunConfig): Promise<RunReport>
   const durationMs = endedAt - startedAt
 
   // * Step 4: Assemble RunReport
-  const issues = validator.getIssues()
+  const issues = filter.issues()
   if (issues.length > 0) {
     console.log(
       `⚠️  ${issues.length} validation issues collected:`,
@@ -99,7 +96,8 @@ export async function run(ctx: ActionCtx, config: RunConfig): Promise<RunReport>
 // * Demo action to run the snapshot engine
 export const runDemo = internalAction({
   args: {
-    output: v.optional(v.union(v.literal('log-writer'), v.literal('convex-writer'))),
+    inputMethod: v.union(v.literal('remote'), v.literal('archive')),
+    outputMethod: v.union(v.literal('log-writer'), v.literal('convex-writer')),
     snapshot_at: v.optional(v.number()),
 
     // For archive replay - specify which archived run to replay from
@@ -113,7 +111,6 @@ export const runDemo = internalAction({
   handler: async (ctx, args) => {
     // Use provided values or defaults
     const snapshot_at = args.snapshot_at ?? getHourAlignedTimestamp()
-    const output = args.output ?? 'convex-writer'
 
     // Create a new snapshot run record
     const run_id = await ctx.runMutation(internal.openrouter.output.insertSnapshotRun, {
@@ -124,7 +121,8 @@ export const runDemo = internalAction({
     const config: RunConfig = {
       run_id,
       snapshot_at,
-      output,
+      inputMethod: args.inputMethod,
+      outputMethod: args.outputMethod,
       replay_from: args.replay_from,
     }
 

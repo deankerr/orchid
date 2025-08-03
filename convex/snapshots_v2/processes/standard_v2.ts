@@ -84,18 +84,19 @@ async function processModelEndpoints(processCtx: ProcessContext, model: NewModel
 
     // Enhance endpoints with model data (similar to existing pipeline)
     for (const endpoint of validEndpoints) {
-      endpoints.push({
-        ...endpoint,
+      const enhancedEndpoint: NewEndpoint = {
+        ...(endpoint as any),
         model_slug: model.slug,
         model_permaslug: model.permaslug,
         capabilities: {
-          ...endpoint.capabilities,
+          ...(endpoint as any).capabilities,
           image_input: model.input_modalities.includes('image'),
           file_input: model.input_modalities.includes('file'),
         },
         or_model_created_at: model.or_created_at,
         snapshot_at: processCtx.config.snapshot_at,
-      })
+      }
+      endpoints.push(enhancedEndpoint)
     }
   }
 
@@ -106,14 +107,14 @@ async function processModelEndpoints(processCtx: ProcessContext, model: NewModel
 function consolidateVariants(models: TransformTypes['models'][]) {
   // models are duplicated per variant, consolidate them into the single entity with a variants list
   // use the model with shortest name as the base, e.g. "DeepSeek R1" instead of "DeepSeek R1 (free)"
-  return Map.groupBy(models, (m) => m.slug)
+  return Map.groupBy(models, (m: any) => m.slug)
     .values()
-    .map((variants) => {
-      const [first, ...rest] = variants.sort((a, b) => a.name.length - b.name.length)
+    .map((variants: any) => {
+      const [first, ...rest] = variants.sort((a: any, b: any) => a.name.length - b.name.length)
       const { variant, ...base } = first
       return {
         ...base,
-        variants: R.pipe([variant, ...rest.map((m) => m.variant)], R.filter(R.isDefined)),
+        variants: R.pipe([variant, ...rest.map((m: any) => m.variant)], R.filter(R.isDefined)),
       }
     })
     .toArray()

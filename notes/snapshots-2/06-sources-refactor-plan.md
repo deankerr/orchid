@@ -4,6 +4,9 @@
 >
 > Goal = zero duplication, single-file ownership per entity, and clearer naming than “sources + validator”.
 
+**Use _Inputs_ instead of Inlets**
+**Use _IssueFilter_ instead of Filter**
+
 ---
 
 ## 1. New Naming

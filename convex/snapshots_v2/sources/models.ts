@@ -1,7 +1,9 @@
 import * as R from 'remeda'
 import z4 from 'zod/v4'
 
-export const models = z4
+import { orFetch } from '../../openrouter/sources'
+
+export const transformSchema = z4
   .object({
     slug: z4.string(), // primary key
     hf_slug: z4.string().nullable(), // hugging face isd
@@ -40,3 +42,14 @@ export const models = z4
       variant: endpoint?.variant,
     }
   })
+
+export const models = {
+  key: 'models',
+  schema: transformSchema,
+  remote: async () => {
+    return await orFetch('/api/frontend/models')
+  },
+  archiveKey: () => {
+    return { type: 'models' }
+  },
+}

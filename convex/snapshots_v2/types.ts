@@ -2,14 +2,15 @@ import type { z } from 'zod/v4'
 
 import type { Doc } from '../_generated/dataModel'
 import type { DecisionOutcome } from './comparison/decision'
-import type { Sources } from './sources'
-import { apps } from './transforms/apps'
-import { endpoints } from './transforms/endpoints'
-import { modelAuthor } from './transforms/modelAuthor'
-import { models } from './transforms/models'
-import { providers } from './transforms/providers'
-import { uptimes } from './transforms/uptimes'
-import type { Validator } from './validation/validator'
+import type { InputMap } from './inputs'
+import { apps } from './sources/apps'
+import { endpoints } from './sources/endpoints'
+import { modelAuthor } from './sources/modelAuthor'
+import { models } from './sources/models'
+import { providers } from './sources/providers'
+import { uptimes } from './sources/uptimes'
+
+// Removed validator import - no longer needed
 
 // Transform result types - inferred from our transform schemas
 export type TransformTypes = {
@@ -21,11 +22,15 @@ export type TransformTypes = {
   modelAuthor: z.infer<typeof modelAuthor>
 }
 
+// Input modes - how data is sourced
+export type InputMode = 'remote' | 'remote-no-store' | 'archive'
+
 // Run configuration
 export interface RunConfig {
   run_id: string
   snapshot_at: number
-  output: 'log-writer' | 'convex-writer'
+  inputMethod: InputMode
+  outputMethod: 'log-writer' | 'convex-writer'
 
   // If present, replay from this archived run instead of fetching live data
   replay_from?: {
@@ -49,8 +54,7 @@ export interface Outputs {
 
 // Central ProcessContext definition - used by all processes
 export interface ProcessContext {
-  sources: Sources
-  validator: Validator
+  sources: InputMap
   outputs: Outputs
   state: State
   config: RunConfig
