@@ -29,7 +29,7 @@ export const snapshotCron = internalAction({
     const jitter = Math.floor(Math.random() * cfg.jitter_minutes * 60_000)
     const delayMs = cfg.delay_minutes * 60_000 + jitter
 
-    await ctx.scheduler.runAfter(delayMs, internal.snapshots_v3.crawl.run, args)
+    await ctx.scheduler.runAfter(delayMs, internal.snapshots.crawl.run, args)
     console.log(
       `snapshot.crawlToStorage scheduled (in ${Math.round(delayMs / 60000)}m) with args:`,
       JSON.stringify(args),

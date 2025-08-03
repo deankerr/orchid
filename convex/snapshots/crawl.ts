@@ -93,7 +93,7 @@ export const run = internalAction({
 
     console.log(`Completed crawl ${crawlId}`)
 
-    await ctx.scheduler.runAfter(1000, internal.snapshots_v3.materialize.materialize.run, {
+    await ctx.scheduler.runAfter(1000, internal.snapshots.materialize.materialize.run, {
       crawlId,
     })
 
