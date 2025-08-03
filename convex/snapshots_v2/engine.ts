@@ -96,7 +96,7 @@ export async function run(ctx: ActionCtx, config: RunConfig): Promise<RunReport>
 // * Demo action to run the snapshot engine
 export const runDemo = internalAction({
   args: {
-    inputMethod: v.union(v.literal('remote'), v.literal('archive')),
+    inputMethod: v.union(v.literal('remote'), v.literal('remote-no-store'), v.literal('archive')),
     outputMethod: v.union(v.literal('log-writer'), v.literal('convex-writer')),
     snapshot_at: v.optional(v.number()),
 

@@ -1,21 +1,17 @@
 import z4 from 'zod/v4'
 
 import type { ActionCtx } from '../_generated/server'
-import { storeSnapshotData } from './archive'
+import { getArchivedData, storeSnapshotData } from './archive'
 import { endpoints } from './sources/endpoints'
 import { models } from './sources/models'
 import type { InputMode, RunConfig, TransformTypes } from './types'
 
-// * Parameter types for input functions
-export type SrcParams = Record<string, any> | void
-
 // * Generic input specification interface
-export interface InputSpec<TOutput, TParams extends SrcParams = void> {
+export interface InputSpec<TOutput, TParams extends Record<string, any>> {
   key: string
   schema: z4.ZodType<TOutput>
-  remote: (params: TParams) => Promise<TOutput>
-  archive?: (params: TParams) => Promise<TOutput>
-  archiveKey: (params: TParams) => { type: string; params: string } // for archival param identification
+  remote: (params?: TParams) => Promise<TOutput>
+  archiveKey: (params?: TParams) => { type: string; params?: string }
 }
 
 // * responses are always wrapped in a `data` field, force results to be an array
@@ -24,7 +20,7 @@ const UnwrapDataSchema = z4
   .transform(({ data }) => (Array.isArray(data) ? data : [data]) as unknown[])
 
 // * Generic input builder function
-export function makeInput<TOutput, TParams extends SrcParams>(
+export function makeInput<TOutput, TParams extends Record<string, any>>(
   ctx: ActionCtx,
   args: {
     spec: InputSpec<TOutput, TParams>
@@ -37,7 +33,12 @@ export function makeInput<TOutput, TParams extends SrcParams>(
 
   return async (params: TParams) => {
     // * Determine data source based on mode
-    const raw = mode === 'archive' ? await spec.archive?.(params) : await spec.remote(params)
+    const raw = mode === 'archive' 
+      ? await getArchivedData(ctx, {
+          replay_from: config.replay_from!,
+          ...spec.archiveKey(params),
+        })
+      : await spec.remote(params)
 
     // * Store snapshot data if in remote mode and storage enabled
     if (mode !== 'archive' && config.outputMethod === 'convex-writer') {

@@ -73,3 +73,36 @@ export async function retrieveArchive<T>(
 
   return schema.parse(json, { error: () => 'failed to parse archive' })
 }
+
+/**
+ * Get archived data by type and params from a specific replay run
+ */
+export async function getArchivedData(
+  ctx: ActionCtx,
+  args: {
+    replay_from: { run_id: string; snapshot_at: number }
+    type: string
+    params?: string
+  },
+) {
+  const { replay_from, type, params } = args
+
+  // Find the specific archive record directly
+  const archive = await ctx.runQuery(internal.db.snapshot.archives.getByRunIdTypeParams, {
+    run_id: replay_from.run_id,
+    type,
+    params,
+  })
+
+  if (!archive) {
+    throw new Error(
+      `No archive found for run_id: ${replay_from.run_id}, type: ${type}, params: ${params || 'none'}`,
+    )
+  }
+
+  // Retrieve and return the data
+  return await retrieveArchive(ctx, {
+    storage_id: archive.storage_id,
+    schema: z4.object({ data: z4.unknown() }), // Standard wrapper schema
+  })
+}

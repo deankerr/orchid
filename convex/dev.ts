@@ -37,3 +37,16 @@ export const authorSlugCounts = query({
       .sort((a, b) => b.count - a.count)
   },
 })
+
+export const delAllModelEndpoints = internalMutation({
+  handler: async (ctx) => {
+    const models = await ctx.db.query('or_models').collect()
+    const endpoints = await ctx.db.query('or_endpoints').collect()
+    models.forEach(async (m) => {
+      await ctx.db.delete(m._id)
+    })
+    endpoints.forEach(async (e) => {
+      await ctx.db.delete(e._id)
+    })
+  },
+})
