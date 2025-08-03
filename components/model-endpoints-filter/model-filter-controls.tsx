@@ -3,6 +3,7 @@
 import { ArrowDown, ArrowUp } from 'lucide-react'
 import { parseAsBoolean, parseAsString, parseAsStringEnum, useQueryStates } from 'nuqs'
 
+import { cn } from '../../lib/utils'
 import { SearchInput } from '../shared/search-input'
 import { Button } from '../ui/button'
 import { Checkbox } from '../ui/checkbox'
@@ -22,7 +23,7 @@ const filterParsers = {
   // Endpoint features
   tools: parseAsBoolean.withDefault(false),
   json: parseAsBoolean.withDefault(false),
-  free: parseAsBoolean.withDefault(false),
+  pricing: parseAsStringEnum<'all' | 'free' | 'paid'>(['all', 'free', 'paid']).withDefault('all'),
   cache: parseAsBoolean.withDefault(false),
 
   // Sort
@@ -42,6 +43,10 @@ export function ModelFilterControls() {
 
   const handleFilterChange = (key: keyof typeof filters, value: boolean) => {
     setFilters({ [key]: value || null })
+  }
+
+  const handlePricingChange = (value: 'all' | 'free' | 'paid') => {
+    setFilters({ pricing: value === 'all' ? null : value })
   }
 
   const handleSortChange = (value: SortOption) => {
@@ -96,27 +101,29 @@ export function ModelFilterControls() {
         </Button>
       </div>
 
-      {/* Filter Checkboxes */}
-      <div className="rounded-sm border bg-card p-3">
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(100px,1fr))] gap-3">
-          {/* Model Capabilities */}
+      {/* Filter Groups */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+        {/* Input Modalities */}
+        <FieldSet legend="Input Modalities">
           <FilterCheckbox
-            label="Image Input"
+            label="Image"
             checked={filters.img}
             onChange={(checked: boolean) => handleFilterChange('img', checked)}
           />
           <FilterCheckbox
-            label="File Input"
+            label="File"
             checked={filters.file}
             onChange={(checked: boolean) => handleFilterChange('file', checked)}
           />
+        </FieldSet>
+
+        {/* Capabilities */}
+        <FieldSet legend="Capabilities">
           <FilterCheckbox
             label="Reasoning"
             checked={filters.reason}
             onChange={(checked: boolean) => handleFilterChange('reason', checked)}
           />
-
-          {/* Endpoint Features */}
           <FilterCheckbox
             label="Tools"
             checked={filters.tools}
@@ -128,16 +135,25 @@ export function ModelFilterControls() {
             onChange={(checked: boolean) => handleFilterChange('json', checked)}
           />
           <FilterCheckbox
-            label="Free"
-            checked={filters.free}
-            onChange={(checked: boolean) => handleFilterChange('free', checked)}
-          />
-          <FilterCheckbox
-            label="Caching"
+            label="Cache"
             checked={filters.cache}
             onChange={(checked: boolean) => handleFilterChange('cache', checked)}
           />
-        </div>
+        </FieldSet>
+
+        {/* Pricing */}
+        <FieldSet legend="Pricing">
+          <Select value={filters.pricing} onValueChange={handlePricingChange}>
+            <SelectTrigger className="h-8 w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Paid/Free</SelectItem>
+              <SelectItem value="free">Free</SelectItem>
+              <SelectItem value="paid">Paid</SelectItem>
+            </SelectContent>
+          </Select>
+        </FieldSet>
       </div>
     </div>
   )
@@ -146,13 +162,37 @@ export function ModelFilterControls() {
 // Export the parsers for use in the main page component
 export { filterParsers }
 
-interface FilterCheckboxProps {
+function FieldSet({
+  legend,
+  className,
+  children,
+  ...props
+}: {
+  legend: string
+} & React.ComponentProps<'fieldset'>) {
+  return (
+    <fieldset
+      className={cn(
+        'flex flex-wrap items-center gap-3 rounded-sm border bg-card p-3 sm:min-w-0 sm:flex-1',
+        className,
+      )}
+      {...props}
+    >
+      <legend className="px-2 text-sm font-medium text-muted-foreground">{legend}</legend>
+      {children}
+    </fieldset>
+  )
+}
+
+function FilterCheckbox({
+  label,
+  checked,
+  onChange,
+}: {
   label: string
   checked: boolean
   onChange: (checked: boolean) => void
-}
-
-function FilterCheckbox({ label, checked, onChange }: FilterCheckboxProps) {
+} & Omit<React.ComponentProps<'fieldset'>, 'onChange'>) {
   return (
     <div className="flex items-center space-x-2">
       <Checkbox

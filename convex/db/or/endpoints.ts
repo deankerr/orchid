@@ -129,7 +129,8 @@ export const list = fnQueryLite({
               ...endp,
               staleness_hours: hoursBetween(endp.snapshot_at, snapshot_at),
             }))
-            .filter((endp) => endp.staleness_hours < 1), // NOTE: remove all stale endpoints
+            .filter((endp) => endp.staleness_hours < 1) // NOTE: remove all stale endpoints
+            .filter((endp) => !endp.is_disabled), // NOTE: remove disabled endpoints
       )
 
     return Map.groupBy(results, (r) => getModelVariantSlug(r.model_slug, r.model_variant))
