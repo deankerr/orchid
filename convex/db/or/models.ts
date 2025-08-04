@@ -2,14 +2,13 @@ import { asyncMap } from 'convex-helpers'
 import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
-import { diff as jsonDiff, type IChange } from 'json-diff-ts'
+import { diff as jsonDiff } from 'json-diff-ts'
 
-import type { MutationCtx } from '../../_generated/server'
-import { fnMutationLite, fnQueryLite } from '../../fnHelperLite'
-import { getCurrentSnapshotTimestamp } from '../snapshot/runs'
-import { countResults } from '../../openrouter/utils'
+import { internalMutation } from '../../_generated/server'
+import { fnQueryLite } from '../../fnHelperLite'
 import { hoursBetween } from '../../shared'
 import { createTableVHelper } from '../../table3'
+import { getCurrentSnapshotTimestamp } from '../snapshot/runs'
 
 export const vModelStats = v.record(
   v.string(), // variant
@@ -29,6 +28,7 @@ export const table = defineTable({
   variants: v.array(v.string()),
 
   author_slug: v.string(),
+  author_name: v.optional(v.string()),
 
   name: v.string(),
   short_name: v.string(),
@@ -58,7 +58,7 @@ export const table = defineTable({
 
 export const vTable = createTableVHelper('or_models', table.validator)
 
-const diff = (a: unknown, b: unknown) =>
+export const diff = (a: unknown, b: unknown) =>
   jsonDiff(a, b, {
     keysToSkip: ['_id', '_creationTime', 'stats', 'snapshot_at'],
     embeddedObjKeys: {
@@ -67,24 +67,6 @@ const diff = (a: unknown, b: unknown) =>
       variants: '$value',
     },
   })
-
-// * changes
-export const changesTable = defineTable({
-  slug: v.string(),
-  snapshot_at: v.number(),
-  changes: v.array(v.record(v.string(), v.any())),
-})
-
-export const vChangesTable = createTableVHelper('or_models_changes', changesTable.validator)
-
-const recordChanges = async (
-  ctx: MutationCtx,
-  { content, changes }: { content: { slug: string; snapshot_at: number }; changes: IChange[] },
-) => {
-  if (changes.length === 0) return
-  const { slug, snapshot_at } = content
-  await ctx.db.insert(vChangesTable.name, { slug, snapshot_at, changes })
-}
 
 // * queries
 export const get = fnQueryLite({
@@ -123,67 +105,24 @@ export const list = fnQueryLite({
 })
 
 // * snapshots
-export const upsert = fnMutationLite({
+export const upsert = internalMutation({
   args: { items: v.array(vTable.validator) },
   handler: async (ctx, args) => {
-    const results = await asyncMap(args.items, async (item) => {
+    await asyncMap(args.items, async (item) => {
       const existing = await ctx.db
         .query(vTable.name)
         .withIndex('by_slug', (q) => q.eq('slug', item.slug))
         .first()
-      const changes = diff(existing ?? {}, item)
-
-      // Preserve existing stats
-      if (existing) {
-        item.stats = existing.stats ?? {}
-      }
-
-      // Record changes
-      await recordChanges(ctx, { content: item, changes })
 
       // Insert
       if (!existing) {
-        await ctx.db.insert(vTable.name, item)
-        return { action: 'insert' }
+        return await ctx.db.insert(vTable.name, item)
       }
 
-      // Stable - no changes
-      if (changes.length === 0) {
-        await ctx.db.patch(existing._id, { snapshot_at: item.snapshot_at })
-        return { action: 'stable' }
-      }
+      const stats = Object.keys(item.stats).length > 0 ? item.stats : existing.stats
 
       // Update
-      await ctx.db.replace(existing._id, item)
-      return { action: 'update' }
+      return await ctx.db.replace(existing._id, { ...item, stats })
     })
-
-    return countResults(results, 'models')
-  },
-})
-
-export const updateStats = fnMutationLite({
-  args: { items: v.array(v.object({ permaslug: v.string(), stats: vModelStats })) },
-  handler: async (ctx, args) => {
-    const models = await ctx.db.query(vTable.name).collect()
-    const statsMap = new Map(args.items.map((item) => [item.permaslug, item.stats]))
-
-    for (const model of models) {
-      const newStats = statsMap.get(model.permaslug)
-
-      if (newStats) {
-        // We have stats for this model - check if they need updating
-        const changes = jsonDiff(model.stats ?? {}, newStats)
-
-        if (changes.length > 0) {
-          await ctx.db.patch(model._id, { stats: newStats })
-        }
-      } else {
-        // We don't have stats for this model - ensure it has empty stats
-        if (model.stats && Object.keys(model.stats).length > 0) {
-          await ctx.db.patch(model._id, { stats: {} })
-        }
-      }
-    }
   },
 })

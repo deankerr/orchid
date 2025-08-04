@@ -2,11 +2,7 @@ import { asyncMap } from 'convex-helpers'
 import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
-import { diff as jsonDiff, type IChange } from 'json-diff-ts'
-
-import type { MutationCtx } from '../../_generated/server'
-import { fnMutationLite } from '../../fnHelperLite'
-import { countResults } from '../../openrouter/utils'
+import { internalMutation } from '../../_generated/server'
 import { createTableVHelper } from '../../table3'
 
 export const table = defineTable({
@@ -23,60 +19,21 @@ export const table = defineTable({
 
 export const vTable = createTableVHelper('or_apps', table.validator)
 
-const diff = (a: unknown, b: unknown) =>
-  jsonDiff(a, b, {
-    keysToSkip: ['_id', '_creationTime', 'snapshot_at'],
-  })
-
-// * changes
-export const changesTable = defineTable({
-  app_id: v.number(),
-  snapshot_at: v.number(),
-  changes: v.array(v.record(v.string(), v.any())),
-})
-
-export const vChangesTable = createTableVHelper('or_apps_changes', changesTable.validator)
-
-const recordChanges = async (
-  ctx: MutationCtx,
-  { content, changes }: { content: { app_id: number; snapshot_at: number }; changes: IChange[] },
-) => {
-  if (changes.length === 0) return
-  const { app_id, snapshot_at } = content
-  await ctx.db.insert(vChangesTable.name, { app_id, snapshot_at, changes })
-}
-
 // * snapshots
-export const upsert = fnMutationLite({
+export const upsert = internalMutation({
   args: { items: v.array(vTable.validator) },
   handler: async (ctx, args) => {
-    const results = await asyncMap(args.items, async (item) => {
+    await asyncMap(args.items, async (item) => {
       const existing = await ctx.db
         .query(vTable.name)
         .withIndex('by_app_id', (q) => q.eq('app_id', item.app_id))
         .first()
-      const changes = diff(existing ?? {}, item)
 
-      // Record changes
-      await recordChanges(ctx, { content: item, changes })
-
-      // Insert
       if (!existing) {
-        await ctx.db.insert(vTable.name, item)
-        return { action: 'insert' }
+        return await ctx.db.insert(vTable.name, item)
       }
 
-      // Stable - no changes
-      if (changes.length === 0) {
-        await ctx.db.patch(existing._id, { snapshot_at: item.snapshot_at })
-        return { action: 'stable' }
-      }
-
-      // Update
-      await ctx.db.replace(existing._id, item)
-      return { action: 'update' }
+      return await ctx.db.replace(existing._id, item)
     })
-
-    return countResults(results, 'apps')
   },
 })

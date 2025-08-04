@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn, formatSnapshotAtTime } from '@/lib/utils'
+import { RunIdBadge } from '../shared/run-id-badge'
 
 interface SnapshotRun {
   _id: string
@@ -85,7 +86,8 @@ export function SnapshotRunsList({ runs, selectedRunId, onSelectRun }: SnapshotR
 
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <code className="rounded bg-muted px-1 font-mono text-xs">
+                  <RunIdBadge runId={run._id} />
+                  <code className="rounded bg-muted px-1 font-mono text-xs text-muted-foreground">
                     {formatSnapshotAtTime(run.snapshot_at)}
                   </code>
                   {getStatusBadge(run)}

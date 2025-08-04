@@ -1,16 +1,7 @@
 import * as R from 'remeda'
 import z4 from 'zod/v4'
 
-export const EndpointUptimeStrictSchema = z4.strictObject({
-  history: z4
-    .strictObject({
-      date: z4.string(),
-      uptime: z4.number().nullable(),
-    })
-    .array(),
-})
-
-export const EndpointUptimeTransformSchema = z4
+export const uptimes = z4
   .object({
     history: z4
       .object({

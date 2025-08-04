@@ -1,8 +1,11 @@
 {
-  "enableAllProjectMcpServers": false,
   "permissions": {
     "allow": [
-      "Bash(bun:*)"
+      "Bash(bun:*)",
+      "Bash(mkdir:*)",
+      "Bash(jq:*)",
+      "Bash(rm:*)"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": false
 }

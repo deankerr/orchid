@@ -1,46 +1,25 @@
 import * as R from 'remeda'
 import z4 from 'zod/v4'
 
-import { DataPolicySchemas } from './dataPolicy'
+import { DataPolicySchemas } from './shared'
 
-const iconFields = {
-  url: z4.string(),
-  invertRequired: z4.boolean().optional(),
-  className: z4.string().optional(),
-}
-
-const fields = {
-  displayName: z4.string(),
-  slug: z4.string(), // primary key
-  headquarters: z4.string().optional(), // two letter country/state code
-  datacenters: z4.string().array().optional(),
-  hasChatCompletions: z4.boolean(), // chat endpoint
-  hasCompletions: z4.boolean(), // completion endpoint
-  isAbortable: z4.boolean(),
-  moderationRequired: z4.boolean(),
-  isMultipartSupported: z4.boolean(), // messages with text/image/file parts
-  statusPageUrl: z4.url().nullable(),
-  byokEnabled: z4.boolean(),
-}
-
-export const ProviderStrictSchema = z4.strictObject({
-  ...fields,
-  icon: z4.strictObject(iconFields),
-  dataPolicy: DataPolicySchemas.provider.strict,
-
-  // unused fields
-  name: z4.string(), // internal identifier
-  baseUrl: z4.string(), // always "url" (literal)
-  editors: z4.string().array(), // always ["{}" (literal)]
-  owners: z4.string().array(), // always ["{}" (literal)]
-  ignoredProviderModels: z4.string().array(), // model slug?
-  adapterName: z4.string(),
-})
-
-export const ProviderTransformSchema = z4
+export const providers = z4
   .object({
-    ...fields,
-    icon: z4.object(R.omit(iconFields, ['className'])),
+    displayName: z4.string(),
+    slug: z4.string(), // primary key
+    headquarters: z4.string().optional(), // two letter country/state code
+    datacenters: z4.string().array().optional(),
+    hasChatCompletions: z4.boolean(), // chat endpoint
+    hasCompletions: z4.boolean(), // completion endpoint
+    isAbortable: z4.boolean(),
+    moderationRequired: z4.boolean(),
+    isMultipartSupported: z4.boolean(), // messages with text/image/file parts
+    statusPageUrl: z4.url().nullable(),
+    byokEnabled: z4.boolean(),
+    icon: z4.object({
+      url: z4.string(),
+      invertRequired: z4.boolean().optional(),
+    }),
     dataPolicy: DataPolicySchemas.provider.transform,
   })
   .transform(R.pickBy(R.isNonNullish))

@@ -3,11 +3,10 @@ import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
 import * as R from 'remeda'
 
-import { diff as jsonDiff, type IChange } from 'json-diff-ts'
+import { diff as jsonDiff } from 'json-diff-ts'
 
-import { type MutationCtx } from '../../_generated/server'
-import { fnMutationLite, fnQueryLite } from '../../fnHelperLite'
-import { countResults } from '../../openrouter/utils'
+import { internalMutation } from '../../_generated/server'
+import { fnQueryLite } from '../../fnHelperLite'
 import { getModelVariantSlug, hoursBetween } from '../../shared'
 import { createTableVHelper } from '../../table3'
 import { getCurrentSnapshotTimestamp } from '../snapshot/runs'
@@ -108,31 +107,13 @@ export const table = defineTable({
 
 export const vTable = createTableVHelper('or_endpoints', table.validator)
 
-const diff = (a: unknown, b: unknown) =>
+export const diff = (a: unknown, b: unknown) =>
   jsonDiff(a, b, {
     keysToSkip: ['_id', '_creationTime', 'snapshot_at', 'stats', 'uptime_average'],
     embeddedObjKeys: {
       supported_parameters: '$value',
     },
   })
-
-// * changes
-export const changesTable = defineTable({
-  uuid: v.string(),
-  snapshot_at: v.number(),
-  changes: v.array(v.record(v.string(), v.any())),
-})
-
-export const vChangesTable = createTableVHelper('or_endpoints_changes', changesTable.validator)
-
-const recordChanges = async (
-  ctx: MutationCtx,
-  { content, changes }: { content: { uuid: string; snapshot_at: number }; changes: IChange[] },
-) => {
-  if (changes.length === 0) return
-  const { uuid, snapshot_at } = content
-  await ctx.db.insert(vChangesTable.name, { uuid, snapshot_at, changes })
-}
 
 // * queries
 export const list = fnQueryLite({
@@ -176,41 +157,35 @@ export const list = fnQueryLite({
   },
 })
 
+export const getByModelSlug = fnQueryLite({
+  args: { modelSlug: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query('or_endpoints')
+      .withIndex('by_model_slug', (q) => q.eq('model_slug', args.modelSlug))
+      .collect()
+  },
+})
+
 // * snapshots
-export const upsert = fnMutationLite({
+export const upsert = internalMutation({
   args: { items: v.array(vTable.validator) },
   handler: async (ctx, args) => {
-    const results = await asyncMap(args.items, async (item) => {
+    await asyncMap(args.items, async (item) => {
       const existing = await ctx.db
         .query(vTable.name)
         .withIndex('by_uuid', (q) => q.eq('uuid', item.uuid))
         .first()
-      const changes = diff(existing ?? {}, item)
-
-      // Record changes
-      await recordChanges(ctx, { content: item, changes })
 
       // Insert
       if (!existing) {
-        await ctx.db.insert(vTable.name, item)
-        return { action: 'insert' }
+        return await ctx.db.insert(vTable.name, item)
       }
 
-      // Stable - no changes, but update stats and uptime_average (excluded from diff)
-      if (changes.length === 0) {
-        await ctx.db.patch(existing._id, {
-          snapshot_at: item.snapshot_at,
-          stats: item.stats,
-          uptime_average: item.uptime_average,
-        })
-        return { action: 'stable' }
-      }
+      const uptime_average = item.uptime_average ?? existing.uptime_average
 
       // Update
-      await ctx.db.replace(existing._id, item)
-      return { action: 'update' }
+      return await ctx.db.replace(existing._id, { ...item, uptime_average })
     })
-
-    return countResults(results, 'endpoints')
   },
 })

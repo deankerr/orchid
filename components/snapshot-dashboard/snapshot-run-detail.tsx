@@ -1,7 +1,5 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-
 import { formatDistanceToNow } from 'date-fns'
 import { AlertTriangle, Archive, CheckCircle, Clock, XCircle } from 'lucide-react'
 
@@ -12,8 +10,9 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useSnapshotArchives } from '@/hooks/api'
+import { getConvexHttpUrl } from '@/lib/utils'
 
-import { ArchiveViewer } from './archive-viewer'
+import { RunIdBadge } from '../shared/run-id-badge'
 
 interface SnapshotRunDetailProps {
   run: Doc<'snapshot_runs'>
@@ -102,15 +101,9 @@ function getPipelineDuration(metrics: any): string {
 }
 
 export function SnapshotRunDetail({ run }: SnapshotRunDetailProps) {
-  const [selectedArchive, setSelectedArchive] = useState<string | null>(null)
-  const runId = run._id
-
-  const archives = useSnapshotArchives(run?.snapshot_at || 0)
-
-  // Reset selected archive when runId changes
-  useEffect(() => {
-    setSelectedArchive(null)
-  }, [runId])
+  const allArchives = useSnapshotArchives(run?.snapshot_at || 0)
+  // Filter archives to only show those from this specific run
+  const archives = allArchives?.filter((archive) => archive.run_id === run._id) || []
 
   if (!run) {
     return (
@@ -128,6 +121,8 @@ export function SnapshotRunDetail({ run }: SnapshotRunDetailProps) {
         {/* Left side: Status badges and metadata */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
+            {/* Primary run identifier */}
+            <RunIdBadge runId={run._id} />
             {/* Run status badge */}
             {!run.ended_at ? (
               <Badge variant="secondary">Running</Badge>
@@ -159,7 +154,9 @@ export function SnapshotRunDetail({ run }: SnapshotRunDetailProps) {
           </div>
         </div>
         {/* Right side: Snapshot timestamp */}
-        <div className="font-mono text-sm text-muted-foreground">{run.snapshot_at}</div>
+        <div className="font-mono text-xs text-muted-foreground">
+          snapshot_at: {run.snapshot_at} run_id: {run._id}
+        </div>
       </div>
 
       {/* Pipelines Section - Detailed view of each pipeline's execution */}
@@ -204,7 +201,7 @@ export function SnapshotRunDetail({ run }: SnapshotRunDetailProps) {
                     {/* Issues display - using Alert component for proper containment */}
                     {issues.length > 0 && (
                       <div className="mt-3 space-y-2">
-                        {issues.map((issue: any, idx: number) => (
+                        {issues.slice(0, 20).map((issue: any, idx: number) => (
                           <Alert key={idx} className="text-amber-500">
                             <AlertTriangle className="h-4 w-4" />
                             <AlertDescription>
@@ -261,27 +258,88 @@ export function SnapshotRunDetail({ run }: SnapshotRunDetailProps) {
         </CardHeader>
         <CardContent>
           {hasArchives ? (
-            /* Archive selection grid */
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-              {archives.map((archive) => (
-                <Button
-                  key={archive._id}
-                  variant={
-                    selectedArchive === `${run.snapshot_at}:${archive.type}` ? 'default' : 'outline'
-                  }
-                  className="h-auto flex-col p-3"
-                  onClick={() => {
-                    const archiveId = `${run.snapshot_at}:${archive.type}`
-                    setSelectedArchive(archiveId)
-                  }}
-                >
-                  <Archive className="mb-1 h-4 w-4" />
-                  <div className="text-xs font-medium">{archive.type}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {Math.round(archive.size / 1024)} KB
+            /* Grouped archive selection */
+            <div className="space-y-4">
+              {Map.groupBy(archives, (archive) => archive.type)
+                .entries()
+                .map(([type, typeArchives]) => (
+                  <div key={type} className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary" className="font-mono text-xs">
+                        {type}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {typeArchives.length} {typeArchives.length === 1 ? 'archive' : 'archives'}
+                      </span>
+                    </div>
+
+                    {typeArchives.length === 1 && !typeArchives[0].params ? (
+                      /* Single archive without params - show as simple link */
+                      <Button
+                        key={typeArchives[0]._id}
+                        variant="outline"
+                        className="h-auto w-full justify-start p-3"
+                        asChild
+                      >
+                        <a
+                          href={getConvexHttpUrl(
+                            `/archives?id=${encodeURIComponent(typeArchives[0]._id)}`,
+                          )}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Archive className="mr-2 h-4 w-4" />
+                          <span className="text-sm font-medium">{type}</span>
+                          <span className="ml-auto text-xs text-muted-foreground">
+                            {Math.round(typeArchives[0].size / 1024)} KB
+                          </span>
+                        </a>
+                      </Button>
+                    ) : (
+                      /* Multiple archives or archives with params - show as list with links */
+                      <div className="space-y-1">
+                        {typeArchives.map((archive) => (
+                          <Button
+                            key={archive._id}
+                            variant="outline"
+                            className="h-auto w-full justify-start p-3"
+                            asChild
+                          >
+                            <a
+                              href={getConvexHttpUrl(
+                                `/archives?id=${encodeURIComponent(archive._id)}`,
+                              )}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <Archive className="mr-2 h-4 w-4 flex-shrink-0" />
+                              <div className="min-w-0 flex-1 text-left">
+                                {archive.params ? (
+                                  <div className="flex min-w-0 items-center gap-2">
+                                    <span className="flex-shrink-0 text-sm font-medium">
+                                      {type}
+                                    </span>
+                                    <code
+                                      className="truncate bg-muted px-1 font-mono text-xs text-muted-foreground"
+                                      title={archive.params}
+                                    >
+                                      {archive.params}
+                                    </code>
+                                  </div>
+                                ) : (
+                                  <span className="text-sm font-medium">{type}</span>
+                                )}
+                              </div>
+                              <span className="ml-2 text-xs text-muted-foreground">
+                                {Math.round(archive.size / 1024)} KB
+                              </span>
+                            </a>
+                          </Button>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                </Button>
-              ))}
+                ))}
             </div>
           ) : (
             /* Empty state for runs without archives */
@@ -295,21 +353,6 @@ export function SnapshotRunDetail({ run }: SnapshotRunDetailProps) {
           )}
         </CardContent>
       </Card>
-
-      {/* Archive Viewer - Full-width JSON data display for selected archive */}
-      {selectedArchive && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Archive Data</CardTitle>
-            <CardDescription>
-              Viewing content for {selectedArchive.replace(':', ' - ')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ArchiveViewer archiveId={selectedArchive} />
-          </CardContent>
-        </Card>
-      )}
     </div>
   )
 }

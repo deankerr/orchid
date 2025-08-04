@@ -1,0 +1,200 @@
+{
+  "data": {
+    "id": "qwen/qwen3-235b-a22b-thinking-2507",
+    "name": "Qwen: Qwen3 235B A22B Thinking 2507",
+    "created": 1753449557,
+    "description": "Qwen3-235B-A22B-Thinking-2507 is a high-performance, open-weight Mixture-of-Experts (MoE) language model optimized for complex reasoning tasks. It activates 22B of its 235B parameters per forward pass and natively supports up to 262,144 tokens of context. This \"thinking-only\" variant enhances structured logical reasoning, mathematics, science, and long-form generation, showing strong benchmark performance across AIME, SuperGPQA, LiveCodeBench, and MMLU-Redux. It enforces a special reasoning mode (</think>) and is designed for high-token outputs (up to 81,920 tokens) in challenging domains.\n\nThe model is instruction-tuned and excels at step-by-step reasoning, tool use, agentic workflows, and multilingual tasks. This release represents the most capable open-source variant in the Qwen3-235B series, surpassing many closed models in structured reasoning use cases.",
+    "architecture": {
+      "tokenizer": "Qwen3",
+      "instruct_type": "qwen3",
+      "modality": "text->text",
+      "input_modalities": [
+        "text"
+      ],
+      "output_modalities": [
+        "text"
+      ]
+    },
+    "endpoints": [
+      {
+        "name": "Chutes | qwen/qwen3-235b-a22b-thinking-2507",
+        "context_length": 262144,
+        "pricing": {
+          "prompt": "0.0000001179",
+          "completion": "0.0000001179",
+          "request": "0",
+          "image": "0",
+          "web_search": "0",
+          "internal_reasoning": "0",
+          "discount": 0
+        },
+        "provider_name": "Chutes",
+        "tag": "chutes",
+        "quantization": null,
+        "max_completion_tokens": null,
+        "max_prompt_tokens": null,
+        "supported_parameters": [
+          "max_tokens",
+          "temperature",
+          "top_p",
+          "tools",
+          "tool_choice",
+          "reasoning",
+          "include_reasoning",
+          "stop",
+          "frequency_penalty",
+          "presence_penalty",
+          "seed",
+          "top_k",
+          "min_p",
+          "repetition_penalty",
+          "logprobs",
+          "logit_bias",
+          "top_logprobs"
+        ],
+        "status": 0,
+        "uptime_last_30m": 100
+      },
+      {
+        "name": "DeepInfra | qwen/qwen3-235b-a22b-thinking-2507",
+        "context_length": 262144,
+        "pricing": {
+          "prompt": "0.00000013",
+          "completion": "0.0000006",
+          "request": "0",
+          "image": "0",
+          "web_search": "0",
+          "internal_reasoning": "0",
+          "discount": 0
+        },
+        "provider_name": "DeepInfra",
+        "tag": "deepinfra/fp8",
+        "quantization": "fp8",
+        "max_completion_tokens": null,
+        "max_prompt_tokens": null,
+        "supported_parameters": [
+          "max_tokens",
+          "temperature",
+          "top_p",
+          "reasoning",
+          "include_reasoning",
+          "stop",
+          "frequency_penalty",
+          "presence_penalty",
+          "repetition_penalty",
+          "response_format",
+          "top_k",
+          "seed",
+          "min_p"
+        ],
+        "status": 0,
+        "uptime_last_30m": 99.85795454545455
+      },
+      {
+        "name": "Novita | qwen/qwen3-235b-a22b-thinking-2507",
+        "context_length": 131072,
+        "pricing": {
+          "prompt": "0.0000003",
+          "completion": "0.000003",
+          "request": "0",
+          "image": "0",
+          "web_search": "0",
+          "internal_reasoning": "0",
+          "discount": 0
+        },
+        "provider_name": "Novita",
+        "tag": "novita/fp8",
+        "quantization": "fp8",
+        "max_completion_tokens": 131072,
+        "max_prompt_tokens": null,
+        "supported_parameters": [
+          "max_tokens",
+          "temperature",
+          "top_p",
+          "tools",
+          "tool_choice",
+          "reasoning",
+          "include_reasoning",
+          "stop",
+          "frequency_penalty",
+          "presence_penalty",
+          "seed",
+          "top_k",
+          "min_p",
+          "repetition_penalty",
+          "logit_bias"
+        ],
+        "status": 0,
+        "uptime_last_30m": null
+      },
+      {
+        "name": "Parasail | qwen/qwen3-235b-a22b-thinking-2507",
+        "context_length": 262144,
+        "pricing": {
+          "prompt": "0.00000065",
+          "completion": "0.000003",
+          "request": "0",
+          "image": "0",
+          "web_search": "0",
+          "internal_reasoning": "0",
+          "discount": 0
+        },
+        "provider_name": "Parasail",
+        "tag": "parasail/fp8",
+        "quantization": "fp8",
+        "max_completion_tokens": 262144,
+        "max_prompt_tokens": null,
+        "supported_parameters": [
+          "max_tokens",
+          "temperature",
+          "top_p",
+          "tools",
+          "tool_choice",
+          "reasoning",
+          "include_reasoning",
+          "frequency_penalty",
+          "min_p",
+          "presence_penalty",
+          "repetition_penalty",
+          "seed",
+          "stop",
+          "top_k"
+        ],
+        "status": 0,
+        "uptime_last_30m": 100
+      },
+      {
+        "name": "Alibaba | qwen/qwen3-235b-a22b-thinking-2507",
+        "context_length": 131072,
+        "pricing": {
+          "prompt": "0.0000007",
+          "completion": "0.0000084",
+          "request": "0",
+          "image": "0",
+          "web_search": "0",
+          "internal_reasoning": "0",
+          "discount": 0
+        },
+        "provider_name": "Alibaba",
+        "tag": "alibaba",
+        "quantization": null,
+        "max_completion_tokens": null,
+        "max_prompt_tokens": 129976,
+        "supported_parameters": [
+          "max_tokens",
+          "temperature",
+          "top_p",
+          "tools",
+          "tool_choice",
+          "reasoning",
+          "include_reasoning",
+          "seed",
+          "response_format",
+          "presence_penalty"
+        ],
+        "status": 0,
+        "uptime_last_30m": null
+      }
+    ]
+  }
+}
