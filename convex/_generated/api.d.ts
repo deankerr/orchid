@@ -41,6 +41,7 @@ import type * as public_providers from "../public/providers.js";
 import type * as public_snapshots from "../public/snapshots.js";
 import type * as shared from "../shared.js";
 import type * as snapshots_crawl from "../snapshots/crawl.js";
+import type * as snapshots_crawlB from "../snapshots/crawlB.js";
 import type * as snapshots_materialize_apps from "../snapshots/materialize/apps.js";
 import type * as snapshots_materialize_materialize from "../snapshots/materialize/materialize.js";
 import type * as snapshots_materialize_modelTokenStats from "../snapshots/materialize/modelTokenStats.js";
@@ -93,6 +94,7 @@ declare const fullApi: ApiFromModules<{
   "public/snapshots": typeof public_snapshots;
   shared: typeof shared;
   "snapshots/crawl": typeof snapshots_crawl;
+  "snapshots/crawlB": typeof snapshots_crawlB;
   "snapshots/materialize/apps": typeof snapshots_materialize_apps;
   "snapshots/materialize/materialize": typeof snapshots_materialize_materialize;
   "snapshots/materialize/modelTokenStats": typeof snapshots_materialize_modelTokenStats;

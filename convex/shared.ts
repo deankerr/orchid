@@ -17,3 +17,10 @@ export function hoursBetween(from: number, to: number) {
 export function getModelVariantSlug(slug: string, variant: string) {
   return variant === 'standard' ? slug : `${slug}:${variant}`
 }
+
+export function getErrorMessage(error: unknown) {
+  if (error instanceof Error) {
+    return error.message
+  }
+  return 'Abnormal Error'
+}

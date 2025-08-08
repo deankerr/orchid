@@ -16,7 +16,7 @@ export const insert = internalMutation({
     storageId: v.id('_storage'),
   },
   handler: async (ctx, args) => {
-    await ctx.db.insert('snapshot_raw_archives', {
+    return await ctx.db.insert('snapshot_raw_archives', {
       crawl_id: args.crawlId,
       path: args.path,
       storage_id: args.storageId,
