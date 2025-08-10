@@ -48,6 +48,11 @@ import type * as snapshots_materialize_materialize from "../snapshots/materializ
 import type * as snapshots_materialize_modelTokenStats from "../snapshots/materialize/modelTokenStats.js";
 import type * as snapshots_materialize_uptimes from "../snapshots/materialize/uptimes.js";
 import type * as snapshots_materialize_utils from "../snapshots/materialize/utils.js";
+import type * as snapshots_materializeb_apps from "../snapshots/materializeb/apps.js";
+import type * as snapshots_materializeb_materialize from "../snapshots/materializeb/materialize.js";
+import type * as snapshots_materializeb_modelTokenStats from "../snapshots/materializeb/modelTokenStats.js";
+import type * as snapshots_materializeb_uptimes from "../snapshots/materializeb/uptimes.js";
+import type * as snapshots_materializeb_utils from "../snapshots/materializeb/utils.js";
 import type * as snapshots_migrateBundle from "../snapshots/migrateBundle.js";
 import type * as snapshots_transforms_apps from "../snapshots/transforms/apps.js";
 import type * as snapshots_transforms_endpoints from "../snapshots/transforms/endpoints.js";
@@ -103,6 +108,11 @@ declare const fullApi: ApiFromModules<{
   "snapshots/materialize/modelTokenStats": typeof snapshots_materialize_modelTokenStats;
   "snapshots/materialize/uptimes": typeof snapshots_materialize_uptimes;
   "snapshots/materialize/utils": typeof snapshots_materialize_utils;
+  "snapshots/materializeb/apps": typeof snapshots_materializeb_apps;
+  "snapshots/materializeb/materialize": typeof snapshots_materializeb_materialize;
+  "snapshots/materializeb/modelTokenStats": typeof snapshots_materializeb_modelTokenStats;
+  "snapshots/materializeb/uptimes": typeof snapshots_materializeb_uptimes;
+  "snapshots/materializeb/utils": typeof snapshots_materializeb_utils;
   "snapshots/migrateBundle": typeof snapshots_migrateBundle;
   "snapshots/transforms/apps": typeof snapshots_transforms_apps;
   "snapshots/transforms/endpoints": typeof snapshots_transforms_endpoints;
