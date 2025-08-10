@@ -35,3 +35,10 @@ export const getByCrawlId = internalQuery({
       .collect()
   },
 })
+
+export const getFirstCrawlId = internalQuery({
+  handler: async (ctx) => {
+    const result = await ctx.db.query('snapshot_raw_archives').first()
+    return result?.crawl_id
+  },
+})
