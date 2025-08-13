@@ -21,12 +21,6 @@ export async function getBundleFromCrawlId(
   return JSON.parse(textDecoder.decode(decompressed)) as CrawlArchiveBundle
 }
 
-/** Tiny helper to return the first matching element or undefined. */
-export function pick<T>(arr: T[], pred: (v: T) => boolean): T | undefined {
-  for (const v of arr) if (pred(v)) return v
-  return undefined
-}
-
 export function consolidateVariants(models: ReturnType<typeof Transforms.models.parse>[]) {
   return Map.groupBy(models, (m) => m.slug)
     .values()

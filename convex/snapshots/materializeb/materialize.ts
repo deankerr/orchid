@@ -6,10 +6,10 @@ import * as DB from '@/convex/db'
 import { internal } from '../../_generated/api'
 import { internalAction } from '../../_generated/server'
 import { getHourAlignedTimestamp } from '../../shared'
+import type { CrawlArchiveBundle } from '../crawlB'
 import * as Transforms from '../transforms'
 import { calculateAppsFromBundle } from './apps'
 import { calculateModelStatsFromBundle } from './modelTokenStats'
-import { calculateUptimeAverageFromBundle } from './uptimes'
 import { consolidateVariants, getBundleFromCrawlId } from './utils'
 
 export const run = internalAction({
@@ -76,46 +76,39 @@ export const run = internalAction({
     }))
 
     // --------------------------------------------------
-    // 3. Endpoints
+    // 3. Endpoints (per bundle model entry)
     // --------------------------------------------------
     const endpoints: Infer<typeof DB.OrEndpoints.vTable.validator>[] = []
 
-    for (const model of consolidatedWithStats) {
-      for (const variant of model.variants) {
-        const entry = bundle.data.models.find(
-          (m) => m.model.permaslug === model.permaslug && m.model.endpoint?.variant === variant,
-        )
-        if (!entry) continue
+    for (const entry of bundle.data.models) {
+      const model = consolidatedWithStats.find((m) => m.permaslug === entry.model.permaslug)
+      const variant = entry.model.endpoint?.variant
+      if (!model || !variant) continue
 
-        for (const item of entry.endpoints) {
-          const parsed = Transforms.endpoints.safeParse(item)
-          if (!parsed.success) {
-            issues.push({ source: `endpoint:${model.permaslug}:${variant}`, error: parsed.error })
-            continue
-          }
-
-          const uptime_average = await calculateUptimeAverageFromBundle(
-            ctx,
-            bundle,
-            parsed.data.uuid,
-          )
-
-          const endpoint = {
-            ...parsed.data,
-            model_slug: model.slug,
-            model_permaslug: model.permaslug,
-            snapshot_at,
-            uptime_average,
-            capabilities: {
-              ...parsed.data.capabilities,
-              image_input: model.input_modalities.includes('image'),
-              file_input: model.input_modalities.includes('file'),
-            },
-            or_model_created_at: model.or_created_at,
-          }
-
-          endpoints.push(endpoint)
+      for (const item of entry.endpoints) {
+        const parsed = Transforms.endpoints.safeParse(item)
+        if (!parsed.success) {
+          issues.push({ source: `endpoint:${model.permaslug}:${variant}`, error: parsed.error })
+          continue
         }
+
+        const uptime_average = await calculateUptimeAverageFromEntry(entry, parsed.data.uuid)
+
+        const endpoint = {
+          ...parsed.data,
+          model_slug: model.slug,
+          model_permaslug: model.permaslug,
+          snapshot_at,
+          uptime_average,
+          capabilities: {
+            ...parsed.data.capabilities,
+            image_input: model.input_modalities.includes('image'),
+            file_input: model.input_modalities.includes('file'),
+          },
+          or_model_created_at: model.or_created_at,
+        }
+
+        endpoints.push(endpoint)
       }
     }
 
@@ -126,7 +119,7 @@ export const run = internalAction({
       apps,
       modelAppLeaderboards,
       issues: appsIssues,
-    } = await calculateAppsFromBundle(ctx, bundle, consolidatedWithStats, snapshot_at)
+    } = await calculateAppsFromBundle(ctx, bundle, snapshot_at)
     issues.push(...appsIssues)
 
     // --------------------------------------------------
@@ -158,3 +151,22 @@ export const run = internalAction({
     return null
   },
 })
+
+/**
+ * Compute mean uptime for an endpoint UUID from the bundle's uptimes, if present.
+ */
+export async function calculateUptimeAverageFromEntry(
+  entry: CrawlArchiveBundle['data']['models'][number],
+  endpointUuid: string,
+): Promise<number | undefined> {
+  const matched = entry.endpoints.find((e) => e.id === endpointUuid)
+  if (!matched) return undefined
+  for (const raw of entry.uptimes) {
+    const parsed = Transforms.uptimes.safeParse(raw)
+    if (!parsed.success) continue
+    const series = parsed.data.filter((u) => u.uptime != null).map((u) => u.uptime!)
+    if (!series.length) return undefined
+    return series.reduce((s, u) => s + u, 0) / series.length
+  }
+  return undefined
+}

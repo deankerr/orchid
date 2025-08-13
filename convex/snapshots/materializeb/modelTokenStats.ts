@@ -38,7 +38,6 @@ export async function calculateModelStatsFromBundle(
     const parsed = Transforms.modelAuthor.safeParse(raw)
     if (!parsed.success) {
       issues.push({ source: 'modelAuthor', error: parsed.error })
-      console.log(raw)
       continue
     }
 
