@@ -5,7 +5,7 @@ import { gunzipSync } from 'fflate'
 import { internal } from '../_generated/api'
 import type { Id } from '../_generated/dataModel'
 import { internalAction, internalMutation } from '../_generated/server'
-import { storeCrawlBundle, type CrawlArchiveBundle } from './crawlB'
+import { storeCrawlBundle, type CrawlArchiveBundle } from './crawl'
 
 const textDecoder = new TextDecoder()
 
@@ -290,11 +290,12 @@ export const run = internalAction({
 
     // ok to call runAction during this one-off migration
     await ctx.runAction(internal.snapshots.migrateBundle.step1_crawlToBundle, { crawlId: crawl_id })
-    await ctx.runAction(internal.snapshots.migrateBundle.step2_deleteLegacyArchives, {
-      crawlId: crawl_id,
-    })
+    // await ctx.runAction(internal.snapshots.migrateBundle.step2_deleteLegacyArchives, {
+    //   crawlId: crawl_id,
+    // })
 
-    const schId = await ctx.scheduler.runAfter(1000 * 30, internal.snapshots.migrateBundle.run)
-    console.log(`[migrate:run] scheduled next run in 30s`, { schId })
+    const t = 1000 * 5
+    const schId = await ctx.scheduler.runAfter(t, internal.snapshots.migrateBundle.run)
+    console.log(`[migrate:run] scheduled next run in ${t / 1000}s`, { schId })
   },
 })

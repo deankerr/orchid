@@ -1,42 +1,24 @@
-import z4 from 'zod/v4'
-
 import { gunzipSync } from 'fflate'
 
+import { internal } from '../../_generated/api'
 import { type ActionCtx } from '../../_generated/server'
+import type { CrawlArchiveBundle } from '../crawl'
 import * as Transforms from '../transforms'
 
 const textDecoder = new TextDecoder()
 
-/**
- * Fetch a gzip-compressed blob from Convex storage, decompress it and
- * return its `.data` payload as an array (normalised from single objects).
- */
-export async function getFromStorage(
+export async function getBundleFromCrawlId(
   ctx: ActionCtx,
-  storageId: string,
-): Promise<{ data: unknown[] | null }> {
-  try {
-    const blob = await ctx.storage.get(storageId)
-    if (!blob) return { data: null }
-
-    const decompressed = gunzipSync(new Uint8Array(await blob.arrayBuffer()))
-    const raw = JSON.parse(textDecoder.decode(decompressed))
-
-    const UnwrapDataSchema = z4
-      .object({ data: z4.unknown() })
-      .transform(({ data }) => (Array.isArray(data) ? data : [data]) as unknown[])
-
-    return { data: UnwrapDataSchema.parse(raw) }
-  } catch (error) {
-    console.error('Failed to get data from storage:', error)
-    return { data: null }
-  }
-}
-
-/** Tiny helper to return the first matching element or undefined. */
-export function pick<T>(arr: T[], pred: (v: T) => boolean): T | undefined {
-  for (const v of arr) if (pred(v)) return v
-  return undefined
+  crawlId: string,
+): Promise<CrawlArchiveBundle | null> {
+  const archive = await ctx.runQuery(internal.db.snapshot.crawlArchives.getByCrawlId, {
+    crawl_id: crawlId,
+  })
+  if (!archive) return null
+  const blob = await ctx.storage.get(archive.storage_id)
+  if (!blob) return null
+  const decompressed = gunzipSync(new Uint8Array(await blob.arrayBuffer()))
+  return JSON.parse(textDecoder.decode(decompressed)) as CrawlArchiveBundle
 }
 
 export function consolidateVariants(models: ReturnType<typeof Transforms.models.parse>[]) {

@@ -4,10 +4,8 @@ import type z4 from 'zod/v4'
 import * as DB from '@/convex/db'
 
 import { internal } from '../../_generated/api'
-import type { Doc } from '../../_generated/dataModel'
-import { ActionCtx } from '../../_generated/server'
+import { type ActionCtx } from '../../_generated/server'
 import * as Transforms from '../transforms'
-import { getFromStorage } from './utils'
 
 function aggregateTokenMetrics({
   stats,
@@ -26,9 +24,9 @@ function aggregateTokenMetrics({
   }
 }
 
-export async function calculateModelStats(
+export async function calculateModelStatsFromBundle(
   ctx: ActionCtx,
-  archives: Doc<'snapshot_raw_archives'>[],
+  bundle: { data: { modelAuthors: Array<unknown> } },
   snapshot_at: number,
 ) {
   const modelStatsMap = new Map<string, Infer<typeof DB.OrModels.vTable.validator>['stats']>()
@@ -36,12 +34,8 @@ export async function calculateModelStats(
   const authorNameMap = new Map<string, string>()
   const issues: { source: string; error: z4.ZodError }[] = []
 
-  const authorArchives = archives.filter((r) => r.path.includes('/api/frontend/model-author'))
-  for (const authorRow of authorArchives) {
-    const { data } = await getFromStorage(ctx, authorRow.storage_id)
-    if (!data?.length) continue
-
-    const parsed = Transforms.modelAuthor.safeParse(data[0])
+  for (const raw of bundle.data.modelAuthors) {
+    const parsed = Transforms.modelAuthor.safeParse(raw)
     if (!parsed.success) {
       issues.push({ source: 'modelAuthor', error: parsed.error })
       continue

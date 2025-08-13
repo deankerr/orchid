@@ -26,7 +26,7 @@ export const snapshotCron = internalAction({
     const delayMs = cfg.delay_minutes * 60_000 + jitter
 
     // Use the new single-bundle crawler
-    await ctx.scheduler.runAfter(delayMs, internal.snapshots.crawlB.run, {
+    await ctx.scheduler.runAfter(delayMs, internal.snapshots.crawl.run, {
       apps: on(cfg.apps_every_hours),
       uptimes: on(cfg.uptimes_every_hours),
       modelAuthors: on(cfg.authors_every_hours),
@@ -35,7 +35,7 @@ export const snapshotCron = internalAction({
     // Actions have a 10m max runtime; schedule materializeb for after that window
     await ctx.scheduler.runAfter(
       delayMs + 10 * 60_000,
-      internal.snapshots.materializeb.materialize.run,
+      internal.snapshots.materialize.materialize.run,
       {},
     )
 
