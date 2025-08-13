@@ -159,14 +159,16 @@ export async function calculateUptimeAverageFromEntry(
   entry: CrawlArchiveBundle['data']['models'][number],
   endpointUuid: string,
 ): Promise<number | undefined> {
-  const matched = entry.endpoints.find((e) => e.id === endpointUuid)
-  if (!matched) return undefined
-  for (const raw of entry.uptimes) {
-    const parsed = Transforms.uptimes.safeParse(raw)
-    if (!parsed.success) continue
-    const series = parsed.data.filter((u) => u.uptime != null).map((u) => u.uptime!)
-    if (!series.length) return undefined
-    return series.reduce((s, u) => s + u, 0) / series.length
-  }
-  return undefined
+  // Find the tuple in entry.uptimes that matches this endpoint UUID
+  const match = entry.uptimes.find(([id]) => id === endpointUuid)
+  if (!match) return undefined
+
+  const [, uptimePayload] = match
+  const parsed = Transforms.uptimes.safeParse(uptimePayload)
+  if (!parsed.success) return undefined
+
+  const series = parsed.data.filter((u) => u.uptime != null).map((u) => u.uptime!)
+  if (!series.length) return undefined
+
+  return series.reduce((sum, value) => sum + value, 0) / series.length
 }

@@ -294,7 +294,7 @@ export const run = internalAction({
     //   crawlId: crawl_id,
     // })
 
-    const t = 1000 * 5
+    const t = 1000 * 10
     const schId = await ctx.scheduler.runAfter(t, internal.snapshots.migrateBundle.run)
     console.log(`[migrate:run] scheduled next run in ${t / 1000}s`, { schId })
   },

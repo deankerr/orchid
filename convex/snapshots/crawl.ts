@@ -65,7 +65,7 @@ export type CrawlArchiveBundle = {
     models: Array<{
       model: ModelsArray[number]
       endpoints: EndpointsArray
-      uptimes: Array<DataRecordItem>
+      uptimes: Array<[string, DataRecordItem]>
       apps: DataRecordItemArray
     }>
     providers: DataRecordItemArray
@@ -91,7 +91,7 @@ const CrawlArchiveBundleSchema = z4.strictObject({
       z4.strictObject({
         model: ModelMinimalSchema,
         endpoints: z4.array(EndpointMinimalSchema),
-        uptimes: z4.array(DataRecordSchema),
+        uptimes: z4.array(z4.tuple([z4.string(), DataRecordSchema])),
         apps: z4.array(DataRecordSchema),
       }),
     ),
@@ -203,7 +203,7 @@ async function fetchModelData(
           params: { id },
           schema: DataRecord,
         })
-        result.uptimes.push(uptime)
+        result.uptimes.push([id, uptime])
       } catch (err) {
         console.error('[crawl:uptimes]', { id, error: getErrorMessage(err) })
       }
