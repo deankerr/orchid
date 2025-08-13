@@ -2,10 +2,12 @@ import { v } from 'convex/values'
 import z4 from 'zod/v4'
 
 import { gzipSync } from 'fflate'
+import prettyBytes from 'pretty-bytes'
 import { up } from 'up-fetch'
 
 import { internal } from '../_generated/api'
 import { internalAction, type ActionCtx } from '../_generated/server'
+import { getErrorMessage } from '../shared'
 
 export const orFetch = up(fetch, () => ({
   baseUrl: 'https://openrouter.ai',
@@ -15,215 +17,255 @@ export const orFetch = up(fetch, () => ({
   },
 }))
 
-const ModelsSchema = z4
+// * validate only the minimum we require for the crawl, extracting the contents of the `data` prop
+const ModelsDataRecordArray = z4
   .object({
     data: z4.array(
-      z4.object({
+      z4.looseObject({
+        slug: z4.string(),
         permaslug: z4.string(),
         author: z4.string(),
-        endpoint: z4.object({ variant: z4.string() }).nullable(),
+        endpoint: z4.looseObject({ variant: z4.string() }).nullable(),
       }),
     ),
   })
-  .transform((v) =>
-    v.data.map(({ permaslug, author, endpoint }) => {
-      return {
-        permaslug,
-        author_slug: author,
-        variant: endpoint?.variant,
-      }
-    }),
-  )
+  .transform((v) => v.data)
 
-const EndpointsSchema = z4
+const EndpointsDataRecordArray = z4
   .object({
     data: z4.array(
-      z4.object({
+      z4.looseObject({
         id: z4.string(),
       }),
     ),
   })
-  .transform((v) => v.data.map((v) => v.id))
+  .transform((v) => v.data)
+
+const DataRecord = z4
+  .object({ data: z4.record(z4.string(), z4.unknown()) })
+  .transform((value) => value.data)
+
+const DataRecordArray = z4
+  .object({ data: z4.record(z4.string(), z4.unknown()).array() })
+  .transform((value) => value.data)
+
+// ----------------------------------------------
+// Single exported type and schema for the archived crawl bundle
+// ----------------------------------------------
+
+type ModelsArray = z4.infer<typeof ModelsDataRecordArray>
+type EndpointsArray = z4.infer<typeof EndpointsDataRecordArray>
+type DataRecordItem = z4.infer<typeof DataRecord>
+type DataRecordItemArray = z4.infer<typeof DataRecordArray>
+
+export type CrawlArchiveBundle = {
+  crawl_id: string
+  args: Record<string, boolean>
+  data: {
+    models: Array<{
+      model: ModelsArray[number]
+      endpoints: EndpointsArray
+      uptimes: Array<[string, DataRecordItem]>
+      apps: DataRecordItemArray
+    }>
+    providers: DataRecordItemArray
+    modelAuthors: Array<DataRecordItem>
+  }
+}
+
+const ModelMinimalSchema = z4.looseObject({
+  slug: z4.string(),
+  permaslug: z4.string(),
+  author: z4.string(),
+  endpoint: z4.looseObject({ variant: z4.string() }).nullable(),
+})
+
+const EndpointMinimalSchema = z4.looseObject({ id: z4.string() })
+const DataRecordSchema = z4.record(z4.string(), z4.unknown())
+
+const CrawlArchiveBundleSchema = z4.strictObject({
+  crawl_id: z4.string(),
+  args: z4.record(z4.string(), z4.boolean()),
+  data: z4.strictObject({
+    models: z4.array(
+      z4.strictObject({
+        model: ModelMinimalSchema,
+        endpoints: z4.array(EndpointMinimalSchema),
+        uptimes: z4.array(z4.tuple([z4.string(), DataRecordSchema])),
+        apps: z4.array(DataRecordSchema),
+      }),
+    ),
+    providers: z4.array(DataRecordSchema),
+    modelAuthors: z4.array(DataRecordSchema),
+  }),
+})
 
 export const run = internalAction({
   args: {
-    providers: v.boolean(),
-    models: v.boolean(),
-    endpoints: v.boolean(),
     apps: v.boolean(),
     uptimes: v.boolean(),
     modelAuthors: v.boolean(),
   },
   handler: async (ctx, args) => {
-    const crawlId = Date.now().toString()
+    const crawl_id = Date.now().toString()
+    console.log(`[crawl]`, { crawl_id, ...args })
 
-    console.log(`Starting crawl ${crawlId}:`, args)
-
-    // * Fetch providers first - independent of models
-    if (args.providers) {
-      await fetchProviders(ctx, crawlId, args)
+    const bundle: CrawlArchiveBundle = {
+      crawl_id,
+      args,
+      data: {
+        providers: [],
+        modelAuthors: [],
+        models: [],
+      },
     }
 
-    // * Fetch models if requested - exit early if not
-    if (!args.models) {
-      console.log(`Completed crawl ${crawlId}: models disabled`)
-      return crawlId
+    // * providers
+    try {
+      bundle.data.providers = await orFetch('/api/frontend/all-providers', {
+        schema: DataRecordArray,
+      })
+    } catch (err) {
+      console.error('[crawl:providers]', { error: getErrorMessage(err) })
     }
 
-    const modelsPath = '/api/frontend/models'
-    const modelsData = await orFetch(modelsPath)
-    await storeRawData(ctx, crawlId, modelsPath, modelsData)
-    const models = ModelsSchema.parse(modelsData)
+    // * models
+    const models = await orFetch('/api/frontend/models', { schema: ModelsDataRecordArray })
 
-    console.log(`Models fetched: ${models.length}`)
+    for (const model of models) {
+      const modelData = await fetchModelData(args, model)
+      bundle.data.models.push(modelData)
+    }
 
-    // * Process models and model authors in parallel
-    const tasks: Promise<void>[] = []
-
-    // Process models for endpoints, apps, and uptimes
-    tasks.push(processModels(ctx, crawlId, models, args))
-
-    // Extract author slugs and fetch model author data
+    // * modelAuthors
     if (args.modelAuthors) {
-      const authorSlugs = new Set(models.map((model) => model.author_slug))
-      tasks.push(fetchModelAuthors(ctx, crawlId, authorSlugs, args))
+      const modelAuthors: Array<DataRecordItem> = []
+      const authorSlugs = new Set(models.map((model) => model.author))
+
+      for (const authorSlug of authorSlugs) {
+        try {
+          const modelAuthor = await orFetch('/api/frontend/model-author', {
+            params: { authorSlug, shouldIncludeStats: true, shouldIncludeVariants: false },
+            schema: DataRecord,
+          })
+          modelAuthors.push(modelAuthor)
+        } catch (err) {
+          console.error('[crawl:modelAuthors]', { authorSlug, error: getErrorMessage(err) })
+        }
+      }
+
+      bundle.data.modelAuthors = modelAuthors
     }
 
-    await Promise.all(tasks)
-
-    console.log(`Completed crawl ${crawlId}`)
-
-    await ctx.scheduler.runAfter(1000, internal.snapshots.materialize.materialize.run, {
-      crawlId,
-    })
-
-    return crawlId
+    try {
+      await storeCrawlBundle(ctx, bundle)
+      console.log(`[crawl] complete`, { crawl_id, args })
+    } catch (err) {
+      console.error('[crawl] failed', { crawl_id, args, error: getErrorMessage(err) })
+    }
   },
 })
 
-async function fetchProviders(ctx: ActionCtx, crawlId: string, _args: any) {
-  try {
-    const providersPath = '/api/frontend/all-providers'
-    const providersData = await orFetch(providersPath)
-    await storeRawData(ctx, crawlId, providersPath, providersData)
-  } catch (error) {
-    console.error('Failed to fetch providers:', (error as Error).message)
-  }
-}
-
-async function processModels(ctx: ActionCtx, crawlId: string, models: any[], args: any) {
-  let processedCount = 0
-  let errorCount = 0
-  let uptimeCount = 0
-  let uptimeErrors = 0
-
-  for (const model of models) {
-    try {
-      // Only fetch variant-dependent endpoints if variant exists
-      if (model.variant) {
-        let endpointUuids: string[] = []
-
-        // Fetch endpoints if enabled
-        if (args.endpoints) {
-          try {
-            const endpointsPath = `/api/frontend/stats/endpoint?permaslug=${model.permaslug}&variant=${model.variant}`
-            const endpointsData = await orFetch(endpointsPath)
-            await storeRawData(ctx, crawlId, endpointsPath, endpointsData)
-
-            const endpoints = EndpointsSchema.parse(endpointsData)
-            endpointUuids = endpoints
-          } catch (error) {
-            console.error(
-              `Failed endpoints for ${model.permaslug}:${model.variant}:`,
-              (error as Error).message,
-            )
-            errorCount++
-          }
-        }
-
-        // Fetch apps if enabled
-        if (args.apps) {
-          try {
-            const appsPath = `/api/frontend/stats/app?permaslug=${model.permaslug}&variant=${model.variant}`
-            const appsData = await orFetch(appsPath)
-            await storeRawData(ctx, crawlId, appsPath, appsData)
-          } catch (error) {
-            console.error(
-              `Failed apps for ${model.permaslug}:${model.variant}:`,
-              (error as Error).message,
-            )
-            errorCount++
-          }
-        }
-
-        // Fetch uptimes for this model's endpoints if enabled
-        if (args.uptimes) {
-          for (const uuid of endpointUuids) {
-            try {
-              const uptimesPath = `/api/frontend/stats/uptime-hourly?id=${uuid}`
-              const uptimesData = await orFetch(uptimesPath)
-              await storeRawData(ctx, crawlId, uptimesPath, uptimesData)
-              uptimeCount++
-            } catch (error) {
-              console.error(`Failed uptime for ${uuid}:`, (error as Error).message)
-              uptimeErrors++
-            }
-          }
-        }
-
-        processedCount++
-      }
-    } catch (error) {
-      console.error(`Failed model ${model.permaslug}:`, (error as Error).message)
-      errorCount++
-    }
-  }
-
-  console.log(`Models: ${processedCount} processed, ${errorCount} errors`)
-  if (args.uptimes) {
-    console.log(`Uptimes: ${uptimeCount} fetched, ${uptimeErrors} errors`)
-  }
-}
-
-async function fetchModelAuthors(
-  ctx: ActionCtx,
-  crawlId: string,
-  authorSlugs: Set<string>,
-  _args: any,
+async function fetchModelData(
+  crawlArgs: { uptimes: boolean; apps: boolean },
+  model: z4.infer<typeof ModelsDataRecordArray>[number],
 ) {
-  let successCount = 0
-  let errorCount = 0
+  const result: CrawlArchiveBundle['data']['models'][number] = {
+    model,
+    endpoints: [],
+    uptimes: [],
+    apps: [],
+  }
 
-  for (const authorSlug of authorSlugs) {
-    try {
-      const authorPath = `/api/frontend/model-author?authorSlug=${authorSlug}&shouldIncludeStats=true&shouldIncludeVariants=false`
-      const authorData = await orFetch(authorPath)
-      await storeRawData(ctx, crawlId, authorPath, authorData)
-      successCount++
-    } catch (error) {
-      console.error(`Failed author ${authorSlug}:`, (error as Error).message)
-      errorCount++
+  if (!model.endpoint) {
+    return result
+  }
+
+  // * endpoints
+  try {
+    const endpoints = await orFetch('/api/frontend/stats/endpoint', {
+      params: { permaslug: model.permaslug, variant: model.endpoint.variant },
+      schema: EndpointsDataRecordArray,
+    })
+    result.endpoints = endpoints
+  } catch (err) {
+    console.error('[crawl:endpoints]', {
+      params: { permaslug: model.permaslug, variant: model.endpoint.variant },
+      error: getErrorMessage(err),
+    })
+  }
+
+  // * uptimes
+  if (crawlArgs.uptimes && result.endpoints.length) {
+    for (const { id } of result.endpoints) {
+      try {
+        const uptime = await orFetch('/api/frontend/stats/uptime-hourly', {
+          params: { id },
+          schema: DataRecord,
+        })
+        result.uptimes.push([id, uptime])
+      } catch (err) {
+        console.error('[crawl:uptimes]', { id, error: getErrorMessage(err) })
+      }
     }
   }
 
-  console.log(`Authors: ${successCount} fetched, ${errorCount} errors`)
+  // * apps
+  if (crawlArgs.apps && result.endpoints.length) {
+    try {
+      const apps = await orFetch('/api/frontend/stats/app', {
+        params: { permaslug: model.permaslug, variant: model.endpoint.variant },
+        schema: DataRecordArray,
+      })
+      result.apps = apps
+    } catch (err) {
+      console.error('[crawl:apps]', {
+        params: { permaslug: model.permaslug, variant: model.endpoint.variant },
+        error: getErrorMessage(err),
+      })
+    }
+  }
+
+  return result
 }
 
-async function storeRawData(ctx: ActionCtx, crawlId: string, path: string, data: any) {
-  try {
-    const jsonString = JSON.stringify(data)
-    const compressed = gzipSync(new TextEncoder().encode(jsonString))
+export async function storeCrawlBundle(ctx: ActionCtx, bundle: CrawlArchiveBundle) {
+  const parsed = CrawlArchiveBundleSchema.parse(bundle)
+  const jsonString = JSON.stringify(parsed)
+  const encoded = new TextEncoder().encode(jsonString)
+  const blob = new Blob([gzipSync(encoded)])
+  const storage_id = await ctx.storage.store(blob)
 
-    const blob = new Blob([compressed])
-    const storageId = await ctx.storage.store(blob)
-
-    await ctx.runMutation(internal.db.snapshot.rawArchives.insert, {
-      crawlId,
-      path,
-      storageId,
-    })
-  } catch (error) {
-    console.error(`Failed storage for ${path}:`, (error as Error).message)
-    throw error // Re-throw storage errors as they indicate system issues
+  const size = {
+    raw: encoded.byteLength,
+    blob: blob.size,
   }
+
+  const totals = {
+    models: parsed.data.models.length,
+    endpoints: parsed.data.models.reduce((sum, m) => sum + m.endpoints.length, 0),
+    apps: parsed.data.models.reduce((sum, m) => sum + m.apps.length, 0),
+    uptimes: parsed.data.models.reduce((sum, m) => sum + m.uptimes.length, 0),
+    providers: parsed.data.providers.length,
+    modelAuthors: parsed.data.modelAuthors.length,
+  }
+
+  await ctx.runMutation(internal.db.snapshot.crawlArchives.insert, {
+    crawl_id: parsed.crawl_id,
+    storage_id,
+    data: {
+      totals,
+      size,
+    },
+  })
+
+  console.log(`[crawl:store]`, {
+    crawl_id: parsed.crawl_id,
+    totals,
+    size: {
+      raw: prettyBytes(size.raw),
+      blob: prettyBytes(size.blob),
+      ratio: Math.round((size.blob / size.raw) * 1000) / 1000,
+    },
+  })
 }
