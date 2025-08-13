@@ -13,18 +13,26 @@ import { calculateUptimeAverageFromBundle } from './uptimes'
 import { consolidateVariants, getBundleFromCrawlId } from './utils'
 
 export const run = internalAction({
-  args: { crawlId: v.string() },
+  args: { crawl_id: v.optional(v.string()) },
   returns: v.null(),
-  handler: async (ctx, { crawlId }) => {
+  handler: async (ctx, args) => {
     const snapshot_at = getHourAlignedTimestamp()
 
-    const bundle = await getBundleFromCrawlId(ctx, crawlId)
-    if (!bundle) {
-      console.log(`[materializeb] no bundle for crawlId=${crawlId}`)
+    const crawl_id =
+      args.crawl_id ?? (await ctx.runQuery(internal.db.snapshot.crawlArchives.getLatestCrawlId))
+
+    if (!crawl_id) {
+      console.log(`[materializeb] no crawl_id`)
       return null
     }
 
-    console.log(`[materializeb]`, { crawlId })
+    const bundle = await getBundleFromCrawlId(ctx, crawl_id)
+    if (!bundle) {
+      console.log(`[materializeb] no bundle found`, { crawl_id })
+      return null
+    }
+
+    console.log(`[materializeb]`, { crawl_id })
 
     // --------------------------------------------------
     // 1. Providers

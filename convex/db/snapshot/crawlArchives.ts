@@ -31,3 +31,14 @@ export const getByCrawlId = internalQuery({
       .first()
   },
 })
+
+export const getLatestCrawlId = internalQuery({
+  handler: async (ctx) => {
+    return await ctx.db
+      .query('snapshot_crawl_archives')
+      .withIndex('by_crawl_id')
+      .order('desc')
+      .first()
+      .then((r) => r?.crawl_id)
+  },
+})
