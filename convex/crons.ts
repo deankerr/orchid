@@ -16,23 +16,31 @@ export const snapshotCron = internalAction({
     // helper: true  ⇒ fetch the component this tick
     const on = (every: number) => every > 0 && h % every === 0
 
-    const args = {
-      providers: on(cfg.core_every_hours),
-      models: on(cfg.core_every_hours),
-
-      endpoints: on(cfg.core_every_hours),
-      uptimes: on(cfg.uptimes_every_hours),
-      apps: on(cfg.apps_every_hours),
-      modelAuthors: on(cfg.authors_every_hours),
+    const shouldRunCore = on(cfg.core_every_hours)
+    if (!shouldRunCore) {
+      console.log('[cron:snapshot] crawl skipped for this hour')
+      return
     }
 
     const jitter = Math.floor(Math.random() * cfg.jitter_minutes * 60_000)
     const delayMs = cfg.delay_minutes * 60_000 + jitter
 
-    await ctx.scheduler.runAfter(delayMs, internal.snapshots.crawl.run, args)
+    // Use the new single-bundle crawler
+    await ctx.scheduler.runAfter(delayMs, internal.snapshots.crawlB.run, {
+      apps: on(cfg.apps_every_hours),
+      uptimes: on(cfg.uptimes_every_hours),
+      modelAuthors: on(cfg.authors_every_hours),
+    })
+
+    // Actions have a 10m max runtime; schedule materializeb for after that window
+    await ctx.scheduler.runAfter(
+      delayMs + 10 * 60_000,
+      internal.snapshots.materializeb.materialize.run,
+      {},
+    )
+
     console.log(
-      `snapshot.crawlToStorage scheduled (in ${Math.round(delayMs / 60000)}m) with args:`,
-      JSON.stringify(args),
+      `[cron:snapshot] scheduled crawlB in ${Math.round(delayMs / 60000)}m and materializeb +10m`,
     )
   },
 })

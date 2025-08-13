@@ -16,7 +16,7 @@ export const insert = internalMutation({
     storageId: v.id('_storage'),
   },
   handler: async (ctx, args) => {
-    await ctx.db.insert('snapshot_raw_archives', {
+    return await ctx.db.insert('snapshot_raw_archives', {
       crawl_id: args.crawlId,
       path: args.path,
       storage_id: args.storageId,
@@ -33,5 +33,12 @@ export const getByCrawlId = internalQuery({
       .query('snapshot_raw_archives')
       .withIndex('by_crawl_id', (q) => q.eq('crawl_id', args.crawlId))
       .collect()
+  },
+})
+
+export const getFirstCrawlId = internalQuery({
+  handler: async (ctx) => {
+    const result = await ctx.db.query('snapshot_raw_archives').first()
+    return result?.crawl_id
   },
 })
