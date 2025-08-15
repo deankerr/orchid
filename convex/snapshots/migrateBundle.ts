@@ -280,8 +280,10 @@ export const step2_deleteLegacyArchives = internalAction({
 })
 
 export const run = internalAction({
-  handler: async (ctx) => {
-    const crawl_id = await ctx.runQuery(internal.db.snapshot.rawArchives.getFirstCrawlId)
+  args: { crawl_id: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    const crawl_id =
+      args.crawl_id ?? (await ctx.runQuery(internal.db.snapshot.rawArchives.getFirstCrawlId))
 
     if (!crawl_id) {
       console.log('[migrate:run] done')
@@ -295,7 +297,7 @@ export const run = internalAction({
     // })
 
     const t = 1000 * 10
-    const schId = await ctx.scheduler.runAfter(t, internal.snapshots.migrateBundle.run)
+    const schId = await ctx.scheduler.runAfter(t, internal.snapshots.migrateBundle.run, {})
     console.log(`[migrate:run] scheduled next run in ${t / 1000}s`, { schId })
   },
 })
