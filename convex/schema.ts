@@ -4,6 +4,7 @@ import { v } from 'convex/values'
 import * as ORApps from './db/or/apps'
 import * as OREndpoints from './db/or/endpoints'
 import * as ORModelAppLeaderboards from './db/or/modelAppLeaderboards'
+import * as ORModelDetails from './db/or/modelDetails'
 import * as ORModels from './db/or/models'
 import * as ORModelTokenStats from './db/or/modelTokenStats'
 import * as ORProviders from './db/or/providers'
@@ -16,6 +17,7 @@ export const schema = defineSchema(
     or_apps: ORApps.table,
     or_endpoints: OREndpoints.table,
     or_model_app_leaderboards: ORModelAppLeaderboards.table,
+    or_model_details: ORModelDetails.table,
     or_model_token_stats: ORModelTokenStats.table,
     or_models: ORModels.table,
     or_providers: ORProviders.table,

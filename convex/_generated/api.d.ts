@@ -18,6 +18,7 @@ import type * as db_index from "../db/index.js";
 import type * as db_or_apps from "../db/or/apps.js";
 import type * as db_or_endpoints from "../db/or/endpoints.js";
 import type * as db_or_modelAppLeaderboards from "../db/or/modelAppLeaderboards.js";
+import type * as db_or_modelDetails from "../db/or/modelDetails.js";
 import type * as db_or_modelTokenStats from "../db/or/modelTokenStats.js";
 import type * as db_or_models from "../db/or/models.js";
 import type * as db_or_providers from "../db/or/providers.js";
@@ -56,6 +57,7 @@ declare const fullApi: ApiFromModules<{
   "db/or/apps": typeof db_or_apps;
   "db/or/endpoints": typeof db_or_endpoints;
   "db/or/modelAppLeaderboards": typeof db_or_modelAppLeaderboards;
+  "db/or/modelDetails": typeof db_or_modelDetails;
   "db/or/modelTokenStats": typeof db_or_modelTokenStats;
   "db/or/models": typeof db_or_models;
   "db/or/providers": typeof db_or_providers;

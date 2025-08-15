@@ -1,4 +1,5 @@
 import { asyncMap } from 'convex-helpers'
+import { deprecated } from 'convex-helpers/validators'
 import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
@@ -29,11 +30,12 @@ export const table = defineTable({
 
   name: v.string(),
   short_name: v.string(),
-  description: v.string(),
-  tokenizer: v.string(),
-  instruct_type: v.optional(v.string()),
   hugging_face_id: v.optional(v.string()),
-  warning_message: v.optional(v.string()),
+
+  description: deprecated,
+  tokenizer: deprecated,
+  instruct_type: deprecated,
+  warning_message: deprecated,
 
   context_length: v.number(),
   input_modalities: v.array(v.string()),
@@ -84,7 +86,11 @@ export const list = query({
 
 // * snapshots
 export const upsert = internalMutation({
-  args: { items: v.array(vTable.validator) },
+  args: {
+    items: v.array(
+      vTable.validator.omit('description', 'tokenizer', 'instruct_type', 'warning_message'),
+    ),
+  },
   handler: async (ctx, args) => {
     await asyncMap(args.items, async (item) => {
       const existing = await ctx.db
