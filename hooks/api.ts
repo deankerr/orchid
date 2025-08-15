@@ -28,14 +28,6 @@ export function useModelData(slug: string) {
   return modelData
 }
 
-export function useEndpointUptimes(endpoint_uuid: string) {
-  return useCachedQuery(
-    api.public.endpointUptimes.getLatest,
-    { endpoint_uuid },
-    `useEndpointUptimes (${endpoint_uuid})`,
-  )
-}
-
 type Nullish<T> = T | null | undefined
 
 export function useModelAppsLeaderboards(args: Nullish<{ permaslug: string; variants: string[] }>) {

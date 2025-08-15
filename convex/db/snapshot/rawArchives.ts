@@ -3,6 +3,8 @@ import { v } from 'convex/values'
 
 import { internalMutation, internalQuery } from '../../_generated/server'
 
+// NOTE: this table is deprecated, to be remove after archive migration is complete
+
 export const table = defineTable({
   crawl_id: v.string(),
   path: v.string(), // path + search params

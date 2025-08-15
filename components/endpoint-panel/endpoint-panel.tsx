@@ -1,7 +1,6 @@
 import type { Endpoint } from '@/hooks/api'
 
 import { ModelVariantBadge } from '../shared/model-variant-badge'
-import { UptimeTracker } from '../uptime-tracker'
 import { ProviderLogoTitle } from './provider-logo-title'
 import { CapabilitiesSection } from './sections/capabilities-section'
 import { DataPolicySection } from './sections/data-policy-section'
@@ -27,9 +26,6 @@ export function EndpointPanel({ endpoint }: { endpoint: Endpoint }) {
       </div>
 
       <ParametersSection parameters={endpoint.supported_parameters} />
-      <div className="max-w-xl">
-        <UptimeTracker endpoint_uuid={endpoint.uuid} />
-      </div>
     </div>
   )
 }
