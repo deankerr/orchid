@@ -4,11 +4,8 @@ import { v } from 'convex/values'
 
 import { diff as jsonDiff } from 'json-diff-ts'
 
-import { internalMutation } from '../../_generated/server'
-import { fnQueryLite } from '../../fnHelperLite'
-import { hoursBetween } from '../../shared'
+import { internalMutation, query } from '../../_generated/server'
 import { createTableVHelper } from '../../table3'
-import { getCurrentSnapshotTimestamp } from '../snapshot/runs'
 
 export const vModelStats = v.record(
   v.string(), // variant
@@ -69,7 +66,7 @@ export const diff = (a: unknown, b: unknown) =>
   })
 
 // * queries
-export const get = fnQueryLite({
+export const get = query({
   args: { slug: v.string() },
   handler: async (ctx, args) => {
     return await ctx.db
@@ -79,28 +76,9 @@ export const get = fnQueryLite({
   },
 })
 
-export const list = fnQueryLite({
+export const list = query({
   handler: async (ctx) => {
-    const snapshot_at = await getCurrentSnapshotTimestamp(ctx)
-    const authors = await ctx.db.query('or_authors').collect()
-
-    const models = await ctx.db
-      .query(vTable.name)
-      .collect()
-      .then(
-        (res) =>
-          res
-            .map((m) => ({
-              ...m,
-              staleness_hours: hoursBetween(m.snapshot_at, snapshot_at),
-            }))
-            .filter((m) => m.staleness_hours < 1), // NOTE: remove all stale models
-      )
-
-    return models.map((m) => ({
-      ...m,
-      author_name: authors.find((a) => a.slug === m.author_slug)?.name ?? m.author_slug,
-    }))
+    return await ctx.db.query(vTable.name).collect()
   },
 })
 

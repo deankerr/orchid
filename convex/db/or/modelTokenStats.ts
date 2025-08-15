@@ -2,8 +2,7 @@ import { asyncMap } from 'convex-helpers'
 import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
-import { internalMutation } from '../../_generated/server'
-import { fnQueryLite } from '../../fnHelperLite'
+import { internalMutation, query } from '../../_generated/server'
 import { createTableVHelper } from '../../table3'
 
 export const table = defineTable({
@@ -27,7 +26,7 @@ export const table = defineTable({
 export const vTable = createTableVHelper('or_model_token_stats', table.validator)
 
 // * queries
-export const get = fnQueryLite({
+export const get = query({
   args: {
     permaslug: v.string(),
     variants: v.array(v.string()),

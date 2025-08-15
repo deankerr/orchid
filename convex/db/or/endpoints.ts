@@ -5,11 +5,9 @@ import * as R from 'remeda'
 
 import { diff as jsonDiff } from 'json-diff-ts'
 
-import { internalMutation } from '../../_generated/server'
-import { fnQueryLite } from '../../fnHelperLite'
-import { getModelVariantSlug, hoursBetween } from '../../shared'
+import { internalMutation, query } from '../../_generated/server'
+import { getModelVariantSlug } from '../../shared'
 import { createTableVHelper } from '../../table3'
-import { getCurrentSnapshotTimestamp } from '../snapshot/runs'
 
 export const table = defineTable({
   uuid: v.string(),
@@ -116,22 +114,12 @@ export const diff = (a: unknown, b: unknown) =>
   })
 
 // * queries
-export const list = fnQueryLite({
+export const list = query({
   handler: async (ctx) => {
-    const snapshot_at = await getCurrentSnapshotTimestamp(ctx)
     const results = await ctx.db
       .query('or_endpoints')
       .collect()
-      .then(
-        (res) =>
-          res
-            .map((endp) => ({
-              ...endp,
-              staleness_hours: hoursBetween(endp.snapshot_at, snapshot_at),
-            }))
-            .filter((endp) => endp.staleness_hours < 1) // NOTE: remove all stale endpoints
-            .filter((endp) => !endp.is_disabled), // NOTE: remove disabled endpoints
-      )
+      .then((res) => res.filter((endp) => !endp.is_disabled))
 
     return Map.groupBy(results, (r) => getModelVariantSlug(r.model_slug, r.model_variant))
       .entries()
@@ -157,7 +145,7 @@ export const list = fnQueryLite({
   },
 })
 
-export const getByModelSlug = fnQueryLite({
+export const getByModelSlug = query({
   args: { modelSlug: v.string() },
   handler: async (ctx, args) => {
     return await ctx.db

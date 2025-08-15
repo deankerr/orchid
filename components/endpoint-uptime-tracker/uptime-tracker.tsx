@@ -2,13 +2,16 @@ import { memo } from 'react'
 
 import { getHourAlignedTimestamp } from '@/convex/shared'
 
-import { useEndpointUptimes } from '@/hooks/api'
 import { formatTimestampToYMDHM } from '@/lib/utils'
 
 import { Tracker } from './tracker'
 
-function UptimeTracker_({ endpoint_uuid }: { endpoint_uuid: string }) {
-  const uptimeMetrics = useEndpointUptimes(endpoint_uuid)
+function UptimeTracker_({}: { endpoint_uuid: string }) {
+  // NOTE: backend functionality is disabled
+  // const uptimeMetrics = useEndpointUptimes(endpoint_uuid)
+  const uptimeMetrics = {
+    latest_72h: [] as any[],
+  }
 
   if (!uptimeMetrics) {
     return <div className="font-mono text-sm text-muted-foreground">Loading...</div>

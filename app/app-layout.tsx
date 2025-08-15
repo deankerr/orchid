@@ -1,8 +1,6 @@
 import Link from 'next/link'
 
 import { DevBreakpointIndicator } from '@/components/dev-utils/dev-breakpoint-indicator'
-import { FeatureFlag } from '@/components/dev-utils/feature-flag'
-import { SnapshotStatusIndicator } from '@/components/snapshot-status-indicator'
 import { Button } from '@/components/ui/button'
 
 import { AppNav } from './app-nav'
@@ -16,12 +14,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </Button>
 
         <AppNav />
-
-        <FeatureFlag flag="snapshots">
-          <div className="flex items-center justify-end gap-3">
-            <SnapshotStatusIndicator />
-          </div>
-        </FeatureFlag>
       </header>
       {children}
       <DevBreakpointIndicator />
