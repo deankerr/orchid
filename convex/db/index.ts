@@ -1,7 +1,6 @@
 export * as OrModels from './or/models'
 export * as OrEndpoints from './or/endpoints'
 export * as OrProviders from './or/providers'
-export * as OrAuthors from './or/authors'
 export * as OrApps from './or/apps'
 export * as OrModelTokenStats from './or/modelTokenStats'
 export * as OrModelAppLeaderboards from './or/modelAppLeaderboards'

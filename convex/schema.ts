@@ -2,7 +2,6 @@ import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
 import * as ORApps from './db/or/apps'
-import * as ORAuthors from './db/or/authors'
 import * as OREndpoints from './db/or/endpoints'
 import * as ORModelAppLeaderboards from './db/or/modelAppLeaderboards'
 import * as ORModels from './db/or/models'
@@ -15,7 +14,6 @@ import * as SnapshotRawArchives from './db/snapshot/rawArchives'
 export const schema = defineSchema(
   {
     or_apps: ORApps.table,
-    or_authors: ORAuthors.table,
     or_endpoints: OREndpoints.table,
     or_model_app_leaderboards: ORModelAppLeaderboards.table,
     or_model_token_stats: ORModelTokenStats.table,

@@ -16,7 +16,6 @@ import type {
 import type * as crons from "../crons.js";
 import type * as db_index from "../db/index.js";
 import type * as db_or_apps from "../db/or/apps.js";
-import type * as db_or_authors from "../db/or/authors.js";
 import type * as db_or_endpoints from "../db/or/endpoints.js";
 import type * as db_or_modelAppLeaderboards from "../db/or/modelAppLeaderboards.js";
 import type * as db_or_modelTokenStats from "../db/or/modelTokenStats.js";
@@ -61,7 +60,6 @@ declare const fullApi: ApiFromModules<{
   crons: typeof crons;
   "db/index": typeof db_index;
   "db/or/apps": typeof db_or_apps;
-  "db/or/authors": typeof db_or_authors;
   "db/or/endpoints": typeof db_or_endpoints;
   "db/or/modelAppLeaderboards": typeof db_or_modelAppLeaderboards;
   "db/or/modelTokenStats": typeof db_or_modelTokenStats;
