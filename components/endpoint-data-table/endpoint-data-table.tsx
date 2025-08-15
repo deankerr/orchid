@@ -12,8 +12,6 @@ import {
   type VisibilityState,
 } from '@tanstack/react-table'
 
-import type { Doc } from '@/convex/_generated/dataModel'
-
 import {
   Table,
   TableBody,
@@ -45,12 +43,11 @@ const DEFAULT_HIDDEN_COLUMNS: VisibilityState = {
 }
 
 interface EndpointDataTableProps {
-  model: Doc<'or_models'>
   endpoints: Endpoint[]
   defaultHiddenColumns?: VisibilityState
 }
 
-export function EndpointDataTable({ model: _model, endpoints }: EndpointDataTableProps) {
+export function EndpointDataTable({ endpoints }: EndpointDataTableProps) {
   const [sorting, setSorting] = useState<SortingState>([{ id: 'provider', desc: false }])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(DEFAULT_HIDDEN_COLUMNS)
 

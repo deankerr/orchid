@@ -1,3 +1,4 @@
+import { omit, pick } from 'convex-helpers'
 import { v, type Infer } from 'convex/values'
 import type z4 from 'zod/v4'
 
@@ -22,17 +23,17 @@ export const run = internalAction({
       args.crawl_id ?? (await ctx.runQuery(internal.db.snapshot.crawlArchives.getLatestCrawlId))
 
     if (!crawl_id) {
-      console.log(`[materializeb] no crawl_id`)
+      console.log(`[materialize] no crawl_id`)
       return null
     }
 
     const bundle = await getBundleFromCrawlId(ctx, crawl_id)
     if (!bundle) {
-      console.log(`[materializeb] no bundle found`, { crawl_id })
+      console.log(`[materialize] no bundle found`, { crawl_id })
       return null
     }
 
-    console.log(`[materializeb]`, { crawl_id })
+    console.log(`[materialize]`, { crawl_id })
 
     // --------------------------------------------------
     // 1. Providers
@@ -128,13 +129,25 @@ export const run = internalAction({
     if (providers.length)
       await ctx.runMutation(internal.db.or.providers.upsert, { items: providers })
 
-    if (consolidatedWithStats.length)
-      await ctx.runMutation(internal.db.or.models.upsert, { items: consolidatedWithStats })
+    if (consolidatedWithStats.length) {
+      // Extract model details fields for separate table
+      const modelDetails = consolidatedWithStats.map((m) =>
+        pick(m, ['slug', 'description', 'tokenizer', 'instruct_type', 'warning_message']),
+      )
+
+      // Remove model details fields from models before upserting
+      const modelsWithoutDetails = consolidatedWithStats.map((m) =>
+        omit(m, ['description', 'tokenizer', 'instruct_type', 'warning_message']),
+      )
+
+      await ctx.runMutation(internal.db.or.models.upsert, { items: modelsWithoutDetails })
+      await ctx.runMutation(internal.db.or.modelDetails.upsert, { items: modelDetails })
+    }
 
     if (endpoints.length)
       await ctx.runMutation(internal.db.or.endpoints.upsert, { items: endpoints })
 
-    console.log(`[materializeb] done`, {
+    console.log(`[materialize] done`, {
       providers: providers.length,
       models: consolidatedWithStats.length,
       endpoints: endpoints.length,
@@ -145,7 +158,7 @@ export const run = internalAction({
     })
 
     if (issues.length) {
-      console.warn('[materializeb] issues:', issues.slice(0, 5))
+      console.warn('[materialize] issues:', issues.slice(0, 5))
     }
 
     return null

@@ -117,7 +117,7 @@ export function ModelPage({ slug }: { slug: string }) {
       {/* Endpoints  */}
       {model.endpoints && model.endpoints.length > 0 ? (
         <>
-          <EndpointDataTable model={model} endpoints={model.endpoints} />
+          <EndpointDataTable endpoints={model.endpoints} />
 
           <FeatureFlag flag="endpoint-panels">
             {model.endpoints.map((endpoint) => (

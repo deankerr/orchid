@@ -48,17 +48,10 @@ export async function calculateModelStatsFromBundle(
       modelTokenStats.push({ ...m, snapshot_at })
 
       const stats7d = aggregateTokenMetrics({ stats, days: 7 })
-      const stats30d = aggregateTokenMetrics({ stats, days: 30 })
-      const stats90d = aggregateTokenMetrics({ stats, days: 90 })
 
       if (!modelStatsMap.has(model_permaslug)) modelStatsMap.set(model_permaslug, {})
       modelStatsMap.get(model_permaslug)![model_variant] = {
         tokens_7d: stats7d.tokens,
-        tokens_30d: stats30d.tokens,
-        tokens_90d: stats90d.tokens,
-        requests_7d: stats7d.requests,
-        requests_30d: stats30d.requests,
-        requests_90d: stats90d.requests,
       }
     }
   }
