@@ -48,6 +48,8 @@ export const table = defineTable({
     ),
   }),
 
+  icon_url: v.optional(v.string()),
+
   snapshot_at: v.number(),
 }).index('by_slug', ['slug'])
 

@@ -55,7 +55,7 @@ export function ModelPage({ slug }: { slug: string }) {
     <PageContainer className="space-y-12">
       <PageHeader>
         <PageTitle>
-          <BrandIcon slug={model.slug} size={24} />
+          <BrandIcon url={model.icon_url} size={24} />
           {model.name}
         </PageTitle>
 

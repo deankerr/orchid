@@ -98,6 +98,8 @@ export const table = defineTable({
 
   or_model_created_at: v.number(),
 
+  icon_url: v.optional(v.string()),
+
   snapshot_at: v.number(),
 })
   .index('by_uuid', ['uuid'])
