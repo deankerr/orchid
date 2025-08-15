@@ -279,14 +279,14 @@ export const step2_deleteLegacyArchives = internalAction({
   },
 })
 
+const runDelaySec = 10
 export const run = internalAction({
-  args: { crawl_id: v.optional(v.string()) },
+  args: { crawl_id: v.string() },
   handler: async (ctx, args) => {
-    const crawl_id =
-      args.crawl_id ?? (await ctx.runQuery(internal.db.snapshot.rawArchives.getFirstCrawlId))
+    const crawl_id = args.crawl_id
 
     if (!crawl_id) {
-      console.log('[migrate:run] done')
+      console.log('[migrate:run] no crawl_id provided')
       return
     }
 
@@ -296,8 +296,26 @@ export const run = internalAction({
     //   crawlId: crawl_id,
     // })
 
-    const t = 1000 * 10
-    const schId = await ctx.scheduler.runAfter(t, internal.snapshots.migrateBundle.run, {})
-    console.log(`[migrate:run] scheduled next run in ${t / 1000}s`, { schId })
+    // Get the next crawl ID to process
+    const nextCrawlId = await ctx.runQuery(internal.db.snapshot.rawArchives.getNextCrawlId, {
+      afterCrawlId: crawl_id,
+    })
+
+    if (nextCrawlId) {
+      const schId = await ctx.scheduler.runAfter(
+        runDelaySec * 1000,
+        internal.snapshots.migrateBundle.run,
+        {
+          crawl_id: nextCrawlId,
+        },
+      )
+      console.log(`[migrate:run] scheduled next run in ${runDelaySec}s`, {
+        schId,
+        nextCrawlId,
+        completedCrawlId: crawl_id,
+      })
+    } else {
+      console.log('[migrate:run] completed all crawls', { lastCrawlId: crawl_id })
+    }
   },
 })

@@ -42,3 +42,18 @@ export const getFirstCrawlId = internalQuery({
     return result?.crawl_id
   },
 })
+
+export const getNextCrawlId = internalQuery({
+  args: {
+    afterCrawlId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // Get all crawl IDs ordered by creation time
+    const allCrawls = await ctx.db
+      .query('snapshot_raw_archives')
+      .withIndex('by_crawl_id', (q) => q.gt('crawl_id', args.afterCrawlId))
+      .first()
+
+    return allCrawls?.crawl_id
+  },
+})
