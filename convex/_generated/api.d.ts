@@ -25,12 +25,6 @@ import type * as db_snapshot_crawlArchives from "../db/snapshot/crawlArchives.js
 import type * as db_snapshot_crawlConfig from "../db/snapshot/crawlConfig.js";
 import type * as db_snapshot_rawArchives from "../db/snapshot/rawArchives.js";
 import type * as dev from "../dev.js";
-import type * as fnHelperLite from "../fnHelperLite.js";
-import type * as public_endpoints from "../public/endpoints.js";
-import type * as public_modelAppLeaderboards from "../public/modelAppLeaderboards.js";
-import type * as public_modelTokenStats from "../public/modelTokenStats.js";
-import type * as public_models from "../public/models.js";
-import type * as public_providers from "../public/providers.js";
 import type * as shared from "../shared.js";
 import type * as snapshots_crawl from "../snapshots/crawl.js";
 import type * as snapshots_materialize_apps from "../snapshots/materialize/apps.js";
@@ -69,12 +63,6 @@ declare const fullApi: ApiFromModules<{
   "db/snapshot/crawlConfig": typeof db_snapshot_crawlConfig;
   "db/snapshot/rawArchives": typeof db_snapshot_rawArchives;
   dev: typeof dev;
-  fnHelperLite: typeof fnHelperLite;
-  "public/endpoints": typeof public_endpoints;
-  "public/modelAppLeaderboards": typeof public_modelAppLeaderboards;
-  "public/modelTokenStats": typeof public_modelTokenStats;
-  "public/models": typeof public_models;
-  "public/providers": typeof public_providers;
   shared: typeof shared;
   "snapshots/crawl": typeof snapshots_crawl;
   "snapshots/materialize/apps": typeof snapshots_materialize_apps;

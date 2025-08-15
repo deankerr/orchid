@@ -6,12 +6,12 @@ import { useCachedQuery } from './use-cached-query'
 
 export type Model = NonNullable<ReturnType<typeof useModelsList>>[number]
 export function useModelsList() {
-  return useCachedQuery(api.public.models.list, {}, 'useModelsList')
+  return useCachedQuery(api.db.or.models.list, {}, 'useModelsList')
 }
 
 export type Endpoint = NonNullable<ReturnType<typeof useEndpointsList>>[number]
 export function useEndpointsList() {
-  return useCachedQuery(api.public.endpoints.list, {}, 'useEndpointsList')
+  return useCachedQuery(api.db.or.endpoints.list, {}, 'useEndpointsList')
 }
 
 export function useModelData(slug: string) {
@@ -32,7 +32,7 @@ type Nullish<T> = T | null | undefined
 
 export function useModelAppsLeaderboards(args: Nullish<{ permaslug: string; variants: string[] }>) {
   return useCachedQuery(
-    api.public.modelAppLeaderboards.get,
+    api.db.or.modelAppLeaderboards.get,
     args ? { permaslug: args.permaslug, variants: args.variants } : 'skip',
     `useModelAppsLeaderboard (${args?.permaslug}, ${args?.variants.join(', ')})`,
   )
@@ -40,12 +40,12 @@ export function useModelAppsLeaderboards(args: Nullish<{ permaslug: string; vari
 
 export function useModelTokenStats(args: Nullish<{ permaslug: string; variants: string[] }>) {
   return useCachedQuery(
-    api.public.modelTokenStats.get,
+    api.db.or.modelTokenStats.get,
     args ? { permaslug: args.permaslug, variants: args.variants } : 'skip',
     `useModelTokenStats (${args?.permaslug}, ${args?.variants.join(', ')})`,
   )
 }
 
 export function useProvidersList() {
-  return useCachedQuery(api.public.providers.list, {})
+  return useCachedQuery(api.db.or.providers.list, {})
 }

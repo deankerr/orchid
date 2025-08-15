@@ -4,8 +4,7 @@ import { v } from 'convex/values'
 
 import { diff as jsonDiff } from 'json-diff-ts'
 
-import { internalMutation } from '../../_generated/server'
-import { fnQueryLite } from '../../fnHelperLite'
+import { internalMutation, query } from '../../_generated/server'
 import { createTableVHelper } from '../../table3'
 
 export const vModelStats = v.record(
@@ -67,7 +66,7 @@ export const diff = (a: unknown, b: unknown) =>
   })
 
 // * queries
-export const get = fnQueryLite({
+export const get = query({
   args: { slug: v.string() },
   handler: async (ctx, args) => {
     return await ctx.db
@@ -77,16 +76,9 @@ export const get = fnQueryLite({
   },
 })
 
-export const list = fnQueryLite({
+export const list = query({
   handler: async (ctx) => {
-    const authors = await ctx.db.query('or_authors').collect()
-
-    const models = await ctx.db.query(vTable.name).collect()
-
-    return models.map((m) => ({
-      ...m,
-      author_name: authors.find((a) => a.slug === m.author_slug)?.name ?? m.author_slug,
-    }))
+    return await ctx.db.query(vTable.name).collect()
   },
 })
 
