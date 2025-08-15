@@ -12,11 +12,11 @@ export const vModelStats = v.record(
   v.string(), // variant
   v.object({
     tokens_7d: v.number(),
-    tokens_30d: v.number(),
-    tokens_90d: v.number(),
-    requests_7d: v.number(),
-    requests_30d: v.number(),
-    requests_90d: v.number(),
+    tokens_30d: deprecated,
+    tokens_90d: deprecated,
+    requests_7d: deprecated,
+    requests_30d: deprecated,
+    requests_90d: deprecated,
   }),
 )
 
