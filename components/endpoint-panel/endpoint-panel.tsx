@@ -13,7 +13,7 @@ export function EndpointPanel({ endpoint }: { endpoint: Endpoint }) {
   return (
     <div className="space-y-6 font-mono">
       <div className="flex items-center gap-2 border-b pb-1.5 font-sans">
-        <ProviderLogoTitle slug={endpoint.provider_slug} name={endpoint.provider_name} />
+        <ProviderLogoTitle icon_url={endpoint.icon_url} name={endpoint.provider_name} />
         <ModelVariantBadge modelVariant={endpoint.model_variant} />
       </div>
 

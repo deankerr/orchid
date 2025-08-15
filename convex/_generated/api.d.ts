@@ -29,6 +29,7 @@ import type * as dev from "../dev.js";
 import type * as shared from "../shared.js";
 import type * as snapshots_crawl from "../snapshots/crawl.js";
 import type * as snapshots_materialize_apps from "../snapshots/materialize/apps.js";
+import type * as snapshots_materialize_icons from "../snapshots/materialize/icons.js";
 import type * as snapshots_materialize_materialize from "../snapshots/materialize/materialize.js";
 import type * as snapshots_materialize_modelTokenStats from "../snapshots/materialize/modelTokenStats.js";
 import type * as snapshots_materialize_utils from "../snapshots/materialize/utils.js";
@@ -68,6 +69,7 @@ declare const fullApi: ApiFromModules<{
   shared: typeof shared;
   "snapshots/crawl": typeof snapshots_crawl;
   "snapshots/materialize/apps": typeof snapshots_materialize_apps;
+  "snapshots/materialize/icons": typeof snapshots_materialize_icons;
   "snapshots/materialize/materialize": typeof snapshots_materialize_materialize;
   "snapshots/materialize/modelTokenStats": typeof snapshots_materialize_modelTokenStats;
   "snapshots/materialize/utils": typeof snapshots_materialize_utils;

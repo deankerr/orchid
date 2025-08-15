@@ -10,6 +10,7 @@ import { getHourAlignedTimestamp } from '../../shared'
 import type { CrawlArchiveBundle } from '../crawl'
 import * as Transforms from '../transforms'
 import { calculateAppsFromBundle } from './apps'
+import { getIconUrl } from './icons'
 import { calculateModelStatsFromBundle } from './modelTokenStats'
 import { consolidateVariants, getBundleFromCrawlId } from './utils'
 
@@ -42,7 +43,12 @@ export const run = internalAction({
     const issues: { source: string; error: z4.ZodError }[] = []
     for (const item of bundle.data.providers) {
       const parsed = Transforms.providers.safeParse(item)
-      if (parsed.success) providers.push({ ...parsed.data, snapshot_at })
+      if (parsed.success)
+        providers.push({
+          ...parsed.data,
+          snapshot_at,
+          icon_url: getIconUrl(parsed.data.slug) ?? parsed.data.icon.url,
+        })
       else issues.push({ source: 'providers', error: parsed.error })
     }
 
@@ -74,6 +80,7 @@ export const run = internalAction({
       ...m,
       stats: modelStatsMap.get(m.permaslug) || {},
       author_name: authorNameMap.get(m.author_slug) ?? m.author_slug,
+      icon_url: getIconUrl(m.slug),
     }))
 
     // --------------------------------------------------
@@ -107,6 +114,12 @@ export const run = internalAction({
             file_input: model.input_modalities.includes('file'),
           },
           or_model_created_at: model.or_created_at,
+          icon_url: providers.find((p) => p.slug === parsed.data.provider_slug.split('/')[0])
+            ?.icon_url,
+        }
+
+        if (!endpoint.icon_url) {
+          console.log(endpoint, parsed.data)
         }
 
         endpoints.push(endpoint)

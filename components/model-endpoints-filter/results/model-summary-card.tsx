@@ -3,12 +3,12 @@
 import { memo } from 'react'
 import Link from 'next/link'
 
+import { BrandIcon } from '@/components/brand-icon/brand-icon'
 import { Pill } from '@/components/shared/pill'
 import { useEndpointsList, useModelsList } from '@/hooks/api'
 import { formatCompactNumber } from '@/lib/formatters'
 import { cn, formatIsoDate } from '@/lib/utils'
 
-import { BrandIcon } from '../../brand-icon/brand-icon'
 import { NumericValue, PricingProperty } from '../../shared/numeric-value'
 import { Badge } from '../../ui/badge'
 import { getModelCapabilities, type FilterResult } from '../filter'
@@ -58,7 +58,7 @@ export const ModelSummaryCard = memo<ModelSummaryCardProps>(({ result }) => {
       <div className="space-y-4 px-3">
         <div className="flex items-center justify-between pl-1">
           <div className="flex items-center gap-3">
-            <BrandIcon slug={model.slug} size={20} />
+            <BrandIcon url={model.icon_url} size={20} />
 
             <div className="text-base font-semibold md:text-lg">
               <Link href={`/models/${model.slug}`} className="transition-colors hover:text-primary">
@@ -128,7 +128,7 @@ const EndpointItem = memo<EndpointItemProps>(({ endpoint }) => {
     <div className="grid grid-cols-8 gap-1 rounded-sm bg-secondary py-2 font-mono text-sm">
       <div className={cn('col-span-2 flex items-center gap-2 font-sans')}>
         {/* Provider */}
-        <BrandIcon slug={endpoint.provider_slug} size={16} />
+        <BrandIcon url={endpoint.icon_url} size={16} />
         <div className="min-w-0 truncate font-medium">{endpoint.provider_name}</div>
 
         {/* Variant */}

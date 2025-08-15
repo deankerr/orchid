@@ -23,7 +23,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
       const endpoint = row.original
       return (
         <div className={cn('flex items-center gap-3 px-0.5 font-sans font-medium')}>
-          <BrandIcon slug={endpoint.provider_slug} size={16} />
+          <BrandIcon url={endpoint.icon_url} size={16} />
           <span>{endpoint.provider_name}</span>
           <ModelVariantBadge modelVariant={endpoint.model_variant} />
 

@@ -52,6 +52,8 @@ export const table = defineTable({
 
   stats: vModelStats,
 
+  icon_url: v.optional(v.string()),
+
   snapshot_at: v.number(),
 }).index('by_slug', ['slug'])
 
