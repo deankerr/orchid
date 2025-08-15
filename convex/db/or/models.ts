@@ -6,9 +6,7 @@ import { diff as jsonDiff } from 'json-diff-ts'
 
 import { internalMutation } from '../../_generated/server'
 import { fnQueryLite } from '../../fnHelperLite'
-import { hoursBetween } from '../../shared'
 import { createTableVHelper } from '../../table3'
-import { getCurrentSnapshotTimestamp } from '../snapshot/runs'
 
 export const vModelStats = v.record(
   v.string(), // variant
@@ -81,21 +79,9 @@ export const get = fnQueryLite({
 
 export const list = fnQueryLite({
   handler: async (ctx) => {
-    const snapshot_at = await getCurrentSnapshotTimestamp(ctx)
     const authors = await ctx.db.query('or_authors').collect()
 
-    const models = await ctx.db
-      .query(vTable.name)
-      .collect()
-      .then(
-        (res) =>
-          res
-            .map((m) => ({
-              ...m,
-              staleness_hours: hoursBetween(m.snapshot_at, snapshot_at),
-            }))
-            .filter((m) => m.staleness_hours < 1), // NOTE: remove all stale models
-      )
+    const models = await ctx.db.query(vTable.name).collect()
 
     return models.map((m) => ({
       ...m,

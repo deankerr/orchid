@@ -57,19 +57,3 @@ export function useModelTokenStats(args: Nullish<{ permaslug: string; variants: 
 export function useProvidersList() {
   return useCachedQuery(api.public.providers.list, {})
 }
-
-export function useSnapshotStatus() {
-  return useCachedQuery(api.public.snapshots.getSnapshotStatus, {}, 'useSnapshotStatus')
-}
-
-export function useSnapshotRuns(limit?: number) {
-  return useCachedQuery(api.public.snapshots.getSnapshotRuns, { limit }, 'useSnapshotRuns')
-}
-
-export function useSnapshotArchives(snapshot_at: number) {
-  return useCachedQuery(
-    api.public.snapshots.getSnapshotArchives,
-    { snapshot_at },
-    `useSnapshotArchives (${snapshot_at})`,
-  )
-}

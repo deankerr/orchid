@@ -10,12 +10,9 @@ import * as ORModelAppLeaderboards from './db/or/modelAppLeaderboards'
 import * as ORModels from './db/or/models'
 import * as ORModelTokenStats from './db/or/modelTokenStats'
 import * as ORProviders from './db/or/providers'
-import * as SnapshotArchives from './db/snapshot/archives'
 import * as SnapshotCrawlArchives from './db/snapshot/crawlArchives'
 import * as SnapshotCrawlConfig from './db/snapshot/crawlConfig'
 import * as SnapshotRawArchives from './db/snapshot/rawArchives'
-import * as SnapshotRuns from './db/snapshot/runs'
-import * as SnapshotSchedule from './db/snapshot/schedule'
 
 export const schema = defineSchema(
   {
@@ -31,10 +28,7 @@ export const schema = defineSchema(
 
     snapshot_crawl_config: SnapshotCrawlConfig.table,
     snapshot_crawl_archives: SnapshotCrawlArchives.table,
-    snapshot_archives: SnapshotArchives.table,
     snapshot_raw_archives: SnapshotRawArchives.table,
-    snapshot_runs: SnapshotRuns.table,
-    snapshot_schedule: SnapshotSchedule.table,
 
     // version 0 archived data
     snapshots: defineTable({
