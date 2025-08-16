@@ -6,7 +6,7 @@ import type { Endpoint } from '@/hooks/api'
 import { cn } from '@/lib/utils'
 
 import { AttributeBadge } from '../attributes'
-import { BrandIcon } from '../brand-icon/brand-icon'
+import { BrandIcon } from '../shared/brand-icon'
 import { EndpointDerankedBadge } from '../shared/endpoint-deranked-badge'
 import { ModelVariantBadge } from '../shared/model-variant-badge'
 import { NumericValue, PricingProperty } from '../shared/numeric-value'

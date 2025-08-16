@@ -4,15 +4,15 @@ import { memo } from 'react'
 import Link from 'next/link'
 
 import { AttributeBadge } from '@/components/attributes'
-import { BrandIcon } from '@/components/brand-icon/brand-icon'
+import { BrandIcon } from '@/components/shared/brand-icon'
+import { NumericValue, PricingProperty } from '@/components/shared/numeric-value'
 import { Pill } from '@/components/shared/pill'
 import { useEndpointsList, useModelsList } from '@/hooks/api'
 import { formatCompactNumber } from '@/lib/formatters'
 import { cn, formatIsoDate } from '@/lib/utils'
 
-import { NumericValue, PricingProperty } from '../../shared/numeric-value'
-import { Badge } from '../../ui/badge'
-import { getModelCapabilities, type FilterResult } from '../filter'
+import { ModelVariantBadge } from '../shared/model-variant-badge'
+import { getModelCapabilities, type FilterResult } from './filter'
 
 interface ModelSummaryCardProps {
   result: FilterResult
@@ -126,9 +126,7 @@ const EndpointItem = memo<EndpointItemProps>(({ endpoint }) => {
         <div className="min-w-0 truncate font-medium">{endpoint.provider_name}</div>
 
         {/* Variant */}
-        {endpoint.model_variant !== 'standard' && (
-          <Badge variant="outline">{endpoint.model_variant}</Badge>
-        )}
+        <ModelVariantBadge modelVariant={endpoint.model_variant} />
       </div>
 
       {/* Metrics */}

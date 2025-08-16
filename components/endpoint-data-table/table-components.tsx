@@ -6,19 +6,9 @@
 'use client'
 
 import type { Column } from '@tanstack/react-table'
-import {
-  AlertTriangleIcon,
-  ChevronDownIcon,
-  ChevronsUpDownIcon,
-  ChevronUpIcon,
-  CircleCheckIcon,
-} from 'lucide-react'
-
-import type { Doc } from '@/convex/_generated/dataModel'
+import { ChevronDownIcon, ChevronsUpDownIcon, ChevronUpIcon } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
-
-import { Badge } from '../ui/badge'
 
 // Sortable header component
 interface SortableHeaderProps<TData> {
@@ -94,36 +84,4 @@ export function createNullSafeSortingFn<T>(getValue: (row: T) => number | null |
     const b = getValue(rowB.original) ?? 0
     return a - b
   }
-}
-
-export function CapabilityBadge({ enabled, label }: { enabled: boolean; label: string }) {
-  if (!enabled) return null
-  return (
-    <Badge variant="secondary" className="gap-1 text-[10px]">
-      <CircleCheckIcon className="size-3" />
-      {label}
-    </Badge>
-  )
-}
-
-export function DataPolicyIndicator({ policy }: { policy: Doc<'or_endpoints'>['data_policy'] }) {
-  const hasIssues = policy.training || policy.retains_prompts
-  if (!hasIssues) return null
-
-  return (
-    <div className="flex gap-1">
-      {policy.training && (
-        <Badge variant="outline" className="-my-0.5 border-warning text-warning">
-          <AlertTriangleIcon />
-          TRAINS
-        </Badge>
-      )}
-      {policy.can_publish && (
-        <Badge variant="outline" className="-my-0.5 border-warning text-warning">
-          <AlertTriangleIcon />
-          PUBLISH
-        </Badge>
-      )}
-    </div>
-  )
 }

@@ -1,4 +1,4 @@
-import { BrandIcon } from '../brand-icon/brand-icon'
+import { BrandIcon } from '../shared/brand-icon'
 
 export function ProviderLogoTitle({ icon_url, name }: { icon_url?: string; name: string }) {
   return (
