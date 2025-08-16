@@ -41,6 +41,7 @@ export type ModelCapabilities = {
   hasFreeVariant: boolean
   hasPaidVariant: boolean
   hasPromptCaching: boolean
+  hasStructuredOutputs: boolean
 }
 
 /**
@@ -62,6 +63,9 @@ export function getModelCapabilities(model: Model, endpoints: Endpoint[]): Model
     hasTools: endpoints.some((endpoint) => endpoint.capabilities.tools),
     hasJsonResponse: endpoints.some((endpoint) =>
       endpoint.supported_parameters.includes('response_format'),
+    ),
+    hasStructuredOutputs: endpoints.some((endpoint) =>
+      endpoint.supported_parameters.includes('structured_outputs'),
     ),
     hasFreeVariant: endpoints.some((endpoint) => endpoint.model_variant === 'free'),
     hasPaidVariant: endpoints.some((endpoint) => endpoint.model_variant !== 'free'),

@@ -3,6 +3,7 @@
 import { memo } from 'react'
 import Link from 'next/link'
 
+import { AttributeBadge } from '@/components/attributes'
 import { BrandIcon } from '@/components/brand-icon/brand-icon'
 import { Pill } from '@/components/shared/pill'
 import { useEndpointsList, useModelsList } from '@/hooks/api'
@@ -12,14 +13,6 @@ import { cn, formatIsoDate } from '@/lib/utils'
 import { NumericValue, PricingProperty } from '../../shared/numeric-value'
 import { Badge } from '../../ui/badge'
 import { getModelCapabilities, type FilterResult } from '../filter'
-import {
-  CapFileBadge,
-  CapImageBadge,
-  CapJsonResponseBadge,
-  CapPromptCachingBadge,
-  CapReasoningBadge,
-  CapToolsBadge,
-} from './capability-badges'
 
 interface ModelSummaryCardProps {
   result: FilterResult
@@ -80,14 +73,15 @@ export const ModelSummaryCard = memo<ModelSummaryCardProps>(({ result }) => {
         {/* Capability badges */}
         <div className="flex flex-wrap gap-2 font-mono uppercase">
           {/* Model-level capabilities */}
-          {capabilities.hasImageInput && <CapImageBadge />}
-          {capabilities.hasFileInput && <CapFileBadge />}
-          {capabilities.hasReasoning && <CapReasoningBadge />}
+          {capabilities.hasImageInput && <AttributeBadge attribute="imageInput" />}
+          {capabilities.hasFileInput && <AttributeBadge attribute="fileInput" />}
+          {capabilities.hasReasoning && <AttributeBadge attribute="reasoning" />}
 
           {/* Endpoint-level capabilities */}
-          {capabilities.hasTools && <CapToolsBadge />}
-          {capabilities.hasJsonResponse && <CapJsonResponseBadge />}
-          {capabilities.hasPromptCaching && <CapPromptCachingBadge />}
+          {capabilities.hasTools && <AttributeBadge attribute="tools" />}
+          {capabilities.hasJsonResponse && <AttributeBadge attribute="jsonObject" />}
+          {capabilities.hasStructuredOutputs && <AttributeBadge attribute="structuredOutputs" />}
+          {capabilities.hasPromptCaching && <AttributeBadge attribute="promptCaching" />}
         </div>
       </div>
 

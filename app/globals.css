@@ -46,6 +46,8 @@
   --color-warning: var(--color-yellow-500);
   --color-success: var(--color-emerald-500);
   --color-info: var(--color-blue-500);
+  --color-alert: var(--alert);
+  --color-alert-foreground: var(--alert-foreground);
 }
 
 :root {
@@ -82,6 +84,9 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+  --alert: oklch(0.56 0.12 49);
+  --alert-foreground: oklch(0.985 0 0);
 }
 
 @layer base {
