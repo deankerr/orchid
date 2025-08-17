@@ -2,7 +2,7 @@ import { asyncMap } from 'convex-helpers'
 import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
-import { internalMutation, query } from '../../_generated/server'
+import { internalMutation, type QueryCtx } from '../../_generated/server'
 import { createTableVHelper } from '../../table3'
 
 export const table = defineTable({
@@ -55,12 +55,9 @@ export const table = defineTable({
 
 export const vTable = createTableVHelper('or_providers', table.validator)
 
-// * queries
-export const list = query({
-  handler: async (ctx) => {
-    return await ctx.db.query(vTable.name).collect()
-  },
-})
+export async function list(ctx: QueryCtx) {
+  return await ctx.db.query(vTable.name).collect()
+}
 
 // * snapshots
 export const upsert = internalMutation({

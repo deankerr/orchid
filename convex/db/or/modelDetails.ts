@@ -2,7 +2,8 @@ import { asyncMap, omit } from 'convex-helpers'
 import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
-import { internalMutation, query, type QueryCtx } from '../../_generated/server'
+import { internalMutation, type QueryCtx } from '../../_generated/server'
+import { createTableVHelper } from '../../table3'
 
 export const table = defineTable({
   slug: v.string(),
@@ -14,19 +15,14 @@ export const table = defineTable({
   updated_at: v.number(),
 }).index('by_slug', ['slug'])
 
-async function getModelDetails(ctx: QueryCtx, slug: string) {
+export const vTable = createTableVHelper('or_model_details', table.validator)
+
+export async function get(ctx: QueryCtx, slug: string) {
   return await ctx.db
-    .query('or_model_details')
+    .query(vTable.name)
     .withIndex('by_slug', (q) => q.eq('slug', slug))
     .first()
 }
-
-export const get = query({
-  args: { slug: v.string() },
-  handler: async (ctx, args) => {
-    return await getModelDetails(ctx, args.slug)
-  },
-})
 
 export const upsert = internalMutation({
   args: { items: v.array(v.object(omit(table.validator.fields, ['updated_at']))) },
@@ -35,11 +31,11 @@ export const upsert = internalMutation({
 
     await asyncMap(args.items, async (item) => {
       const fields = { ...item, updated_at }
-      const existing = await getModelDetails(ctx, item.slug)
+      const existing = await get(ctx, item.slug)
       if (existing) {
         await ctx.db.patch(existing._id, fields)
       } else {
-        await ctx.db.insert('or_model_details', fields)
+        await ctx.db.insert(vTable.name, fields)
       }
     })
   },
