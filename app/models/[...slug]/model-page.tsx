@@ -4,12 +4,11 @@ import { AlertTriangleIcon } from 'lucide-react'
 
 import { getModelVariantSlug } from '@/convex/shared'
 
-import { BrandIcon } from '@/components/brand-icon/brand-icon'
 import { FeatureFlag } from '@/components/dev-utils/feature-flag'
 import { EndpointDataTable } from '@/components/endpoint-data-table/endpoint-data-table'
-import { EndpointPanel } from '@/components/endpoint-panel/endpoint-panel'
 import { ModelAppsLeaderboard } from '@/components/model-apps-leaderboard'
 import { ModelTokenChart } from '@/components/model-token-chart'
+import { BrandIcon } from '@/components/shared/brand-icon'
 import { CopyToClipboardButton } from '@/components/shared/copy-to-clipboard-button'
 import { ExternalLink } from '@/components/shared/external-link'
 import { LoaderBadge } from '@/components/shared/loader'
@@ -118,12 +117,6 @@ export function ModelPage({ slug }: { slug: string }) {
       {model.endpoints && model.endpoints.length > 0 ? (
         <>
           <EndpointDataTable endpoints={model.endpoints} />
-
-          <FeatureFlag flag="endpoint-panels">
-            {model.endpoints.map((endpoint) => (
-              <EndpointPanel key={endpoint._id} endpoint={endpoint} />
-            ))}
-          </FeatureFlag>
         </>
       ) : (
         <p className="text-muted-foreground">No endpoints found.</p>

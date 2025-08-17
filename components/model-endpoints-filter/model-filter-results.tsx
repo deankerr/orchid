@@ -3,7 +3,7 @@
 import { PageLoading } from '../shared/page-container'
 import { Button } from '../ui/button'
 import { type FilterResult } from './filter'
-import { ModelSummaryCard } from './results/model-summary-card'
+import { ModelSummaryCard } from './model-summary-card'
 
 interface ModelFilterResultsProps {
   results: FilterResult[]

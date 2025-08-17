@@ -59,3 +59,21 @@ export const getNextCrawlId = internalQuery({
     return allCrawls?.crawl_id
   },
 })
+
+// Simple batch loader for cleanup loop
+export const getBatch = internalQuery({
+  args: { limit: v.number() },
+  handler: async (ctx, args) => {
+    return await ctx.db.query('snapshot_raw_archives').take(args.limit)
+  },
+})
+
+// Batch delete helper for cleanup loop
+export const deleteMany = internalMutation({
+  args: { ids: v.array(v.id('snapshot_raw_archives')) },
+  handler: async (ctx, args) => {
+    for (const id of args.ids) {
+      await ctx.db.delete(id)
+    }
+  },
+})

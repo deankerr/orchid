@@ -1,16 +1,15 @@
 import * as R from 'remeda'
 
 import type { ColumnDef } from '@tanstack/react-table'
-import { AlertTriangleIcon, BracesIcon, OctagonXIcon, WrenchIcon } from 'lucide-react'
 
 import type { Endpoint } from '@/hooks/api'
 import { cn } from '@/lib/utils'
 
-import { BrandIcon } from '../brand-icon/brand-icon'
+import { AttributeBadge } from '../attributes'
+import { BrandIcon } from '../shared/brand-icon'
 import { EndpointDerankedBadge } from '../shared/endpoint-deranked-badge'
 import { ModelVariantBadge } from '../shared/model-variant-badge'
 import { NumericValue, PricingProperty } from '../shared/numeric-value'
-import { Badge } from '../ui/badge'
 import { createNullSafeSortingFn, SortableHeader } from './table-components'
 
 export const endpointColumns: ColumnDef<Endpoint>[] = [
@@ -27,12 +26,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
           <span>{endpoint.provider_name}</span>
           <ModelVariantBadge modelVariant={endpoint.model_variant} />
 
-          {endpoint.is_disabled && (
-            <Badge variant="destructive">
-              <OctagonXIcon />
-              DISABLED
-            </Badge>
-          )}
+          {endpoint.is_disabled && <AttributeBadge attribute="isDisabled" />}
 
           {endpoint.status < 0 && <EndpointDerankedBadge />}
         </div>
@@ -53,23 +47,15 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
       const params = row.original.supported_parameters
       return (
         <div className="flex gap-1">
-          <Badge
-            variant="secondary"
-            className={cn('-my-0.5', !caps.tools && 'bg-transparent opacity-30')}
-          >
-            <WrenchIcon />
-            TOOLS
-          </Badge>
-          <Badge
-            variant="secondary"
-            className={cn(
-              '-my-0.5',
-              !params.includes('response_format') && 'bg-transparent opacity-30',
-            )}
-          >
-            <BracesIcon />
-            JSON
-          </Badge>
+          <AttributeBadge attribute="tools" className={cn(!caps.tools && 'opacity-30')} />
+          <AttributeBadge
+            attribute="jsonObject"
+            className={cn(!params.includes('response_format') && 'opacity-30')}
+          />
+          <AttributeBadge
+            attribute="structuredOutputs"
+            className={cn(!params.includes('structured_outputs') && 'opacity-30')}
+          />
         </div>
       )
     },
@@ -315,18 +301,8 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
     ),
     cell: ({ row }) => (
       <div className="flex gap-1">
-        {row.original.data_policy.training && (
-          <Badge variant="outline" className="-my-0.5 border-warning text-warning">
-            <AlertTriangleIcon />
-            TRAINS
-          </Badge>
-        )}
-        {row.original.data_policy.can_publish && (
-          <Badge variant="outline" className="-my-0.5 border-warning text-warning">
-            <AlertTriangleIcon />
-            PUBLISH
-          </Badge>
-        )}
+        {row.original.data_policy.training && <AttributeBadge attribute="trainsOnData" />}
+        {row.original.data_policy.can_publish && <AttributeBadge attribute="canPublish" />}
       </div>
     ),
   },
@@ -341,12 +317,7 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
     accessorFn: (row) => row.is_moderated,
     cell: ({ row }) => {
       if (!row.original.is_moderated) return null
-      return (
-        <Badge variant="outline" className="-my-0.5 border-warning text-warning">
-          <AlertTriangleIcon />
-          TRUE
-        </Badge>
-      )
+      return <AttributeBadge attribute="isModerated" />
     },
   },
 ]

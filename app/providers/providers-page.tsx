@@ -1,6 +1,6 @@
 'use client'
 
-import { BrandIcon } from '@/components/brand-icon/brand-icon'
+import { BrandIcon } from '@/components/shared/brand-icon'
 import {
   PageContainer,
   PageHeader,
