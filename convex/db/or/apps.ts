@@ -22,6 +22,7 @@ export const vTable = createTableVHelper('or_apps', table.validator)
 // * snapshots
 export const upsert = internalMutation({
   args: { items: v.array(vTable.validator) },
+  returns: v.null(),
   handler: async (ctx, args) => {
     await asyncMap(args.items, async (item) => {
       const existing = await ctx.db

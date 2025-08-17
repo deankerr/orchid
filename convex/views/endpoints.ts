@@ -1,8 +1,16 @@
+import { v } from 'convex/values'
+
 import * as DB from '@/convex/db'
 
 import { query } from '../_generated/server'
 
 export const list = query({
+  returns: v.array(
+    DB.OrEndpoints.vTable.doc.and({
+      model_variant_slug: v.string(),
+      traffic_share: v.optional(v.number()),
+    }),
+  ),
   handler: async (ctx) => {
     const results = await DB.OrEndpoints.list(ctx).then((res) =>
       res.filter((endp) => !endp.is_disabled),

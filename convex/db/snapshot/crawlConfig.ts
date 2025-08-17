@@ -2,6 +2,7 @@ import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
 import { internalQuery } from '../../_generated/server'
+import { createTableVHelper } from '../../table3'
 
 export const table = defineTable({
   enabled: v.boolean(), // turn the whole thing on/off
@@ -15,8 +16,11 @@ export const table = defineTable({
   jitter_minutes: v.number(), // random extra delay
 })
 
+export const vTable = createTableVHelper('snapshot_crawl_config', table.validator)
+
 export const getFirst = internalQuery({
   args: {},
+  returns: vTable.doc.nullable(),
   handler: async (ctx) => {
     return await ctx.db.query('snapshot_crawl_config').first()
   },

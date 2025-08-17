@@ -1,5 +1,5 @@
 import { omit, pick, type BetterOmit, type Expand } from 'convex-helpers'
-import { parse, partial } from 'convex-helpers/validators'
+import { nullable, parse, partial } from 'convex-helpers/validators'
 import {
   v,
   type ObjectType,
@@ -20,6 +20,8 @@ interface BuilderMethods<Fields extends PropertyValidators> {
   partial: () => Builder<PartialFields<Fields>>
   and: <Fields2 extends PropertyValidators>(additionalFields: Fields2) => Builder<Fields & Fields2>
   parse: (value: unknown) => ObjectType<Fields>
+  nullable: () => ReturnType<typeof nullable>
+  array: () => ReturnType<typeof v.array>
 }
 
 // The Builder type is a VObject augmented with the builder methods
@@ -70,6 +72,14 @@ function createBuilder<Fields extends PropertyValidators>(
 
     parse(value: unknown) {
       return parse(validator, value)
+    },
+
+    nullable() {
+      return nullable(validator)
+    },
+
+    array() {
+      return v.array(validator)
     },
   }
 

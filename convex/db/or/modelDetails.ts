@@ -26,6 +26,7 @@ export async function get(ctx: QueryCtx, slug: string) {
 
 export const upsert = internalMutation({
   args: { items: v.array(v.object(omit(table.validator.fields, ['updated_at']))) },
+  returns: v.null(),
   handler: async (ctx, args) => {
     const updated_at = Date.now()
 

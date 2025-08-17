@@ -106,6 +106,7 @@ export const run = internalAction({
     uptimes: v.boolean(),
     modelAuthors: v.boolean(),
   },
+  returns: v.null(),
   handler: async (ctx, args) => {
     const crawl_id = Date.now().toString()
     console.log(`[crawl]`, { crawl_id, ...args })
