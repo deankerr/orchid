@@ -18,15 +18,7 @@ import { cn } from '@/lib/utils'
 import { Badge } from './ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip'
 
-export const attributes: Record<
-  string,
-  {
-    icon: React.ReactNode
-    label: string
-    description: string
-    variant?: 'secondary' | 'destructive' | 'warning'
-  }
-> = {
+export const attributes = {
   // Input Modalities
   imageInput: {
     icon: <ImageUpIcon />,
@@ -78,19 +70,19 @@ export const attributes: Record<
     icon: <ShieldAlertIcon />,
     label: 'Moderated',
     description: 'Content is automatically moderated by the provider.',
-    variant: 'warning' as const,
+    variant: 'alert',
   },
   trainsOnData: {
     icon: <CameraIcon />,
     label: 'Trains',
     description: 'Provider may use your prompts to train their models.',
-    variant: 'warning' as const,
+    variant: 'alert',
   },
   canPublish: {
     icon: <ScrollTextIcon />,
     label: 'Publish',
     description: 'Provider may publish or share your prompts publicly.',
-    variant: 'warning' as const,
+    variant: 'alert',
   },
 
   // Status
@@ -98,31 +90,29 @@ export const attributes: Record<
     icon: <OctagonXIcon />,
     label: 'Disabled',
     description: 'This endpoint is currently disabled.',
-    variant: 'destructive' as const,
+    variant: 'destructive',
   },
-}
+} as const
 
 export type AttributeKey = keyof typeof attributes
 
-interface AttributeBadgeProps {
+export function AttributeBadge({
+  attribute,
+  className,
+  ...props
+}: {
   attribute: AttributeKey
-  className?: string
-}
-
-export function AttributeBadge({ attribute, className }: AttributeBadgeProps) {
+} & React.ComponentProps<typeof Badge>) {
   const config = attributes[attribute]
-  const variant = config.variant === 'warning' ? 'default' : config.variant || 'secondary'
+  const variant = 'variant' in config ? config.variant : 'secondary'
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <Badge
             variant={variant}
-            className={cn(
-              className,
-              'cursor-default font-mono uppercase',
-              config.variant === 'warning' && 'bg-alert text-alert-foreground',
-            )}
+            className={cn(className, 'cursor-default font-mono uppercase')}
+            {...props}
           >
             {config.icon} {config.label}
           </Badge>

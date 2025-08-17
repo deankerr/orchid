@@ -71,7 +71,7 @@ export function EndpointDataTable({ endpoints }: EndpointDataTableProps) {
 
   return (
     <div className="space-y-0.5 rounded-sm border bg-card px-5 py-2.5 font-mono text-card-foreground">
-      <div className="borxder-b flex items-center justify-between gap-2 pb-1">
+      <div className="flex items-center justify-between gap-2 pb-1">
         <div className="font-sans text-base font-medium">Endpoint Overview</div>
         <ColumnVisibilityMenu table={table} />
       </div>
