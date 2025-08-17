@@ -26,13 +26,11 @@ export function useModelData(slug: string) {
     if (!modelsList) return
     const model = modelsList.find((m) => m.slug === slug)
     if (!model) return null
+
+    const details = modelDetails ? omit(modelDetails, ['_id', '_creationTime']) : undefined
     return {
       ...model,
-      ...omit(modelDetails ?? ({} as Record<string, unknown>), [
-        '_id',
-        '_creationTime',
-        'updated_at',
-      ]),
+      ...details,
       endpoints: endpointsList?.filter((e) => e.model_slug === slug),
     }
   }, [endpointsList, modelsList, modelDetails, slug])

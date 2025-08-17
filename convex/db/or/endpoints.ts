@@ -3,8 +3,6 @@ import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
 import * as R from 'remeda'
 
-import { diff as jsonDiff } from 'json-diff-ts'
-
 import { internalMutation, query } from '../../_generated/server'
 import { getModelVariantSlug } from '../../shared'
 import { createTableVHelper } from '../../table3'
@@ -106,14 +104,6 @@ export const table = defineTable({
   .index('by_model_slug', ['model_slug'])
 
 export const vTable = createTableVHelper('or_endpoints', table.validator)
-
-export const diff = (a: unknown, b: unknown) =>
-  jsonDiff(a, b, {
-    keysToSkip: ['_id', '_creationTime', 'snapshot_at', 'stats', 'uptime_average'],
-    embeddedObjKeys: {
-      supported_parameters: '$value',
-    },
-  })
 
 // * queries
 export const list = query({

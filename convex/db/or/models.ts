@@ -1,9 +1,6 @@
 import { asyncMap } from 'convex-helpers'
-import { deprecated } from 'convex-helpers/validators'
 import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
-
-import { diff as jsonDiff } from 'json-diff-ts'
 
 import { internalMutation, query } from '../../_generated/server'
 import { createTableVHelper } from '../../table3'
@@ -12,11 +9,6 @@ export const vModelStats = v.record(
   v.string(), // variant
   v.object({
     tokens_7d: v.number(),
-    tokens_30d: deprecated,
-    tokens_90d: deprecated,
-    requests_7d: deprecated,
-    requests_30d: deprecated,
-    requests_90d: deprecated,
   }),
 )
 
@@ -31,11 +23,6 @@ export const table = defineTable({
   name: v.string(),
   short_name: v.string(),
   hugging_face_id: v.optional(v.string()),
-
-  description: deprecated,
-  tokenizer: deprecated,
-  instruct_type: deprecated,
-  warning_message: deprecated,
 
   context_length: v.number(),
   input_modalities: v.array(v.string()),
@@ -59,16 +46,6 @@ export const table = defineTable({
 
 export const vTable = createTableVHelper('or_models', table.validator)
 
-export const diff = (a: unknown, b: unknown) =>
-  jsonDiff(a, b, {
-    keysToSkip: ['_id', '_creationTime', 'stats', 'snapshot_at'],
-    embeddedObjKeys: {
-      input_modalities: '$value',
-      output_modalities: '$value',
-      variants: '$value',
-    },
-  })
-
 // * queries
 export const get = query({
   args: { slug: v.string() },
@@ -89,9 +66,7 @@ export const list = query({
 // * snapshots
 export const upsert = internalMutation({
   args: {
-    items: v.array(
-      vTable.validator.omit('description', 'tokenizer', 'instruct_type', 'warning_message'),
-    ),
+    items: v.array(vTable.validator),
   },
   handler: async (ctx, args) => {
     await asyncMap(args.items, async (item) => {
