@@ -2,7 +2,7 @@ import { asyncMap } from 'convex-helpers'
 import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
-import { internalMutation, query } from '../../_generated/server'
+import { internalMutation, type QueryCtx } from '../../_generated/server'
 import { createTableVHelper } from '../../table3'
 
 export const table = defineTable({
@@ -25,26 +25,19 @@ export const table = defineTable({
 
 export const vTable = createTableVHelper('or_model_token_stats', table.validator)
 
-// * queries
-export const get = query({
-  args: {
-    permaslug: v.string(),
-    variants: v.array(v.string()),
-  },
-  handler: async (ctx, { permaslug, variants }) => {
-    const results = await ctx.db
-      .query(vTable.name)
-      .withIndex('by_permaslug_variant', (q) => q.eq('model_permaslug', permaslug))
-      .order('desc')
-      .collect()
-
-    return variants.map((variant) => results.find((r) => r.model_variant === variant) ?? null)
-  },
-})
+export async function get(ctx: QueryCtx, args: { permaslug: string; variant: string }) {
+  return await ctx.db
+    .query(vTable.name)
+    .withIndex('by_permaslug_variant', (q) =>
+      q.eq('model_permaslug', args.permaslug).eq('model_variant', args.variant),
+    )
+    .first()
+}
 
 // * snapshots
 export const upsert = internalMutation({
   args: { items: v.array(vTable.validator) },
+  returns: v.null(),
   handler: async (ctx, args) => {
     await asyncMap(args.items, async (item) => {
       const existing = await ctx.db

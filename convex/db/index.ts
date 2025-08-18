@@ -4,3 +4,7 @@ export * as OrProviders from './or/providers'
 export * as OrApps from './or/apps'
 export * as OrModelTokenStats from './or/modelTokenStats'
 export * as OrModelAppLeaderboards from './or/modelAppLeaderboards'
+export * as OrModelDetails from './or/modelDetails'
+
+export * as SnapshotCrawlConfig from './snapshot/crawlConfig'
+export * as SnapshotCrawlArchives from './snapshot/crawlArchives'

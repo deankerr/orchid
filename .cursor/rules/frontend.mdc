@@ -1,5 +1,5 @@
 ---
-description: Must read when using or modifying frontend related directories; app. components, hooks, lib, public
+globs: app/**.*,components/**.*
 alwaysApply: false
 ---
 

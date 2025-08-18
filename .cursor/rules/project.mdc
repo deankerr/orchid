@@ -18,14 +18,6 @@ alwaysApply: true
 - Tailwind v4 - the javascript config file is no longer used, everything is defined in [globals.css](mdc:app/globals.css).
 - All shadcn/ui components are installed.
 
-### Convex
-
-- Convex uses their own V8 runtime, similar to Cloudflare Workers, but with better support for language features.
-- Map.groupBy is supported, and it is an incredible way to group then iterate through items, but we can't use it in the browser.
-- Convex will throw during compile if it finds any dir/file with a dash in it (e.g. `my-file.ts`), so use camelCase.
-- Convex queries/mutations/actions can't be used in files with dots in the name (e.g. `my.file.ts`), so use camelCase.
-- Return types/validators should not be defined for Convex endpoints at this time - the inferred types allow us to iterate quickly.
-
 ## Status
 
 - Production version has been soft-launched and is publicly available at a temporary URL.

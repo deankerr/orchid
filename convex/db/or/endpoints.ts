@@ -1,12 +1,8 @@
 import { asyncMap } from 'convex-helpers'
 import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
-import * as R from 'remeda'
 
-import { diff as jsonDiff } from 'json-diff-ts'
-
-import { internalMutation, query } from '../../_generated/server'
-import { getModelVariantSlug } from '../../shared'
+import { internalMutation, type QueryCtx } from '../../_generated/server'
 import { createTableVHelper } from '../../table3'
 
 export const table = defineTable({
@@ -107,59 +103,14 @@ export const table = defineTable({
 
 export const vTable = createTableVHelper('or_endpoints', table.validator)
 
-export const diff = (a: unknown, b: unknown) =>
-  jsonDiff(a, b, {
-    keysToSkip: ['_id', '_creationTime', 'snapshot_at', 'stats', 'uptime_average'],
-    embeddedObjKeys: {
-      supported_parameters: '$value',
-    },
-  })
-
-// * queries
-export const list = query({
-  handler: async (ctx) => {
-    const results = await ctx.db
-      .query('or_endpoints')
-      .collect()
-      .then((res) => res.filter((endp) => !endp.is_disabled))
-
-    return Map.groupBy(results, (r) => getModelVariantSlug(r.model_slug, r.model_variant))
-      .entries()
-      .flatMap(([model_variant_slug, endpoints]) => {
-        const totalRequests = endpoints.reduce(
-          (sum, endp) => sum + (endp.stats?.request_count ?? 0),
-          0,
-        )
-
-        return endpoints.map((endp) => ({
-          ...endp,
-          limits: {
-            ...endp.limits,
-            output_tokens: endp.limits.output_tokens ?? endp.context_length,
-          },
-          model_variant_slug,
-          traffic_share: R.isDefined(endp.stats?.request_count)
-            ? (endp.stats?.request_count ?? 0) / totalRequests
-            : undefined,
-        }))
-      })
-      .toArray()
-  },
-})
-
-export const getByModelSlug = query({
-  args: { modelSlug: v.string() },
-  handler: async (ctx, args) => {
-    return await ctx.db
-      .query('or_endpoints')
-      .withIndex('by_model_slug', (q) => q.eq('model_slug', args.modelSlug))
-      .collect()
-  },
-})
+export async function list(ctx: QueryCtx) {
+  return await ctx.db.query(vTable.name).collect()
+}
 
 // * snapshots
 export const upsert = internalMutation({
   args: { items: v.array(vTable.validator) },
+  returns: v.null(),
   handler: async (ctx, args) => {
     await asyncMap(args.items, async (item) => {
       const existing = await ctx.db

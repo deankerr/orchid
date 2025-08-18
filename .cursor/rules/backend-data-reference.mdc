@@ -198,12 +198,6 @@ Understanding how models are identified is crucial for working with ORCHID data.
 
 ### Supporting Entities
 
-#### or_authors
-
-- **Purpose**: Organizations that created the models (OpenAI, Anthropic, Meta, etc.)
-- **Count**: ~30-40 organizations
-- **Note**: This data is practically useless because there's no information stored by OpenRouter apart from the author display name.
-
 #### or_apps
 
 - **Purpose**: Applications using models through OpenRouter
@@ -216,15 +210,6 @@ Understanding how models are identified is crucial for working with ORCHID data.
 - **Granularity**: Daily aggregates per model variant
 - **Source**: Returned with author data (can be backfilled)
 - **Key Insight**: Usage patterns by model/variant
-
-#### or_endpoint_stats
-
-- **Granularity**: Point-in-time snapshot
-- **Content**: P50 latency/throughput statistics
-
-#### or_endpoint_uptimes
-
-- **Granularity**: Hourly percentages
 
 #### or_model_app_leaderboards
 

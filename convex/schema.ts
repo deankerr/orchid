@@ -10,7 +10,6 @@ import * as ORModelTokenStats from './db/or/modelTokenStats'
 import * as ORProviders from './db/or/providers'
 import * as SnapshotCrawlArchives from './db/snapshot/crawlArchives'
 import * as SnapshotCrawlConfig from './db/snapshot/crawlConfig'
-import * as SnapshotRawArchives from './db/snapshot/rawArchives'
 
 export const schema = defineSchema(
   {
@@ -24,7 +23,6 @@ export const schema = defineSchema(
 
     snapshot_crawl_config: SnapshotCrawlConfig.table,
     snapshot_crawl_archives: SnapshotCrawlArchives.table,
-    snapshot_raw_archives: SnapshotRawArchives.table,
 
     // version 0 archived data
     snapshots: defineTable({

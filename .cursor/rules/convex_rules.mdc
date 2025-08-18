@@ -9,12 +9,12 @@ globs: **/*.ts,**/*.tsx,**/*.js,**/*.jsx
 - They prevent issues during active development.
 - Other backend related rules should also take precedence over Convex guidelines.
 
-## Return Validators
+## Convex Notes
 
-- Do not use return validators during this development stage.
-- They offer no benefit while adding complexity and slowing iteration
-- Like return types, the TypeScript compiler can infer the types more accurately
-- Our app has no "internal" or "secret" data - there is no security risk involved in anyone seeing our complete data set
+- Convex uses their own V8 runtime, similar to Cloudflare Workers, but with better support for language features.
+- Map.groupBy is supported, and it is an incredible way to group then iterate through items, but we can't use it in the browser.
+- Convex will throw during compile if it finds any dir/file with a dash in it (e.g. `my-file.ts`), so use camelCase.
+- Convex queries/mutations/actions can't be used in files with dots in the name (e.g. `my.file.ts`), so use camelCase.
 
 ## No Action Returns
 
@@ -37,7 +37,7 @@ globs: **/*.ts,**/*.tsx,**/*.js,**/*.jsx
 - Defining functionality in regular javascript functions, 'helper functions', allows us to easily share behaviour between different convex endpoint functions (query/mutation/action)
 - Define helper functions with the `(ctx, args)` pattern, typing `ctx` as `QueryCtx`, `MutationCtx`, or `ActionCtx`
 
-# Convex guidelines
+# Secondary guidelines
 
 ## Function guidelines
 
