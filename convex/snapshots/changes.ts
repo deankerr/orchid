@@ -7,8 +7,8 @@ import { internal } from '../_generated/api'
 import { internalAction, type ActionCtx } from '../_generated/server'
 import type { ChangesTableFields } from '../lib/changesTable'
 import { getErrorMessage } from '../shared'
+import { getArchiveBundle } from './bundle'
 import type { CrawlArchiveBundle } from './crawl'
-import { getBundleFromCrawlId } from './materialize/utils'
 
 export const processChanges = internalAction({
   args: {
@@ -25,8 +25,8 @@ export const processChanges = internalAction({
     try {
       // * Get both bundles
       const [currentBundle, previousBundle] = await Promise.all([
-        getBundleFromCrawlId(ctx, args.current_crawl_id),
-        getBundleFromCrawlId(ctx, args.from_crawl_id),
+        getArchiveBundle(ctx, args.current_crawl_id),
+        getArchiveBundle(ctx, args.from_crawl_id),
       ])
 
       if (!currentBundle) {

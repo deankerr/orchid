@@ -7,12 +7,13 @@ import * as DB from '@/convex/db'
 import { internal } from '../../_generated/api'
 import { internalAction } from '../../_generated/server'
 import { getHourAlignedTimestamp } from '../../shared'
+import { getArchiveBundle } from '../bundle'
 import type { CrawlArchiveBundle } from '../crawl'
 import * as Transforms from '../transforms'
 import { calculateAppsFromBundle } from './apps'
 import { getIconUrl } from './icons'
 import { calculateModelStatsFromBundle } from './modelTokenStats'
-import { consolidateVariants, getBundleFromCrawlId } from './utils'
+import { consolidateVariants } from './utils'
 
 export const run = internalAction({
   args: { crawl_id: v.optional(v.string()) },
@@ -28,7 +29,7 @@ export const run = internalAction({
       return null
     }
 
-    const bundle = await getBundleFromCrawlId(ctx, crawl_id)
+    const bundle = await getArchiveBundle(ctx, crawl_id)
     if (!bundle) {
       console.log(`[materialize] no bundle found`, { crawl_id })
       return null
