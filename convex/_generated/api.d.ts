@@ -16,7 +16,6 @@ import type {
 import type * as crons from "../crons.js";
 import type * as db_index from "../db/index.js";
 import type * as db_or_apps from "../db/or/apps.js";
-import type * as db_or_changesLib from "../db/or/changesLib.js";
 import type * as db_or_endpointChanges from "../db/or/endpointChanges.js";
 import type * as db_or_endpoints from "../db/or/endpoints.js";
 import type * as db_or_modelAppLeaderboards from "../db/or/modelAppLeaderboards.js";
@@ -29,6 +28,7 @@ import type * as db_or_providers from "../db/or/providers.js";
 import type * as db_snapshot_crawlArchives from "../db/snapshot/crawlArchives.js";
 import type * as db_snapshot_crawlConfig from "../db/snapshot/crawlConfig.js";
 import type * as dev from "../dev.js";
+import type * as lib_changesTable from "../lib/changesTable.js";
 import type * as shared from "../shared.js";
 import type * as snapshots_changes from "../snapshots/changes.js";
 import type * as snapshots_crawl from "../snapshots/crawl.js";
@@ -62,7 +62,6 @@ declare const fullApi: ApiFromModules<{
   crons: typeof crons;
   "db/index": typeof db_index;
   "db/or/apps": typeof db_or_apps;
-  "db/or/changesLib": typeof db_or_changesLib;
   "db/or/endpointChanges": typeof db_or_endpointChanges;
   "db/or/endpoints": typeof db_or_endpoints;
   "db/or/modelAppLeaderboards": typeof db_or_modelAppLeaderboards;
@@ -75,6 +74,7 @@ declare const fullApi: ApiFromModules<{
   "db/snapshot/crawlArchives": typeof db_snapshot_crawlArchives;
   "db/snapshot/crawlConfig": typeof db_snapshot_crawlConfig;
   dev: typeof dev;
+  "lib/changesTable": typeof lib_changesTable;
   shared: typeof shared;
   "snapshots/changes": typeof snapshots_changes;
   "snapshots/crawl": typeof snapshots_crawl;

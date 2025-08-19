@@ -1,7 +1,7 @@
-import { createChangesFunctions, createChangesTableHelper } from './changesLib'
+import { createChangesFunctions, createChangesTable } from '../../lib/changesTable'
 
 // * Model changes table for schema definition
-export const { table, vTable } = createChangesTableHelper('or_model_changes')
+export const table = createChangesTable()
 
 // * Model changes functions (created after schema is defined)
 export const { listByEntityId, listByCrawlId, insertEvents } =

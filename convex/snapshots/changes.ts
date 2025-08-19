@@ -5,7 +5,7 @@ import { diff } from 'json-diff-ts'
 
 import { internal } from '../_generated/api'
 import { internalAction, type ActionCtx } from '../_generated/server'
-import type { ChangesTableFields } from '../db/or/changesLib'
+import type { ChangesTableFields } from '../lib/changesTable'
 import { getErrorMessage } from '../shared'
 import type { CrawlArchiveBundle } from './crawl'
 import { getBundleFromCrawlId } from './materialize/utils'
@@ -112,7 +112,6 @@ async function processModelChanges(
         event_type: 'add' as const,
         crawl_id: args.currentBundle.crawl_id,
         from_crawl_id: args.previousBundle.crawl_id,
-        change_raw: null,
       })
       continue
     }
@@ -125,7 +124,6 @@ async function processModelChanges(
         event_type: 'remove' as const,
         crawl_id: args.currentBundle.crawl_id,
         from_crawl_id: args.previousBundle.crawl_id,
-        change_raw: null,
       })
       continue
     }
@@ -209,7 +207,6 @@ async function processEndpointChanges(
         event_type: 'add' as const,
         crawl_id: args.currentBundle.crawl_id,
         from_crawl_id: args.previousBundle.crawl_id,
-        change_raw: null,
       })
       continue
     }
@@ -222,7 +219,6 @@ async function processEndpointChanges(
         event_type: 'remove' as const,
         crawl_id: args.currentBundle.crawl_id,
         from_crawl_id: args.previousBundle.crawl_id,
-        change_raw: null,
       })
       continue
     }
@@ -300,7 +296,6 @@ async function processProviderChanges(
         event_type: 'add' as const,
         crawl_id: args.currentBundle.crawl_id,
         from_crawl_id: args.previousBundle.crawl_id,
-        change_raw: null,
       })
       continue
     }
@@ -313,7 +308,6 @@ async function processProviderChanges(
         event_type: 'remove' as const,
         crawl_id: args.currentBundle.crawl_id,
         from_crawl_id: args.previousBundle.crawl_id,
-        change_raw: null,
       })
       continue
     }

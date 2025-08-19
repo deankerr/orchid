@@ -1,7 +1,7 @@
-import { createChangesFunctions, createChangesTableHelper } from './changesLib'
+import { createChangesFunctions, createChangesTable } from '../../lib/changesTable'
 
 // * Provider changes table for schema definition
-export const { table, vTable } = createChangesTableHelper('or_provider_changes')
+export const table = createChangesTable()
 
 // * Provider changes functions (created after schema is defined)
 export const { listByEntityId, listByCrawlId, insertEvents } =
