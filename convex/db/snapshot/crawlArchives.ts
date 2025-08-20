@@ -1,5 +1,5 @@
 import { nullable } from 'convex-helpers/validators'
-import { defineTable } from 'convex/server'
+import { defineTable, paginationOptsValidator } from 'convex/server'
 import { v } from 'convex/values'
 
 import { internalMutation, internalQuery } from '../../_generated/server'
@@ -68,36 +68,12 @@ export const getLatestCrawlId = internalQuery({
   },
 })
 
-export const getAllCrawlIds = internalQuery({
-  args: {
-    limit: v.optional(v.number()),
-  },
-  returns: v.array(v.string()),
+export const list = internalQuery({
+  args: { paginationOpts: paginationOptsValidator, fromCrawlId: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    const query = ctx.db.query('snapshot_crawl_archives').withIndex('by_crawl_id').order('asc')
-
-    const results = args.limit ? await query.take(args.limit) : await query.collect()
-
-    return results.map((r) => r.crawl_id)
-  },
-})
-
-export const getCrawlIdsFromPoint = internalQuery({
-  args: {
-    startFromCrawlId: v.optional(v.string()),
-    limit: v.number(),
-  },
-  returns: v.array(v.string()),
-  handler: async (ctx, args) => {
-    let query = ctx.db.query('snapshot_crawl_archives').withIndex('by_crawl_id').order('asc')
-
-    // If we have a starting point, filter to start from that crawl_id
-    if (args.startFromCrawlId) {
-      const startCrawlId = args.startFromCrawlId
-      query = query.filter((q) => q.gte(q.field('crawl_id'), startCrawlId))
-    }
-
-    const results = await query.take(args.limit)
-    return results.map((r) => r.crawl_id)
+    return await ctx.db
+      .query('snapshot_crawl_archives')
+      .withIndex('by_crawl_id', (q) => q.gte('crawl_id', args.fromCrawlId ?? ''))
+      .paginate(args.paginationOpts)
   },
 })
