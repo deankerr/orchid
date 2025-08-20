@@ -38,6 +38,24 @@ export const getByCrawlId = internalQuery({
   },
 })
 
+export const collect = internalQuery({
+  handler: async (ctx) => {
+    return await ctx.db.query('snapshot_crawl_archives').collect()
+  },
+})
+
+export const getAllByCrawlId = internalQuery({
+  args: {
+    crawl_id: v.string(),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query('snapshot_crawl_archives')
+      .withIndex('by_crawl_id', (q) => q.eq('crawl_id', args.crawl_id))
+      .collect()
+  },
+})
+
 export const getLatestCrawlId = internalQuery({
   returns: nullable(v.string()),
   handler: async (ctx) => {
@@ -47,5 +65,39 @@ export const getLatestCrawlId = internalQuery({
       .order('desc')
       .first()
       .then((r) => r?.crawl_id)
+  },
+})
+
+export const getAllCrawlIds = internalQuery({
+  args: {
+    limit: v.optional(v.number()),
+  },
+  returns: v.array(v.string()),
+  handler: async (ctx, args) => {
+    const query = ctx.db.query('snapshot_crawl_archives').withIndex('by_crawl_id').order('asc')
+
+    const results = args.limit ? await query.take(args.limit) : await query.collect()
+
+    return results.map((r) => r.crawl_id)
+  },
+})
+
+export const getCrawlIdsFromPoint = internalQuery({
+  args: {
+    startFromCrawlId: v.optional(v.string()),
+    limit: v.number(),
+  },
+  returns: v.array(v.string()),
+  handler: async (ctx, args) => {
+    let query = ctx.db.query('snapshot_crawl_archives').withIndex('by_crawl_id').order('asc')
+
+    // If we have a starting point, filter to start from that crawl_id
+    if (args.startFromCrawlId) {
+      const startCrawlId = args.startFromCrawlId
+      query = query.filter((q) => q.gte(q.field('crawl_id'), startCrawlId))
+    }
+
+    const results = await query.take(args.limit)
+    return results.map((r) => r.crawl_id)
   },
 })

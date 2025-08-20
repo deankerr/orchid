@@ -65,9 +65,21 @@ export function createChangesFunctions(tableName: ChangesTableName) {
     },
   })
 
+  const clearTable = internalMutation({
+    returns: v.number(),
+    handler: async (ctx) => {
+      const changes = await ctx.db.query(tableName).take(4000)
+      for (const change of changes) {
+        await ctx.db.delete(change._id)
+      }
+      return changes.length
+    },
+  })
+
   return {
     listByEntityId,
     listByCrawlId,
     insertEvents,
+    clearTable,
   }
 }
