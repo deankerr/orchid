@@ -4,9 +4,9 @@ import { v, type AsObjectValidator, type Infer } from 'convex/values'
 import { internalMutation, type QueryCtx } from '../_generated/server'
 
 export type ChangesTableName = 'or_model_changes' | 'or_endpoint_changes' | 'or_provider_changes'
-export type ChangesTableFields = Infer<AsObjectValidator<typeof fields>>
+export type ChangesTableFields = Infer<AsObjectValidator<typeof ChangeTableValidator>>
 
-const fields = v.union(
+export const ChangeTableValidator = v.union(
   v.object({
     crawl_id: v.string(),
     from_crawl_id: v.string(),
@@ -30,7 +30,7 @@ const fields = v.union(
 
 // * Generic changes table schema
 export function createChangesTable() {
-  return defineTable(fields)
+  return defineTable(ChangeTableValidator)
     .index('by_entity_id', ['entity_id'])
     .index('by_crawl_id', ['crawl_id'])
     .index('by_event_type', ['event_type'])
@@ -55,7 +55,7 @@ export function createChangesFunctions(tableName: ChangesTableName) {
 
   const insertEvents = internalMutation({
     args: {
-      events: v.array(fields),
+      events: v.array(ChangeTableValidator),
     },
     returns: v.null(),
     handler: async (ctx, args) => {
