@@ -14,20 +14,20 @@ export async function persistChanges(
   const batches = R.chunk(args.changes, 5000)
   for (const batch of batches) {
     if (args.entityType === 'models') {
-      await ctx.runMutation(internal.db.or.modelChanges.insertEvents, {
-        events: batch,
+      await ctx.runMutation(internal.db.or.modelChanges.insert, {
+        changes: batch,
       })
     }
 
     if (args.entityType === 'endpoints') {
-      await ctx.runMutation(internal.db.or.endpointChanges.insertEvents, {
-        events: batch,
+      await ctx.runMutation(internal.db.or.endpointChanges.insert, {
+        changes: batch,
       })
     }
 
     if (args.entityType === 'providers') {
-      await ctx.runMutation(internal.db.or.providerChanges.insertEvents, {
-        events: batch,
+      await ctx.runMutation(internal.db.or.providerChanges.insert, {
+        changes: batch,
       })
     }
   }

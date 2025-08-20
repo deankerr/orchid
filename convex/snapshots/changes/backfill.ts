@@ -61,6 +61,5 @@ export const run = internalAction({
     }
 
     console.log('[changes:backfill] all archives complete')
-    return null
   },
 })

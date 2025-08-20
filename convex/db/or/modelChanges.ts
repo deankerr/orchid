@@ -4,4 +4,4 @@ import { createChangesFunctions, createChangesTable } from '../../lib/changesTab
 export const table = createChangesTable()
 
 // * Model changes functions (created after schema is defined)
-export const { list, insertEvents, clearTable } = createChangesFunctions('or_model_changes')
+export const { list, insert, clearTable } = createChangesFunctions('or_model_changes')

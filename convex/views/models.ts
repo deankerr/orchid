@@ -5,6 +5,8 @@ import { v } from 'convex/values'
 import * as DB from '@/convex/db'
 
 import { query } from '../_generated/server'
+import { vChangesTableDoc } from '../lib/changesTable'
+import { vPaginatedQueryReturn } from '../lib/validator'
 
 // * queries
 export const get = query({
@@ -61,7 +63,7 @@ export const listChanges = query({
     entity_id: v.optional(v.string()),
     paginationOpts: paginationOptsValidator,
   },
-  // returns: DB.OrModelChanges.vTable.doc.array(),
+  returns: vPaginatedQueryReturn(vChangesTableDoc('or_model_changes')),
   handler: async (ctx, args) => {
     return await DB.OrModelChanges.list(ctx, args)
   },

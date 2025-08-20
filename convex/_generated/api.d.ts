@@ -30,6 +30,7 @@ import type * as db_snapshot_crawlConfig from "../db/snapshot/crawlConfig.js";
 import type * as dev from "../dev.js";
 import type * as http from "../http.js";
 import type * as lib_changesTable from "../lib/changesTable.js";
+import type * as lib_validator from "../lib/validator.js";
 import type * as shared from "../shared.js";
 import type * as snapshots_bundle from "../snapshots/bundle.js";
 import type * as snapshots_changes_backfill from "../snapshots/changes/backfill.js";
@@ -81,6 +82,7 @@ declare const fullApi: ApiFromModules<{
   dev: typeof dev;
   http: typeof http;
   "lib/changesTable": typeof lib_changesTable;
+  "lib/validator": typeof lib_validator;
   shared: typeof shared;
   "snapshots/bundle": typeof snapshots_bundle;
   "snapshots/changes/backfill": typeof snapshots_changes_backfill;

@@ -62,6 +62,7 @@ export const takeSnapshotNow = internalAction({
 })
 
 export const deleteAllChanges = internalAction({
+  returns: v.null(),
   handler: async (ctx) => {
     // Clear or_endpoint_changes
     while (true) {
