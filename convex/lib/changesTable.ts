@@ -1,4 +1,4 @@
-import { defineTable } from 'convex/server'
+import { defineTable, type PaginationOptions } from 'convex/server'
 import { v, type AsObjectValidator, type Infer } from 'convex/values'
 
 import { internalMutation, type QueryCtx } from '../_generated/server'
@@ -39,20 +39,6 @@ export function createChangesTable() {
 
 // * Create functions/endpoints that use the table (call after schema is defined)
 export function createChangesFunctions(tableName: ChangesTableName) {
-  const listByEntityId = async (ctx: QueryCtx, args: { entity_id: string }) => {
-    return await ctx.db
-      .query(tableName)
-      .withIndex('by_entity_id', (q) => q.eq('entity_id', args.entity_id))
-      .collect()
-  }
-
-  const listByCrawlId = async (ctx: QueryCtx, args: { crawl_id: string }) => {
-    return await ctx.db
-      .query(tableName)
-      .withIndex('by_crawl_id', (q) => q.eq('crawl_id', args.crawl_id))
-      .collect()
-  }
-
   const insertEvents = internalMutation({
     args: {
       events: v.array(ChangeTableValidator),
@@ -76,9 +62,22 @@ export function createChangesFunctions(tableName: ChangesTableName) {
     },
   })
 
+  const list = async (
+    ctx: QueryCtx,
+    { entity_id, paginationOpts }: { entity_id?: string; paginationOpts: PaginationOptions },
+  ) => {
+    const q = ctx.db.query(tableName)
+    if (entity_id) {
+      return await q
+        .withIndex('by_entity_id', (q) => q.eq('entity_id', entity_id))
+        .order('desc')
+        .paginate(paginationOpts)
+    }
+    return await q.order('desc').paginate(paginationOpts)
+  }
+
   return {
-    listByEntityId,
-    listByCrawlId,
+    list,
     insertEvents,
     clearTable,
   }

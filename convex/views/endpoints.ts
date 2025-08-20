@@ -1,3 +1,4 @@
+import { paginationOptsValidator } from 'convex/server'
 import { v } from 'convex/values'
 
 import * as DB from '@/convex/db'
@@ -38,5 +39,16 @@ export const list = query({
         }))
       })
       .toArray()
+  },
+})
+
+export const listChanges = query({
+  args: {
+    entity_id: v.optional(v.string()),
+    paginationOpts: paginationOptsValidator,
+  },
+  // returns: DB.OrModelChanges.vTable.doc.array(),
+  handler: async (ctx, args) => {
+    return await DB.OrEndpointChanges.list(ctx, args)
   },
 })

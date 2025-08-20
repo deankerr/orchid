@@ -1,4 +1,5 @@
 import { asyncMap } from 'convex-helpers'
+import { paginationOptsValidator } from 'convex/server'
 import { v } from 'convex/values'
 
 import * as DB from '@/convex/db'
@@ -52,5 +53,16 @@ export const getAppLeaderboards = query({
     return await asyncMap(variants, async (variant) => {
       return await DB.OrModelAppLeaderboards.get(ctx, { permaslug, variant })
     })
+  },
+})
+
+export const listChanges = query({
+  args: {
+    entity_id: v.optional(v.string()),
+    paginationOpts: paginationOptsValidator,
+  },
+  // returns: DB.OrModelChanges.vTable.doc.array(),
+  handler: async (ctx, args) => {
+    return await DB.OrModelChanges.list(ctx, args)
   },
 })
