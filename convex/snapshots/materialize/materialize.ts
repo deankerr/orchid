@@ -115,12 +115,7 @@ export const run = internalAction({
             file_input: model.input_modalities.includes('file'),
           },
           or_model_created_at: model.or_created_at,
-          icon_url: providers.find((p) => p.slug === parsed.data.provider_slug.split('/')[0])
-            ?.icon_url,
-        }
-
-        if (!endpoint.icon_url) {
-          console.log(endpoint, parsed.data)
+          icon_url: providers.find((p) => parsed.data.provider_slug.startsWith(p.slug))?.icon_url,
         }
 
         endpoints.push(endpoint)

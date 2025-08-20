@@ -1,4 +1,5 @@
 import { asyncMap } from 'convex-helpers'
+import { deprecated } from 'convex-helpers/validators'
 import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
@@ -28,24 +29,15 @@ export const table = defineTable({
   data_policy: v.object({
     terms_of_service_url: v.optional(v.string()),
     privacy_policy_url: v.optional(v.string()),
-    data_policy_url: v.optional(v.string()),
+
+    training: v.optional(v.boolean()),
+    retains_prompts: v.optional(v.boolean()),
+    can_publish: v.optional(v.boolean()),
     requires_user_ids: v.optional(v.boolean()),
+    retention_days: v.optional(v.number()),
 
-    paid_models: v.object({
-      training: v.boolean(),
-      retains_prompts: v.optional(v.boolean()),
-      retention_days: v.optional(v.number()),
-      can_publish: v.optional(v.boolean()),
-    }),
-
-    free_models: v.optional(
-      v.object({
-        training: v.boolean(),
-        retains_prompts: v.optional(v.boolean()),
-        retention_days: v.optional(v.number()),
-        can_publish: v.optional(v.boolean()),
-      }),
-    ),
+    paid_models: deprecated,
+    free_models: deprecated,
   }),
 
   icon_url: v.optional(v.string()),

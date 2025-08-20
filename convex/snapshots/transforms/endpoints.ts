@@ -1,7 +1,7 @@
 import * as R from 'remeda'
 import z4 from 'zod/v4'
 
-import { DataPolicySchemas } from './shared'
+import { DataPolicy } from './shared'
 
 export const endpoints = z4
   .object({
@@ -65,7 +65,7 @@ export const endpoints = z4
       })
       .optional(),
 
-    data_policy: DataPolicySchemas.endpoint.transform,
+    data_policy: DataPolicy,
   })
   .transform(R.pickBy(R.isNonNullish))
   .transform((data) => {

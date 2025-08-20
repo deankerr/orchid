@@ -1,7 +1,7 @@
 import * as R from 'remeda'
 import z4 from 'zod/v4'
 
-import { DataPolicySchemas } from './shared'
+import { DataPolicy } from './shared'
 
 export const providers = z4
   .object({
@@ -20,7 +20,7 @@ export const providers = z4
       url: z4.string(),
       invertRequired: z4.boolean().optional(),
     }),
-    dataPolicy: DataPolicySchemas.provider.transform,
+    dataPolicy: DataPolicy,
   })
   .transform(R.pickBy(R.isNonNullish))
   .transform((data) => {
@@ -44,24 +44,12 @@ export const providers = z4
       data_policy: {
         terms_of_service_url: data.dataPolicy.termsOfServiceURL,
         privacy_policy_url: data.dataPolicy.privacyPolicyURL,
-        data_policy_url: data.dataPolicy.dataPolicyUrl,
+
+        training: data.dataPolicy.training,
+        retains_prompts: data.dataPolicy.retainsPrompts,
+        can_publish: data.dataPolicy.canPublish,
         requires_user_ids: data.dataPolicy.requiresUserIDs,
-
-        paid_models: {
-          training: data.dataPolicy.paidModels.training,
-          retains_prompts: data.dataPolicy.paidModels.retainsPrompts,
-          retention_days: data.dataPolicy.paidModels.retentionDays,
-          can_publish: data.dataPolicy.paidModels.canPublish,
-        },
-
-        free_models: data.dataPolicy.freeModels
-          ? {
-              training: data.dataPolicy.freeModels.training,
-              retains_prompts: data.dataPolicy.freeModels.retainsPrompts,
-              retention_days: data.dataPolicy.freeModels.retentionDays,
-              can_publish: data.dataPolicy.freeModels.canPublish,
-            }
-          : undefined,
+        retention_days: data.dataPolicy.retentionDays,
       },
     }
   })
