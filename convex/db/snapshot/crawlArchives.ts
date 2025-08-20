@@ -1,5 +1,5 @@
 import { nullable } from 'convex-helpers/validators'
-import { defineTable } from 'convex/server'
+import { defineTable, paginationOptsValidator } from 'convex/server'
 import { v } from 'convex/values'
 
 import { internalMutation, internalQuery } from '../../_generated/server'
@@ -38,6 +38,24 @@ export const getByCrawlId = internalQuery({
   },
 })
 
+export const collect = internalQuery({
+  handler: async (ctx) => {
+    return await ctx.db.query('snapshot_crawl_archives').collect()
+  },
+})
+
+export const getAllByCrawlId = internalQuery({
+  args: {
+    crawl_id: v.string(),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query('snapshot_crawl_archives')
+      .withIndex('by_crawl_id', (q) => q.eq('crawl_id', args.crawl_id))
+      .collect()
+  },
+})
+
 export const getLatestCrawlId = internalQuery({
   returns: nullable(v.string()),
   handler: async (ctx) => {
@@ -47,5 +65,15 @@ export const getLatestCrawlId = internalQuery({
       .order('desc')
       .first()
       .then((r) => r?.crawl_id)
+  },
+})
+
+export const list = internalQuery({
+  args: { paginationOpts: paginationOptsValidator, fromCrawlId: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query('snapshot_crawl_archives')
+      .withIndex('by_crawl_id', (q) => q.gte('crawl_id', args.fromCrawlId ?? ''))
+      .paginate(args.paginationOpts)
   },
 })

@@ -1,28 +1,34 @@
 import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
-import * as ORApps from './db/or/apps'
-import * as OREndpoints from './db/or/endpoints'
-import * as ORModelAppLeaderboards from './db/or/modelAppLeaderboards'
-import * as ORModelDetails from './db/or/modelDetails'
-import * as ORModels from './db/or/models'
-import * as ORModelTokenStats from './db/or/modelTokenStats'
-import * as ORProviders from './db/or/providers'
-import * as SnapshotCrawlArchives from './db/snapshot/crawlArchives'
-import * as SnapshotCrawlConfig from './db/snapshot/crawlConfig'
+import { table as ORAppsTable } from './db/or/apps'
+import { table as OREndpointChangesTable } from './db/or/endpointChanges'
+import { table as OREndpointsTable } from './db/or/endpoints'
+import { table as ORModelAppLeaderboardsTable } from './db/or/modelAppLeaderboards'
+import { table as ORModelChangesTable } from './db/or/modelChanges'
+import { table as ORModelDetailsTable } from './db/or/modelDetails'
+import { table as ORModelsTable } from './db/or/models'
+import { table as ORModelTokenStatsTable } from './db/or/modelTokenStats'
+import { table as ORProviderChangesTable } from './db/or/providerChanges'
+import { table as ORProvidersTable } from './db/or/providers'
+import { table as SnapshotCrawlArchivesTable } from './db/snapshot/crawlArchives'
+import { table as SnapshotCrawlConfigTable } from './db/snapshot/crawlConfig'
 
-export const schema = defineSchema(
+export default defineSchema(
   {
-    or_apps: ORApps.table,
-    or_endpoints: OREndpoints.table,
-    or_model_app_leaderboards: ORModelAppLeaderboards.table,
-    or_model_details: ORModelDetails.table,
-    or_model_token_stats: ORModelTokenStats.table,
-    or_models: ORModels.table,
-    or_providers: ORProviders.table,
+    or_apps: ORAppsTable,
+    or_endpoint_changes: OREndpointChangesTable,
+    or_endpoints: OREndpointsTable,
+    or_model_app_leaderboards: ORModelAppLeaderboardsTable,
+    or_model_changes: ORModelChangesTable,
+    or_model_details: ORModelDetailsTable,
+    or_model_token_stats: ORModelTokenStatsTable,
+    or_models: ORModelsTable,
+    or_provider_changes: ORProviderChangesTable,
+    or_providers: ORProvidersTable,
 
-    snapshot_crawl_config: SnapshotCrawlConfig.table,
-    snapshot_crawl_archives: SnapshotCrawlArchives.table,
+    snapshot_crawl_config: SnapshotCrawlConfigTable,
+    snapshot_crawl_archives: SnapshotCrawlArchivesTable,
 
     // version 0 archived data
     snapshots: defineTable({
@@ -41,5 +47,3 @@ export const schema = defineSchema(
     strictTableNameTypes: true,
   },
 )
-
-export default schema

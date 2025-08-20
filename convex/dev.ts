@@ -60,3 +60,24 @@ export const takeSnapshotNow = internalAction({
     await ctx.runAction(internal.snapshots.materialize.materialize.run, {})
   },
 })
+
+export const deleteAllChanges = internalAction({
+  returns: v.null(),
+  handler: async (ctx) => {
+    // Clear or_endpoint_changes
+    while (true) {
+      const deleted: number = await ctx.runMutation(internal.db.or.endpointChanges.clearTable)
+      if (deleted === 0) break
+    }
+    // Clear or_model_changes
+    while (true) {
+      const deleted: number = await ctx.runMutation(internal.db.or.modelChanges.clearTable)
+      if (deleted === 0) break
+    }
+    // Clear or_provider_changes
+    while (true) {
+      const deleted: number = await ctx.runMutation(internal.db.or.providerChanges.clearTable)
+      if (deleted === 0) break
+    }
+  },
+})
