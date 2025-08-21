@@ -85,3 +85,35 @@ export function PricingProperty({
     />
   )
 }
+
+export function RawPricingProperty({
+  rawKey,
+  value,
+  className,
+}: {
+  rawKey: string
+  value: any
+  className?: string
+}) {
+  const fieldMapping: Record<string, PricingField> = {
+    prompt: 'input',
+    completion: 'output',
+    image: 'image_input',
+    internal_reasoning: 'reasoning_output',
+    request: 'per_request',
+    cache_read: 'cache_read',
+    cache_write: 'cache_write',
+    web_search: 'web_search',
+    discount: 'discount',
+  }
+
+  const mappedKey = fieldMapping[rawKey] || 'input'
+
+  return (
+    <PricingProperty
+      pricing={{ [mappedKey]: Number(value) }}
+      field={mappedKey}
+      className={className}
+    />
+  )
+}
