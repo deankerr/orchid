@@ -55,6 +55,7 @@ export const takeSnapshotNow = internalAction({
       apps: true,
       uptimes: true,
       modelAuthors: true,
+      processChanges: true,
     })
 
     await ctx.runAction(internal.snapshots.materialize.materialize.run, {})

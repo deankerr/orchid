@@ -30,6 +30,7 @@ export const snapshotCron = internalAction({
       apps: on(cfg.apps_every_hours),
       uptimes: on(cfg.uptimes_every_hours),
       modelAuthors: on(cfg.authors_every_hours),
+      processChanges: true,
     })
 
     // Actions have a 10m max runtime; schedule materializeb for after that window
