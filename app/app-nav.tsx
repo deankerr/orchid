@@ -29,6 +29,10 @@ export function AppNav() {
       <FeatureFlag flag="providers">
         <NavLink href="/providers">Providers</NavLink>
       </FeatureFlag>
+
+      <FeatureFlag flag="changes">
+        <NavLink href="/changes">Changes</NavLink>
+      </FeatureFlag>
     </nav>
   )
 }

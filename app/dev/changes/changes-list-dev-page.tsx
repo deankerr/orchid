@@ -26,7 +26,7 @@ const ITEMS_PER_PAGE = 50
 
 type EntityType = 'models' | 'endpoints' | 'providers'
 
-export function ChangesListPage() {
+export function ChangesListDevPage() {
   const [activeTab, setActiveTab] = useState<EntityType>('models')
   const [entityId, setEntityId] = useState('')
 

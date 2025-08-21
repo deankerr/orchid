@@ -36,6 +36,7 @@ import type * as snapshots_bundle from "../snapshots/bundle.js";
 import type * as snapshots_changes_backfill from "../snapshots/changes/backfill.js";
 import type * as snapshots_changes_config from "../snapshots/changes/config.js";
 import type * as snapshots_changes_persist from "../snapshots/changes/persist.js";
+import type * as snapshots_changes_postCrawl from "../snapshots/changes/postCrawl.js";
 import type * as snapshots_changes_process from "../snapshots/changes/process.js";
 import type * as snapshots_crawl from "../snapshots/crawl.js";
 import type * as snapshots_materialize_apps from "../snapshots/materialize/apps.js";
@@ -88,6 +89,7 @@ declare const fullApi: ApiFromModules<{
   "snapshots/changes/backfill": typeof snapshots_changes_backfill;
   "snapshots/changes/config": typeof snapshots_changes_config;
   "snapshots/changes/persist": typeof snapshots_changes_persist;
+  "snapshots/changes/postCrawl": typeof snapshots_changes_postCrawl;
   "snapshots/changes/process": typeof snapshots_changes_process;
   "snapshots/crawl": typeof snapshots_crawl;
   "snapshots/materialize/apps": typeof snapshots_materialize_apps;
