@@ -10,14 +10,15 @@ export type FilterState = {
   // Text search
   search: string
 
-  // Model capabilities (from model.input_modalities)
+  // Model attributes (from model.input_modalities)
   hasImageInput: boolean
   hasFileInput: boolean
   hasReasoning: boolean
 
-  // Endpoint features
+  // Endpoint attributes
   hasTools: boolean
   hasJsonResponse: boolean
+  hasStructuredOutputs: boolean
   pricingFilter: 'all' | 'free' | 'paid'
   hasPromptCaching: boolean
 }
@@ -28,14 +29,14 @@ export interface FilterResult {
   score?: number // fuzzy search score (higher is better)
 }
 
-// Type for model capabilities
+// Type for model attributes
 export type ModelCapabilities = {
-  // Model-level capabilities
+  // Model-level attributes
   hasImageInput: boolean
   hasFileInput: boolean
   hasReasoning: boolean
 
-  // Endpoint-level capabilities (aggregated)
+  // Endpoint-level attributes (aggregated)
   hasTools: boolean
   hasJsonResponse: boolean
   hasFreeVariant: boolean
@@ -45,21 +46,21 @@ export type ModelCapabilities = {
 }
 
 /**
- * Get all capabilities for a model based on its properties and available endpoints.
+ * Get all attributes for a model based on its properties and available endpoints.
  *
- * Model-level capabilities are derived directly from the model properties.
- * Endpoint-level capabilities are aggregated - returns true if ANY endpoint has the capability.
+ * Model-level attributes are derived directly from the model properties.
+ * Endpoint-level attributes are aggregated - returns true if ANY endpoint has the attribute.
  *
- * This is the single source of truth for capability checking across the application.
+ * This is the single source of truth for attribute checking across the application.
  */
 export function getModelCapabilities(model: Model, endpoints: Endpoint[]): ModelCapabilities {
   return {
-    // Model-level capabilities
+    // Model-level attributes
     hasImageInput: model.input_modalities.includes('image'),
     hasFileInput: model.input_modalities.includes('file'),
     hasReasoning: endpoints.some((endpoint) => endpoint.capabilities.reasoning), // is technically model level
 
-    // Endpoint-level capabilities (true if ANY endpoint has the capability)
+    // Endpoint-level attributes (true if ANY endpoint has the attribute)
     hasTools: endpoints.some((endpoint) => endpoint.capabilities.tools),
     hasJsonResponse: endpoints.some((endpoint) =>
       endpoint.supported_parameters.includes('response_format'),
@@ -83,6 +84,7 @@ export function urlStateToFilterState(urlState: {
   reason: boolean
   tools: boolean
   json: boolean
+  struct: boolean
   pricing: 'all' | 'free' | 'paid'
   cache: boolean
   sort: SortOption
@@ -95,6 +97,7 @@ export function urlStateToFilterState(urlState: {
     hasReasoning: urlState.reason,
     hasTools: urlState.tools,
     hasJsonResponse: urlState.json,
+    hasStructuredOutputs: urlState.struct,
     pricingFilter: urlState.pricing,
     hasPromptCaching: urlState.cache,
     sort: urlState.sort,
@@ -111,6 +114,7 @@ export function hasActiveFilters(filters: FilterState): boolean {
     filters.hasReasoning ||
     filters.hasTools ||
     filters.hasJsonResponse ||
+    filters.hasStructuredOutputs ||
     filters.pricingFilter !== 'all' ||
     filters.hasPromptCaching
   )
@@ -168,28 +172,31 @@ export function filterModels(
   // Group endpoints by model slug
   const endpointsByModel = R.groupBy(endpoints, (endpoint) => endpoint.model_slug)
 
-  // Apply capability filters first (non-search filters)
-  const capabilityFilteredModels = models.filter((model) => {
+  // Apply attribute filters first (non-search filters)
+  const attributeFilteredModels = models.filter((model) => {
     // Get all model endpoints
     const modelEndpoints = endpointsByModel[model.slug] || []
 
-    // Check capabilities using centralized function
-    const capabilities = getModelCapabilities(model, modelEndpoints)
+    // Check attributes using centralized function
+    const attributes = getModelCapabilities(model, modelEndpoints)
 
-    // Apply capability filters
-    if (filters.hasImageInput && !capabilities.hasImageInput) return false
-    if (filters.hasFileInput && !capabilities.hasFileInput) return false
-    if (filters.hasReasoning && !capabilities.hasReasoning) return false
-    if (filters.hasTools && !capabilities.hasTools) return false
-    if (filters.hasJsonResponse && !capabilities.hasJsonResponse) return false
-    if (filters.pricingFilter === 'free' && !capabilities.hasFreeVariant) return false
-    if (filters.pricingFilter === 'paid' && !capabilities.hasPaidVariant) return false
-    if (filters.hasPromptCaching && !capabilities.hasPromptCaching) return false
+    // Apply attribute filters
+    if (filters.hasImageInput && !attributes.hasImageInput) return false
+    if (filters.hasFileInput && !attributes.hasFileInput) return false
+    if (filters.hasReasoning && !attributes.hasReasoning) return false
+    if (filters.hasTools && !attributes.hasTools) return false
+    if (filters.hasJsonResponse && !attributes.hasJsonResponse) return false
+    if (filters.hasStructuredOutputs && !attributes.hasStructuredOutputs) return false
+    if (filters.pricingFilter === 'free' && !attributes.hasFreeVariant) return false
+    if (filters.pricingFilter === 'paid' && !attributes.hasPaidVariant) return false
+    if (filters.hasPromptCaching && !attributes.hasPromptCaching) return false
 
     // Must have at least one valid endpoint after individual endpoint filtering
     const validEndpoints = modelEndpoints.filter((endpoint) => {
       if (filters.hasTools && !endpoint.capabilities.tools) return false
       if (filters.hasJsonResponse && !endpoint.supported_parameters.includes('response_format'))
+        return false
+      if (filters.hasStructuredOutputs && !endpoint.supported_parameters.includes('structured_outputs'))
         return false
       if (filters.pricingFilter === 'free' && endpoint.model_variant !== 'free') return false
       if (filters.pricingFilter === 'paid' && endpoint.model_variant === 'free') return false
@@ -207,9 +214,9 @@ export function filterModels(
   // Apply fuzzy search if there's a search query
   const filteredModels = searchQuery
     ? fuzzysort
-        .go(searchQuery, capabilityFilteredModels, { key: 'name', all: true })
+        .go(searchQuery, attributeFilteredModels, { key: 'name', all: true })
         .map((result) => ({ model: result.obj, score: Math.round(result.score * 10) / 10 }))
-    : capabilityFilteredModels.map((model) => ({ model, score: 0 }))
+    : attributeFilteredModels.map((model) => ({ model, score: 0 }))
 
   // Create result with selected endpoints per variant
   const results: FilterResult[] = filteredModels
@@ -220,6 +227,8 @@ export function filterModels(
       const validEndpoints = modelEndpoints.filter((endpoint) => {
         if (filters.hasTools && !endpoint.capabilities.tools) return false
         if (filters.hasJsonResponse && !endpoint.supported_parameters.includes('response_format'))
+          return false
+        if (filters.hasStructuredOutputs && !endpoint.supported_parameters.includes('structured_outputs'))
           return false
         if (filters.pricingFilter === 'free' && endpoint.model_variant !== 'free') return false
         if (filters.pricingFilter === 'paid' && endpoint.model_variant === 'free') return false

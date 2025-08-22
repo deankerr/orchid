@@ -1,9 +1,10 @@
 'use client'
 
-import { ArrowDown, ArrowUp } from 'lucide-react'
+import { SortAscIcon, SortDescIcon } from 'lucide-react'
 import { parseAsBoolean, parseAsString, parseAsStringEnum, useQueryStates } from 'nuqs'
 
 import { cn } from '../../lib/utils'
+import { attributes, type AttributeKey } from '../attributes'
 import { SearchInput } from '../shared/search-input'
 import { Button } from '../ui/button'
 import { Checkbox } from '../ui/checkbox'
@@ -15,14 +16,15 @@ const filterParsers = {
   // Text search
   q: parseAsString.withDefault(''),
 
-  // Model capabilities
+  // Model attributes
   img: parseAsBoolean.withDefault(false),
   file: parseAsBoolean.withDefault(false),
   reason: parseAsBoolean.withDefault(false),
 
-  // Endpoint features
+  // Endpoint attributes
   tools: parseAsBoolean.withDefault(false),
   json: parseAsBoolean.withDefault(false),
+  struct: parseAsBoolean.withDefault(false),
   pricing: parseAsStringEnum<'all' | 'free' | 'paid'>(['all', 'free', 'paid']).withDefault('all'),
   cache: parseAsBoolean.withDefault(false),
 
@@ -64,96 +66,100 @@ export function ModelFilterControls() {
   }
 
   return (
-    <div className="space-y-2">
-      {/* Search and Sort Row */}
-      <div className="flex items-center gap-2">
-        <div className="flex-1">
-          <SearchInput
-            value={filters.q}
-            onChange={handleSearchChange}
-            placeholder="Search models..."
-            className="w-full"
-          />
-        </div>
-        <Select value={filters.sort} onValueChange={handleSortChange}>
-          <SelectTrigger className="w-40">
-            <SelectValue placeholder="Sort by..." />
-          </SelectTrigger>
-          <SelectContent>
-            {SORT_OPTIONS.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={handleDirectionToggle}
-          title={`Sort ${filters.dir === 'asc' ? 'ascending' : 'descending'}`}
-        >
-          {filters.dir === 'asc' ? (
-            <ArrowUp className="h-4 w-4" />
-          ) : (
-            <ArrowDown className="h-4 w-4" />
-          )}
-        </Button>
-      </div>
+    <div className="space-y-4">
+      {/* Search Row */}
+      <SearchInput
+        value={filters.q}
+        onChange={handleSearchChange}
+        placeholder="Search models..."
+        className="w-full"
+      />
 
-      {/* Filter Groups */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-        {/* Input Modalities */}
-        <FieldSet legend="Input Modalities">
-          <FilterCheckbox
-            label="Image"
+      {/* Attributes Row */}
+      <div className="space-y-1">
+        <div className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+          Attributes
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <AttributeCheckbox
+            attributeKey="imageInput"
             checked={filters.img}
             onChange={(checked: boolean) => handleFilterChange('img', checked)}
           />
-          <FilterCheckbox
-            label="File"
+          <AttributeCheckbox
+            attributeKey="fileInput"
             checked={filters.file}
             onChange={(checked: boolean) => handleFilterChange('file', checked)}
           />
-        </FieldSet>
-
-        {/* Capabilities */}
-        <FieldSet legend="Capabilities">
-          <FilterCheckbox
-            label="Reasoning"
+          <AttributeCheckbox
+            attributeKey="reasoning"
             checked={filters.reason}
             onChange={(checked: boolean) => handleFilterChange('reason', checked)}
           />
-          <FilterCheckbox
-            label="Tools"
+          <AttributeCheckbox
+            attributeKey="tools"
             checked={filters.tools}
             onChange={(checked: boolean) => handleFilterChange('tools', checked)}
           />
-          <FilterCheckbox
-            label="JSON"
+          <AttributeCheckbox
+            attributeKey="jsonObject"
             checked={filters.json}
             onChange={(checked: boolean) => handleFilterChange('json', checked)}
           />
-          <FilterCheckbox
-            label="Cache"
+          <AttributeCheckbox
+            attributeKey="structuredOutputs"
+            checked={filters.struct}
+            onChange={(checked: boolean) => handleFilterChange('struct', checked)}
+          />
+          <AttributeCheckbox
+            attributeKey="promptCaching"
             checked={filters.cache}
             onChange={(checked: boolean) => handleFilterChange('cache', checked)}
           />
-        </FieldSet>
+        </div>
+      </div>
 
-        {/* Pricing */}
-        <FieldSet legend="Pricing">
-          <Select value={filters.pricing} onValueChange={handlePricingChange}>
-            <SelectTrigger className="h-8 w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Paid/Free</SelectItem>
-              <SelectItem value="free">Free</SelectItem>
-              <SelectItem value="paid">Paid</SelectItem>
-            </SelectContent>
-          </Select>
-        </FieldSet>
+      {/* Pricing and Sort Row */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+            Pricing
+          </div>
+          <PricingSegmentedControl value={filters.pricing} onValueChange={handlePricingChange} />
+        </div>
+
+        <div className="space-y-1">
+          <div className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+            Sort
+          </div>
+
+          <div className="flex items-center gap-1">
+            <Select value={filters.sort} onValueChange={handleSortChange}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Sort by..." />
+              </SelectTrigger>
+              <SelectContent>
+                {SORT_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleDirectionToggle}
+              title={`Sort ${filters.dir === 'asc' ? 'ascending' : 'descending'}`}
+            >
+              {filters.dir === 'asc' ? (
+                <SortAscIcon className="h-4 w-4" />
+              ) : (
+                <SortDescIcon className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -162,47 +168,67 @@ export function ModelFilterControls() {
 // Export the parsers for use in the main page component
 export { filterParsers }
 
-function FieldSet({
-  legend,
-  className,
-  children,
-  ...props
+function PricingSegmentedControl({
+  value,
+  onValueChange,
 }: {
-  legend: string
-} & React.ComponentProps<'fieldset'>) {
+  value: 'all' | 'free' | 'paid'
+  onValueChange: (value: 'all' | 'free' | 'paid') => void
+}) {
+  const options = [
+    { value: 'all' as const, label: 'All' },
+    { value: 'free' as const, label: 'Free' },
+    { value: 'paid' as const, label: 'Paid' },
+  ]
+
   return (
-    <fieldset
-      className={cn(
-        'flex flex-wrap items-center gap-3 rounded-sm border bg-card p-3 sm:min-w-0 sm:flex-1',
-        className,
-      )}
-      {...props}
-    >
-      <legend className="px-2 text-sm font-medium text-muted-foreground">{legend}</legend>
-      {children}
-    </fieldset>
+    <div className="grid h-9 w-fit grid-flow-col items-center justify-center rounded border border-input">
+      {options.map((option) => (
+        <button
+          key={option.value}
+          onClick={() => onValueChange(option.value)}
+          className={cn(
+            'inline-flex items-center justify-center gap-1.5 rounded-sm border px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50',
+            value === option.value
+              ? 'bg-input/30 text-foreground'
+              : 'border-transparent text-card-foreground hover:bg-input/30 hover:text-foreground',
+          )}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
   )
 }
 
-function FilterCheckbox({
-  label,
+function AttributeCheckbox({
+  attributeKey,
   checked,
   onChange,
 }: {
-  label: string
+  attributeKey: AttributeKey
   checked: boolean
   onChange: (checked: boolean) => void
-} & Omit<React.ComponentProps<'fieldset'>, 'onChange'>) {
+}) {
+  const config = attributes[attributeKey]
+  const id = `filter-${attributeKey}`
+
   return (
-    <div className="flex items-center space-x-2">
+    <Label
+      htmlFor={id}
+      className={cn(
+        'inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-md border border-input px-2.5 py-1.5 font-mono font-medium whitespace-nowrap text-card-foreground uppercase transition-colors select-none hover:bg-input/30 hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50',
+        checked ? 'bg-input/30 text-accent-foreground' : '',
+      )}
+    >
       <Checkbox
-        id={label}
+        id={id}
         checked={checked}
         onCheckedChange={(checked) => onChange(checked === true)}
+        className="mr-1.5 h-4 w-4"
       />
-      <Label htmlFor={label} className="cursor-pointer text-sm font-normal whitespace-nowrap">
-        {label}
-      </Label>
-    </div>
+      <span className="flex-shrink-0 [&>svg]:h-3.5 [&>svg]:w-3.5">{config.icon}</span>
+      {config.label}
+    </Label>
   )
 }
