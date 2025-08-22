@@ -13,6 +13,7 @@ export type FilterState = {
   // Model attributes (from model.input_modalities)
   hasImageInput: boolean
   hasFileInput: boolean
+  hasAudioInput: boolean
   hasReasoning: boolean
 
   // Endpoint attributes
@@ -34,6 +35,7 @@ export type ModelCapabilities = {
   // Model-level attributes
   hasImageInput: boolean
   hasFileInput: boolean
+  hasAudioInput: boolean
   hasReasoning: boolean
 
   // Endpoint-level attributes (aggregated)
@@ -58,6 +60,7 @@ export function getModelCapabilities(model: Model, endpoints: Endpoint[]): Model
     // Model-level attributes
     hasImageInput: model.input_modalities.includes('image'),
     hasFileInput: model.input_modalities.includes('file'),
+    hasAudioInput: model.input_modalities.includes('audio'),
     hasReasoning: endpoints.some((endpoint) => endpoint.capabilities.reasoning), // is technically model level
 
     // Endpoint-level attributes (true if ANY endpoint has the attribute)
@@ -79,8 +82,9 @@ export function getModelCapabilities(model: Model, endpoints: Endpoint[]): Model
 // Convert URL state to FilterState format
 export function urlStateToFilterState(urlState: {
   q: string
-  img: boolean
+  image: boolean
   file: boolean
+  audio: boolean
   reason: boolean
   tools: boolean
   json: boolean
@@ -92,8 +96,9 @@ export function urlStateToFilterState(urlState: {
 }): FilterState & { sort: SortOption; direction: SortDirection } {
   return {
     search: urlState.q,
-    hasImageInput: urlState.img,
+    hasImageInput: urlState.image,
     hasFileInput: urlState.file,
+    hasAudioInput: urlState.audio,
     hasReasoning: urlState.reason,
     hasTools: urlState.tools,
     hasJsonResponse: urlState.json,
@@ -111,6 +116,7 @@ export function hasActiveFilters(filters: FilterState): boolean {
     filters.search !== '' ||
     filters.hasImageInput ||
     filters.hasFileInput ||
+    filters.hasAudioInput ||
     filters.hasReasoning ||
     filters.hasTools ||
     filters.hasJsonResponse ||
@@ -183,6 +189,7 @@ export function filterModels(
     // Apply attribute filters
     if (filters.hasImageInput && !attributes.hasImageInput) return false
     if (filters.hasFileInput && !attributes.hasFileInput) return false
+    if (filters.hasAudioInput && !attributes.hasAudioInput) return false
     if (filters.hasReasoning && !attributes.hasReasoning) return false
     if (filters.hasTools && !attributes.hasTools) return false
     if (filters.hasJsonResponse && !attributes.hasJsonResponse) return false
@@ -196,7 +203,10 @@ export function filterModels(
       if (filters.hasTools && !endpoint.capabilities.tools) return false
       if (filters.hasJsonResponse && !endpoint.supported_parameters.includes('response_format'))
         return false
-      if (filters.hasStructuredOutputs && !endpoint.supported_parameters.includes('structured_outputs'))
+      if (
+        filters.hasStructuredOutputs &&
+        !endpoint.supported_parameters.includes('structured_outputs')
+      )
         return false
       if (filters.pricingFilter === 'free' && endpoint.model_variant !== 'free') return false
       if (filters.pricingFilter === 'paid' && endpoint.model_variant === 'free') return false
@@ -228,7 +238,10 @@ export function filterModels(
         if (filters.hasTools && !endpoint.capabilities.tools) return false
         if (filters.hasJsonResponse && !endpoint.supported_parameters.includes('response_format'))
           return false
-        if (filters.hasStructuredOutputs && !endpoint.supported_parameters.includes('structured_outputs'))
+        if (
+          filters.hasStructuredOutputs &&
+          !endpoint.supported_parameters.includes('structured_outputs')
+        )
           return false
         if (filters.pricingFilter === 'free' && endpoint.model_variant !== 'free') return false
         if (filters.pricingFilter === 'paid' && endpoint.model_variant === 'free') return false

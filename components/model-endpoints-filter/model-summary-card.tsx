@@ -75,6 +75,7 @@ export const ModelSummaryCard = memo<ModelSummaryCardProps>(({ result }) => {
           {/* Model-level capabilities */}
           {capabilities.hasImageInput && <AttributeBadge attribute="imageInput" />}
           {capabilities.hasFileInput && <AttributeBadge attribute="fileInput" />}
+          {capabilities.hasAudioInput && <AttributeBadge attribute="audioInput" />}
           {capabilities.hasReasoning && <AttributeBadge attribute="reasoning" />}
 
           {/* Endpoint-level capabilities */}

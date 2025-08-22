@@ -17,8 +17,9 @@ const filterParsers = {
   q: parseAsString.withDefault(''),
 
   // Model attributes
-  img: parseAsBoolean.withDefault(false),
+  image: parseAsBoolean.withDefault(false),
   file: parseAsBoolean.withDefault(false),
+  audio: parseAsBoolean.withDefault(false),
   reason: parseAsBoolean.withDefault(false),
 
   // Endpoint attributes
@@ -66,7 +67,7 @@ export function ModelFilterControls() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Search Row */}
       <SearchInput
         value={filters.q}
@@ -83,13 +84,18 @@ export function ModelFilterControls() {
         <div className="flex flex-wrap items-center gap-2">
           <AttributeCheckbox
             attributeKey="imageInput"
-            checked={filters.img}
-            onChange={(checked: boolean) => handleFilterChange('img', checked)}
+            checked={filters.image}
+            onChange={(checked: boolean) => handleFilterChange('image', checked)}
           />
           <AttributeCheckbox
             attributeKey="fileInput"
             checked={filters.file}
             onChange={(checked: boolean) => handleFilterChange('file', checked)}
+          />
+          <AttributeCheckbox
+            attributeKey="audioInput"
+            checked={filters.audio}
+            onChange={(checked: boolean) => handleFilterChange('audio', checked)}
           />
           <AttributeCheckbox
             attributeKey="reasoning"
@@ -132,7 +138,6 @@ export function ModelFilterControls() {
           <div className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
             Sort
           </div>
-
           <div className="flex items-center gap-1">
             <Select value={filters.sort} onValueChange={handleSortChange}>
               <SelectTrigger className="w-48">
@@ -182,7 +187,7 @@ function PricingSegmentedControl({
   ]
 
   return (
-    <div className="grid h-9 w-fit grid-flow-col items-center justify-center rounded border border-input">
+    <div className="grid h-9 w-fit auto-cols-fr grid-flow-col items-center justify-center divide-x rounded border border-input">
       {options.map((option) => (
         <button
           key={option.value}
@@ -225,7 +230,7 @@ function AttributeCheckbox({
         id={id}
         checked={checked}
         onCheckedChange={(checked) => onChange(checked === true)}
-        className="mr-1.5 h-4 w-4"
+        className="mr-1 h-4 w-4"
       />
       <span className="flex-shrink-0 [&>svg]:h-3.5 [&>svg]:w-3.5">{config.icon}</span>
       {config.label}

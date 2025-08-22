@@ -1,4 +1,5 @@
 import {
+  AudioLinesIcon,
   BracesIcon,
   BracketsIcon,
   BrainIcon,
@@ -29,6 +30,11 @@ export const attributes = {
     icon: <FileUpIcon />,
     label: 'PDF',
     description: 'Can process PDF inputs.',
+  },
+  audioInput: {
+    icon: <AudioLinesIcon />,
+    label: 'Audio',
+    description: 'Can process audio inputs.',
   },
 
   // Model Capabilities
