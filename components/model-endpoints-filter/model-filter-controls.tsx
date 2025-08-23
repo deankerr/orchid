@@ -12,7 +12,7 @@ import { Label } from '../ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
 import { SORT_CONFIG, SORT_OPTIONS, type SortDirection, type SortOption } from './sort'
 
-const filterParsers = {
+export const filterParsers = {
   // Text search
   q: parseAsString.withDefault(''),
 
@@ -67,7 +67,7 @@ export function ModelFilterControls() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {/* Search Row */}
       <SearchInput
         value={filters.q}
@@ -76,133 +76,109 @@ export function ModelFilterControls() {
         className="w-full"
       />
 
-      {/* Attributes Row */}
-      <div className="space-y-1">
-        <div className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-          Attributes
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <AttributeCheckbox
-            attributeKey="imageInput"
-            checked={filters.image}
-            onChange={(checked: boolean) => handleFilterChange('image', checked)}
-          />
-          <AttributeCheckbox
-            attributeKey="fileInput"
-            checked={filters.file}
-            onChange={(checked: boolean) => handleFilterChange('file', checked)}
-          />
-          <AttributeCheckbox
-            attributeKey="audioInput"
-            checked={filters.audio}
-            onChange={(checked: boolean) => handleFilterChange('audio', checked)}
-          />
-          <AttributeCheckbox
-            attributeKey="reasoning"
-            checked={filters.reason}
-            onChange={(checked: boolean) => handleFilterChange('reason', checked)}
-          />
-          <AttributeCheckbox
-            attributeKey="tools"
-            checked={filters.tools}
-            onChange={(checked: boolean) => handleFilterChange('tools', checked)}
-          />
-          <AttributeCheckbox
-            attributeKey="jsonObject"
-            checked={filters.json}
-            onChange={(checked: boolean) => handleFilterChange('json', checked)}
-          />
-          <AttributeCheckbox
-            attributeKey="structuredOutputs"
-            checked={filters.struct}
-            onChange={(checked: boolean) => handleFilterChange('struct', checked)}
-          />
-          <AttributeCheckbox
-            attributeKey="promptCaching"
-            checked={filters.cache}
-            onChange={(checked: boolean) => handleFilterChange('cache', checked)}
-          />
-        </div>
-      </div>
+      <div className="flex flex-col gap-4 sm:flex-row">
+        <Fieldset legend="Attributes">
+          <div className="flex flex-wrap items-center gap-2">
+            <AttributeCheckbox
+              attributeKey="imageInput"
+              checked={filters.image}
+              onChange={(checked: boolean) => handleFilterChange('image', checked)}
+            />
+            <AttributeCheckbox
+              attributeKey="fileInput"
+              checked={filters.file}
+              onChange={(checked: boolean) => handleFilterChange('file', checked)}
+            />
+            <AttributeCheckbox
+              attributeKey="audioInput"
+              checked={filters.audio}
+              onChange={(checked: boolean) => handleFilterChange('audio', checked)}
+            />
+            <AttributeCheckbox
+              attributeKey="reasoning"
+              checked={filters.reason}
+              onChange={(checked: boolean) => handleFilterChange('reason', checked)}
+            />
+            <AttributeCheckbox
+              attributeKey="tools"
+              checked={filters.tools}
+              onChange={(checked: boolean) => handleFilterChange('tools', checked)}
+            />
+            <AttributeCheckbox
+              attributeKey="jsonObject"
+              checked={filters.json}
+              onChange={(checked: boolean) => handleFilterChange('json', checked)}
+            />
+            <AttributeCheckbox
+              attributeKey="structuredOutputs"
+              checked={filters.struct}
+              onChange={(checked: boolean) => handleFilterChange('struct', checked)}
+            />
+            <AttributeCheckbox
+              attributeKey="promptCaching"
+              checked={filters.cache}
+              onChange={(checked: boolean) => handleFilterChange('cache', checked)}
+            />
+          </div>
+        </Fieldset>
 
-      {/* Pricing and Sort Row */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-            Pricing
-          </div>
-          <PricingSegmentedControl value={filters.pricing} onValueChange={handlePricingChange} />
-        </div>
+        {/* Pricing and Sort Row */}
+        <div className="flex justify-between gap-2 sm:grid">
+          <Fieldset legend="Pricing">
+            <PricingSegmentedControl
+              className="sm:w-full"
+              value={filters.pricing}
+              onValueChange={handlePricingChange}
+            />
+          </Fieldset>
 
-        <div className="space-y-1">
-          <div className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-            Sort
-          </div>
-          <div className="flex items-center gap-1">
-            <Select value={filters.sort} onValueChange={handleSortChange}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Sort by..." />
-              </SelectTrigger>
-              <SelectContent>
-                {SORT_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleDirectionToggle}
-              title={`Sort ${filters.dir === 'asc' ? 'ascending' : 'descending'}`}
-            >
-              {filters.dir === 'asc' ? (
-                <SortAscIcon className="h-4 w-4" />
-              ) : (
-                <SortDescIcon className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
+          <Fieldset legend="Sort">
+            <div className="flex items-center gap-1">
+              <Select value={filters.sort} onValueChange={handleSortChange}>
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="Sort by..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {SORT_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleDirectionToggle}
+                title={`Sort ${filters.dir === 'asc' ? 'ascending' : 'descending'}`}
+              >
+                {filters.dir === 'asc' ? (
+                  <SortAscIcon className="h-4 w-4" />
+                ) : (
+                  <SortDescIcon className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+          </Fieldset>
         </div>
       </div>
     </div>
   )
 }
 
-// Export the parsers for use in the main page component
-export { filterParsers }
-
-function PricingSegmentedControl({
-  value,
-  onValueChange,
-}: {
-  value: 'all' | 'free' | 'paid'
-  onValueChange: (value: 'all' | 'free' | 'paid') => void
-}) {
-  const options = [
-    { value: 'all' as const, label: 'All' },
-    { value: 'free' as const, label: 'Free' },
-    { value: 'paid' as const, label: 'Paid' },
-  ]
-
+function Fieldset({
+  legend,
+  className,
+  children,
+  ...props
+}: { legend: string } & React.ComponentProps<'fieldset'>) {
   return (
-    <div className="grid h-9 w-fit auto-cols-fr grid-flow-col items-center justify-center divide-x rounded border border-input">
-      {options.map((option) => (
-        <button
-          key={option.value}
-          onClick={() => onValueChange(option.value)}
-          className={cn(
-            'inline-flex items-center justify-center gap-1.5 rounded-sm border px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50',
-            value === option.value
-              ? 'bg-input/30 text-foreground'
-              : 'border-transparent text-card-foreground hover:bg-input/30 hover:text-foreground',
-          )}
-        >
-          {option.label}
-        </button>
-      ))}
-    </div>
+    <fieldset className={cn('space-y-1', className)} {...props}>
+      <legend className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+        {legend}
+      </legend>
+      {children}
+    </fieldset>
   )
 }
 
@@ -222,7 +198,7 @@ function AttributeCheckbox({
     <Label
       htmlFor={id}
       className={cn(
-        'inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-md border border-input px-2.5 py-1.5 font-mono font-medium whitespace-nowrap text-card-foreground uppercase transition-colors select-none hover:bg-input/30 hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50',
+        'inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-sm border border-input px-2.5 py-1.5 font-mono text-sm font-medium whitespace-nowrap text-muted-foreground uppercase transition-colors select-none hover:bg-input/30 hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50',
         checked ? 'bg-input/30 text-accent-foreground' : '',
       )}
     >
@@ -232,8 +208,49 @@ function AttributeCheckbox({
         onCheckedChange={(checked) => onChange(checked === true)}
         className="mr-1 h-4 w-4"
       />
-      <span className="flex-shrink-0 [&>svg]:h-3.5 [&>svg]:w-3.5">{config.icon}</span>
+      <span className="flex-shrink-0 [&>svg]:size-3.5">{config.icon}</span>
       {config.label}
     </Label>
+  )
+}
+
+function PricingSegmentedControl({
+  value,
+  onValueChange,
+  className,
+  ...props
+}: {
+  value: 'all' | 'free' | 'paid'
+  onValueChange: (value: 'all' | 'free' | 'paid') => void
+} & React.ComponentProps<'div'>) {
+  const options = [
+    { value: 'all' as const, label: 'All' },
+    { value: 'free' as const, label: 'Free' },
+    { value: 'paid' as const, label: 'Paid' },
+  ]
+
+  return (
+    <div
+      className={cn(
+        'grid h-9 w-fit auto-cols-fr grid-flow-col divide-x rounded-sm border border-input',
+        className,
+      )}
+      {...props}
+    >
+      {options.map((option) => (
+        <button
+          key={option.value}
+          onClick={() => onValueChange(option.value)}
+          className={cn(
+            'inline-flex items-center justify-center gap-1.5 rounded-sm border px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50',
+            value === option.value
+              ? 'bg-input/30 text-foreground'
+              : 'border-transparent text-muted-foreground hover:bg-input/30 hover:text-foreground',
+          )}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
   )
 }

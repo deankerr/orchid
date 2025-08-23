@@ -89,8 +89,8 @@ export function urlStateToFilterState(urlState: {
   tools: boolean
   json: boolean
   struct: boolean
-  pricing: 'all' | 'free' | 'paid'
   cache: boolean
+  pricing: 'all' | 'free' | 'paid'
   sort: SortOption
   dir: SortDirection
 }): FilterState & { sort: SortOption; direction: SortDirection } {
