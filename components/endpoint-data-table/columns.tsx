@@ -49,11 +49,11 @@ export const endpointColumns: ColumnDef<Endpoint>[] = [
         <div className="flex gap-1">
           <AttributeBadge attribute="tools" className={cn(!caps.tools && 'opacity-30')} />
           <AttributeBadge
-            attribute="jsonObject"
+            attribute="json"
             className={cn(!params.includes('response_format') && 'opacity-30')}
           />
           <AttributeBadge
-            attribute="structuredOutputs"
+            attribute="struct"
             className={cn(!params.includes('structured_outputs') && 'opacity-30')}
           />
         </div>

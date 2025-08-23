@@ -2,13 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { useQueryStates } from 'nuqs'
-
 import { useEndpointsList, useModelsList } from '@/hooks/api'
 
-import { filterModels, urlStateToFilterState } from './filter'
-import { filterParsers, ModelFilterControls } from './model-filter-controls'
+import { filterModels } from './filter'
+import { ModelFilterControls } from './model-filter-controls'
 import { ModelFilterResults } from './model-filter-results'
+import { useModelFilterSearchParams } from './search-params'
 
 export function ModelEndpointsFilter() {
   const [displayCount, setDisplayCount] = useState(20)
@@ -18,13 +17,7 @@ export function ModelEndpointsFilter() {
   const endpoints = useEndpointsList()
 
   // Get filter state from URL
-  const [urlState] = useQueryStates(filterParsers, {
-    history: 'replace',
-    shallow: true,
-  })
-
-  // Convert URL state to filter state
-  const filters = useMemo(() => urlStateToFilterState(urlState), [urlState])
+  const [filters] = useModelFilterSearchParams()
 
   // Apply filtering logic
   const { filteredResults } = useMemo(() => {
@@ -32,7 +25,7 @@ export function ModelEndpointsFilter() {
       return { filteredResults: [], totalCount: 0 }
     }
 
-    const results = filterModels(models, endpoints, filters, filters.sort, filters.direction)
+    const results = filterModels(models, endpoints, filters)
 
     return {
       filteredResults: results,

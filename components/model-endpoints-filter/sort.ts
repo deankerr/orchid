@@ -2,14 +2,14 @@ export type SortDirection = 'asc' | 'desc'
 
 // Single consolidated sort record
 export const SORT_CONFIG = {
-  created: { label: 'Recently Added', naturalDirection: 'desc' },
-  tokens_7d: { label: 'Tokens (7D)', naturalDirection: 'desc' },
-  alphabetical: { label: 'Alphabetical', naturalDirection: 'asc' },
-  input_price: { label: 'Input Price', naturalDirection: 'asc' },
-  output_price: { label: 'Output Price', naturalDirection: 'asc' },
-  context: { label: 'Context Length', naturalDirection: 'desc' },
-  throughput: { label: 'Throughput', naturalDirection: 'desc' },
-  latency: { label: 'Latency', naturalDirection: 'asc' },
+  created: { label: 'Recently Added' },
+  tokens_7d: { label: 'Tokens (7D)' },
+  alphabetical: { label: 'Alphabetical' },
+  input_price: { label: 'Input Price' },
+  output_price: { label: 'Output Price' },
+  context: { label: 'Context Length' },
+  throughput: { label: 'Throughput' },
+  latency: { label: 'Latency' },
 } as const
 
 // Derived type
