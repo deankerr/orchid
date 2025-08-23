@@ -4,126 +4,14 @@ import fuzzysort from 'fuzzysort'
 
 import type { Endpoint, Model } from '@/hooks/api'
 
-import { type SortDirection, type SortOption } from './sort'
-
-export type FilterState = {
-  // Text search
-  search: string
-
-  // Model attributes (from model.input_modalities)
-  hasImageInput: boolean
-  hasFileInput: boolean
-  hasAudioInput: boolean
-  hasReasoning: boolean
-
-  // Endpoint attributes
-  hasTools: boolean
-  hasJsonResponse: boolean
-  hasStructuredOutputs: boolean
-  pricingFilter: 'all' | 'free' | 'paid'
-  hasPromptCaching: boolean
-}
+import { getModelCapabilityAttributes } from '../attributes'
+import type { useModelFilterSearchParams } from './search-params'
+import { type SortOption } from './sort'
 
 export interface FilterResult {
   modelId: string // model._id
   endpointIds: string[] // endpoint._id for each variant to display
   score?: number // fuzzy search score (higher is better)
-}
-
-// Type for model attributes
-export type ModelCapabilities = {
-  // Model-level attributes
-  hasImageInput: boolean
-  hasFileInput: boolean
-  hasAudioInput: boolean
-  hasReasoning: boolean
-
-  // Endpoint-level attributes (aggregated)
-  hasTools: boolean
-  hasJsonResponse: boolean
-  hasFreeVariant: boolean
-  hasPaidVariant: boolean
-  hasPromptCaching: boolean
-  hasStructuredOutputs: boolean
-}
-
-/**
- * Get all attributes for a model based on its properties and available endpoints.
- *
- * Model-level attributes are derived directly from the model properties.
- * Endpoint-level attributes are aggregated - returns true if ANY endpoint has the attribute.
- *
- * This is the single source of truth for attribute checking across the application.
- */
-export function getModelCapabilities(model: Model, endpoints: Endpoint[]): ModelCapabilities {
-  return {
-    // Model-level attributes
-    hasImageInput: model.input_modalities.includes('image'),
-    hasFileInput: model.input_modalities.includes('file'),
-    hasAudioInput: model.input_modalities.includes('audio'),
-    hasReasoning: endpoints.some((endpoint) => endpoint.capabilities.reasoning), // is technically model level
-
-    // Endpoint-level attributes (true if ANY endpoint has the attribute)
-    hasTools: endpoints.some((endpoint) => endpoint.capabilities.tools),
-    hasJsonResponse: endpoints.some((endpoint) =>
-      endpoint.supported_parameters.includes('response_format'),
-    ),
-    hasStructuredOutputs: endpoints.some((endpoint) =>
-      endpoint.supported_parameters.includes('structured_outputs'),
-    ),
-    hasFreeVariant: endpoints.some((endpoint) => endpoint.model_variant === 'free'),
-    hasPaidVariant: endpoints.some((endpoint) => endpoint.model_variant !== 'free'),
-    hasPromptCaching: endpoints.some(
-      (endpoint) => !!endpoint.pricing.cache_read && !!endpoint.pricing.cache_write,
-    ),
-  }
-}
-
-// Convert URL state to FilterState format
-export function urlStateToFilterState(urlState: {
-  q: string
-  image: boolean
-  file: boolean
-  audio: boolean
-  reason: boolean
-  tools: boolean
-  json: boolean
-  struct: boolean
-  cache: boolean
-  pricing: 'all' | 'free' | 'paid'
-  sort: SortOption
-  dir: SortDirection
-}): FilterState & { sort: SortOption; direction: SortDirection } {
-  return {
-    search: urlState.q,
-    hasImageInput: urlState.image,
-    hasFileInput: urlState.file,
-    hasAudioInput: urlState.audio,
-    hasReasoning: urlState.reason,
-    hasTools: urlState.tools,
-    hasJsonResponse: urlState.json,
-    hasStructuredOutputs: urlState.struct,
-    pricingFilter: urlState.pricing,
-    hasPromptCaching: urlState.cache,
-    sort: urlState.sort,
-    direction: urlState.dir,
-  }
-}
-
-// Helper to check if filter state has any active filters
-export function hasActiveFilters(filters: FilterState): boolean {
-  return (
-    filters.search !== '' ||
-    filters.hasImageInput ||
-    filters.hasFileInput ||
-    filters.hasAudioInput ||
-    filters.hasReasoning ||
-    filters.hasTools ||
-    filters.hasJsonResponse ||
-    filters.hasStructuredOutputs ||
-    filters.pricingFilter !== 'all' ||
-    filters.hasPromptCaching
-  )
 }
 
 // Select best endpoint based on sort criteria
@@ -168,12 +56,11 @@ function selectBestEndpoint(endpoints: Endpoint[], sortBy: SortOption): Endpoint
 export function filterModels(
   models: Model[],
   endpoints: Endpoint[],
-  filters: FilterState,
-  sortBy: SortOption,
-  direction: SortDirection = 'desc',
+  filters: ReturnType<typeof useModelFilterSearchParams>[0],
 ): FilterResult[] {
-  // Trim search string once at the top
-  const searchQuery = filters.search.trim()
+  const searchQuery = filters.q.trim()
+  const sortBy = filters.sort
+  const direction = filters.dir
 
   // Group endpoints by model slug
   const endpointsByModel = R.groupBy(endpoints, (endpoint) => endpoint.model_slug)
@@ -181,39 +68,34 @@ export function filterModels(
   // Apply attribute filters first (non-search filters)
   const attributeFilteredModels = models.filter((model) => {
     // Get all model endpoints
-    const modelEndpoints = endpointsByModel[model.slug] || []
+    const endpoints = endpointsByModel[model.slug] || []
 
     // Check attributes using centralized function
-    const attributes = getModelCapabilities(model, modelEndpoints)
+    const attributes = R.fromEntries(getModelCapabilityAttributes({ model, endpoints }))
 
     // Apply attribute filters
-    if (filters.hasImageInput && !attributes.hasImageInput) return false
-    if (filters.hasFileInput && !attributes.hasFileInput) return false
-    if (filters.hasAudioInput && !attributes.hasAudioInput) return false
-    if (filters.hasReasoning && !attributes.hasReasoning) return false
-    if (filters.hasTools && !attributes.hasTools) return false
-    if (filters.hasJsonResponse && !attributes.hasJsonResponse) return false
-    if (filters.hasStructuredOutputs && !attributes.hasStructuredOutputs) return false
-    if (filters.pricingFilter === 'free' && !attributes.hasFreeVariant) return false
-    if (filters.pricingFilter === 'paid' && !attributes.hasPaidVariant) return false
-    if (filters.hasPromptCaching && !attributes.hasPromptCaching) return false
+    if (filters.image && !attributes.image) return false
+    if (filters.pdf && !attributes.pdf) return false
+    if (filters.audio && !attributes.audio) return false
+    if (filters.reason && !attributes.reason) return false
+    if (filters.tools && !attributes.tools) return false
+    if (filters.json && !attributes.json) return false
+    if (filters.struct && !attributes.struct) return false
+    if (filters.pricing === 'free' && endpoints.every((e) => e.model_variant !== 'free'))
+      return false
+    if (filters.pricing === 'paid' && endpoints.every((e) => e.model_variant === 'free'))
+      return false
+    if (filters.cache && !attributes.cache) return false
 
     // Must have at least one valid endpoint after individual endpoint filtering
-    const validEndpoints = modelEndpoints.filter((endpoint) => {
-      if (filters.hasTools && !endpoint.capabilities.tools) return false
-      if (filters.hasJsonResponse && !endpoint.supported_parameters.includes('response_format'))
+    const validEndpoints = endpoints.filter((endpoint) => {
+      if (filters.tools && !endpoint.capabilities.tools) return false
+      if (filters.json && !endpoint.supported_parameters.includes('response_format')) return false
+      if (filters.struct && !endpoint.supported_parameters.includes('structured_outputs'))
         return false
-      if (
-        filters.hasStructuredOutputs &&
-        !endpoint.supported_parameters.includes('structured_outputs')
-      )
-        return false
-      if (filters.pricingFilter === 'free' && endpoint.model_variant !== 'free') return false
-      if (filters.pricingFilter === 'paid' && endpoint.model_variant === 'free') return false
-      if (
-        filters.hasPromptCaching &&
-        (!endpoint.pricing.cache_read || !endpoint.pricing.cache_write)
-      )
+      if (filters.pricing === 'free' && endpoint.model_variant !== 'free') return false
+      if (filters.pricing === 'paid' && endpoint.model_variant === 'free') return false
+      if (filters.cache && (!endpoint.pricing.cache_read || !endpoint.pricing.cache_write))
         return false
       return true
     })
@@ -224,7 +106,7 @@ export function filterModels(
   // Apply fuzzy search if there's a search query
   const filteredModels = searchQuery
     ? fuzzysort
-        .go(searchQuery, attributeFilteredModels, { key: 'name', all: true })
+        .go(searchQuery, attributeFilteredModels, { keys: ['name', 'slug'], all: true })
         .map((result) => ({ model: result.obj, score: Math.round(result.score * 10) / 10 }))
     : attributeFilteredModels.map((model) => ({ model, score: 0 }))
 
@@ -235,20 +117,13 @@ export function filterModels(
 
       // Apply endpoint filters
       const validEndpoints = modelEndpoints.filter((endpoint) => {
-        if (filters.hasTools && !endpoint.capabilities.tools) return false
-        if (filters.hasJsonResponse && !endpoint.supported_parameters.includes('response_format'))
+        if (filters.tools && !endpoint.capabilities.tools) return false
+        if (filters.json && !endpoint.supported_parameters.includes('response_format')) return false
+        if (filters.struct && !endpoint.supported_parameters.includes('structured_outputs'))
           return false
-        if (
-          filters.hasStructuredOutputs &&
-          !endpoint.supported_parameters.includes('structured_outputs')
-        )
-          return false
-        if (filters.pricingFilter === 'free' && endpoint.model_variant !== 'free') return false
-        if (filters.pricingFilter === 'paid' && endpoint.model_variant === 'free') return false
-        if (
-          filters.hasPromptCaching &&
-          (!endpoint.pricing.cache_read || !endpoint.pricing.cache_write)
-        )
+        if (filters.pricing === 'free' && endpoint.model_variant !== 'free') return false
+        if (filters.pricing === 'paid' && endpoint.model_variant === 'free') return false
+        if (filters.cache && (!endpoint.pricing.cache_read || !endpoint.pricing.cache_write))
           return false
         return true
       })

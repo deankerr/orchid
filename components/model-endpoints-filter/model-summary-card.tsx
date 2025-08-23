@@ -3,7 +3,11 @@
 import { memo } from 'react'
 import Link from 'next/link'
 
-import { AttributeBadge } from '@/components/attributes'
+import {
+  AttributeBadge,
+  getModelCapabilityAttributes,
+  type AttributeKey,
+} from '@/components/attributes'
 import { BrandIcon } from '@/components/shared/brand-icon'
 import { NumericValue, PricingProperty } from '@/components/shared/numeric-value'
 import { Pill } from '@/components/shared/pill'
@@ -12,7 +16,7 @@ import { formatCompactNumber } from '@/lib/formatters'
 import { cn, formatIsoDate } from '@/lib/utils'
 
 import { ModelVariantBadge } from '../shared/model-variant-badge'
-import { getModelCapabilities, type FilterResult } from './filter'
+import { type FilterResult } from './filter'
 
 interface ModelSummaryCardProps {
   result: FilterResult
@@ -37,12 +41,9 @@ export const ModelSummaryCard = memo<ModelSummaryCardProps>(({ result }) => {
     return null
   }
 
-  // Get capabilities using centralized function
-  const capabilities = getModelCapabilities(model, modelEndpoints)
-
   // Calculate total 7-day tokens across all variants
   const tokens7d = Object.values(model.stats || {}).reduce(
-    (sum: number, variant: any) => sum + (variant.tokens_7d || 0),
+    (sum: number, variant: Record<string, number>) => sum + (variant.tokens_7d || 0),
     0,
   )
 
@@ -72,17 +73,9 @@ export const ModelSummaryCard = memo<ModelSummaryCardProps>(({ result }) => {
 
         {/* Capability badges */}
         <div className="flex flex-wrap gap-2 font-mono uppercase">
-          {/* Model-level capabilities */}
-          {capabilities.hasImageInput && <AttributeBadge attribute="imageInput" />}
-          {capabilities.hasFileInput && <AttributeBadge attribute="fileInput" />}
-          {capabilities.hasAudioInput && <AttributeBadge attribute="audioInput" />}
-          {capabilities.hasReasoning && <AttributeBadge attribute="reasoning" />}
-
-          {/* Endpoint-level capabilities */}
-          {capabilities.hasTools && <AttributeBadge attribute="tools" />}
-          {capabilities.hasJsonResponse && <AttributeBadge attribute="jsonObject" />}
-          {capabilities.hasStructuredOutputs && <AttributeBadge attribute="structuredOutputs" />}
-          {capabilities.hasPromptCaching && <AttributeBadge attribute="promptCaching" />}
+          {getModelCapabilityAttributes({ model, endpoints: modelEndpoints }).map(([key]) => (
+            <AttributeBadge key={key} attribute={key as AttributeKey} />
+          ))}
         </div>
       </div>
 
