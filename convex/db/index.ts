@@ -8,6 +8,7 @@ export * as OrModelDetails from './or/modelDetails'
 export * as OrModelChanges from './or/modelChanges'
 export * as OrEndpointChanges from './or/endpointChanges'
 export * as OrProviderChanges from './or/providerChanges'
+export * as OrChanges from './or/changes'
 
 export * as SnapshotCrawlConfig from './snapshot/crawlConfig'
 export * as SnapshotCrawlArchives from './snapshot/crawlArchives'

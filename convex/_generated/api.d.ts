@@ -16,6 +16,7 @@ import type {
 import type * as crons from "../crons.js";
 import type * as db_index from "../db/index.js";
 import type * as db_or_apps from "../db/or/apps.js";
+import type * as db_or_changes from "../db/or/changes.js";
 import type * as db_or_endpointChanges from "../db/or/endpointChanges.js";
 import type * as db_or_endpoints from "../db/or/endpoints.js";
 import type * as db_or_modelAppLeaderboards from "../db/or/modelAppLeaderboards.js";
@@ -38,6 +39,8 @@ import type * as snapshots_changes_config from "../snapshots/changes/config.js";
 import type * as snapshots_changes_persist from "../snapshots/changes/persist.js";
 import type * as snapshots_changes_postCrawl from "../snapshots/changes/postCrawl.js";
 import type * as snapshots_changes_process from "../snapshots/changes/process.js";
+import type * as snapshots_changes2_backfill from "../snapshots/changes2/backfill.js";
+import type * as snapshots_changes2_process from "../snapshots/changes2/process.js";
 import type * as snapshots_crawl from "../snapshots/crawl.js";
 import type * as snapshots_materialize_apps from "../snapshots/materialize/apps.js";
 import type * as snapshots_materialize_icons from "../snapshots/materialize/icons.js";
@@ -69,6 +72,7 @@ declare const fullApi: ApiFromModules<{
   crons: typeof crons;
   "db/index": typeof db_index;
   "db/or/apps": typeof db_or_apps;
+  "db/or/changes": typeof db_or_changes;
   "db/or/endpointChanges": typeof db_or_endpointChanges;
   "db/or/endpoints": typeof db_or_endpoints;
   "db/or/modelAppLeaderboards": typeof db_or_modelAppLeaderboards;
@@ -91,6 +95,8 @@ declare const fullApi: ApiFromModules<{
   "snapshots/changes/persist": typeof snapshots_changes_persist;
   "snapshots/changes/postCrawl": typeof snapshots_changes_postCrawl;
   "snapshots/changes/process": typeof snapshots_changes_process;
+  "snapshots/changes2/backfill": typeof snapshots_changes2_backfill;
+  "snapshots/changes2/process": typeof snapshots_changes2_process;
   "snapshots/crawl": typeof snapshots_crawl;
   "snapshots/materialize/apps": typeof snapshots_materialize_apps;
   "snapshots/materialize/icons": typeof snapshots_materialize_icons;

@@ -2,6 +2,7 @@ import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
 import { table as ORAppsTable } from './db/or/apps'
+import { table as ORChangesTable } from './db/or/changes'
 import { table as OREndpointChangesTable } from './db/or/endpointChanges'
 import { table as OREndpointsTable } from './db/or/endpoints'
 import { table as ORModelAppLeaderboardsTable } from './db/or/modelAppLeaderboards'
@@ -17,6 +18,7 @@ import { table as SnapshotCrawlConfigTable } from './db/snapshot/crawlConfig'
 export default defineSchema(
   {
     or_apps: ORAppsTable,
+    or_changes: ORChangesTable,
     or_endpoint_changes: OREndpointChangesTable,
     or_endpoints: OREndpointsTable,
     or_model_app_leaderboards: ORModelAppLeaderboardsTable,
