@@ -116,25 +116,46 @@ function ChangeCard({ change }: { change: Doc<'or_changes'> }) {
     })
   }
 
+  const formatDisplayName = (val: string) => {
+    if (change.entity_type === 'endpoint') {
+      const [providerName, modelSlug] = change.entity_display_name.split(' | ')
+      return (
+        <>
+          <Badge className="font-mono" variant="outline">
+            {modelSlug}
+          </Badge>
+          <span className="text-base font-medium">{providerName}</span>
+        </>
+      )
+    }
+
+    return val
+  }
+
   const shouldShowChangeBody = change.change_action === 'update' && change.change_body
 
   return (
-    <div className="min-w-0 space-y-4 rounded-sm border border-border/80 bg-card/50 p-4 text-card-foreground">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+    <div className="min-w-0 space-y-4 rounded-sm border border-border/80 bg-card/50 p-3 text-card-foreground">
+      <div className="flex flex-col gap-2 text-sm sm:flex-row sm:items-center sm:justify-between sm:gap-3">
         <div className="flex items-center gap-2">
           <Badge className="min-w-20 font-mono uppercase" variant="outline">
             {change.entity_type}
           </Badge>
-          {change.change_action !== 'update' && (
-            <Badge className="min-w-20 font-mono uppercase" variant="outline">
-              {change.change_action}
-            </Badge>
-          )}
+
+          <Badge
+            className="min-w-20 font-mono uppercase"
+            variant={change.change_action === 'delete' ? 'destructive' : 'outline'}
+          >
+            {change.change_action}
+          </Badge>
+
           <div className="text-sm text-muted-foreground sm:hidden">
             {formatCrawlTime(change.crawl_id)}
           </div>
         </div>
-        <span className="font-medium sm:flex-1">{change.entity_display_name}</span>
+        <span className="flex items-center gap-2 font-medium sm:flex-1">
+          {formatDisplayName(change.entity_display_name)}
+        </span>
         <div className="hidden text-sm text-muted-foreground sm:block">
           {formatCrawlTime(change.crawl_id)}
         </div>
@@ -197,9 +218,9 @@ function ArrayChangeItem({
       <ChangeKey>{changeKey}</ChangeKey>
       <div className="flex flex-wrap items-center gap-1">
         {values.map((item, i) => (
-          <Badge key={i} variant={item.type === 'REMOVE' ? 'destructive' : 'default'}>
-            {item.type === 'ADD' && <PlusIcon className="mr-1 h-3 w-3" />}
-            {item.type === 'REMOVE' && <MinusIcon className="mr-1 h-3 w-3" />}
+          <Badge key={i} variant={item.type === 'REMOVE' ? 'destructive' : 'outline'}>
+            {item.type === 'ADD' && <PlusIcon />}
+            {item.type === 'REMOVE' && <MinusIcon />}
             {item.value}
           </Badge>
         ))}
@@ -225,7 +246,7 @@ function ValueChangeItem({
   const isPricing = parentKey === 'pricing'
 
   const renderChangeValue = (val: any) => {
-    if (isPricing) {
+    if (isPricing && val) {
       return <RawPricingProperty rawKey={changeKey} value={val} className="text-center" />
     }
     if (val === null) {
@@ -233,18 +254,16 @@ function ValueChangeItem({
     }
 
     if (val === undefined) {
-      return <span className="text-muted-foreground">undefined</span>
+      return <span className="text-muted-foreground/80">undefined</span>
     }
 
     if (val === '') {
-      return <span className="text-muted-foreground">empty</span>
+      return <span className="text-muted-foreground/80">empty</span>
     }
 
     if (typeof val === 'object') {
       return (
-        <pre className="text-xs leading-relaxed break-words whitespace-pre-wrap">
-          {JSON.stringify(val, null, 2)}
-        </pre>
+        <div className="text-xs leading-relaxed break-words">{JSON.stringify(val, null, 2)}</div>
       )
     }
 
@@ -255,10 +274,14 @@ function ValueChangeItem({
     // Handle long strings with better wrapping
     const stringValue = String(val)
     if (stringValue.length > 100) {
-      return <div className="leading-relaxed break-words whitespace-pre-wrap">{stringValue}</div>
+      return (
+        <div className="text-left leading-relaxed break-words whitespace-pre-wrap">
+          {stringValue}
+        </div>
+      )
     }
 
-    return <span className="">{stringValue}</span>
+    return stringValue
   }
 
   // Determine if content is large enough to warrant stacking
@@ -284,14 +307,14 @@ function ValueChangeItem({
           shouldStack ? 'flex-col sm:flex-row sm:items-center' : 'items-center',
         )}
       >
-        <ChangeValue key="from">{renderChangeValue(fromValue)}</ChangeValue>
+        <ChangeValue>{renderChangeValue(fromValue)}</ChangeValue>
         <ChevronRight
           className={cn(
             'w-5 flex-shrink-0 text-muted-foreground',
             shouldStack && 'rotate-90 self-center sm:rotate-0',
           )}
         />
-        <ChangeValue key="to">{renderChangeValue(toValue)}</ChangeValue>
+        <ChangeValue>{renderChangeValue(toValue)}</ChangeValue>
       </div>
     </div>
   )
@@ -301,7 +324,7 @@ function ChangeKey({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       className={cn(
-        'min-w-0 rounded-sm border border-transparent bg-secondary px-2 py-1.5 text-right font-medium break-words text-secondary-foreground sm:w-56',
+        'min-w-0 rounded-sm border border-transparent bg-secondary/80 px-2 py-1.5 text-right font-medium break-words text-secondary-foreground sm:w-56',
         className,
       )}
       {...props}

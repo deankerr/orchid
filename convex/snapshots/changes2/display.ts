@@ -13,15 +13,10 @@ type HideRule = {
 }
 
 const HIDE_RULES: HideRule[] = [
-  // Hide common noisy keys by name
-  { path: ['updated_at'] },
-  { path: ['stats'] },
-  { path: ['provider_info'] },
-  { path: ['ignoredProviderModels'] },
+  { changeType: 'ADD', changeValue: 'null' },
+  { changeType: 'REMOVE', changeValue: 'null' },
 
-  // Hide null <-> undefined transitions
-  { values: ['null', 'undefined'] },
-  { values: ['undefined', 'null'] },
+  { entity: 'model', path: ['features'] },
 
   // Provider-specific rules
   { entity: 'provider', path: ['adapterName'] },
