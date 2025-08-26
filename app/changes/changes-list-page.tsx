@@ -33,6 +33,7 @@ export function ChangesListPage() {
     api.views.changes.list,
     {
       entity_type: entityType === 'all' ? undefined : entityType,
+      include_hidden: false, // End-users always see only displayable changes
     },
     { initialNumItems: ITEMS_PER_PAGE },
   )
@@ -209,11 +210,11 @@ function ValueChange({
 
   return (
     <div className="flex items-center gap-2 font-mono text-sm">
-      <span className="font-medium text-muted-foreground">{changeKey}:</span>
+      <span className="min-w-28 text-right font-medium text-muted-foreground">{changeKey}:</span>
       <div className="flex min-w-0 items-center gap-2">
-        <span className="truncate">{renderValue(fromValue)}</span>
+        <span className="">{renderValue(fromValue)}</span>
         <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
-        <span className="truncate">{renderValue(toValue)}</span>
+        <span className="">{renderValue(toValue)}</span>
       </div>
     </div>
   )

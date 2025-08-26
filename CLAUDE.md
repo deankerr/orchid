@@ -47,21 +47,6 @@ bun check      # Runs both typecheck and lint with zero warnings - USE THIS TO V
 
 ### Key Architectural Patterns
 
-**Data Collection Pipeline**:
-The application runs a sophisticated two-stage data collection system:
-
-1. **Stage 1 (Critical Dependencies)**: Models (required) + Providers
-2. **Stage 2 (Model-Dependent)**: Endpoints, Apps, Token Stats
-
-Located in `convex/openrouter/orchestrator.ts`, this system:
-
-- Fetches data from OpenRouter's frontend APIs hourly
-- Processes and validates data through dedicated pipelines
-- Archives compressed raw responses for historical analysis
-- Tracks changes and maintains rolling uptime windows
-
-**THIS IS CURRENTLY BEING REFACTORED**
-
 **Data Fetching**:
 
 - Frontend uses Convex queries with `convex-helpers` for caching
@@ -77,15 +62,7 @@ Filtering and search state persists in URLs using `nuqs` for shareability
 
 - `or_models` - Model metadata and capabilities
 - `or_endpoints` - Provider implementations with pricing/limits
-- `or_endpoint_uptimes` - 72h hourly + 30d daily availability data
-- `or_endpoint_stats` - Historical performance metrics
 - `or_providers` - AI provider information
-
-**Pipeline Management**:
-
-- `snapshot_runs` - Execution tracking with success/failure status
-- `snapshot_archives` - Compressed historical API responses
-- `snapshot_schedule` - Configurable scheduling with jitter
 
 ### Data Processing
 
@@ -106,7 +83,6 @@ All raw API responses are gzip-compressed and stored with SHA256 checksums for h
 **Component Organization**:
 
 - Group related components in feature directories
-- Use TypeScript with relaxed `any` rules for rapid prototyping
 - Follow existing patterns for data tables, filtering, and sorting
 
 **Convex Patterns**:

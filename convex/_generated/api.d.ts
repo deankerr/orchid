@@ -40,7 +40,9 @@ import type * as snapshots_changes_persist from "../snapshots/changes/persist.js
 import type * as snapshots_changes_postCrawl from "../snapshots/changes/postCrawl.js";
 import type * as snapshots_changes_process from "../snapshots/changes/process.js";
 import type * as snapshots_changes2_backfill from "../snapshots/changes2/backfill.js";
+import type * as snapshots_changes2_display from "../snapshots/changes2/display.js";
 import type * as snapshots_changes2_process from "../snapshots/changes2/process.js";
+import type * as snapshots_changes2_reprocess from "../snapshots/changes2/reprocess.js";
 import type * as snapshots_crawl from "../snapshots/crawl.js";
 import type * as snapshots_materialize_apps from "../snapshots/materialize/apps.js";
 import type * as snapshots_materialize_icons from "../snapshots/materialize/icons.js";
@@ -97,7 +99,9 @@ declare const fullApi: ApiFromModules<{
   "snapshots/changes/postCrawl": typeof snapshots_changes_postCrawl;
   "snapshots/changes/process": typeof snapshots_changes_process;
   "snapshots/changes2/backfill": typeof snapshots_changes2_backfill;
+  "snapshots/changes2/display": typeof snapshots_changes2_display;
   "snapshots/changes2/process": typeof snapshots_changes2_process;
+  "snapshots/changes2/reprocess": typeof snapshots_changes2_reprocess;
   "snapshots/crawl": typeof snapshots_crawl;
   "snapshots/materialize/apps": typeof snapshots_materialize_apps;
   "snapshots/materialize/icons": typeof snapshots_materialize_icons;

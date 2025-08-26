@@ -12,6 +12,7 @@ import { PageContainer, PageHeader, PageTitle } from '@/components/shared/page-c
 import { Pill } from '@/components/shared/pill'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -27,6 +28,7 @@ type EntityType = 'all' | 'model' | 'endpoint' | 'provider'
 
 export function ChangesListDevPage() {
   const [activeTab, setActiveTab] = useState<EntityType>('all')
+  const [includeHidden, setIncludeHidden] = useState(false)
 
   return (
     <PageContainer>
@@ -38,8 +40,13 @@ export function ChangesListDevPage() {
       </PageHeader>
 
       <div className="space-y-3">
-        <ChangesFilters activeTab={activeTab} setActiveTab={setActiveTab} />
-        <ChangesResults entityType={activeTab} />
+        <ChangesFilters 
+          activeTab={activeTab} 
+          setActiveTab={setActiveTab}
+          includeHidden={includeHidden}
+          setIncludeHidden={setIncludeHidden}
+        />
+        <ChangesResults entityType={activeTab} includeHidden={includeHidden} />
       </div>
     </PageContainer>
   )
@@ -48,9 +55,13 @@ export function ChangesListDevPage() {
 function ChangesFilters({
   activeTab,
   setActiveTab,
+  includeHidden,
+  setIncludeHidden,
 }: {
   activeTab: EntityType
   setActiveTab: (tab: EntityType) => void
+  includeHidden: boolean
+  setIncludeHidden: (include: boolean) => void
 }) {
   return (
     <div className="flex items-end gap-4">
@@ -70,15 +81,27 @@ function ChangesFilters({
           </SelectContent>
         </Select>
       </div>
+      
+      <div className="flex items-center space-x-2">
+        <Checkbox
+          id="include-hidden"
+          checked={includeHidden}
+          onCheckedChange={setIncludeHidden}
+        />
+        <Label htmlFor="include-hidden" className="text-sm font-medium">
+          Include hidden changes
+        </Label>
+      </div>
     </div>
   )
 }
 
-function ChangesResults({ entityType }: { entityType: EntityType }) {
+function ChangesResults({ entityType, includeHidden }: { entityType: EntityType, includeHidden: boolean }) {
   const { results, status, loadMore } = usePaginatedQuery(
     api.views.changes.list,
     {
       entity_type: entityType === 'all' ? undefined : entityType,
+      include_hidden: includeHidden,
     },
     { initialNumItems: ITEMS_PER_PAGE },
   )
@@ -129,10 +152,11 @@ function ChangeRow({ change }: { change: Doc<'or_changes'> }) {
   }
 
   return (
-    <div className="space-y-2 rounded border p-3">
+    <div className={`space-y-2 rounded border p-3 ${!change.is_display ? 'opacity-60 border-dashed' : ''}`}>
       <div className="flex items-center gap-2 text-sm">
         <Badge variant={actionVariants[change.change_action]}>{change.change_action}</Badge>
         <Badge variant="outline">{change.entity_type}</Badge>
+        {!change.is_display && <Badge variant="secondary">hidden</Badge>}
         <span className="font-medium">{change.entity_display_name}</span>
         <CopyToClipboardButton
           value={change.entity_id}

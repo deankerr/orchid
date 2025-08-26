@@ -4,7 +4,9 @@
       "Bash(bun:*)",
       "Bash(mkdir:*)",
       "Bash(jq:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "mcp__convex__status",
+      "mcp__convex__runOneoffQuery"
     ]
   },
   "enableAllProjectMcpServers": false

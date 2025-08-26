@@ -5,6 +5,7 @@ import { diff, type Options } from 'json-diff-ts'
 import * as DB from '@/convex/db'
 
 import type { CrawlArchiveBundle } from '../crawl'
+import { shouldDisplayChange } from './display'
 
 type ProcessBundleArgs = {
   fromBundle: CrawlArchiveBundle
@@ -65,7 +66,7 @@ function providerChanges({ fromBundle, toBundle }: ProcessBundleArgs) {
         entity_type: 'provider',
         from_crawl_id: fromBundle.crawl_id,
         crawl_id: toBundle.crawl_id,
-        is_display: false,
+        is_display: true,
       },
       diffOptions: {
         keysToSkip: ['ignoredProviderModels'],
@@ -103,7 +104,7 @@ function modelEndpointChanges({ fromBundle, toBundle }: ProcessBundleArgs) {
         entity_type: 'model',
         from_crawl_id: fromBundle.crawl_id,
         crawl_id: toBundle.crawl_id,
-        is_display: false,
+        is_display: true,
       },
       diffOptions: {
         keysToSkip: ['endpoint', 'updated_at'],
@@ -142,7 +143,7 @@ function modelEndpointChanges({ fromBundle, toBundle }: ProcessBundleArgs) {
           entity_type: 'endpoint',
           from_crawl_id: fromBundle.crawl_id,
           crawl_id: toBundle.crawl_id,
-          is_display: false,
+          is_display: true,
         },
         diffOptions: {
           keysToSkip: ['stats', 'provider_info', 'model'],
@@ -177,40 +178,44 @@ function computeEntityChanges({
 }) {
   if (!fromEntity && toEntity) {
     // * created
-    return [
-      {
-        ...changeBase,
-        ...extractMetadata(toEntity),
-        change_action: 'create' as const,
-        change_root_key: '',
-        change_body: toEntity,
-      },
-    ]
+    const change = {
+      ...changeBase,
+      ...extractMetadata(toEntity),
+      change_action: 'create' as const,
+      change_root_key: '',
+      change_body: toEntity,
+    }
+    change.is_display = shouldDisplayChange(change)
+    return [change]
   }
 
   if (fromEntity && !toEntity) {
     // * deleted
-    return [
-      {
-        ...changeBase,
-        ...extractMetadata(fromEntity),
-        change_action: 'delete' as const,
-        change_root_key: '',
-        change_body: fromEntity,
-      },
-    ]
+    const change = {
+      ...changeBase,
+      ...extractMetadata(fromEntity),
+      change_action: 'delete' as const,
+      change_root_key: '',
+      change_body: fromEntity,
+    }
+    change.is_display = shouldDisplayChange(change)
+    return [change]
   }
 
   if (fromEntity && toEntity) {
     // * updated
     const entityDiff = diff(fromEntity, toEntity, diffOptions)
-    return entityDiff.map((item) => ({
-      ...changeBase,
-      ...extractMetadata(toEntity),
-      change_action: 'update' as const,
-      change_root_key: item.key,
-      change_body: item,
-    }))
+    return entityDiff.map((item) => {
+      const change = {
+        ...changeBase,
+        ...extractMetadata(toEntity),
+        change_action: 'update' as const,
+        change_root_key: item.key,
+        change_body: item,
+      }
+      change.is_display = shouldDisplayChange(change)
+      return change
+    })
   }
 
   return []

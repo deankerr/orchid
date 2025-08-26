@@ -1,9 +1,7 @@
 import { v } from 'convex/values'
 
-import * as DB from '@/convex/db'
-
 import { internal } from '../../_generated/api'
-import { internalAction, internalMutation } from '../../_generated/server'
+import { internalAction } from '../../_generated/server'
 import { getArchiveBundle } from '../bundle'
 import type { CrawlArchiveBundle } from '../crawl'
 import { processBundleChanges } from './process'
@@ -55,7 +53,7 @@ export const run = internalAction({
         })
 
         if (changes.length > 0) {
-          await ctx.runMutation(internal.snapshots.changes2.backfill.insertChanges, {
+          await ctx.runMutation(internal.db.or.changes.insert, {
             changes,
           })
           console.log(`[changes2:backfill] inserted ${changes.length} changes`)
@@ -67,17 +65,5 @@ export const run = internalAction({
     }
 
     console.log('[changes2:backfill] all archives complete')
-  },
-})
-
-export const insertChanges = internalMutation({
-  args: {
-    changes: DB.OrChanges.vTable.validator.array(),
-  },
-  returns: v.null(),
-  handler: async (ctx, args) => {
-    for (const change of args.changes) {
-      await ctx.db.insert('or_changes', change)
-    }
   },
 })
