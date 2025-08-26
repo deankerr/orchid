@@ -17,17 +17,24 @@ const HIDE_RULES: HideRule[] = [
   { changeType: 'REMOVE', changeValue: 'null' },
 
   { entity: 'model', path: ['features'] },
+  { entity: 'model', path: ['description'] },
 
   // Provider-specific rules
   { entity: 'provider', path: ['adapterName'] },
+  { entity: 'provider', path: ['provider_model_id'] },
   { entity: 'provider', path: ['dataPolicy', '*'], changeType: 'ADD', changeValue: 'false' },
-  { entity: 'provider', path: ['dataPolicy', 'paidModels'] },
+  { entity: 'provider', path: ['dataPolicy', 'paidModels'], changeType: 'REMOVE' },
+  { entity: 'provider', path: ['dataPolicy', 'freeModels'], changeType: 'REMOVE' },
 
   // Endpoint-specific rules
   { entity: 'endpoint', path: ['pricing'], changeType: 'ADD' },
   { entity: 'endpoint', path: ['pricing'], changeType: 'REMOVE' },
   { entity: 'endpoint', path: ['pricing', 'audio'], changeType: 'ADD' },
   { entity: 'endpoint', path: ['pricing', 'audio'], changeType: 'REMOVE' },
+  { entity: 'endpoint', path: ['data_policy', '*'], changeType: 'ADD', changeValue: 'false' },
+  { entity: 'endpoint', path: ['data_policy', 'paidModels'], changeType: 'REMOVE' },
+  { entity: 'endpoint', path: ['data_policy', 'freeModels'], changeType: 'REMOVE' },
+  { entity: 'endpoint', path: ['adapter_name'] },
 ]
 
 /**
