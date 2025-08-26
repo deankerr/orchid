@@ -5,14 +5,13 @@ import { useState } from 'react'
 import { usePaginatedQuery } from 'convex/react'
 
 import { api } from '@/convex/_generated/api'
-import type { ChangesTableFields } from '@/convex/lib/changesTable'
+import type { Doc } from '@/convex/_generated/dataModel'
 
 import { CopyToClipboardButton } from '@/components/shared/copy-to-clipboard-button'
 import { PageContainer, PageHeader, PageTitle } from '@/components/shared/page-container'
 import { Pill } from '@/components/shared/pill'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -24,11 +23,10 @@ import {
 
 const ITEMS_PER_PAGE = 50
 
-type EntityType = 'models' | 'endpoints' | 'providers'
+type EntityType = 'all' | 'model' | 'endpoint' | 'provider'
 
 export function ChangesListDevPage() {
-  const [activeTab, setActiveTab] = useState<EntityType>('models')
-  const [entityId, setEntityId] = useState('')
+  const [activeTab, setActiveTab] = useState<EntityType>('all')
 
   return (
     <PageContainer>
@@ -40,13 +38,8 @@ export function ChangesListDevPage() {
       </PageHeader>
 
       <div className="space-y-3">
-        <ChangesFilters
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          entityId={entityId}
-          setEntityId={setEntityId}
-        />
-        <ChangesResults entityType={activeTab} entityId={entityId} />
+        <ChangesFilters activeTab={activeTab} setActiveTab={setActiveTab} />
+        <ChangesResults entityType={activeTab} />
       </div>
     </PageContainer>
   )
@@ -55,13 +48,9 @@ export function ChangesListDevPage() {
 function ChangesFilters({
   activeTab,
   setActiveTab,
-  entityId,
-  setEntityId,
 }: {
   activeTab: EntityType
   setActiveTab: (tab: EntityType) => void
-  entityId: string
-  setEntityId: (id: string) => void
 }) {
   return (
     <div className="flex items-end gap-4">
@@ -74,40 +63,22 @@ function ChangesFilters({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="models">Models</SelectItem>
-            <SelectItem value="endpoints">Endpoints</SelectItem>
-            <SelectItem value="providers">Providers</SelectItem>
+            <SelectItem value="all">All Types</SelectItem>
+            <SelectItem value="model">Models</SelectItem>
+            <SelectItem value="endpoint">Endpoints</SelectItem>
+            <SelectItem value="provider">Providers</SelectItem>
           </SelectContent>
         </Select>
-      </div>
-
-      <div className="flex-1">
-        <Label htmlFor="entity-id" className="text-sm font-medium">
-          Filter by Entity ID (optional)
-        </Label>
-        <Input
-          id="entity-id"
-          placeholder="Enter model slug, endpoint UUID, or provider slug"
-          value={entityId}
-          onChange={(e) => setEntityId(e.target.value)}
-        />
       </div>
     </div>
   )
 }
 
-function ChangesResults({ entityType, entityId }: { entityType: EntityType; entityId: string }) {
-  const query =
-    entityType === 'models'
-      ? api.views.models.listChanges
-      : entityType === 'endpoints'
-        ? api.views.endpoints.listChanges
-        : api.views.providers.listChanges
-
+function ChangesResults({ entityType }: { entityType: EntityType }) {
   const { results, status, loadMore } = usePaginatedQuery(
-    query,
+    api.views.changes.list,
     {
-      entity_id: entityId || undefined,
+      entity_type: entityType === 'all' ? undefined : entityType,
     },
     { initialNumItems: ITEMS_PER_PAGE },
   )
@@ -119,7 +90,7 @@ function ChangesResults({ entityType, entityId }: { entityType: EntityType; enti
   if (!results || results.length === 0) {
     return (
       <div className="p-4 text-muted-foreground">
-        No changes found{entityId ? ` for entity "${entityId}"` : ''}
+        No changes found for {entityType === 'all' ? 'any entity type' : entityType}
       </div>
     )
   }
@@ -145,10 +116,10 @@ function ChangesResults({ entityType, entityId }: { entityType: EntityType; enti
   )
 }
 
-function ChangeRow({ change }: { change: ChangesTableFields }) {
-  const eventTypeVariants = {
-    add: 'default' as const,
-    remove: 'destructive' as const,
+function ChangeRow({ change }: { change: Doc<'or_changes'> }) {
+  const actionVariants = {
+    create: 'default' as const,
+    delete: 'destructive' as const,
     update: 'secondary' as const,
   }
 
@@ -160,8 +131,9 @@ function ChangeRow({ change }: { change: ChangesTableFields }) {
   return (
     <div className="space-y-2 rounded border p-3">
       <div className="flex items-center gap-2 text-sm">
-        <Badge variant={eventTypeVariants[change.event_type]}>{change.event_type}</Badge>
-        <span className="font-medium">{change.entity_name}</span>
+        <Badge variant={actionVariants[change.change_action]}>{change.change_action}</Badge>
+        <Badge variant="outline">{change.entity_type}</Badge>
+        <span className="font-medium">{change.entity_display_name}</span>
         <CopyToClipboardButton
           value={change.entity_id}
           variant="ghost"
@@ -175,13 +147,13 @@ function ChangeRow({ change }: { change: ChangesTableFields }) {
         <span className="text-muted-foreground">{formatCrawlTime(change.crawl_id)}</span>
       </div>
 
-      {change.event_type === 'update' && 'change_key' in change && (
+      {change.change_action === 'update' && change.change_root_key && (
         <div className="space-y-2">
-          <div className="font-mono text-xs">{change.change_key}</div>
+          <div className="font-mono text-xs">{change.change_root_key}</div>
 
-          {change.change_raw && (
+          {change.change_body && (
             <pre className="overflow-x-auto rounded bg-muted p-1.5 text-xs">
-              {JSON.stringify(change.change_raw, null, 2)}
+              {JSON.stringify(change.change_body, null, 2)}
             </pre>
           )}
         </div>

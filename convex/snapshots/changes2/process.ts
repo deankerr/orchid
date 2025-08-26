@@ -69,7 +69,7 @@ function providerChanges({ fromBundle, toBundle }: ProcessBundleArgs) {
       },
       diffOptions: {
         keysToSkip: ['ignoredProviderModels'],
-        treatTypeChangeAsReplace: false,
+        treatTypeChangeAsReplace: true,
       },
     })
 
@@ -108,7 +108,7 @@ function modelEndpointChanges({ fromBundle, toBundle }: ProcessBundleArgs) {
       diffOptions: {
         keysToSkip: ['endpoint', 'updated_at'],
         embeddedObjKeys: { input_modalities: '$value', output_modalities: '$value' },
-        treatTypeChangeAsReplace: false,
+        treatTypeChangeAsReplace: true,
       },
     })
 
@@ -147,7 +147,7 @@ function modelEndpointChanges({ fromBundle, toBundle }: ProcessBundleArgs) {
         diffOptions: {
           keysToSkip: ['stats', 'provider_info', 'model'],
           embeddedObjKeys: { supported_parameters: '$value' },
-          treatTypeChangeAsReplace: false,
+          treatTypeChangeAsReplace: true,
         },
       })
 

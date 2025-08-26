@@ -22,5 +22,7 @@ export const table = defineTable({
 
   is_display: v.boolean(),
 })
+  .index('crawl_id', ['crawl_id'])
+  .index('entity_type', ['entity_type'])
 
 export const vTable = createTableVHelper('or_changes', table.validator)
