@@ -42,6 +42,8 @@ export const reprocessDisplayStatus = internalAction({
             _id: change._id,
             is_display: newDisplayStatus,
           })
+
+          console.log('[reprocessDisplay] update', { entity: change.entity_display_name })
         }
 
         processed++
@@ -55,7 +57,7 @@ export const reprocessDisplayStatus = internalAction({
         updated += updates.length
       }
 
-      console.log(`Processed ${processed} changes, updated ${updated} so far`)
+      console.log('[reprocessDisplay]', { processed, updated })
 
       if (isDone) {
         break

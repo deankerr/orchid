@@ -20,7 +20,7 @@ export function ChangeCard({ change }: { change: Doc<'or_changes'> }) {
 
   return (
     <div className="relative min-w-0 space-y-3 bg-card/50 px-4 py-5 text-card-foreground">
-      <div className="sm:tems-center flex flex-col-reverse justify-between gap-x-2 gap-y-1.5 sm:flex-row">
+      <div className="flex flex-col-reverse justify-between gap-x-2 gap-y-1.5 sm:flex-row sm:items-center">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-2 font-mono text-sm">
           {entity_type === 'model' && (
             <EntityChangePill

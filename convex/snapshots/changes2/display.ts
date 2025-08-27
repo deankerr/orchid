@@ -7,7 +7,7 @@ type ChangeObject = Infer<AsObjectValidator<typeof DB.OrChanges.vTable.validator
 type HideRule = {
   entity?: 'provider' | 'model' | 'endpoint'
   path?: string[]
-  values?: [string, string] // [oldValue, newValue] using type strings like 'nullish', 'false', etc.
+  values?: [string, string] // [oldValue, value] using type strings like 'nullish', 'false', etc.
   changeType?: 'ADD' | 'REMOVE' // For json-diff-ts change types
   changeValue?: string // Value type for ADD/REMOVE operations (e.g., 'false', 'true', 'nullish')
 }
@@ -117,15 +117,15 @@ function matchesRule(
       !changeBody ||
       typeof changeBody !== 'object' ||
       !('oldValue' in changeBody) ||
-      !('newValue' in changeBody)
+      !('value' in changeBody)
     ) {
       return false
     }
 
-    const { oldValue, newValue } = changeBody
+    const { oldValue, value } = changeBody
     const [expectedOld, expectedNew] = rule.values
 
-    if (!matchesValueType(oldValue, expectedOld) || !matchesValueType(newValue, expectedNew)) {
+    if (!matchesValueType(oldValue, expectedOld) || !matchesValueType(value, expectedNew)) {
       return false
     }
   }
