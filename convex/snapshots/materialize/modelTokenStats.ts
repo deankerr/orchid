@@ -1,5 +1,5 @@
 import type { Infer } from 'convex/values'
-import type z4 from 'zod/v4'
+import type z from 'zod/v4'
 
 import * as DB from '@/convex/db'
 
@@ -32,7 +32,7 @@ export async function calculateModelStatsFromBundle(
   const modelStatsMap = new Map<string, Infer<typeof DB.OrModels.vTable.validator>['stats']>()
   const modelTokenStats: Infer<typeof DB.OrModelTokenStats.vTable.validator>[] = []
   const authorNameMap = new Map<string, string>()
-  const issues: { source: string; error: z4.ZodError }[] = []
+  const issues: { source: string; error: z.ZodError }[] = []
 
   for (const raw of bundle.data.modelAuthors) {
     const parsed = Transforms.modelAuthor.safeParse(raw)

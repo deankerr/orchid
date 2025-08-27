@@ -1,6 +1,6 @@
 import { omit, pick } from 'convex-helpers'
 import { v, type Infer } from 'convex/values'
-import type z4 from 'zod/v4'
+import type z from 'zod/v4'
 
 import * as DB from '@/convex/db'
 
@@ -41,7 +41,7 @@ export const run = internalAction({
     // 1. Providers
     // --------------------------------------------------
     const providers: Infer<typeof DB.OrProviders.vTable.validator>[] = []
-    const issues: { source: string; error: z4.ZodError }[] = []
+    const issues: { source: string; error: z.ZodError }[] = []
     for (const item of bundle.data.providers) {
       const parsed = Transforms.providers.safeParse(item)
       if (parsed.success)
@@ -56,7 +56,7 @@ export const run = internalAction({
     // --------------------------------------------------
     // 2. Models (variants) – needed before endpoints
     // --------------------------------------------------
-    const modelsVariants: z4.infer<typeof Transforms.models>[] = []
+    const modelsVariants: z.infer<typeof Transforms.models>[] = []
     for (const m of bundle.data.models) {
       const parsed = Transforms.models.safeParse(m.model)
       if (parsed.success) modelsVariants.push(parsed.data)

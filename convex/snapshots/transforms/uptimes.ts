@@ -1,12 +1,12 @@
 import * as R from 'remeda'
-import z4 from 'zod/v4'
+import { z } from 'zod'
 
-export const uptimes = z4
+export const uptimes = z
   .object({
-    history: z4
+    history: z
       .object({
-        date: z4.string().transform((date) => new Date(date).getTime()),
-        uptime: z4.number().nullable(),
+        date: z.string().transform((date) => new Date(date).getTime()),
+        uptime: z.number().nullable(),
       })
       .transform(R.pickBy(R.isNonNullish))
       .array(),

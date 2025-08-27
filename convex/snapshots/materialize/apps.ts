@@ -1,5 +1,5 @@
 import type { Infer } from 'convex/values'
-import type z4 from 'zod/v4'
+import type z from 'zod/v4'
 
 import * as DB from '@/convex/db'
 
@@ -15,7 +15,7 @@ export async function calculateAppsFromBundle(
 ) {
   const appsMap = new Map<number, Infer<typeof DB.OrApps.vTable.validator>>()
   const modelAppLeaderboards: Infer<typeof DB.OrModelAppLeaderboards.vTable.validator>[] = []
-  const issues: { source: string; error: z4.ZodError }[] = []
+  const issues: { source: string; error: z.ZodError }[] = []
 
   // Process apps per bundle model entry (per OpenRouter model-variant)
   for (const entry of bundle.data.models) {

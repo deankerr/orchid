@@ -12,7 +12,7 @@ alwaysApply: true
 
 ## Libraries
 
-- zod v4 has been released, we're using `z4` imported like `import z4 from 'zod/v4'` to make this clear.
+- zod v4
 - remeda is in use in the frontend and backend - useful during data processing/transformation.
 - Next.js 15 (React 19). RSCs and Next.js server features aren't used, in favour of Convex.
 - Tailwind v4 - the javascript config file is no longer used, everything is defined in [globals.css](mdc:app/globals.css).

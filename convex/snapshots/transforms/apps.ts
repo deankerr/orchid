@@ -1,19 +1,19 @@
 import * as R from 'remeda'
-import z4 from 'zod/v4'
+import { z } from 'zod'
 
-export const apps = z4
+export const apps = z
   .object({
-    app_id: z4.number(),
-    total_tokens: z4.coerce.number(),
-    app: z4
+    app_id: z.number(),
+    total_tokens: z.coerce.number(),
+    app: z
       .object({
-        id: z4.number(),
-        title: z4.string().nullable(),
-        description: z4.string().nullable(),
-        main_url: z4.string().nullable(),
-        origin_url: z4.string(),
-        source_code_url: z4.string().nullable(),
-        created_at: z4.string(),
+        id: z.number(),
+        title: z.string().nullable(),
+        description: z.string().nullable(),
+        main_url: z.string().nullable(),
+        origin_url: z.string(),
+        source_code_url: z.string().nullable(),
+        created_at: z.string(),
       })
       .transform(R.pickBy(R.isNonNullish)),
   })
