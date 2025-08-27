@@ -1,6 +1,38 @@
-# Convex guidelines
+# Primary Guidelines
 
-**NOTE:** This a general guide for Convex, backend rules for this project take precedence. Do not use return args/types unless absolutely required.
+- These modifications to the Convex guidelines in the rest of this guide must take precedence.
+- They prevent issues during active development.
+- Other backend related rules should also take precedence over Convex guidelines.
+
+## Convex Notes
+
+- Convex uses their own V8 runtime, similar to Cloudflare Workers, but with better support for language features.
+- Map.groupBy is supported, and it is an incredible way to group then iterate through items, but we can't use it in the browser.
+- Convex will throw during compile if it finds any dir/file with a dash in it (e.g. `my-file.ts`), so use camelCase.
+- Convex queries/mutations/actions can't be used in files with dots in the name (e.g. `my.file.ts`), so use camelCase.
+
+## No Action Returns
+
+- Never return any value at the end of an action or internalAction.
+- This is the primary cause of self-referential type issues such as:
+  `'handler' implicitly has return type 'any' because it does not have a return type annotation and is referenced directly or indirectly in one of its return expressions.ts(7023)`
+- Backend process actions are triggered by scheduler or manually via the dashboard - there is nothing that needs any return data
+- Only the human developer may override this rule after proper consideration of the impacts
+- `null` is returned automatically by all Convex functions in place of `undefined`/"void" - let it handle it
+
+## Logging
+
+- We take advantage of the Convex Dashboard and Axiom integration to enable simple by powerful logging using `console`
+- Use a 'structured logging' approach inspired by the pino logger, with two args - a short message indicating the domain/action, and an object with relevant data, e.g.:
+  - `console.log('[process:models] complete', { models, endpoints })`
+  - `console.error('[task:stage] failed', { params, error: getErrorMessage(error) })`
+
+## Helper Functions
+
+- Defining functionality in regular javascript functions, 'helper functions', allows us to easily share behaviour between different convex endpoint functions (query/mutation/action)
+- Define helper functions with the `(ctx, args)` pattern, typing `ctx` as `QueryCtx`, `MutationCtx`, or `ActionCtx`
+
+# Secondary guidelines
 
 ## Function guidelines
 

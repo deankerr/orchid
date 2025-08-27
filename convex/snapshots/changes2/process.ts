@@ -81,8 +81,20 @@ function providerChanges({ fromBundle, toBundle }: ProcessBundleArgs) {
 }
 
 function modelEndpointChanges({ fromBundle, toBundle }: ProcessBundleArgs) {
-  const fromEntityMap = new Map(fromBundle.data.models.map((entity) => [entity.model.slug, entity]))
-  const toEntityMap = new Map(toBundle.data.models.map((entity) => [entity.model.slug, entity]))
+  // helper for getting model variant from endpoint
+  const getModelId = (model: any): string => {
+    const variant = model.endpoint?.variant
+    const model_variant_slug =
+      variant && variant !== 'standard' ? `${model.slug}:${variant}` : model.slug
+    return model_variant_slug
+  }
+
+  const fromEntityMap = new Map(
+    fromBundle.data.models.map((entity) => [getModelId(entity.model), entity]),
+  )
+  const toEntityMap = new Map(
+    toBundle.data.models.map((entity) => [getModelId(entity.model), entity]),
+  )
 
   const entityIds = new Set([...fromEntityMap.keys(), ...toEntityMap.keys()])
   const changes: Infer<AsObjectValidator<typeof DB.OrChanges.vTable.validator>>[] = []
@@ -95,11 +107,13 @@ function modelEndpointChanges({ fromBundle, toBundle }: ProcessBundleArgs) {
     const modelChanges = computeEntityChanges({
       fromEntity: fromEntity?.model,
       toEntity: toEntity?.model,
-      extractMetadata: (item) => ({
-        entity_id: item.slug,
-        entity_display_name: item.name,
-        model_variant_slug: item.slug,
-      }),
+      extractMetadata: (item) => {
+        return {
+          entity_id: getModelId(item),
+          entity_display_name: item.name,
+          model_variant_slug: getModelId(item),
+        }
+      },
       changeBase: {
         entity_type: 'model',
         from_crawl_id: fromBundle.crawl_id,

@@ -27,14 +27,13 @@ const HIDE_RULES: HideRule[] = [
   { entity: 'provider', path: ['dataPolicy', 'freeModels'], changeType: 'REMOVE' },
 
   // Endpoint-specific rules
-  { entity: 'endpoint', path: ['pricing'], changeType: 'ADD' },
-  { entity: 'endpoint', path: ['pricing'], changeType: 'REMOVE' },
-  { entity: 'endpoint', path: ['pricing', 'audio'], changeType: 'ADD' },
-  { entity: 'endpoint', path: ['pricing', 'audio'], changeType: 'REMOVE' },
+  { entity: 'endpoint', path: ['pricing', '*'], changeType: 'ADD' },
+  { entity: 'endpoint', path: ['pricing', '*'], changeType: 'REMOVE' },
   { entity: 'endpoint', path: ['data_policy', '*'], changeType: 'ADD', changeValue: 'false' },
   { entity: 'endpoint', path: ['data_policy', 'paidModels'], changeType: 'REMOVE' },
   { entity: 'endpoint', path: ['data_policy', 'freeModels'], changeType: 'REMOVE' },
   { entity: 'endpoint', path: ['adapter_name'] },
+  { entity: 'endpoint', path: ['status'] },
 ]
 
 /**

@@ -1,3 +1,4 @@
+import { formatISO9075 } from 'date-fns'
 import type { IChange } from 'json-diff-ts'
 import { ChevronRight, MinusIcon, PlusIcon } from 'lucide-react'
 
@@ -13,23 +14,49 @@ type IChangeS = Omit<IChange, 'type' | 'changes'> & {
 }
 
 export function ChangeCard({ change }: { change: Doc<'or_changes'> }) {
-  const { change_action, change_body, entity_type, model_variant_slug, provider_id } = change
+  const { crawl_id, change_action, change_body, entity_type, model_variant_slug, provider_id } =
+    change
 
   return (
     <div className="min-w-0 space-y-3 bg-card/50 px-4 py-6 text-card-foreground">
+      <div className="-mt-2 -mb-3 text-right font-mono text-xs text-muted-foreground">
+        {formatISO9075(Number(crawl_id))}
+      </div>
       <div className="flex flex-wrap items-center gap-2 font-mono text-sm">
-        <Badge variant="outline" className="text-sm">
-          {model_variant_slug ?? provider_id}
-        </Badge>
+        {entity_type === 'model' && (
+          <ChangeBadge
+            variant="outline"
+            className="text-sm"
+            plus={change_action === 'create'}
+            minus={change_action === 'delete'}
+          >
+            {model_variant_slug}
+          </ChangeBadge>
+        )}
+
+        {entity_type === 'provider' && (
+          <ChangeBadge
+            variant="outline"
+            className="text-sm"
+            plus={change_action === 'create'}
+            minus={change_action === 'delete'}
+          >
+            {provider_id}
+          </ChangeBadge>
+        )}
 
         {entity_type === 'endpoint' && (
           <>
+            <Badge variant="outline" className="text-sm">
+              {model_variant_slug}
+            </Badge>
+
             <ChangeBadge
               className="text-sm"
               plus={change_action === 'create'}
               minus={change_action === 'delete'}
             >
-              {change.provider_id}
+              <span className="mr-1 text-muted-foreground">Provider</span> {change.provider_id}
             </ChangeBadge>
           </>
         )}

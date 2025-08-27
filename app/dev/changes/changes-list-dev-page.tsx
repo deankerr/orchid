@@ -40,8 +40,8 @@ export function ChangesListDevPage() {
       </PageHeader>
 
       <div className="space-y-3">
-        <ChangesFilters 
-          activeTab={activeTab} 
+        <ChangesFilters
+          activeTab={activeTab}
           setActiveTab={setActiveTab}
           includeHidden={includeHidden}
           setIncludeHidden={setIncludeHidden}
@@ -81,13 +81,9 @@ function ChangesFilters({
           </SelectContent>
         </Select>
       </div>
-      
+
       <div className="flex items-center space-x-2">
-        <Checkbox
-          id="include-hidden"
-          checked={includeHidden}
-          onCheckedChange={setIncludeHidden}
-        />
+        <Checkbox id="include-hidden" checked={includeHidden} onCheckedChange={setIncludeHidden} />
         <Label htmlFor="include-hidden" className="text-sm font-medium">
           Include hidden changes
         </Label>
@@ -96,7 +92,13 @@ function ChangesFilters({
   )
 }
 
-function ChangesResults({ entityType, includeHidden }: { entityType: EntityType, includeHidden: boolean }) {
+function ChangesResults({
+  entityType,
+  includeHidden,
+}: {
+  entityType: EntityType
+  includeHidden: boolean
+}) {
   const { results, status, loadMore } = usePaginatedQuery(
     api.views.changes.list,
     {
@@ -152,7 +154,9 @@ function ChangeRow({ change }: { change: Doc<'or_changes'> }) {
   }
 
   return (
-    <div className={`space-y-2 rounded border p-3 ${!change.is_display ? 'opacity-60 border-dashed' : ''}`}>
+    <div
+      className={`space-y-2 rounded border p-3 ${!change.is_display ? 'border-dashed opacity-60' : ''}`}
+    >
       <div className="flex items-center gap-2 text-sm">
         <Badge variant={actionVariants[change.change_action]}>{change.change_action}</Badge>
         <Badge variant="outline">{change.entity_type}</Badge>
@@ -173,7 +177,13 @@ function ChangeRow({ change }: { change: Doc<'or_changes'> }) {
 
       {change.change_action === 'update' && change.change_root_key && (
         <div className="space-y-2">
-          <div className="font-mono text-xs">{change.change_root_key}</div>
+          <div className="flex items-center justify-between font-mono text-xs">
+            {change.change_root_key}
+
+            <div className="text-muted-foreground">
+              {change.model_variant_slug} {change.provider_slug}
+            </div>
+          </div>
 
           {change.change_body && (
             <pre className="overflow-x-auto rounded bg-muted p-1.5 text-xs">
