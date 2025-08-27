@@ -1,24 +1,24 @@
 import * as R from 'remeda'
-import z4 from 'zod/v4'
+import { z } from 'zod'
 
 import { DataPolicy } from './shared'
 
-export const providers = z4
+export const providers = z
   .object({
-    displayName: z4.string(),
-    slug: z4.string(), // primary key
-    headquarters: z4.string().optional(), // two letter country/state code
-    datacenters: z4.string().array().optional(),
-    hasChatCompletions: z4.boolean(), // chat endpoint
-    hasCompletions: z4.boolean(), // completion endpoint
-    isAbortable: z4.boolean(),
-    moderationRequired: z4.boolean(),
-    isMultipartSupported: z4.boolean(), // messages with text/image/file parts
-    statusPageUrl: z4.url().nullable(),
-    byokEnabled: z4.boolean(),
-    icon: z4.object({
-      url: z4.string(),
-      invertRequired: z4.boolean().optional(),
+    displayName: z.string(),
+    slug: z.string(), // primary key
+    headquarters: z.string().optional(), // two letter country/state code
+    datacenters: z.string().array().optional(),
+    hasChatCompletions: z.boolean(), // chat endpoint
+    hasCompletions: z.boolean(), // completion endpoint
+    isAbortable: z.boolean(),
+    moderationRequired: z.boolean(),
+    isMultipartSupported: z.boolean(), // messages with text/image/file parts
+    statusPageUrl: z.url().nullable(),
+    byokEnabled: z.boolean(),
+    icon: z.object({
+      url: z.string(),
+      invertRequired: z.boolean().optional(),
     }),
     dataPolicy: DataPolicy,
   })

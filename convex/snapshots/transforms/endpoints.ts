@@ -1,67 +1,67 @@
 import * as R from 'remeda'
-import z4 from 'zod/v4'
+import { z } from 'zod'
 
 import { DataPolicy } from './shared'
 
-export const endpoints = z4
+export const endpoints = z
   .object({
-    id: z4.string(), // primary key, uuid
-    name: z4.string(), // internal id, `{provider_name} | {model_variant_slug}`
-    context_length: z4.number(),
-    model_variant_slug: z4.string(), // {slug}:{variant}
-    model_variant_permaslug: z4.string(), // {permaslug}:{variant}
-    provider_name: z4.string(), // foreign internal id
-    provider_info: z4.object({
-      slug: z4.string(), // provider entity, more reliable provider_slug (foreign key)
+    id: z.string(), // primary key, uuid
+    name: z.string(), // internal id, `{provider_name} | {model_variant_slug}`
+    context_length: z.number(),
+    model_variant_slug: z.string(), // {slug}:{variant}
+    model_variant_permaslug: z.string(), // {permaslug}:{variant}
+    provider_name: z.string(), // foreign internal id
+    provider_info: z.object({
+      slug: z.string(), // provider entity, more reliable provider_slug (foreign key)
     }),
-    provider_display_name: z4.string(),
-    quantization: z4.string().nullable(),
-    variant: z4.string(),
+    provider_display_name: z.string(),
+    quantization: z.string().nullable(),
+    variant: z.string(),
 
-    max_prompt_tokens: z4.number().nullable(),
-    max_completion_tokens: z4.number().nullable(),
-    max_prompt_images: z4.number().nullable(),
-    max_tokens_per_image: z4.number().nullable(),
-    supported_parameters: z4.array(z4.string()),
-    limit_rpm: z4.number().nullable(),
-    limit_rpd: z4.number().nullable(),
+    max_prompt_tokens: z.number().nullable(),
+    max_completion_tokens: z.number().nullable(),
+    max_prompt_images: z.number().nullable(),
+    max_tokens_per_image: z.number().nullable(),
+    supported_parameters: z.array(z.string()),
+    limit_rpm: z.number().nullable(),
+    limit_rpd: z.number().nullable(),
 
-    can_abort: z4.boolean(),
-    is_byok: z4.boolean(),
-    moderation_required: z4.boolean(),
-    supports_tool_parameters: z4.boolean(),
-    supports_reasoning: z4.boolean(),
-    supports_multipart: z4.boolean(),
-    has_completions: z4.boolean(),
-    has_chat_completions: z4.boolean(),
+    can_abort: z.boolean(),
+    is_byok: z.boolean(),
+    moderation_required: z.boolean(),
+    supports_tool_parameters: z.boolean(),
+    supports_reasoning: z.boolean(),
+    supports_multipart: z.boolean(),
+    has_completions: z.boolean(),
+    has_chat_completions: z.boolean(),
 
-    is_disabled: z4.boolean(),
-    status: z4.number().optional(), // values below 0 indicate deranked
+    is_disabled: z.boolean(),
+    status: z.number().optional(), // values below 0 indicate deranked
 
-    variable_pricings: z4.array(
-      z4.record(z4.string(), z4.union([z4.string(), z4.number(), z4.boolean()])),
+    variable_pricings: z.array(
+      z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])),
     ),
 
-    pricing: z4
+    pricing: z
       .object({
-        prompt: z4.coerce.number(),
-        completion: z4.coerce.number(),
-        image: z4.coerce.number(),
-        request: z4.coerce.number(),
-        web_search: z4.coerce.number(),
-        input_cache_read: z4.coerce.number().optional(),
-        input_cache_write: z4.coerce.number().optional(),
-        internal_reasoning: z4.coerce.number().optional(),
-        discount: z4.number(), // e.g. 0.25, already applied to the other pricing fields
+        prompt: z.coerce.number(),
+        completion: z.coerce.number(),
+        image: z.coerce.number(),
+        request: z.coerce.number(),
+        web_search: z.coerce.number(),
+        input_cache_read: z.coerce.number().optional(),
+        input_cache_write: z.coerce.number().optional(),
+        internal_reasoning: z.coerce.number().optional(),
+        discount: z.number(), // e.g. 0.25, already applied to the other pricing fields
       })
       .transform(R.pickBy(R.isTruthy)),
 
-    stats: z4
+    stats: z
       .object({
-        endpoint_id: z4.string(), // uuid (same as id)
-        p50_throughput: z4.number(),
-        p50_latency: z4.number(),
-        request_count: z4.number(),
+        endpoint_id: z.string(), // uuid (same as id)
+        p50_throughput: z.number(),
+        p50_latency: z.number(),
+        request_count: z.number(),
       })
       .optional(),
 

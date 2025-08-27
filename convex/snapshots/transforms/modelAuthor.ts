@@ -1,15 +1,15 @@
 import * as R from 'remeda'
-import z4 from 'zod/v4'
+import { z } from 'zod'
 
-const author = z4
+const author = z
   .object({
-    id: z4.string(),
-    slug: z4.string(),
-    name: z4.string(),
-    description: z4.string().nullable(),
-    created_at: z4.string(),
-    updated_at: z4.string(),
-    icon_uri: z4.null(),
+    id: z.string(),
+    slug: z.string(),
+    name: z.string(),
+    description: z.string().nullable(),
+    created_at: z.string(),
+    updated_at: z.string(),
+    icon_uri: z.null(),
   })
   .transform(R.pickBy(R.isNonNullish))
   .transform((data) => {
@@ -23,20 +23,20 @@ const author = z4
     }
   })
 
-const modelsWithStats = z4
+const modelsWithStats = z
   .object({
-    slug: z4.string(),
-    permaslug: z4.string(),
-    stats: z4
+    slug: z.string(),
+    permaslug: z.string(),
+    stats: z
       .object({
-        model_permaslug: z4.string(),
-        variant: z4.string(),
-        date: z4.string(),
-        total_completion_tokens: z4.number(),
-        total_prompt_tokens: z4.number(),
-        total_native_tokens_reasoning: z4.number(),
-        variant_permaslug: z4.string(),
-        count: z4.number(),
+        model_permaslug: z.string(),
+        variant: z.string(),
+        date: z.string(),
+        total_completion_tokens: z.number(),
+        total_prompt_tokens: z.number(),
+        total_native_tokens_reasoning: z.number(),
+        variant_permaslug: z.string(),
+        count: z.number(),
       })
       .array(),
   })
@@ -64,4 +64,4 @@ const modelsWithStats = z4
     })
   })
 
-export const modelAuthor = z4.object({ author, modelsWithStats })
+export const modelAuthor = z.object({ author, modelsWithStats })

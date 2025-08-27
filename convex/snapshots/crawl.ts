@@ -1,5 +1,5 @@
 import { v } from 'convex/values'
-import z4 from 'zod/v4'
+import { z } from 'zod'
 
 import { gzipSync } from 'fflate'
 import prettyBytes from 'pretty-bytes'
@@ -18,45 +18,45 @@ export const orFetch = up(fetch, () => ({
 }))
 
 // * validate only the minimum we require for the crawl, extracting the contents of the `data` prop
-const ModelsDataRecordArray = z4
+const ModelsDataRecordArray = z
   .object({
-    data: z4.array(
-      z4.looseObject({
-        slug: z4.string(),
-        permaslug: z4.string(),
-        author: z4.string(),
-        endpoint: z4.looseObject({ variant: z4.string() }).nullable(),
+    data: z.array(
+      z.looseObject({
+        slug: z.string(),
+        permaslug: z.string(),
+        author: z.string(),
+        endpoint: z.looseObject({ variant: z.string() }).nullable(),
       }),
     ),
   })
   .transform((v) => v.data)
 
-const EndpointsDataRecordArray = z4
+const EndpointsDataRecordArray = z
   .object({
-    data: z4.array(
-      z4.looseObject({
-        id: z4.string(),
+    data: z.array(
+      z.looseObject({
+        id: z.string(),
       }),
     ),
   })
   .transform((v) => v.data)
 
-const DataRecord = z4
-  .object({ data: z4.record(z4.string(), z4.unknown()) })
+const DataRecord = z
+  .object({ data: z.record(z.string(), z.unknown()) })
   .transform((value) => value.data)
 
-const DataRecordArray = z4
-  .object({ data: z4.record(z4.string(), z4.unknown()).array() })
+const DataRecordArray = z
+  .object({ data: z.record(z.string(), z.unknown()).array() })
   .transform((value) => value.data)
 
 // ----------------------------------------------
 // Single exported type and schema for the archived crawl bundle
 // ----------------------------------------------
 
-type ModelsArray = z4.infer<typeof ModelsDataRecordArray>
-type EndpointsArray = z4.infer<typeof EndpointsDataRecordArray>
-type DataRecordItem = z4.infer<typeof DataRecord>
-type DataRecordItemArray = z4.infer<typeof DataRecordArray>
+type ModelsArray = z.infer<typeof ModelsDataRecordArray>
+type EndpointsArray = z.infer<typeof EndpointsDataRecordArray>
+type DataRecordItem = z.infer<typeof DataRecord>
+type DataRecordItemArray = z.infer<typeof DataRecordArray>
 
 export type CrawlArchiveBundle = {
   crawl_id: string
@@ -73,30 +73,30 @@ export type CrawlArchiveBundle = {
   }
 }
 
-const ModelMinimalSchema = z4.looseObject({
-  slug: z4.string(),
-  permaslug: z4.string(),
-  author: z4.string(),
-  endpoint: z4.looseObject({ variant: z4.string() }).nullable(),
+const ModelMinimalSchema = z.looseObject({
+  slug: z.string(),
+  permaslug: z.string(),
+  author: z.string(),
+  endpoint: z.looseObject({ variant: z.string() }).nullable(),
 })
 
-const EndpointMinimalSchema = z4.looseObject({ id: z4.string() })
-const DataRecordSchema = z4.record(z4.string(), z4.unknown())
+const EndpointMinimalSchema = z.looseObject({ id: z.string() })
+const DataRecordSchema = z.record(z.string(), z.unknown())
 
-const CrawlArchiveBundleSchema = z4.strictObject({
-  crawl_id: z4.string(),
-  args: z4.record(z4.string(), z4.boolean()),
-  data: z4.strictObject({
-    models: z4.array(
-      z4.strictObject({
+const CrawlArchiveBundleSchema = z.strictObject({
+  crawl_id: z.string(),
+  args: z.record(z.string(), z.boolean()),
+  data: z.strictObject({
+    models: z.array(
+      z.strictObject({
         model: ModelMinimalSchema,
-        endpoints: z4.array(EndpointMinimalSchema),
-        uptimes: z4.array(z4.tuple([z4.string(), DataRecordSchema])),
-        apps: z4.array(DataRecordSchema),
+        endpoints: z.array(EndpointMinimalSchema),
+        uptimes: z.array(z.tuple([z.string(), DataRecordSchema])),
+        apps: z.array(DataRecordSchema),
       }),
     ),
-    providers: z4.array(DataRecordSchema),
-    modelAuthors: z4.array(DataRecordSchema),
+    providers: z.array(DataRecordSchema),
+    modelAuthors: z.array(DataRecordSchema),
   }),
 })
 
@@ -176,7 +176,7 @@ export const run = internalAction({
 
 async function fetchModelData(
   crawlArgs: { uptimes: boolean; apps: boolean },
-  model: z4.infer<typeof ModelsDataRecordArray>[number],
+  model: z.infer<typeof ModelsDataRecordArray>[number],
 ) {
   const result: CrawlArchiveBundle['data']['models'][number] = {
     model,
