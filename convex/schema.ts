@@ -2,14 +2,12 @@ import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
 import { table as ORAppsTable } from './db/or/apps'
-import { table as OREndpointChangesTable } from './db/or/endpointChanges'
+import { table as ORChangesTable } from './db/or/changes'
 import { table as OREndpointsTable } from './db/or/endpoints'
 import { table as ORModelAppLeaderboardsTable } from './db/or/modelAppLeaderboards'
-import { table as ORModelChangesTable } from './db/or/modelChanges'
 import { table as ORModelDetailsTable } from './db/or/modelDetails'
 import { table as ORModelsTable } from './db/or/models'
 import { table as ORModelTokenStatsTable } from './db/or/modelTokenStats'
-import { table as ORProviderChangesTable } from './db/or/providerChanges'
 import { table as ORProvidersTable } from './db/or/providers'
 import { table as SnapshotCrawlArchivesTable } from './db/snapshot/crawlArchives'
 import { table as SnapshotCrawlConfigTable } from './db/snapshot/crawlConfig'
@@ -17,14 +15,12 @@ import { table as SnapshotCrawlConfigTable } from './db/snapshot/crawlConfig'
 export default defineSchema(
   {
     or_apps: ORAppsTable,
-    or_endpoint_changes: OREndpointChangesTable,
+    or_changes: ORChangesTable,
     or_endpoints: OREndpointsTable,
     or_model_app_leaderboards: ORModelAppLeaderboardsTable,
-    or_model_changes: ORModelChangesTable,
     or_model_details: ORModelDetailsTable,
     or_model_token_stats: ORModelTokenStatsTable,
     or_models: ORModelsTable,
-    or_provider_changes: ORProviderChangesTable,
     or_providers: ORProvidersTable,
 
     snapshot_crawl_config: SnapshotCrawlConfigTable,

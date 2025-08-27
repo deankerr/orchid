@@ -1,0 +1,236 @@
+import { type AsObjectValidator, type Infer } from 'convex/values'
+
+import { diff, type Options } from 'json-diff-ts'
+
+import * as DB from '@/convex/db'
+
+import type { CrawlArchiveBundle } from '../crawl'
+import { shouldDisplayChange } from './display'
+
+type ProcessBundleArgs = {
+  fromBundle: CrawlArchiveBundle
+  toBundle: CrawlArchiveBundle
+}
+
+export function processBundleChanges({ fromBundle, toBundle }: ProcessBundleArgs) {
+  const changes = [
+    ...providerChanges({ fromBundle, toBundle }),
+    ...modelEndpointChanges({ fromBundle, toBundle }),
+  ]
+
+  return changes
+}
+
+type EntityMetadata = Infer<
+  AsObjectValidator<
+    Pick<
+      typeof DB.OrChanges.vTable.doc.fields,
+      | 'entity_id'
+      | 'entity_display_name'
+      | 'model_variant_slug'
+      | 'endpoint_uuid'
+      | 'provider_slug'
+      | 'provider_id'
+    >
+  >
+>
+
+type ChangeBase = {
+  entity_type: Infer<typeof DB.OrChanges.vTable.validator.fields.entity_type>
+  crawl_id: string
+  from_crawl_id: string
+  is_display: boolean
+}
+
+function providerChanges({ fromBundle, toBundle }: ProcessBundleArgs) {
+  const fromEntityMap = new Map(fromBundle.data.providers.map((entity) => [entity.name, entity]))
+  const toEntityMap = new Map(toBundle.data.providers.map((entity) => [entity.name, entity]))
+
+  const entityIds = new Set([...fromEntityMap.keys(), ...toEntityMap.keys()])
+  const changes: Infer<AsObjectValidator<typeof DB.OrChanges.vTable.validator>>[] = []
+
+  for (const entityId of entityIds) {
+    const fromEntity = fromEntityMap.get(entityId)
+    const toEntity = toEntityMap.get(entityId)
+
+    const entityChanges = computeEntityChanges({
+      fromEntity,
+      toEntity,
+      extractMetadata: (item) => ({
+        entity_id: item.name,
+        entity_display_name: item.displayName,
+        provider_slug: item.slug,
+        provider_id: item.name,
+      }),
+      changeBase: {
+        entity_type: 'provider',
+        from_crawl_id: fromBundle.crawl_id,
+        crawl_id: toBundle.crawl_id,
+        is_display: true,
+      },
+      diffOptions: {
+        keysToSkip: ['ignoredProviderModels'],
+        treatTypeChangeAsReplace: true,
+      },
+    })
+
+    changes.push(...entityChanges)
+  }
+
+  return changes
+}
+
+function modelEndpointChanges({ fromBundle, toBundle }: ProcessBundleArgs) {
+  // helper for getting model variant from endpoint
+  const getModelId = (model: any): string => {
+    const variant = model.endpoint?.variant
+    const model_variant_slug =
+      variant && variant !== 'standard' ? `${model.slug}:${variant}` : model.slug
+    return model_variant_slug
+  }
+
+  const fromEntityMap = new Map(
+    fromBundle.data.models.map((entity) => [getModelId(entity.model), entity]),
+  )
+  const toEntityMap = new Map(
+    toBundle.data.models.map((entity) => [getModelId(entity.model), entity]),
+  )
+
+  const entityIds = new Set([...fromEntityMap.keys(), ...toEntityMap.keys()])
+  const changes: Infer<AsObjectValidator<typeof DB.OrChanges.vTable.validator>>[] = []
+
+  for (const entityId of entityIds) {
+    const fromEntity = fromEntityMap.get(entityId)
+    const toEntity = toEntityMap.get(entityId)
+
+    // * models
+    const modelChanges = computeEntityChanges({
+      fromEntity: fromEntity?.model,
+      toEntity: toEntity?.model,
+      extractMetadata: (item) => {
+        return {
+          entity_id: getModelId(item),
+          entity_display_name: item.name,
+          model_variant_slug: getModelId(item),
+        }
+      },
+      changeBase: {
+        entity_type: 'model',
+        from_crawl_id: fromBundle.crawl_id,
+        crawl_id: toBundle.crawl_id,
+        is_display: true,
+      },
+      diffOptions: {
+        keysToSkip: ['endpoint', 'updated_at'],
+        embeddedObjKeys: { input_modalities: '$value', output_modalities: '$value' },
+        treatTypeChangeAsReplace: true,
+      },
+    })
+
+    changes.push(...modelChanges)
+
+    // * endpoints inner loop
+    const fromEndpoints = fromEntity?.endpoints || []
+    const toEndpoints = toEntity?.endpoints || []
+
+    const fromEndpointMap = new Map(fromEndpoints.map((ep) => [ep.id, ep]))
+    const toEndpointMap = new Map(toEndpoints.map((ep) => [ep.id, ep]))
+
+    const endpointIds = new Set([...fromEndpointMap.keys(), ...toEndpointMap.keys()])
+
+    for (const endpointId of endpointIds) {
+      const fromEndpoint = fromEndpointMap.get(endpointId)
+      const toEndpoint = toEndpointMap.get(endpointId)
+
+      const endpointChanges = computeEntityChanges({
+        fromEntity: fromEndpoint,
+        toEntity: toEndpoint,
+        extractMetadata: (ep) => ({
+          entity_id: ep.id,
+          entity_display_name: ep.name,
+          endpoint_uuid: ep.id,
+          model_variant_slug: ep.model_variant_slug,
+          provider_slug: ep.provider_slug,
+          provider_id: ep.provider_name,
+        }),
+        changeBase: {
+          entity_type: 'endpoint',
+          from_crawl_id: fromBundle.crawl_id,
+          crawl_id: toBundle.crawl_id,
+          is_display: true,
+        },
+        diffOptions: {
+          keysToSkip: ['stats', 'provider_info', 'model'],
+          embeddedObjKeys: { supported_parameters: '$value' },
+          treatTypeChangeAsReplace: true,
+        },
+      })
+
+      changes.push(...endpointChanges)
+    }
+  }
+
+  return changes
+}
+
+/**
+ * Computes changes for a single entity diff
+ * Generic function that produces change records based on the difference between two entities
+ */
+function computeEntityChanges({
+  fromEntity,
+  toEntity,
+  extractMetadata,
+  changeBase,
+  diffOptions,
+}: {
+  fromEntity: Record<string, any> | undefined
+  toEntity: Record<string, any> | undefined
+  extractMetadata: (entity: any) => EntityMetadata
+  changeBase: ChangeBase
+  diffOptions: Options
+}) {
+  if (!fromEntity && toEntity) {
+    // * created
+    const change = {
+      ...changeBase,
+      ...extractMetadata(toEntity),
+      change_action: 'create' as const,
+      change_root_key: '',
+      change_body: toEntity,
+    }
+    change.is_display = shouldDisplayChange(change)
+    return [change]
+  }
+
+  if (fromEntity && !toEntity) {
+    // * deleted
+    const change = {
+      ...changeBase,
+      ...extractMetadata(fromEntity),
+      change_action: 'delete' as const,
+      change_root_key: '',
+      change_body: fromEntity,
+    }
+    change.is_display = shouldDisplayChange(change)
+    return [change]
+  }
+
+  if (fromEntity && toEntity) {
+    // * updated
+    const entityDiff = diff(fromEntity, toEntity, diffOptions)
+    return entityDiff.map((item) => {
+      const change = {
+        ...changeBase,
+        ...extractMetadata(toEntity),
+        change_action: 'update' as const,
+        change_root_key: item.key,
+        change_body: item,
+      }
+      change.is_display = shouldDisplayChange(change)
+      return change
+    })
+  }
+
+  return []
+}

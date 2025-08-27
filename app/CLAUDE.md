@@ -42,11 +42,12 @@ ORCHID serves highly technical users who work with OpenRouter and LLMs professio
 - **No customization**: Avoid custom colors, background colors, border radius
 - **Theme extensions**: Add new theme colors to [globals.css](mdc:app/globals.css) when needed
 
-### Default Styling
+### Styling
 
 - Values like `font-mono` are defined at the root level of components where in use, allowing it to cascade down into sub-components like Buttons, Badges, etc. Do not add these classes to every internal element.
 - `border-border` is default, no need to specify anywhere
 - Badges: `text-xs` is the default size
+- use the `cn()` helper when dynamic classNames are needed
 - Follow established patterns across the application
 
 ### Structure

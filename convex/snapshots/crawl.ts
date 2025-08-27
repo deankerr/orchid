@@ -164,7 +164,7 @@ export const run = internalAction({
       console.log(`[crawl] complete`, { crawl_id, args })
 
       if (args.processChanges) {
-        await ctx.scheduler.runAfter(0, internal.snapshots.changes.postCrawl.runPostCrawl, {
+        await ctx.scheduler.runAfter(0, internal.snapshots.changes2.postCrawl.runPostCrawl, {
           crawl_id,
         })
       }

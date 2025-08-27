@@ -4,7 +4,7 @@ import { internal } from '../../_generated/api'
 import { internalAction } from '../../_generated/server'
 import { getArchiveBundle } from '../bundle'
 import type { CrawlArchiveBundle } from '../crawl'
-import { processEntityChanges } from './process'
+import { processBundleChanges } from './process'
 
 export const run = internalAction({
   args: {
@@ -13,7 +13,7 @@ export const run = internalAction({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    console.log('[changes:backfill] starting', {
+    console.log('[changes2:backfill] starting', {
       fromCrawlId: args.fromCrawlId,
       cursor: args.cursor,
     })
@@ -22,7 +22,6 @@ export const run = internalAction({
     let previousBundle: CrawlArchiveBundle | null = null
 
     while (true) {
-      // Get a single archive record
       const results = await ctx.runQuery(internal.db.snapshot.crawlArchives.list, {
         paginationOpts: {
           numItems: 1,
@@ -33,7 +32,7 @@ export const run = internalAction({
 
       const currentArchive = results.page[0]
       if (!currentArchive) {
-        console.log('[changes:backfill] no more archives to process')
+        console.log('[changes2:backfill] no more archives to process')
         break
       }
 
@@ -43,23 +42,28 @@ export const run = internalAction({
       }
 
       if (previousBundle) {
-        // Process changes between previous and current
-        console.log('[changes:backfill] processing pair', {
+        console.log('[changes2:backfill] processing pair', {
           from: previousBundle.crawl_id,
           to: currentBundle.crawl_id,
         })
 
-        // * process entities
-        await processEntityChanges(ctx, { entityType: 'models', currentBundle, previousBundle })
-        await processEntityChanges(ctx, { entityType: 'endpoints', currentBundle, previousBundle })
-        await processEntityChanges(ctx, { entityType: 'providers', currentBundle, previousBundle })
+        const changes = processBundleChanges({
+          fromBundle: previousBundle,
+          toBundle: currentBundle,
+        })
+
+        if (changes.length > 0) {
+          await ctx.runMutation(internal.db.or.changes.insert, {
+            changes,
+          })
+          console.log(`[changes2:backfill] inserted ${changes.length} changes`)
+        }
       }
 
-      // Move current to previous for next iteration
       previousBundle = currentBundle
       cursor = results.continueCursor
     }
 
-    console.log('[changes:backfill] all archives complete')
+    console.log('[changes2:backfill] all archives complete')
   },
 })
