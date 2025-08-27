@@ -73,7 +73,8 @@ export function ChangesListPage() {
           </div>
         ) : (
           <>
-            <div className="grid divide-y divide-border/20 border">
+            {/* * results */}
+            <div className="grid divide-y divide-border/80 border">
               {results.map((change) => (
                 <ChangeCard key={`${change._id}`} change={change} />
               ))}

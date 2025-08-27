@@ -1,11 +1,12 @@
 import { formatISO9075 } from 'date-fns'
 import type { IChange } from 'json-diff-ts'
-import { ChevronRight, MinusIcon, PlusIcon } from 'lucide-react'
+import { ChevronRight, DotIcon, MinusIcon, PlusIcon } from 'lucide-react'
 
 import type { Doc } from '@/convex/_generated/dataModel'
 
 import { RawPricingProperty } from '@/components/shared/numeric-value'
 import { Badge } from '@/components/ui/badge'
+import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
 
 type IChangeS = Omit<IChange, 'type' | 'changes'> & {
@@ -18,48 +19,52 @@ export function ChangeCard({ change }: { change: Doc<'or_changes'> }) {
     change
 
   return (
-    <div className="min-w-0 space-y-3 bg-card/50 px-4 py-6 text-card-foreground">
-      <div className="-mt-2 -mb-3 text-right font-mono text-xs text-muted-foreground">
-        {formatISO9075(Number(crawl_id))}
-      </div>
-      <div className="flex flex-wrap items-center gap-2 font-mono text-sm">
-        {entity_type === 'model' && (
-          <ChangeBadge
-            variant="outline"
-            className="text-sm"
-            plus={change_action === 'create'}
-            minus={change_action === 'delete'}
-          >
-            {model_variant_slug}
-          </ChangeBadge>
-        )}
-
-        {entity_type === 'provider' && (
-          <ChangeBadge
-            variant="outline"
-            className="text-sm"
-            plus={change_action === 'create'}
-            minus={change_action === 'delete'}
-          >
-            {provider_id}
-          </ChangeBadge>
-        )}
-
-        {entity_type === 'endpoint' && (
-          <>
-            <Badge variant="outline" className="text-sm">
-              {model_variant_slug}
-            </Badge>
-
-            <ChangeBadge
+    <div className="relative min-w-0 space-y-3 bg-card/50 px-4 py-5 text-card-foreground">
+      <div className="sm:tems-center flex flex-col-reverse justify-between gap-x-2 gap-y-1.5 sm:flex-row">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-2 font-mono text-sm">
+          {entity_type === 'model' && (
+            <EntityChangePill
+              entityName="model"
               className="text-sm"
               plus={change_action === 'create'}
               minus={change_action === 'delete'}
             >
-              <span className="mr-1 text-muted-foreground">Provider</span> {change.provider_id}
-            </ChangeBadge>
-          </>
-        )}
+              {model_variant_slug}
+            </EntityChangePill>
+          )}
+
+          {entity_type === 'provider' && (
+            <EntityChangePill
+              entityName="provider"
+              className="text-sm"
+              plus={change_action === 'create'}
+              minus={change_action === 'delete'}
+            >
+              {provider_id}
+            </EntityChangePill>
+          )}
+
+          {entity_type === 'endpoint' && (
+            <>
+              <EntityChangePill entityName="model" className="text-sm">
+                {model_variant_slug}
+              </EntityChangePill>
+
+              <EntityChangePill
+                entityName="provider"
+                className="text-sm"
+                plus={change_action === 'create'}
+                minus={change_action === 'delete'}
+              >
+                {provider_id}
+              </EntityChangePill>
+            </>
+          )}
+        </div>
+
+        <div className="shrink-0 text-right font-mono text-xs text-muted-foreground">
+          {formatISO9075(Number(crawl_id), { representation: 'date' })}
+        </div>
       </div>
 
       {change_action === 'update' && (
@@ -261,8 +266,27 @@ function ChangeBadge({
         <PlusIcon className="text-success" />
       ) : minus ? (
         <MinusIcon className="text-destructive" />
-      ) : null}
+      ) : (
+        <DotIcon className="text-muted-foreground" />
+      )}
       {children}
     </Badge>
+  )
+}
+
+function EntityChangePill({
+  entityName,
+  children,
+  className,
+  ...props
+}: { entityName: string } & React.ComponentProps<typeof ChangeBadge>) {
+  return (
+    <ChangeBadge className={cn('rounded-none', className)} {...props}>
+      <span className="text-muted-foreground uppercase">{entityName}</span>
+      <div className="mx-1 -my-1 h-6">
+        <Separator orientation="vertical" />
+      </div>
+      {children}
+    </ChangeBadge>
   )
 }
