@@ -241,7 +241,9 @@ export async function storeCrawlBundle(ctx: ActionCtx, bundle: CrawlArchiveBundl
   const parsed = CrawlArchiveBundleSchema.parse(bundle)
   const jsonString = JSON.stringify(parsed)
   const encoded = new TextEncoder().encode(jsonString)
-  const blob = new Blob([gzipSync(encoded)])
+  const compressed = gzipSync(encoded)
+
+  const blob = new Blob([new Uint8Array(compressed)])
   const storage_id = await ctx.storage.store(blob)
 
   const size = {

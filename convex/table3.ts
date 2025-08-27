@@ -60,7 +60,12 @@ function createBuilder<Fields extends PropertyValidators>(
 
     partial() {
       const newFields = partial(fields)
-      const newValidator = v.object(newFields)
+      const newValidator = v.object(newFields) as VObject<
+        ObjectType<PartialFields<Fields>>,
+        PartialFields<Fields>,
+        'required',
+        any
+      >
       return createBuilder(newValidator)
     },
 
