@@ -17,7 +17,9 @@ export const get = query({
 export const list = query({
   returns: DB.OrModels.vTable.doc.array(),
   handler: async (ctx) => {
-    return await DB.OrModels.list(ctx)
+    const allModels = await DB.OrModels.list(ctx)
+    const latestSnapshotAt = Math.max(...allModels.map((doc) => doc.snapshot_at))
+    return allModels.filter((model) => model.snapshot_at === latestSnapshotAt)
   },
 })
 

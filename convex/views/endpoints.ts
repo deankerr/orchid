@@ -12,8 +12,10 @@ export const list = query({
     }),
   ),
   handler: async (ctx) => {
-    const results = await DB.OrEndpoints.list(ctx).then((res) =>
-      res.filter((endp) => !endp.is_disabled),
+    const allEndpoints = await DB.OrEndpoints.list(ctx)
+    const latestSnapshotAt = Math.max(...allEndpoints.map((doc) => doc.snapshot_at))
+    const results = allEndpoints.filter(
+      (endp) => endp.snapshot_at === latestSnapshotAt && !endp.is_disabled,
     )
 
     return Map.groupBy(results, (r) => `${r.model_slug}:${r.model_variant}`)
