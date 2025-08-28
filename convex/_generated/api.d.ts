@@ -49,6 +49,7 @@ import type * as snapshots_transforms_models from "../snapshots/transforms/model
 import type * as snapshots_transforms_providers from "../snapshots/transforms/providers.js";
 import type * as snapshots_transforms_shared from "../snapshots/transforms/shared.js";
 import type * as snapshots_transforms_uptimes from "../snapshots/transforms/uptimes.js";
+import type * as storage from "../storage.js";
 import type * as table3 from "../table3.js";
 import type * as views_changes from "../views/changes.js";
 import type * as views_endpoints from "../views/endpoints.js";
@@ -100,6 +101,7 @@ declare const fullApi: ApiFromModules<{
   "snapshots/transforms/providers": typeof snapshots_transforms_providers;
   "snapshots/transforms/shared": typeof snapshots_transforms_shared;
   "snapshots/transforms/uptimes": typeof snapshots_transforms_uptimes;
+  storage: typeof storage;
   table3: typeof table3;
   "views/changes": typeof views_changes;
   "views/endpoints": typeof views_endpoints;
