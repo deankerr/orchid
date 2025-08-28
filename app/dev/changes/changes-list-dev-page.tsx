@@ -143,7 +143,7 @@ function ChangesResults({
 
 function ChangeRow({ change }: { change: Doc<'or_changes'> }) {
   const actionVariants = {
-    create: 'default' as const,
+    create: 'primary' as const,
     delete: 'destructive' as const,
     update: 'secondary' as const,
   }

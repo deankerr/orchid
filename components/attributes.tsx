@@ -117,7 +117,7 @@ export const attributes = {
     icon: <ShieldAlertIcon />,
     label: 'Moderated',
     description: 'Content is automatically moderated by the provider.',
-    variant: 'alert',
+    variant: 'destructive',
     has: (args: { endpoints: Endpoint[] }) =>
       args.endpoints.some((endpoint) => endpoint.is_moderated),
   },
@@ -126,7 +126,7 @@ export const attributes = {
     icon: <CameraIcon />,
     label: 'Trains',
     description: 'Provider may use your prompts to train their models.',
-    variant: 'alert',
+    variant: 'destructive',
     has: (args: { endpoints: Endpoint[] }) =>
       args.endpoints.some((endpoint) => endpoint.data_policy.training),
   },
@@ -135,7 +135,7 @@ export const attributes = {
     icon: <ScrollTextIcon />,
     label: 'Publish',
     description: 'Provider may publish or share your prompts publicly.',
-    variant: 'alert',
+    variant: 'destructive',
     has: (args: { endpoints: Endpoint[] }) =>
       args.endpoints.some((endpoint) => endpoint.data_policy.can_publish),
   },

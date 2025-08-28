@@ -1,18 +1,13 @@
 import { formatISO9075 } from 'date-fns'
-import type { IChange } from 'json-diff-ts'
 import { ChevronRight, DotIcon, MinusIcon, PlusIcon } from 'lucide-react'
 
 import type { Doc } from '@/convex/_generated/dataModel'
+import type { ChangeBody } from '@/convex/db/or/changes'
 
 import { RawPricingProperty } from '@/components/shared/numeric-value'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
-
-type IChangeS = Omit<IChange, 'type' | 'changes'> & {
-  type: 'ADD' | 'UPDATE' | 'REMOVE'
-  changes?: IChangeS[]
-}
 
 export function ChangeCard({ change }: { change: Doc<'or_changes'> }) {
   const { crawl_id, change_action, change_body, entity_type, model_variant_slug, provider_id } =
@@ -69,7 +64,7 @@ export function ChangeCard({ change }: { change: Doc<'or_changes'> }) {
 
       {change_action === 'update' && (
         <div className="font-mono text-sm">
-          <ChangeBody change_body={change_body as IChangeS} />
+          <ChangeBody change_body={change_body as ChangeBody} />
         </div>
       )}
     </div>
@@ -80,7 +75,7 @@ function ChangeBody({
   change_body,
   parentKey = '',
 }: {
-  change_body: IChangeS
+  change_body: ChangeBody
   parentKey?: string
 }) {
   const { changes, embeddedKey, key, type, oldValue, value } = change_body

@@ -4,6 +4,15 @@ import { v } from 'convex/values'
 import { internalMutation, internalQuery } from '../../_generated/server'
 import { createTableVHelper } from '../../table3'
 
+export type ChangeBody = {
+  type: 'ADD' | 'UPDATE' | 'REMOVE'
+  key: string
+  embeddedKey?: string
+  value?: any
+  oldValue?: any
+  changes?: ChangeBody[]
+}
+
 export const table = defineTable({
   crawl_id: v.string(),
   from_crawl_id: v.string(),
@@ -45,10 +54,12 @@ export const insert = internalMutation({
 
 export const updateDisplayStatus = internalMutation({
   args: {
-    updates: v.array(v.object({
-      _id: v.id('or_changes'),
-      is_display: v.boolean(),
-    })),
+    updates: v.array(
+      v.object({
+        _id: v.id('or_changes'),
+        is_display: v.boolean(),
+      }),
+    ),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
@@ -61,9 +72,6 @@ export const updateDisplayStatus = internalMutation({
 export const list = internalQuery({
   args: { paginationOpts: paginationOptsValidator },
   handler: async (ctx, args) => {
-    return await ctx.db
-      .query('or_changes')
-      .order('desc')
-      .paginate(args.paginationOpts)
+    return await ctx.db.query('or_changes').order('desc').paginate(args.paginationOpts)
   },
 })
