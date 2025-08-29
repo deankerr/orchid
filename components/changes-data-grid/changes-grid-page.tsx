@@ -17,12 +17,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useModelsList, useProvidersList } from '@/hooks/api'
 
 const ITEMS_PER_PAGE = 40
 
 type EntityType = 'all' | 'model' | 'endpoint' | 'provider'
 
-export function ChangesGridPageClient({
+export function ChangesGridPage({
   searchParams: _searchParams,
 }: {
   searchParams: { [key: string]: string | string[] | undefined }
@@ -37,6 +38,10 @@ export function ChangesGridPageClient({
     },
     { initialNumItems: ITEMS_PER_PAGE },
   )
+
+  const models = useModelsList()
+  const providers = useProvidersList()
+  const isInitialLoad = status === 'LoadingFirstPage' || !models || !providers
 
   return (
     <PageContainer>
@@ -70,7 +75,7 @@ export function ChangesGridPageClient({
           </div>
         </div>
 
-        <ChangesDataGrid changes={results || []} isLoading={status === 'LoadingFirstPage'} />
+        <ChangesDataGrid changes={results || []} isLoading={isInitialLoad} />
 
         {status === 'CanLoadMore' && (
           <Button onClick={() => loadMore(ITEMS_PER_PAGE)} variant="outline" className="w-full">

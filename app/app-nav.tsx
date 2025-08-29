@@ -31,6 +31,8 @@ export function AppNav() {
       </FeatureFlag>
 
       <NavLink href="/changes">Changes</NavLink>
+
+      <NavLink href="/changes/grid">Changes Grid</NavLink>
     </nav>
   )
 }

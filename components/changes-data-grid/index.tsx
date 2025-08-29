@@ -10,45 +10,11 @@ import type { Doc } from '@/convex/_generated/dataModel'
 import { DataGrid, DataGridContainer } from '@/components/ui/data-grid'
 import { DataGridTable } from '@/components/ui/data-grid-table'
 import { Skeleton } from '@/components/ui/skeleton'
-import { cn } from '@/lib/utils'
 
 import { CompactChangeRenderer } from './change-body-renderers'
+import { ModelNameCell, ProviderNameCell } from './entity-cells'
 
 type ChangeRow = Doc<'or_changes'>
-
-// TODO: Add real avatar component when available
-function EntityAvatar({ children, className }: { children: React.ReactNode; className?: string }) {
-  return (
-    <div
-      className={cn(
-        'flex h-6 w-6 items-center justify-center rounded-sm bg-muted/60 font-mono text-xs',
-        className,
-      )}
-    >
-      {typeof children === 'string' ? children.slice(0, 2).toUpperCase() : children}
-    </div>
-  )
-}
-
-// TODO: Enhance with proper model/provider data lookup
-function EntityNameCell({
-  displayName,
-  id,
-}: {
-  entityType: string
-  displayName: string
-  id?: string
-}) {
-  return (
-    <div className="flex min-w-0 items-center gap-2">
-      <EntityAvatar>{displayName}</EntityAvatar>
-      <div className="min-w-0 flex-1">
-        <div className="truncate font-mono text-sm">{displayName}</div>
-        {id && <div className="truncate font-mono text-xs text-muted-foreground">{id}</div>}
-      </div>
-    </div>
-  )
-}
 
 export function ChangesDataGrid({
   changes,
@@ -61,7 +27,7 @@ export function ChangesDataGrid({
     () => [
       {
         id: 'time',
-        header: 'TIME',
+        header: 'Time',
         accessorKey: 'crawl_id',
         cell: ({ getValue }) => {
           const timestamp = Number(getValue())
@@ -76,29 +42,16 @@ export function ChangesDataGrid({
         },
       },
 
-      // TODO: For endpoint changes, we need both model and provider columns
       {
         id: 'model',
-        header: 'MODEL',
+        header: 'Model',
         cell: ({ row }) => {
           const change = row.original
           if (change.entity_type === 'endpoint' && change.model_variant_slug) {
-            return (
-              <EntityNameCell
-                entityType="model"
-                displayName={change.model_variant_slug}
-                id={change.model_variant_slug}
-              />
-            )
+            return <ModelNameCell id={change.model_variant_slug} />
           }
           if (change.entity_type === 'model') {
-            return (
-              <EntityNameCell
-                entityType="model"
-                displayName={change.entity_display_name}
-                id={change.model_variant_slug}
-              />
-            )
+            return <ModelNameCell id={change.model_variant_slug ?? 'unknown'} />
           }
           return <div className="text-muted-foreground">—</div>
         },
@@ -110,20 +63,11 @@ export function ChangesDataGrid({
 
       {
         id: 'provider',
-        header: 'PROVIDER',
+        header: 'Provider',
         cell: ({ row }) => {
           const change = row.original
-          if (
-            (change.entity_type === 'endpoint' || change.entity_type === 'provider') &&
-            change.provider_id
-          ) {
-            return (
-              <EntityNameCell
-                entityType="provider"
-                displayName={change.provider_id}
-                id={change.provider_id}
-              />
-            )
+          if (change.entity_type === 'endpoint' || change.entity_type === 'provider') {
+            return <ProviderNameCell id={change.provider_slug ?? 'unknown'} />
           }
           return <div className="text-muted-foreground">—</div>
         },
@@ -135,7 +79,7 @@ export function ChangesDataGrid({
 
       {
         id: 'details',
-        header: 'CHANGE',
+        header: 'Change',
         cell: ({ row }) => {
           const change = row.original
 

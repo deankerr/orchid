@@ -1,8 +1,8 @@
 import { Suspense } from 'react'
 
-import { ChangesGridPageClient } from './changes-grid-page-client'
+import { ChangesGridPage } from '../../../components/changes-data-grid/changes-grid-page'
 
-export default async function ChangesGridPage({
+export default async function Page({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
@@ -11,7 +11,7 @@ export default async function ChangesGridPage({
 
   return (
     <Suspense>
-      <ChangesGridPageClient searchParams={params} />
+      <ChangesGridPage searchParams={params} />
     </Suspense>
   )
 }
