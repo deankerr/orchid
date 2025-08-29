@@ -1,14 +1,16 @@
 import React from 'react'
-import { ArrowRightIcon, MinusIcon, PlusIcon } from 'lucide-react'
+
+import { MinusIcon, PlusIcon } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import {
-  getChangedFieldNames,
-  getChangeShapeSummary,
   parseChangeBody,
   type ParsedChangeShape,
+  type UnknownShape,
+  type ValueChange,
 } from '@/lib/change-body-parser'
 import { formatNumber, pricingFormats } from '@/lib/formatters'
+import { calculatePercentageChange, cn } from '@/lib/utils'
 
 type PricingField = keyof typeof pricingFormats
 
@@ -26,9 +28,30 @@ const pricingFieldMapping: Record<string, PricingField> = {
 }
 
 /**
- * Helper function to render a badge with consistent styling and pricing-aware variants
+ * Component to render percentage change with appropriate styling
  */
-function renderBadge({
+function PercentageChange({ value }: { value: number | null }) {
+  if (value === null || !isFinite(value)) {
+    return null
+  }
+
+  return (
+    <span
+      className={cn(
+        'font-medium',
+        value > 0 ? 'text-green-400' : value < 0 ? 'text-red-400' : 'text-muted-foreground',
+      )}
+    >
+      {value > 0 ? '+' : ''}
+      {value.toFixed(1)}%
+    </span>
+  )
+}
+
+/**
+ * Badge component with consistent styling and pricing-aware variants
+ */
+function ChangeBadge({
   children,
   icon,
   shape,
@@ -43,7 +66,7 @@ function renderBadge({
   const variant = isPricing ? 'secondary' : 'outline'
 
   return (
-    <Badge variant={variant} className={`px-1 py-0 font-mono text-xs ${className}`}>
+    <Badge variant={variant} className={cn('px-1 py-0', className)}>
       {icon}
       {children}
     </Badge>
@@ -51,47 +74,13 @@ function renderBadge({
 }
 
 /**
- * Helper function to render limited lists with "more" indicators
+ * Component to render array changes showing the field name and added/removed values
  */
-function renderLimitedList<T>({
-  items,
-  limit,
-  renderItem,
-  moreLabel,
-  shape,
-}: {
-  items: T[]
-  limit: number
-  renderItem: (item: T, index: number) => React.ReactNode
-  moreLabel: string
-  shape?: ParsedChangeShape
-}) {
-  return (
-    <>
-      {items.slice(0, limit).map(renderItem)}
-      {items.length > limit &&
-        renderBadge({
-          children: `+${items.length - limit} ${moreLabel}`,
-          shape,
-        })}
-    </>
-  )
-}
-
-/**
- * Render array changes showing only the added/removed values
- * Key name and count are handled by the caller context
- */
-export function renderArrayChange(shape: ParsedChangeShape) {
+export function ArrayChange({ shape }: { shape: ParsedChangeShape }) {
   if (shape.type !== 'array_change') return null
 
   const adds = shape.changes.filter((c) => c.type === 'ADD')
   const removes = shape.changes.filter((c) => c.type === 'REMOVE')
-  const totalChanges = adds.length + removes.length
-
-  if (totalChanges === 0) {
-    return <div className="font-mono text-xs text-muted-foreground">No changes</div>
-  }
 
   const allChanges = [
     ...adds.map((c) => ({ type: 'ADD' as const, value: c.value })),
@@ -99,162 +88,105 @@ export function renderArrayChange(shape: ParsedChangeShape) {
   ]
 
   return (
-    <div className="flex flex-wrap gap-1">
-      {renderLimitedList({
-        items: allChanges,
-        limit: 4,
-        renderItem: (change, idx) => (
+    <div className="space-y-1">
+      <div className="text-muted-foreground">{shape.key}</div>
+      <div className="flex flex-wrap gap-1">
+        {allChanges.map((change, idx) => (
           <div key={`${change.type}-${shape.key}-${idx}`}>
-            {renderBadge({
-              children: change.value,
-              icon:
+            <ChangeBadge
+              shape={shape}
+              icon={
                 change.type === 'ADD' ? (
-                  <PlusIcon className="mr-1 h-3 w-3 text-success" />
+                  <PlusIcon className="mr-1 text-success" />
                 ) : (
-                  <MinusIcon className="mr-1 h-3 w-3 text-destructive" />
-                ),
-              shape,
-            })}
+                  <MinusIcon className="mr-1 text-destructive" />
+                )
+              }
+            >
+              {change.value}
+            </ChangeBadge>
           </div>
-        ),
-        moreLabel: 'more',
-        shape,
-      })}
+        ))}
+      </div>
     </div>
   )
 }
 
 /**
- * Render record changes by stacking individual leaf changes with their keys
- * Each nested change gets rendered using the appropriate leaf renderer
- */
-export function renderRecordChange(shape: ParsedChangeShape) {
-  if (shape.type !== 'record_change') return null
-
-  return (
-    <div className="grid grid-cols-[100px_1fr] gap-x-2 auto-rows-min">
-      {shape.changes.slice(0, 4).map((change, idx) => (
-        <React.Fragment key={`${shape.key}-${change.key}-${idx}`}>
-          <span className="font-mono text-xs text-muted-foreground whitespace-nowrap">
-            {change.key}:
-          </span>
-          <div className="min-w-0">
-            {change.shape.type === 'array_change' && renderArrayChange(change.shape)}
-            {change.shape.type === 'value_change' &&
-              renderValueChange(change.shape, { showValues: change.shape.changeType === 'UPDATE' })}
-            {change.shape.type === 'unknown_shape' && renderUnknownChange(change.shape)}
-          </div>
-        </React.Fragment>
-      ))}
-      {shape.changes.length > 4 && (
-        <div className="col-span-2 font-mono text-xs text-muted-foreground">
-          +{shape.changes.length - 4} more fields...
-        </div>
-      )}
-    </div>
-  )
-}
-
-/**
- * Render value changes - typically just show the change type
+ * Component to render value changes - typically just show the change type
  * For nested changes, might show old -> new values
  */
-export function renderValueChange(shape: ParsedChangeShape, options?: { showValues?: boolean }) {
-  if (shape.type !== 'value_change') return null
-
+export function ValueChange({ shape }: { shape: ValueChange }) {
   const { changeType, key } = shape
 
   // For ADD/REMOVE actions, show key and value to make it clear the entire key-value pair was added/removed
   if (changeType === 'ADD') {
     return (
-      <div className="flex items-center gap-1 font-mono text-xs">
-        <PlusIcon className="h-3 w-3 text-success flex-shrink-0" />
-        <span className="text-muted-foreground">{key}:</span>
-        <span>{formatValue(shape.newValue, shape)}</span>
+      <div className="flex items-center gap-2">
+        <div className="text-muted-foreground">
+          <span className="mr-1 text-success">+</span>
+          {key}
+        </div>
+        <div>{formatValue(shape.newValue, shape)}</div>
       </div>
     )
   }
 
   if (changeType === 'REMOVE') {
     return (
-      <div className="flex items-center gap-1 font-mono text-xs">
-        <MinusIcon className="h-3 w-3 text-destructive flex-shrink-0" />
-        <span className="text-muted-foreground">{key}:</span>
-        <span>{formatValue(shape.oldValue, shape)}</span>
+      <div className="flex items-center gap-2">
+        <div className="text-muted-foreground">
+          <span className="mr-1 text-destructive">+</span>
+          {key}
+        </div>
+        <div>{formatValue(shape.oldValue, shape)}</div>
       </div>
     )
   }
 
-  // For UPDATE actions, show before/after values or simple text
-  if (changeType === 'UPDATE') {
-    if (options?.showValues) {
-      return renderValueUpdateDetails(shape)
-    }
-
-    // Simple text for compact display
-    return <div className="font-mono text-xs text-muted-foreground">updated {key}</div>
-  }
-
-  // Fallback for other change types - this should not be reached
-  return <div className="font-mono text-xs text-muted-foreground">{key} changed</div>
+  return (
+    <div className="space-y-1">
+      <div className="text-muted-foreground">{key}</div>
+      <ValueUpdateDetails shape={shape} />
+    </div>
+  )
 }
 
 /**
- * Render value update details showing before -> after
+ * Component to render value update details showing before -> after
  * Handles basic string and numeric types
  */
-function renderValueUpdateDetails(shape: ParsedChangeShape) {
+function ValueUpdateDetails({ shape }: { shape: ParsedChangeShape }) {
   if (shape.type !== 'value_change') return null
 
   const { oldValue, newValue } = shape
-  const isPricing = shape.path.includes('pricing')
   const percentageChange = calculatePercentageChange(oldValue, newValue)
 
-  // For pricing changes, use a grid layout to align values
-  if (isPricing) {
+  // Check if values are numeric (numbers or numeric strings)
+  const isOldNumeric =
+    typeof oldValue === 'number' || (typeof oldValue === 'string' && !isNaN(parseFloat(oldValue)))
+  const isNewNumeric =
+    typeof newValue === 'number' || (typeof newValue === 'string' && !isNaN(parseFloat(newValue)))
+  const isNumeric = isOldNumeric || isNewNumeric
+
+  // For numeric changes, use a grid layout to align values
+  if (isNumeric) {
     return (
-      <div className="grid grid-cols-[1fr_auto_1fr_1fr] gap-1 items-center font-mono text-xs">
-        <span className="text-muted-foreground text-right">{formatValue(oldValue, shape)}</span>
-        <ArrowRightIcon className="h-3 w-3 text-muted-foreground" />
+      <div className="grid grid-cols-[1fr_auto_1fr_1fr] items-center gap-2">
+        <span className="text-right text-muted-foreground">{formatValue(oldValue, shape)}</span>
+        <div className="shrink-0 text-muted-foreground">{'->'}</div>
         <span className="font-medium text-foreground">{formatValue(newValue, shape)}</span>
-        <span className={`text-xs font-medium ${
-          percentageChange !== null && percentageChange > 0
-            ? 'text-green-600 dark:text-green-400'
-            : percentageChange !== null && percentageChange < 0
-              ? 'text-red-600 dark:text-red-400'
-              : 'text-muted-foreground'
-        }`}>
-          {percentageChange !== null && (
-            <>
-              {percentageChange > 0 ? '+' : ''}
-              {percentageChange.toFixed(1)}%
-            </>
-          )}
-        </span>
+        <PercentageChange value={percentageChange} />
       </div>
     )
   }
 
-  // Non-pricing changes use the original flexible layout
+  // Other changes
   return (
-    <div className="flex items-center gap-1 font-mono text-xs">
-      <span className="text-muted-foreground">{formatValue(oldValue, shape)}</span>
-      <ArrowRightIcon className="h-3 w-3 text-muted-foreground" />
-      <span className="text-foreground">{formatValue(newValue, shape)}</span>
-      {percentageChange !== null && (
-        <span
-          className={`ml-1 text-xs font-medium ${
-            percentageChange > 0
-              ? 'text-green-600 dark:text-green-400'
-              : percentageChange < 0
-                ? 'text-red-600 dark:text-red-400'
-                : 'text-muted-foreground'
-          }`}
-        >
-          {percentageChange > 0 ? '+' : ''}
-          {percentageChange.toFixed(1)}%
-        </span>
-      )}
+    <div className="flex items-center gap-1">
+      <div className="text-muted-foreground">{formatValue(oldValue, shape)}</div>
+      <div className="shrink-0 text-muted-foreground">{'->'}</div>
+      <div className="text-foreground">{formatValue(newValue, shape)}</div>
     </div>
   )
 }
@@ -298,11 +230,6 @@ function formatValue(value: unknown, shape?: ParsedChangeShape): string {
     return value
   }
 
-  // Handle booleans
-  if (typeof value === 'boolean') {
-    return String(value)
-  }
-
   // Handle objects/arrays (basic JSON representation)
   if (typeof value === 'object') {
     const jsonStr = JSON.stringify(value)
@@ -317,128 +244,56 @@ function formatValue(value: unknown, shape?: ParsedChangeShape): string {
 }
 
 /**
- * Calculate percentage change between two numeric values
- * Returns null if either value is not a number or if old value is 0
- * Handles both numbers and strings by parsing strings first
+ * Fallback component for unknown or unsupported change shapes
  */
-function calculatePercentageChange(oldValue: unknown, newValue: unknown): number | null {
-  // Try to parse values as numbers (handles both numbers and strings)
-  const oldNum =
-    typeof oldValue === 'number'
-      ? oldValue
-      : typeof oldValue === 'string'
-        ? parseFloat(oldValue)
-        : NaN
-  const newNum =
-    typeof newValue === 'number'
-      ? newValue
-      : typeof newValue === 'string'
-        ? parseFloat(newValue)
-        : NaN
-
-  // Check if both values are valid numbers
-  if (isNaN(oldNum) || isNaN(newNum)) {
-    return null
-  }
-
-  // Handle edge cases
-  if (oldNum === 0) {
-    // Can't calculate percentage change from 0, but we can show if new value is positive/negative
-    return newNum !== 0 ? (newNum > 0 ? Infinity : -Infinity) : null
-  }
-
-  if (oldNum === newNum) {
-    return 0
-  }
-
-  // Calculate percentage change: ((new - old) / old) * 100
-  const change = ((newNum - oldNum) / Math.abs(oldNum)) * 100
-
-  // Cap extremely large percentages for display purposes
-  if (Math.abs(change) > 9999) {
-    return change > 0 ? 9999 : -9999
-  }
-
-  return change
-}
-
-/**
- * Fallback renderer for unknown or unsupported change shapes
- */
-export function renderUnknownChange(shape: ParsedChangeShape) {
-  if (shape.type !== 'unknown_shape') return null
-
-  return <div className="font-mono text-xs text-muted-foreground">Unknown: {shape.reason}</div>
-}
-
-/**
- * Generic renderer that uses field names as badges
- * Good fallback for record changes or when specific rendering isn't needed
- */
-export function renderGenericFieldChange(shape: ParsedChangeShape) {
-  const summary = getChangeShapeSummary(shape)
-  const fieldNames = getChangedFieldNames(shape)
-
+export function UnknownChange({ shape }: { shape: UnknownShape }) {
   return (
     <div className="space-y-1">
-      <div className="font-mono text-xs text-muted-foreground">{summary}</div>
-      {fieldNames.length > 0 && (
-        <div className="flex flex-wrap gap-1">
-          {renderLimitedList({
-            items: fieldNames,
-            limit: 3,
-            renderItem: (key, idx) => (
-              <div key={`${key}-${idx}`}>{renderBadge({ children: key, shape })}</div>
-            ),
-            moreLabel: 'more',
-            shape,
-          })}
-        </div>
-      )}
+      <div className="text-muted-foreground">{shape.key}</div>
+      <div className="text-muted-foreground">Unknown: {shape.reason}</div>
     </div>
   )
 }
 
 /**
- * Main dispatcher for rendering change bodies based on their parsed shape
+ * Component to render record changes by stacking individual leaf changes with their keys
+ * Each nested change gets rendered using the appropriate leaf renderer
+ */
+export function RecordChange({ shape }: { shape: ParsedChangeShape }) {
+  if (shape.type !== 'record_change') return null
+
+  return (
+    <div className="space-y-2">
+      {shape.changes.map((change, idx) => (
+        <div key={`${shape.key}-${change.key}-${idx}`}>
+          {change.shape.type === 'array_change' && <ArrayChange shape={change.shape} />}
+          {change.shape.type === 'value_change' && <ValueChange shape={change.shape} />}
+          {change.shape.type === 'unknown_shape' && <UnknownChange shape={change.shape} />}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/**
+ * Main component for rendering change bodies based on their parsed shape
  * Returns rendered JSX for the change details
  */
-function renderChangeByShapeInternal(
-  changeBody: unknown,
-  options: { compact?: boolean } = {},
-): React.ReactNode {
+export function CompactChangeRenderer({ changeBody }: { changeBody: unknown }) {
   const parsed = parseChangeBody(changeBody)
 
   switch (parsed.type) {
     case 'array_change':
-      return renderArrayChange(parsed)
+      return <ArrayChange shape={parsed} />
 
     case 'value_change':
-      // In compact mode, show values for UPDATE actions
-      const showValues = options.compact ? parsed.changeType === 'UPDATE' : false
-      return renderValueChange(parsed, { showValues })
+      return <ValueChange shape={parsed} />
 
     case 'record_change':
-      return renderRecordChange(parsed)
+      return <RecordChange shape={parsed} />
 
     case 'unknown_shape':
-      return renderUnknownChange(parsed)
-
     default:
-      return renderGenericFieldChange(parsed)
+      return <UnknownChange shape={parsed} />
   }
-}
-
-/**
- * Main dispatcher for rendering change bodies
- */
-export function renderChangeByShape(changeBody: unknown): React.ReactNode {
-  return renderChangeByShapeInternal(changeBody)
-}
-
-/**
- * Compact dispatcher for use in data grids where space is limited
- */
-export function renderCompactChangeByShape(changeBody: unknown): React.ReactNode {
-  return renderChangeByShapeInternal(changeBody, { compact: true })
 }
