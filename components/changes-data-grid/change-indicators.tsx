@@ -24,7 +24,6 @@ export function RemoveIndicator({ className, ...props }: React.ComponentProps<'s
 export function CreateBadge({ className, ...props }: React.ComponentProps<typeof Badge>) {
   return (
     <Badge
-      size="lg"
       className={cn(
         'rounded-sm border-green-400/30 bg-green-900/30 text-sm text-green-400/90',
         className,
@@ -39,7 +38,6 @@ export function CreateBadge({ className, ...props }: React.ComponentProps<typeof
 export function DeleteBadge({ className, ...props }: React.ComponentProps<typeof Badge>) {
   return (
     <Badge
-      size="lg"
       className={cn(
         'rounded-sm border-red-400/30 bg-red-900/30 text-sm text-red-400/90 uppercase',
         className,

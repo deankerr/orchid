@@ -20,6 +20,8 @@ import {
 } from '@/components/ui/select'
 import { useModelsList, useProvidersList } from '@/hooks/api'
 
+import { FeatureFlag } from '../dev-utils/feature-flag'
+
 const ITEMS_PER_PAGE = 40
 const INITIAL_NUM_ITEMS = 20
 
@@ -92,16 +94,19 @@ export function ChangesDataGridPage() {
               </SelectContent>
             </Select>
           </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="force-loading"
-              checked={forceLoading}
-              onCheckedChange={(value) => setForceLoading(value === true)}
-            />
-            <Label htmlFor="force-loading" className="text-sm font-medium">
-              Force Loading
-            </Label>
-          </div>
+
+          <FeatureFlag flag="dev">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="force-loading"
+                checked={forceLoading}
+                onCheckedChange={(value) => setForceLoading(value === true)}
+              />
+              <Label htmlFor="force-loading" className="text-sm font-medium">
+                Force Loading
+              </Label>
+            </div>
+          </FeatureFlag>
         </div>
 
         <ChangesDataGrid changes={results || []} isLoading={isInitialLoad} />

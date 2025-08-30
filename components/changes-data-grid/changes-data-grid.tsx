@@ -94,7 +94,7 @@ export function ChangesDataGrid({
             return (
               <div className="flex items-center gap-3 font-mono uppercase *:min-w-24">
                 {change.change_action === 'create' ? <CreateBadge /> : <DeleteBadge />}
-                <Badge variant="outline" size="lg" className="text-sm uppercase">
+                <Badge variant="outline" className="text-sm uppercase">
                   {change.entity_type}
                 </Badge>
               </div>

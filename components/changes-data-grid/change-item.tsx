@@ -31,7 +31,11 @@ export function ChangeItem({
         </div>
 
         <div className="flex items-center">
-          <ChangeItemValue value={toValue} keyName={keyName} parentKeyName={parentKeyName} />
+          <ChangeItemValue
+            value={isCreate ? toValue : fromValue}
+            keyName={keyName}
+            parentKeyName={parentKeyName}
+          />
         </div>
       </div>
     )
