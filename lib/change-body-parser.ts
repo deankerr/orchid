@@ -1,3 +1,4 @@
+import * as R from 'remeda'
 import { z } from 'zod'
 
 // Raw change body schemas from the database
@@ -100,7 +101,7 @@ export function parseChangeBody(changeBody: unknown, path: string[] = []): Parse
       .filter((c) => c.type === 'ADD' || c.type === 'REMOVE')
       .map((c) => ({
         type: c.type as 'ADD' | 'REMOVE',
-        value: String(c.value || ''),
+        value: R.isObjectType(c.value) ? '{...}' : String(c.value),
       }))
 
     return {

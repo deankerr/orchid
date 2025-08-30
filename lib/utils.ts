@@ -1,3 +1,5 @@
+import * as R from 'remeda'
+
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 
@@ -15,6 +17,8 @@ export function formatIsoDate(date: number) {
  * Handles both numbers and strings by parsing strings first
  */
 export function calculatePercentageChange(from: unknown, to: unknown): number | null {
+  if (R.isBoolean(from) || R.isBoolean(to)) return null
+
   const fromValue = Number(from)
   const toValue = Number(to)
 

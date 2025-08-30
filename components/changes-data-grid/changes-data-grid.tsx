@@ -10,8 +10,13 @@ import type { Doc } from '@/convex/_generated/dataModel'
 import { DataGrid, DataGridContainer } from '@/components/ui/data-grid'
 import { DataGridTable } from '@/components/ui/data-grid-table'
 import { Skeleton } from '@/components/ui/skeleton'
+import { parseChangeBody } from '@/lib/change-body-parser'
 
-import { CompactChangeRenderer } from './change-body-renderers'
+import { Badge } from '../ui/badge'
+import { ArrayValuesUpdate } from './array-values-update'
+import { CreateBadge, DeleteBadge } from './change-indicators'
+import { ChangeItem } from './change-item'
+import { ChangeKey } from './change-key'
 import { ModelNameCell, ProviderNameCell } from './entity-cells'
 
 type ChangeRow = Doc<'or_changes'>
@@ -33,11 +38,13 @@ export function ChangesDataGrid({
           const timestamp = Number(getValue())
           const date = new Date(timestamp)
           return (
-            <div className="font-mono text-xs text-muted-foreground">{formatISO9075(date)}</div>
+            <div className="w-20 font-mono text-xs text-muted-foreground">
+              {formatISO9075(date)}
+            </div>
           )
         },
+        size: 96,
         meta: {
-          headerClassName: 'w-20',
           skeleton: <Skeleton className="h-5 w-20" />,
         },
       },
@@ -55,8 +62,8 @@ export function ChangesDataGrid({
           }
           return <div className="text-muted-foreground">—</div>
         },
+        size: 280,
         meta: {
-          headerClassName: 'min-w-48',
           skeleton: <Skeleton className="h-10 w-full" />,
         },
       },
@@ -71,8 +78,8 @@ export function ChangesDataGrid({
           }
           return <div className="text-muted-foreground">—</div>
         },
+        size: 180,
         meta: {
-          headerClassName: 'min-w-48',
           skeleton: <Skeleton className="h-10 w-full" />,
         },
       },
@@ -83,31 +90,62 @@ export function ChangesDataGrid({
         cell: ({ row }) => {
           const change = row.original
 
-          if (change.change_action === 'create') {
+          if (change.change_action === 'create' || change.change_action === 'delete') {
             return (
-              <div className="font-mono text-sm text-success">{change.entity_type} created</div>
-            )
-          }
-
-          if (change.change_action === 'delete') {
-            return (
-              <div className="font-mono text-sm text-destructive">{change.entity_type} deleted</div>
+              <div className="flex items-center gap-3 font-mono uppercase *:min-w-24">
+                {change.change_action === 'create' ? <CreateBadge /> : <DeleteBadge />}
+                <Badge variant="outline" size="lg" className="text-sm uppercase">
+                  {change.entity_type}
+                </Badge>
+              </div>
             )
           }
 
           if (change.change_action === 'update') {
+            const parsed = parseChangeBody(change.change_body)
+
             return (
-              <div className="space-y-1 font-mono">
-                <CompactChangeRenderer changeBody={change.change_body} />
+              <div className="divide-y divide-border/30 font-mono [&>div]:py-2">
+                {parsed.type === 'array_change' ? (
+                  <ArrayValuesUpdate keyName={parsed.key} changes={parsed.changes} />
+                ) : parsed.type === 'value_change' ? (
+                  <ChangeItem
+                    keyName={parsed.key}
+                    fromValue={parsed.oldValue}
+                    toValue={parsed.newValue}
+                  />
+                ) : parsed.type === 'record_change' ? (
+                  parsed.changes.map((c) =>
+                    c.shape.type === 'value_change' ? (
+                      <ChangeItem
+                        key={c.key}
+                        parentKeyName={parsed.key}
+                        keyName={c.key}
+                        fromValue={c.shape.oldValue}
+                        toValue={c.shape.newValue}
+                      />
+                    ) : c.shape.type === 'array_change' ? (
+                      <ArrayValuesUpdate key={c.key} keyName={c.key} changes={c.shape.changes} />
+                    ) : (
+                      <div key={c.key} className="flex items-center gap-3 text-muted-foreground">
+                        <ChangeKey>
+                          {parsed.key}.{c.key}
+                        </ChangeKey>{' '}
+                        {`{...}`}
+                      </div>
+                    ),
+                  )
+                ) : (
+                  <div className="text-muted-foreground">{parsed.key}</div>
+                )}
               </div>
             )
           }
 
           return <div className="text-muted-foreground">—</div>
         },
-        size: 99999, // Allow this column to grow
+        size: 370,
         meta: {
-          headerClassName: 'min-w-48',
           skeleton: <Skeleton className="h-5 w-32" />,
         },
       },
@@ -134,7 +172,7 @@ export function ChangesDataGrid({
           rowBorder: true,
           headerBackground: true,
           headerBorder: true,
-          width: 'auto', // Allow table to size columns naturally
+          // width: 'auto', // Allow table to size columns naturally
         }}
       >
         <DataGridTable />

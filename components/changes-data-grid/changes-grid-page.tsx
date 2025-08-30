@@ -6,7 +6,7 @@ import { usePaginatedQuery } from 'convex/react'
 
 import { api } from '@/convex/_generated/api'
 
-import { ChangesDataGrid } from '@/components/changes-data-grid'
+import { ChangesDataGrid } from '@/components/changes-data-grid/changes-data-grid'
 import { PageContainer, PageHeader, PageTitle } from '@/components/shared/page-container'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -22,6 +22,7 @@ import { useModelsList, useProvidersList } from '@/hooks/api'
 const ITEMS_PER_PAGE = 40
 
 type EntityType = 'all' | 'model' | 'endpoint' | 'provider'
+type ChangeAction = 'all' | 'create' | 'update' | 'delete'
 
 export function ChangesGridPage({
   searchParams: _searchParams,
@@ -29,11 +30,13 @@ export function ChangesGridPage({
   searchParams: { [key: string]: string | string[] | undefined }
 }) {
   const [entityType, setEntityType] = useState<EntityType>('all') // Show all changes to see record changes
+  const [changeAction, setChangeAction] = useState<ChangeAction>('all')
 
   const { results, status, loadMore } = usePaginatedQuery(
     api.views.changes.list,
     {
       entity_type: entityType === 'all' ? undefined : entityType,
+      change_action: changeAction === 'all' ? undefined : changeAction,
       include_hidden: false, // End-users always see only displayable changes
     },
     { initialNumItems: ITEMS_PER_PAGE },
@@ -70,6 +73,25 @@ export function ChangesGridPage({
                 <SelectItem value="model">Models</SelectItem>
                 <SelectItem value="endpoint">Endpoints</SelectItem>
                 <SelectItem value="provider">Providers</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor="change-action" className="text-sm font-medium">
+              Filter by Action
+            </Label>
+            <Select
+              value={changeAction}
+              onValueChange={(value) => setChangeAction(value as ChangeAction)}
+            >
+              <SelectTrigger id="change-action" className="w-48">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="create">Create</SelectItem>
+                <SelectItem value="update">Update</SelectItem>
+                <SelectItem value="delete">Delete</SelectItem>
               </SelectContent>
             </Select>
           </div>
