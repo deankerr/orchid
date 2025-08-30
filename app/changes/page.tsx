@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-import { ChangesListPage } from './changes-list-page'
+import { ChangesDataGridPage } from '@/components/changes-data-grid/changes-data-grid-page'
 
 export const metadata: Metadata = {
   title: 'Changes - ORCHID',
@@ -8,5 +8,5 @@ export const metadata: Metadata = {
 }
 
 export default function Page() {
-  return <ChangesListPage />
+  return <ChangesDataGridPage />
 }

@@ -1,3 +1,5 @@
+import * as R from 'remeda'
+
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 
@@ -9,17 +11,34 @@ export function formatIsoDate(date: number) {
   return new Date(date).toISOString().split('T')[0]
 }
 
-export function formatSnapshotAtTime(timestamp: number | string) {
-  return new Date(timestamp).toISOString().slice(2, 13).replace('T', ' ')
-}
+/**
+ * Calculate percentage change between two numeric values
+ * Returns null if either value is not a number or if old value is 0
+ * Handles both numbers and strings by parsing strings first
+ */
+export function calculatePercentageChange(from: unknown, to: unknown): number | null {
+  if (R.isBoolean(from) || R.isBoolean(to)) return null
 
-export function formatTokenPriceToM(value?: number) {
-  if (value === undefined) return ' - '
-  return `${(value * 1_000_000).toFixed(2)}`
-}
+  const fromValue = Number(from)
+  const toValue = Number(to)
 
-export function formatTokenPriceToK(value = 0) {
-  return `$${(value * 1_000).toFixed(2)} / KTok`
+  // Check if both values are valid numbers
+  if (isNaN(fromValue) || isNaN(toValue)) {
+    return null
+  }
+
+  // Handle edge cases
+  if (fromValue === 0) {
+    // Can't calculate percentage change from 0, but we can show if new value is positive/negative
+    return toValue !== 0 ? (toValue > 0 ? Infinity : -Infinity) : null
+  }
+
+  if (fromValue === toValue) {
+    return 0
+  }
+
+  // Calculate percentage change: ((new - old) / old) * 100
+  return ((toValue - fromValue) / Math.abs(fromValue)) * 100
 }
 
 export function formatTimestampToYMDHM(timestamp: number) {
