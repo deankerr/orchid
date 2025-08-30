@@ -7,12 +7,12 @@ import { formatISO9075 } from 'date-fns'
 
 import type { Doc } from '@/convex/_generated/dataModel'
 
+import { Badge } from '@/components/ui/badge'
 import { DataGrid, DataGridContainer } from '@/components/ui/data-grid'
 import { DataGridTable } from '@/components/ui/data-grid-table'
 import { Skeleton } from '@/components/ui/skeleton'
 import { parseChangeBody } from '@/lib/change-body-parser'
 
-import { Badge } from '../ui/badge'
 import { ArrayValuesUpdate } from './array-values-update'
 import { CreateBadge, DeleteBadge } from './change-indicators'
 import { ChangeItem } from './change-item'
@@ -45,7 +45,7 @@ export function ChangesDataGrid({
         },
         size: 96,
         meta: {
-          skeleton: <Skeleton className="h-5 w-20" />,
+          skeleton: <Skeleton className="h-10 w-20" />,
         },
       },
 
@@ -62,7 +62,7 @@ export function ChangesDataGrid({
           }
           return <div className="text-muted-foreground">—</div>
         },
-        size: 280,
+        size: 260,
         meta: {
           skeleton: <Skeleton className="h-10 w-full" />,
         },
@@ -146,7 +146,7 @@ export function ChangesDataGrid({
         },
         size: 370,
         meta: {
-          skeleton: <Skeleton className="h-5 w-32" />,
+          skeleton: <Skeleton className="h-10 w-full" />,
         },
       },
     ],
@@ -172,7 +172,6 @@ export function ChangesDataGrid({
           rowBorder: true,
           headerBackground: true,
           headerBorder: true,
-          // width: 'auto', // Allow table to size columns naturally
         }}
       >
         <DataGridTable />

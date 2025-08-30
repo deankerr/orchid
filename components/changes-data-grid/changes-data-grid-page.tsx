@@ -9,6 +9,7 @@ import { api } from '@/convex/_generated/api'
 import { ChangesDataGrid } from '@/components/changes-data-grid/changes-data-grid'
 import { PageContainer, PageHeader, PageTitle } from '@/components/shared/page-container'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -20,17 +21,15 @@ import {
 import { useModelsList, useProvidersList } from '@/hooks/api'
 
 const ITEMS_PER_PAGE = 40
+const INITIAL_NUM_ITEMS = 20
 
 type EntityType = 'all' | 'model' | 'endpoint' | 'provider'
 type ChangeAction = 'all' | 'create' | 'update' | 'delete'
 
-export function ChangesGridPage({
-  searchParams: _searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined }
-}) {
+export function ChangesDataGridPage() {
   const [entityType, setEntityType] = useState<EntityType>('all') // Show all changes to see record changes
   const [changeAction, setChangeAction] = useState<ChangeAction>('all')
+  const [forceLoading, setForceLoading] = useState(false)
 
   const { results, status, loadMore } = usePaginatedQuery(
     api.views.changes.list,
@@ -39,20 +38,18 @@ export function ChangesGridPage({
       change_action: changeAction === 'all' ? undefined : changeAction,
       include_hidden: false, // End-users always see only displayable changes
     },
-    { initialNumItems: ITEMS_PER_PAGE },
+    { initialNumItems: INITIAL_NUM_ITEMS },
   )
 
   const models = useModelsList()
   const providers = useProvidersList()
-  const isInitialLoad = status === 'LoadingFirstPage' || !models || !providers
+  const isInitialLoad = status === 'LoadingFirstPage' || !models || !providers || forceLoading
 
   return (
     <PageContainer>
       <PageHeader>
-        <PageTitle>Changes Grid (Experimental)</PageTitle>
-        <p className="text-muted-foreground">
-          Experimental data grid interface for viewing changes between OpenRouter snapshots
-        </p>
+        <PageTitle>Changes</PageTitle>
+        <p className="text-muted-foreground">View changes detected between OpenRouter snapshots</p>
       </PageHeader>
 
       <div className="space-y-4">
@@ -94,6 +91,16 @@ export function ChangesGridPage({
                 <SelectItem value="delete">Delete</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="force-loading"
+              checked={forceLoading}
+              onCheckedChange={(value) => setForceLoading(value === true)}
+            />
+            <Label htmlFor="force-loading" className="text-sm font-medium">
+              Force Loading
+            </Label>
           </div>
         </div>
 
