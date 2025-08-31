@@ -1,5 +1,28 @@
 # Frontend Development Guide
 
+## Example
+
+```tsx
+import { cn } from '@/lib/utils'
+
+export function LabeledBox({
+  label,
+  className,
+  children,
+  ...props
+}: { label?: string } & React.ComponentProps<'div'>) {
+  return (
+    <div
+      className={cn('bg-card text-card-foreground space-y-2 rounded-sm border p-2', className)}
+      {...props}
+    >
+      {label && <div className="text-muted-foreground font-mono text-sm uppercase">{label}</div>}
+      {children}
+    </div>
+  )
+}
+```
+
 ## Target Audience
 
 ORCHID serves highly technical users who work with OpenRouter and LLMs professionally:
@@ -18,12 +41,12 @@ ORCHID serves highly technical users who work with OpenRouter and LLMs professio
 - **Typography**: Monospace fonts for technical content
 - **Color palette**: Monochromatic base with strategic color usage
 - **Spacing**: Minimal padding, clean layouts
-- **Geometry**: Sharp corners, avoid rounded elements
+- **Geometry**: Sharp corners or `rounded-sm` for most elements
 - **Dark**: We only use a "dark mode" theme
 
 ### Color Strategy
 
-- **Text**: Primary place for color (status indicators, variant labels)
+- **Badges/Icons**: Primary place for color (status indicators, variant labels)
 - **Branding**: Model and provider logos provide natural color accents
 - **Backgrounds**: Minimal use of background colors
 - **Effects**: Avoid shadows and other visual effects
@@ -47,13 +70,10 @@ ORCHID serves highly technical users who work with OpenRouter and LLMs professio
 - Values like `font-mono` are defined at the root level of components where in use, allowing it to cascade down into sub-components like Buttons, Badges, etc. Do not add these classes to every internal element.
 - `border-border` is default, no need to specify anywhere
 - Badges: `text-xs` is the default size
-- Follow established patterns across the application
 
 ### Structure
 
 - Use a shadcn/ui-inspired structure for components, a single file which exports composable component parts, allowing for dynamic customization.
-- Use React.ComponentProps to allow for customization of the outer element, be it a HTML element or another component.
-- Destructure and merge the className prop using the `cn` helper.
 - Never use default exports.
 
 ### Component File Structure/Locations

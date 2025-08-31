@@ -7,7 +7,7 @@ import { Badge } from '../ui/badge'
 
 export function AddIndicator({ className, ...props }: React.ComponentProps<'span'>) {
   return (
-    <span className={cn('text-success', className)} {...props}>
+    <span className={cn('text-positive-outline', className)} {...props}>
       +
     </span>
   )
@@ -15,7 +15,7 @@ export function AddIndicator({ className, ...props }: React.ComponentProps<'span
 
 export function RemoveIndicator({ className, ...props }: React.ComponentProps<'span'>) {
   return (
-    <span className={cn('text-destructive', className)} {...props}>
+    <span className={cn('text-negative-outline', className)} {...props}>
       -
     </span>
   )
@@ -25,7 +25,7 @@ export function CreateBadge({ className, ...props }: React.ComponentProps<typeof
   return (
     <Badge
       className={cn(
-        'rounded-sm border-green-400/30 bg-green-900/30 text-sm text-green-400/90',
+        'border-positive-surface-border bg-positive-surface text-sm text-positive-surface-foreground',
         className,
       )}
       {...props}
@@ -39,12 +39,41 @@ export function DeleteBadge({ className, ...props }: React.ComponentProps<typeof
   return (
     <Badge
       className={cn(
-        'rounded-sm border-red-400/30 bg-red-900/30 text-sm text-red-400/90 uppercase',
+        'border-negative-surface-border bg-negative-surface text-sm text-negative-surface-foreground',
         className,
       )}
       {...props}
     >
       DELETE
+    </Badge>
+  )
+}
+
+export function PercentageBadge({
+  value,
+  className,
+  ...props
+}: { value: number | null } & React.ComponentProps<typeof Badge>) {
+  if (value === null || !isFinite(value)) {
+    return null
+  }
+
+  const type = value > 0 ? 'positive' : value < 0 ? 'negative' : 'neutral'
+
+  return (
+    <Badge
+      className={cn(
+        'text-sm',
+        type === 'positive' && 'bg-positive-soft text-positive-soft-foreground',
+        type === 'negative' && 'bg-negative-soft text-negative-soft-foreground',
+
+        className,
+      )}
+      variant={type === 'neutral' ? 'outline' : 'default'}
+      {...props}
+    >
+      {value > 0 ? '+' : ''}
+      {value.toFixed(1)}%
     </Badge>
   )
 }
