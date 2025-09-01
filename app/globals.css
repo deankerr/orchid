@@ -44,10 +44,29 @@
   --radius-xl: calc(var(--radius) + 4px);
 
   --color-warning: var(--color-yellow-500);
-  --color-success: var(--color-emerald-500);
   --color-info: var(--color-blue-500);
   --color-alert: var(--alert);
   --color-alert-foreground: var(--alert-foreground);
+
+  --color-positive: var(--positive);
+  --color-positive-foreground: var(--positive-foreground);
+  --color-positive-soft: var(--positive-soft);
+  --color-positive-soft-foreground: var(--positive-soft-foreground);
+  --color-positive-surface: var(--positive-surface);
+  --color-positive-surface-foreground: var(--positive-surface-foreground);
+  --color-positive-surface-border: var(--positive-surface-border);
+  --color-positive-outline: var(--positive-outline);
+  --color-positive-outline-border: var(--positive-outline-border);
+
+  --color-negative: var(--negative);
+  --color-negative-foreground: var(--negative-foreground);
+  --color-negative-soft: var(--negative-soft);
+  --color-negative-soft-foreground: var(--negative-soft-foreground);
+  --color-negative-surface: var(--negative-surface);
+  --color-negative-surface-foreground: var(--negative-surface-foreground);
+  --color-negative-surface-border: var(--negative-surface-border);
+  --color-negative-outline: var(--negative-outline);
+  --color-negative-outline-border: var(--negative-outline-border);
 }
 
 :root {
@@ -87,6 +106,26 @@
 
   --alert: oklch(0.56 0.12 49);
   --alert-foreground: oklch(0.985 0 0);
+
+  --positive: var(--color-green-600);
+  --positive-foreground: var(--color-green-50);
+  --positive-soft: var(--color-green-950);
+  --positive-soft-foreground: var(--color-green-400);
+  --positive-surface: oklch(26.6% 0.065 152.934 / 30%); /* 950 */
+  --positive-surface-foreground: var(--color-green-400);
+  --positive-surface-border: oklch(79.2% 0.209 151.711 / 30%); /* 400 */
+  --positive-outline: var(--color-green-400);
+  --positive-outline-border: var(--color-green-400);
+
+  --negative: var(--color-red-600);
+  --negative-foreground: var(--color-red-50);
+  --negative-soft: var(--color-red-950);
+  --negative-soft-foreground: var(--color-red-400);
+  --negative-surface: oklch(25.8% 0.092 26.042 / 30%); /* 950 */
+  --negative-surface-foreground: var(--color-red-400);
+  --negative-surface-border: oklch(70.4% 0.191 22.216 / 30%); /* 400 */
+  --negative-outline: var(--color-red-400);
+  --negative-outline-border: var(--color-red-400);
 }
 
 @layer base {

@@ -1,87 +1,80 @@
 import * as R from 'remeda'
 
-import { calculatePercentageChange } from '@/lib/utils'
+import { formatNumber, pricingFormats } from '@/lib/formatters'
 
-import { BasicValueUpdate } from './basic-value-update'
-import { BlockValueUpdate } from './block-value-update'
-import { AddIndicator, ChangeItemValue, RemoveIndicator } from './change-indicators'
-import { ChangeKey } from './change-key'
-import { NumericValueUpdate } from './numeric-value-update'
+import { Badge } from '../ui/badge'
 
-export function ChangeItem({
+// Field mapping from raw pricing field names to formatted field names
+type PricingField = keyof typeof pricingFormats
+
+const pricingFieldMapping: Record<string, PricingField> = {
+  prompt: 'input',
+  completion: 'output',
+  image: 'image_input',
+  internal_reasoning: 'reasoning_output',
+  request: 'per_request',
+  cache_read: 'cache_read',
+  cache_write: 'cache_write',
+  web_search: 'web_search',
+  discount: 'discount',
+}
+
+export function ChangeItemValue({
+  value,
   keyName,
   parentKeyName,
-  fromValue,
-  toValue,
 }: {
-  keyName: string
+  value: unknown
+  keyName?: string
   parentKeyName?: string
-  fromValue: unknown
-  toValue: unknown
 }) {
-  const isCreate = !R.isDefined(fromValue) && R.isDefined(toValue)
-  const isDelete = R.isDefined(fromValue) && !R.isDefined(toValue)
+  if (parentKeyName === 'pricing' && R.isString(value) && keyName) {
+    const numericValue = parseFloat(value)
 
-  if (isCreate || isDelete) {
+    if (!isNaN(numericValue)) {
+      const pricingField = (pricingFieldMapping[keyName] as PricingField) || 'input'
+      const format = pricingFormats[pricingField]
+      const transformedValue = format.transform(numericValue)
+      const formattedValue = formatNumber(transformedValue, format.digits)
+      return `$${formattedValue}${format.unit}`
+    }
+  }
+
+  if (R.isNumber(value)) {
+    return value.toLocaleString()
+  }
+
+  if (value === '') {
     return (
-      <div className="grid grid-cols-[144px_1fr] items-center gap-4">
-        <div className="flex items-center gap-2">
-          {isCreate ? <AddIndicator className="-ml-4" /> : <RemoveIndicator className="-ml-4" />}
-          <ChangeKey>{keyName}</ChangeKey>
-        </div>
-
-        <div className="flex items-center">
-          <ChangeItemValue
-            value={isCreate ? toValue : fromValue}
-            keyName={keyName}
-            parentKeyName={parentKeyName}
-          />
-        </div>
-      </div>
+      <Badge variant="outline" className="text-muted-foreground opacity-50">
+        empty
+      </Badge>
     )
   }
 
-  const percentageChange = calculatePercentageChange(fromValue, toValue)
-  const isBlockChange = isTextValue(fromValue) || isTextValue(toValue)
-  const isNumericChange = !isBlockChange && (isNumericish(fromValue) || isNumericish(toValue))
-
-  if (isBlockChange) {
+  if (value === true) {
     return (
-      <BlockValueUpdate
-        keyName={keyName}
-        fromValue={fromValue}
-        toValue={toValue}
-        parentKeyName={parentKeyName}
-      />
+      <Badge variant="outline" className="text-muted-foreground">
+        true
+      </Badge>
     )
   }
 
-  if (isNumericChange) {
+  if (value === false) {
     return (
-      <NumericValueUpdate
-        keyName={keyName}
-        fromValue={fromValue}
-        toValue={toValue}
-        percentageChange={percentageChange}
-        parentKeyName={parentKeyName}
-      />
+      <Badge variant="outline" className="text-muted-foreground">
+        false
+      </Badge>
     )
   }
 
-  return (
-    <BasicValueUpdate
-      keyName={keyName}
-      fromValue={fromValue}
-      toValue={toValue}
-      parentKeyName={parentKeyName}
-    />
-  )
-}
+  if (value === undefined) {
+    return (
+      <Badge variant="outline" className="border-dashed text-muted-foreground">
+        undefined
+      </Badge>
+    )
+  }
 
-function isTextValue(value: unknown) {
-  return R.isString(value) && (value.includes(' ') || value.length > 20)
-}
-
-function isNumericish(value: unknown) {
-  return R.isNumber(value) || (R.isString(value) && !isNaN(Number(value)))
+  return String(value)
 }

@@ -1,13 +1,20 @@
-import * as R from 'remeda'
+import { ArrowDownIcon, ArrowRightIcon, MoveRightIcon } from 'lucide-react'
 
-import { formatNumber, pricingFormats } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 
 import { Badge } from '../ui/badge'
 
+export function RightArrow({ className, ...props }: React.ComponentProps<typeof ArrowRightIcon>) {
+  return <MoveRightIcon className={cn('size-6 text-muted-foreground/80', className)} {...props} />
+}
+
+export function DownArrow({ className, ...props }: React.ComponentProps<typeof ArrowDownIcon>) {
+  return <ArrowDownIcon className={cn('size-4 text-muted-foreground', className)} {...props} />
+}
+
 export function AddIndicator({ className, ...props }: React.ComponentProps<'span'>) {
   return (
-    <span className={cn('text-success', className)} {...props}>
+    <span className={cn('text-positive-outline', className)} {...props}>
       +
     </span>
   )
@@ -15,7 +22,7 @@ export function AddIndicator({ className, ...props }: React.ComponentProps<'span
 
 export function RemoveIndicator({ className, ...props }: React.ComponentProps<'span'>) {
   return (
-    <span className={cn('text-destructive', className)} {...props}>
+    <span className={cn('text-negative-outline', className)} {...props}>
       -
     </span>
   )
@@ -25,12 +32,12 @@ export function CreateBadge({ className, ...props }: React.ComponentProps<typeof
   return (
     <Badge
       className={cn(
-        'rounded-sm border-green-400/30 bg-green-900/30 text-sm text-green-400/90',
+        'border-positive-surface-border bg-positive-surface text-positive-surface-foreground',
         className,
       )}
       {...props}
     >
-      CREATE
+      CREATED
     </Badge>
   )
 }
@@ -39,79 +46,49 @@ export function DeleteBadge({ className, ...props }: React.ComponentProps<typeof
   return (
     <Badge
       className={cn(
-        'rounded-sm border-red-400/30 bg-red-900/30 text-sm text-red-400/90 uppercase',
+        'border-negative-surface-border bg-negative-surface text-negative-surface-foreground',
         className,
       )}
       {...props}
     >
-      DELETE
+      DELETED
     </Badge>
   )
 }
 
-// Field mapping from raw pricing field names to formatted field names
-type PricingField = keyof typeof pricingFormats
-
-const pricingFieldMapping: Record<string, PricingField> = {
-  prompt: 'input',
-  completion: 'output',
-  image: 'image_input',
-  internal_reasoning: 'reasoning_output',
-  request: 'per_request',
-  cache_read: 'cache_read',
-  cache_write: 'cache_write',
-  web_search: 'web_search',
-  discount: 'discount',
-}
-
-export function ChangeItemValue({
+export function PercentageBadge({
   value,
-  keyName,
-  parentKeyName,
-}: {
-  value: unknown
-  keyName?: string
-  parentKeyName?: string
-}) {
-  if (parentKeyName === 'pricing' && R.isString(value) && keyName) {
-    const numericValue = parseFloat(value)
-
-    if (!isNaN(numericValue)) {
-      const pricingField = (pricingFieldMapping[keyName] as PricingField) || 'input'
-      const format = pricingFormats[pricingField]
-      const transformedValue = format.transform(numericValue)
-      const formattedValue = formatNumber(transformedValue, format.digits)
-      return `$${formattedValue}${format.unit}`
-    }
+  invert,
+  className,
+  ...props
+}: { value: number | null; invert?: boolean } & React.ComponentProps<typeof Badge>) {
+  if (value === null || !isFinite(value)) {
+    return <span />
   }
 
-  if (R.isNumber(value)) {
-    return value.toLocaleString()
-  }
+  const valueType = value > 0 ? 'positive' : value < 0 ? 'negative' : 'neutral'
+  const type = invert
+    ? valueType === 'positive'
+      ? 'negative'
+      : valueType === 'negative'
+        ? 'positive'
+        : 'neutral'
+    : valueType
 
-  if (value === '') {
-    return (
-      <Badge variant="outline" className="text-current">
-        empty
-      </Badge>
-    )
-  }
-
-  if (value === true) {
-    return (
-      <Badge variant="outline" className="text-current">
-        true
-      </Badge>
-    )
-  }
-
-  if (value === false) {
-    return (
-      <Badge variant="outline" className="text-current">
-        false
-      </Badge>
-    )
-  }
-
-  return String(value)
+  return (
+    <Badge
+      className={cn(
+        type === 'positive' && 'bg-positive-soft text-positive-soft-foreground',
+        type === 'negative' && 'bg-negative-soft text-negative-soft-foreground',
+        'gap-0.5 px-1.5',
+        className,
+      )}
+      variant={type === 'neutral' ? 'outline' : 'default'}
+      {...props}
+    >
+      {value > 0 && <span className="-mt-px scale-120">+</span>}
+      {value < 0 && <span className="-mt-px scale-120">-</span>}
+      {Math.abs(value).toFixed(1)}%
+    </Badge>
+  )
 }

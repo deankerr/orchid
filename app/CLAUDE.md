@@ -1,5 +1,28 @@
 # Frontend Development Guide
 
+## Example
+
+```tsx
+import { cn } from '@/lib/utils'
+
+export function LabeledBox({
+  label,
+  className,
+  children,
+  ...props
+}: { label?: string } & React.ComponentProps<'div'>) {
+  return (
+    <div
+      className={cn('bg-card text-card-foreground space-y-2 rounded-sm border p-2', className)}
+      {...props}
+    >
+      {label && <div className="text-muted-foreground font-mono text-sm uppercase">{label}</div>}
+      {children}
+    </div>
+  )
+}
+```
+
 ## Target Audience
 
 ORCHID serves highly technical users who work with OpenRouter and LLMs professionally:
