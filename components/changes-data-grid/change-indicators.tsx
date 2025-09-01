@@ -1,9 +1,16 @@
-import * as R from 'remeda'
+import { ArrowDownIcon, ArrowRightIcon, MoveRightIcon } from 'lucide-react'
 
-import { formatNumber, pricingFormats } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 
 import { Badge } from '../ui/badge'
+
+export function RightArrow({ className, ...props }: React.ComponentProps<typeof ArrowRightIcon>) {
+  return <MoveRightIcon className={cn('size-6 text-muted-foreground/80', className)} {...props} />
+}
+
+export function DownArrow({ className, ...props }: React.ComponentProps<typeof ArrowDownIcon>) {
+  return <ArrowDownIcon className={cn('size-4 text-muted-foreground', className)} {...props} />
+}
 
 export function AddIndicator({ className, ...props }: React.ComponentProps<'span'>) {
   return (
@@ -25,12 +32,12 @@ export function CreateBadge({ className, ...props }: React.ComponentProps<typeof
   return (
     <Badge
       className={cn(
-        'border-positive-surface-border bg-positive-surface text-sm text-positive-surface-foreground',
+        'border-positive-surface-border bg-positive-surface text-positive-surface-foreground',
         className,
       )}
       {...props}
     >
-      CREATE
+      CREATED
     </Badge>
   )
 }
@@ -39,108 +46,49 @@ export function DeleteBadge({ className, ...props }: React.ComponentProps<typeof
   return (
     <Badge
       className={cn(
-        'border-negative-surface-border bg-negative-surface text-sm text-negative-surface-foreground',
+        'border-negative-surface-border bg-negative-surface text-negative-surface-foreground',
         className,
       )}
       {...props}
     >
-      DELETE
+      DELETED
     </Badge>
   )
 }
 
 export function PercentageBadge({
   value,
+  invert,
   className,
   ...props
-}: { value: number | null } & React.ComponentProps<typeof Badge>) {
+}: { value: number | null; invert?: boolean } & React.ComponentProps<typeof Badge>) {
   if (value === null || !isFinite(value)) {
-    return null
+    return <span />
   }
 
-  const type = value > 0 ? 'positive' : value < 0 ? 'negative' : 'neutral'
+  const valueType = value > 0 ? 'positive' : value < 0 ? 'negative' : 'neutral'
+  const type = invert
+    ? valueType === 'positive'
+      ? 'negative'
+      : valueType === 'negative'
+        ? 'positive'
+        : 'neutral'
+    : valueType
 
   return (
     <Badge
       className={cn(
-        'text-sm',
         type === 'positive' && 'bg-positive-soft text-positive-soft-foreground',
         type === 'negative' && 'bg-negative-soft text-negative-soft-foreground',
-
+        'gap-0.5 px-1.5',
         className,
       )}
       variant={type === 'neutral' ? 'outline' : 'default'}
       {...props}
     >
-      {value > 0 ? '+' : ''}
-      {value.toFixed(1)}%
+      {value > 0 && <span className="-mt-px scale-120">+</span>}
+      {value < 0 && <span className="-mt-px scale-120">-</span>}
+      {Math.abs(value).toFixed(1)}%
     </Badge>
   )
-}
-
-// Field mapping from raw pricing field names to formatted field names
-type PricingField = keyof typeof pricingFormats
-
-const pricingFieldMapping: Record<string, PricingField> = {
-  prompt: 'input',
-  completion: 'output',
-  image: 'image_input',
-  internal_reasoning: 'reasoning_output',
-  request: 'per_request',
-  cache_read: 'cache_read',
-  cache_write: 'cache_write',
-  web_search: 'web_search',
-  discount: 'discount',
-}
-
-export function ChangeItemValue({
-  value,
-  keyName,
-  parentKeyName,
-}: {
-  value: unknown
-  keyName?: string
-  parentKeyName?: string
-}) {
-  if (parentKeyName === 'pricing' && R.isString(value) && keyName) {
-    const numericValue = parseFloat(value)
-
-    if (!isNaN(numericValue)) {
-      const pricingField = (pricingFieldMapping[keyName] as PricingField) || 'input'
-      const format = pricingFormats[pricingField]
-      const transformedValue = format.transform(numericValue)
-      const formattedValue = formatNumber(transformedValue, format.digits)
-      return `$${formattedValue}${format.unit}`
-    }
-  }
-
-  if (R.isNumber(value)) {
-    return value.toLocaleString()
-  }
-
-  if (value === '') {
-    return (
-      <Badge variant="outline" className="text-current">
-        empty
-      </Badge>
-    )
-  }
-
-  if (value === true) {
-    return (
-      <Badge variant="outline" className="text-current">
-        true
-      </Badge>
-    )
-  }
-
-  if (value === false) {
-    return (
-      <Badge variant="outline" className="text-current">
-        false
-      </Badge>
-    )
-  }
-
-  return String(value)
 }
