@@ -15,6 +15,7 @@ import { DataGridTable } from '@/components/ui/data-grid-table'
 import { Skeleton } from '@/components/ui/skeleton'
 import { calculatePercentageChange, cn } from '@/lib/utils'
 
+import { ModelCard, ProviderCard } from '../shared/entity-card'
 import {
   AddIndicator,
   CreateBadge,
@@ -25,7 +26,6 @@ import {
   RightArrow,
 } from './change-indicators'
 import { ChangeItemValue } from './change-item'
-import { ModelNameCell, ProviderNameCell } from './entity-cells'
 import { parseChangeDoc, type ArrayChangeItem } from './parseChange'
 
 type ChangeRow = Doc<'or_changes'>
@@ -70,11 +70,8 @@ export function ChangesDataGrid({
         header: 'Model',
         cell: ({ row }) => {
           const change = row.original
-          if (change.entity_type === 'endpoint' && change.model_variant_slug) {
-            return <ModelNameCell id={change.model_variant_slug} />
-          }
-          if (change.entity_type === 'model') {
-            return <ModelNameCell id={change.model_variant_slug ?? 'unknown'} />
+          if (change.entity_type === 'model' || change.entity_type === 'endpoint') {
+            return <ModelCard slug={change.model_variant_slug ?? 'unknown'} />
           }
           return <div className="text-muted-foreground">—</div>
         },
@@ -90,7 +87,7 @@ export function ChangesDataGrid({
         cell: ({ row }) => {
           const change = row.original
           if (change.entity_type === 'endpoint' || change.entity_type === 'provider') {
-            return <ProviderNameCell id={change.provider_slug ?? 'unknown'} />
+            return <ProviderCard slug={change.provider_slug ?? 'unknown'} />
           }
           return <div className="text-muted-foreground">—</div>
         },

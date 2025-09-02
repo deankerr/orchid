@@ -1,3 +1,5 @@
+import { getImageProps } from 'next/image'
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useModelsList, useProvidersList } from '@/hooks/api'
 import { cn } from '@/lib/utils'
@@ -9,17 +11,28 @@ export function EntityCard({
   slug,
   iconUrl,
   className,
+  ...props
 }: {
   displayName: string
   slug: string
   iconUrl?: string
-  className?: string
-}) {
+} & React.ComponentProps<'div'>) {
+  const { props: imageProps } = getImageProps({
+    src: iconUrl ?? '',
+    alt: '', // adjacent to entity name
+    width: 24,
+    height: 24,
+  })
+
   return (
-    <div data-slot="entity-card" className={cn('flex min-w-0 items-center gap-2', className)}>
-      <Avatar className="rounded-sm">
-        <AvatarImage src={iconUrl} alt={displayName} />
-        <AvatarFallback className="font-mono text-sm uppercase">
+    <div
+      data-slot="entity-card"
+      className={cn('flex min-w-0 items-center gap-2', className)}
+      {...props}
+    >
+      <Avatar className="size-6 rounded-sm">
+        <AvatarImage {...imageProps} />
+        <AvatarFallback className="rounded-sm font-mono text-sm uppercase">
           {displayName.replace(/[^a-zA-Z0-9]/g, '').slice(0, 2)}
         </AvatarFallback>
       </Avatar>
@@ -29,7 +42,7 @@ export function EntityCard({
         </div>
         <div
           data-slot="slug"
-          className="font-mono text-xs text-muted-foreground transition-colors select-all not-hover:truncate hover:z-10 hover:-mx-1 hover:-my-0.5 hover:w-fit hover:bg-background hover:px-1 hover:py-0.5 hover:whitespace-nowrap"
+          className="relative -mx-1 -my-0.5 w-fit max-w-full overflow-hidden rounded-sm px-1 py-0.5 font-mono text-xs text-ellipsis whitespace-nowrap text-muted-foreground outline outline-transparent select-all hover:z-10 hover:max-w-none hover:overflow-visible hover:bg-background hover:outline-border/50 hover:transition-colors"
         >
           {slug}
         </div>

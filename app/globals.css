@@ -135,4 +135,15 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Custom text selection color */
+  ::selection {
+    background: oklch(0.5 0 0 / 0.8); /* neutral gray with opacity */
+    color: var(--foreground);
+  }
+
+  ::-moz-selection {
+    background: oklch(0.5 0 0 / 0.8); /* neutral gray with opacity */
+    color: var(--foreground);
+  }
 }
