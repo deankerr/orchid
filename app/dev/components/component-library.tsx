@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/select'
 
 import { BadgeComponents } from './sets/badges'
+import { EndpointIdentitySet } from './sets/endpoint-identity'
 import { EntityCardSet } from './sets/entity-card'
 
 type ComponentSet = {
@@ -26,6 +27,10 @@ export function ComponentLibrary() {
     {
       name: 'entity cards',
       component: EntityCardSet,
+    },
+    {
+      name: 'endpoint identity',
+      component: EndpointIdentitySet,
     },
     {
       name: 'badges',
