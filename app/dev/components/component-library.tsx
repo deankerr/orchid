@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { parseAsString, useQueryState } from 'nuqs'
 
 import { PageContainer, PageHeader, PageTitle } from '@/components/shared/page-container'
 import {
@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/select'
 
 import { BadgeComponents } from './sets/badges'
-import { ButtonComponents } from './sets/buttons'
+import { EntityCardSet } from './sets/entity-card'
 
 type ComponentSet = {
   name: string
@@ -20,16 +20,16 @@ type ComponentSet = {
 }
 
 export function ComponentLibrary() {
-  const [selectedSet, setSelectedSet] = useState('badges')
+  const [selectedSet, setSelectedSet] = useQueryState('set', parseAsString.withDefault(''))
 
   const componentSets: ComponentSet[] = [
     {
-      name: 'badges',
-      component: BadgeComponents,
+      name: 'entity cards',
+      component: EntityCardSet,
     },
     {
-      name: 'buttons',
-      component: ButtonComponents,
+      name: 'badges',
+      component: BadgeComponents,
     },
   ]
 
@@ -54,7 +54,7 @@ export function ComponentLibrary() {
             <SelectContent>
               {componentSets.map((set) => (
                 <SelectItem key={set.name} value={set.name}>
-                  {set.name.charAt(0).toUpperCase() + set.name.slice(1)}
+                  {set.name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -62,7 +62,7 @@ export function ComponentLibrary() {
         </div>
       </PageHeader>
 
-      <div className="space-y-6">
+      <div className="grid divide-y">
         <CurrentComponent />
       </div>
     </PageContainer>
