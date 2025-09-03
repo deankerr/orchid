@@ -24,7 +24,7 @@ import { DataGridContainer } from '../ui/data-grid'
 import { ScrollArea, ScrollBar } from '../ui/scroll-area'
 
 const DATA_GRID_HEIGHT = 600
-const LOAD_MORE_THRESHOLD = 400
+const LOAD_MORE_THRESHOLD = 500
 const ITEMS_PER_PAGE = 40
 const INITIAL_NUM_ITEMS = 20
 
@@ -118,7 +118,7 @@ export function ChangesDataGridPage() {
               </div>
             )}
 
-            <ScrollBar orientation="vertical" />
+            <ScrollBar orientation="horizontal" />
           </ScrollArea>
         </DataGridContainer>
       </div>

@@ -5,7 +5,6 @@ import React, { useMemo } from 'react'
 import * as R from 'remeda'
 
 import { ColumnDef, getCoreRowModel, useReactTable } from '@tanstack/react-table'
-import { formatISO9075 } from 'date-fns'
 
 import type { Doc } from '@/convex/_generated/dataModel'
 
@@ -13,7 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import { DataGrid } from '@/components/ui/data-grid'
 import { DataGridTable } from '@/components/ui/data-grid-table'
 import { Skeleton } from '@/components/ui/skeleton'
-import { calculatePercentageChange, cn } from '@/lib/utils'
+import { calculatePercentageChange, cn, formatDateTime, formatRelativeTime } from '@/lib/utils'
 
 import { ModelCard, ProviderCard } from '../shared/entity-card'
 import {
@@ -45,18 +44,16 @@ export function ChangesDataGrid({
         accessorKey: 'crawl_id',
         cell: ({ getValue }) => {
           const timestamp = Number(getValue())
-          const date = new Date(timestamp)
+          const relativeTime = formatRelativeTime(timestamp, { format: 'long' })
+          const fullDateTime = formatDateTime(timestamp)
 
-          const formatDate = (date: Date) => {
-            try {
-              return formatISO9075(date)
-            } catch (err) {
-              console.error(err)
-              return timestamp
-            }
-          }
           return (
-            <div className="w-20 font-mono text-xs text-muted-foreground">{formatDate(date)}</div>
+            <div
+              className="w-20 cursor-default font-mono text-xs text-muted-foreground"
+              title={fullDateTime}
+            >
+              {relativeTime}
+            </div>
           )
         },
         size: 96,
