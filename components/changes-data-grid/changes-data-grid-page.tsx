@@ -1,16 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { usePaginatedQuery } from 'convex/react'
+
+import { Loader2Icon } from 'lucide-react'
 
 import { api } from '@/convex/_generated/api'
 
 import { ChangesDataGrid } from '@/components/changes-data-grid/changes-data-grid'
 import { PageContainer, PageHeader, PageTitle } from '@/components/shared/page-container'
-import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -19,9 +18,13 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useModelsList, useProvidersList } from '@/hooks/api'
+import { useInfiniteScroll } from '@/hooks/use-infinite-scroll'
 
-import { FeatureFlag } from '../dev-utils/feature-flag'
+import { DataGridContainer } from '../ui/data-grid'
+import { ScrollArea, ScrollBar } from '../ui/scroll-area'
 
+const DATA_GRID_HEIGHT = 600
+const LOAD_MORE_THRESHOLD = 400
 const ITEMS_PER_PAGE = 40
 const INITIAL_NUM_ITEMS = 20
 
@@ -31,7 +34,6 @@ type ChangeAction = 'all' | 'create' | 'update' | 'delete'
 export function ChangesDataGridPage() {
   const [entityType, setEntityType] = useState<EntityType>('all') // Show all changes to see record changes
   const [changeAction, setChangeAction] = useState<ChangeAction>('all')
-  const [forceLoading, setForceLoading] = useState(false)
 
   const { results, status, loadMore } = usePaginatedQuery(
     api.views.changes.list,
@@ -45,7 +47,23 @@ export function ChangesDataGridPage() {
 
   const models = useModelsList()
   const providers = useProvidersList()
-  const isInitialLoad = status === 'LoadingFirstPage' || !models || !providers || forceLoading
+  const isInitialLoad = status === 'LoadingFirstPage' || !models || !providers
+  const isLoadingMore = status === 'LoadingMore'
+  const canLoadMore = status === 'CanLoadMore'
+
+  // Set up infinite scrolling with 400px threshold from bottom
+  const scrollRef = useInfiniteScroll(() => loadMore(ITEMS_PER_PAGE), {
+    threshold: LOAD_MORE_THRESHOLD,
+    hasMore: canLoadMore,
+    isLoading: isLoadingMore,
+  })
+
+  // Reset scroll position when filters change or on initial load
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = 0
+    }
+  }, [entityType, changeAction, isInitialLoad, scrollRef])
 
   return (
     <PageContainer>
@@ -54,76 +72,63 @@ export function ChangesDataGridPage() {
         <p className="text-muted-foreground">View changes detected between OpenRouter snapshots</p>
       </PageHeader>
 
-      <div className="space-y-4">
-        <div className="flex items-end gap-4">
-          <div>
-            <Label htmlFor="entity-type" className="text-sm font-medium">
-              Filter by Type
-            </Label>
-            <Select
-              value={entityType}
-              onValueChange={(value) => setEntityType(value as EntityType)}
-            >
-              <SelectTrigger id="entity-type" className="w-48">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="model">Models</SelectItem>
-                <SelectItem value="endpoint">Endpoints</SelectItem>
-                <SelectItem value="provider">Providers</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label htmlFor="change-action" className="text-sm font-medium">
-              Filter by Action
-            </Label>
-            <Select
-              value={changeAction}
-              onValueChange={(value) => setChangeAction(value as ChangeAction)}
-            >
-              <SelectTrigger id="change-action" className="w-48">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="create">Create</SelectItem>
-                <SelectItem value="update">Update</SelectItem>
-                <SelectItem value="delete">Delete</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+      <div className="flex flex-col items-stretch rounded-md border bg-background">
+        <div className="flex gap-2 px-4 py-4">
+          <Select value={entityType} onValueChange={(value) => setEntityType(value as EntityType)}>
+            <SelectTrigger className="w-48" aria-label="Filter by entity type">
+              <span className="sr-only">Filter by Type</span>
+              <SelectValue placeholder="Filter by Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value="model">Models</SelectItem>
+              <SelectItem value="endpoint">Endpoints</SelectItem>
+              <SelectItem value="provider">Providers</SelectItem>
+            </SelectContent>
+          </Select>
 
-          <FeatureFlag flag="dev">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="force-loading"
-                checked={forceLoading}
-                onCheckedChange={(value) => setForceLoading(value === true)}
-              />
-              <Label htmlFor="force-loading" className="text-sm font-medium">
-                Force Loading
-              </Label>
-            </div>
-          </FeatureFlag>
+          <Select
+            value={changeAction}
+            onValueChange={(value) => setChangeAction(value as ChangeAction)}
+          >
+            <SelectTrigger className="w-48" aria-label="Filter by change action">
+              <span className="sr-only">Filter by Action</span>
+              <SelectValue placeholder="Filter by Action" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Actions</SelectItem>
+              <SelectItem value="create">Create</SelectItem>
+              <SelectItem value="update">Update</SelectItem>
+              <SelectItem value="delete">Delete</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
-        <ChangesDataGrid changes={results || []} isLoading={isInitialLoad} />
+        <DataGridContainer
+          className="rounded-none border-x-0 border-b-0"
+          style={{ height: DATA_GRID_HEIGHT }}
+        >
+          <ScrollArea className="overflow-hidden" ref={scrollRef}>
+            <ChangesDataGrid changes={results || []} isLoading={isInitialLoad} />
 
-        {status === 'CanLoadMore' && (
-          <Button onClick={() => loadMore(ITEMS_PER_PAGE)} variant="outline" className="w-full">
-            Load More
-          </Button>
-        )}
+            {!isInitialLoad && (
+              <div className="grid h-14 place-content-center border-t font-mono text-sm text-muted-foreground">
+                {isLoadingMore && <Spinner />}
+                {status === 'Exhausted' && 'No more changes found.'}
+              </div>
+            )}
 
-        {status === 'LoadingMore' && (
-          <div className="p-4 text-center text-muted-foreground">Loading more changes...</div>
-        )}
-
-        {/* TODO: Add filtering capabilities */}
-        {/* TODO: Add sorting by date/type */}
+            <ScrollBar orientation="vertical" />
+          </ScrollArea>
+        </DataGridContainer>
       </div>
+
+      {/* TODO: Add filtering capabilities */}
+      {/* TODO: Add sorting by date/type */}
     </PageContainer>
   )
+}
+
+function Spinner() {
+  return <Loader2Icon className="animate-spin" />
 }

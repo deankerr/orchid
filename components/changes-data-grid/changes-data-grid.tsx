@@ -10,7 +10,7 @@ import { formatISO9075 } from 'date-fns'
 import type { Doc } from '@/convex/_generated/dataModel'
 
 import { Badge } from '@/components/ui/badge'
-import { DataGrid, DataGridContainer } from '@/components/ui/data-grid'
+import { DataGrid } from '@/components/ui/data-grid'
 import { DataGridTable } from '@/components/ui/data-grid-table'
 import { Skeleton } from '@/components/ui/skeleton'
 import { calculatePercentageChange, cn } from '@/lib/utils'
@@ -165,23 +165,18 @@ export function ChangesDataGrid({
   })
 
   return (
-    <DataGridContainer className="overflow-auto">
-      <DataGrid
-        table={table}
-        recordCount={changes.length}
-        isLoading={isLoading}
-        loadingMessage="Loading changes..."
-        emptyMessage="No changes found"
-        tableLayout={{
-          headerSticky: true,
-          rowBorder: true,
-          headerBackground: true,
-          headerBorder: true,
-        }}
-      >
-        <DataGridTable />
-      </DataGrid>
-    </DataGridContainer>
+    <DataGrid
+      table={table}
+      recordCount={changes.length}
+      isLoading={isLoading}
+      loadingMessage="Loading changes..."
+      emptyMessage="No changes found"
+      tableLayout={{
+        headerSticky: true,
+      }}
+    >
+      <DataGridTable />
+    </DataGrid>
   )
 }
 
