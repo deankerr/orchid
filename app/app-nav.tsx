@@ -42,9 +42,15 @@ export function AppNav() {
       <NavLink href="/changes">Changes</NavLink>
 
       <FeatureFlag flag="dev">
-        <NavLink href="/dev/components" className="border border-dashed">
-          Components
-        </NavLink>
+        <div className="ml-auto flex gap-2 font-mono">
+          <NavLink href="/dev/components" className="border border-dashed">
+            Components
+          </NavLink>
+
+          <NavLink href="/dev/changes" className="border border-dashed">
+            Changes
+          </NavLink>
+        </div>
       </FeatureFlag>
     </nav>
   )

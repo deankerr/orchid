@@ -191,7 +191,11 @@ function ChangeKey({ children, className, ...props }: React.ComponentProps<'div'
 }
 
 function isBlockUpdate(...values: unknown[]) {
-  return values.some((v) => R.isString(v) && (v.includes(' ') || v.length > 12) && isNaN(Number(v)))
+  return values.some(
+    (v) =>
+      R.isObjectType(v) ||
+      (R.isString(v) && (v.includes(' ') || v.length > 12) && isNaN(Number(v))),
+  )
 }
 
 function ValueUpdate({
@@ -275,12 +279,23 @@ export function ArrayUpdate({ keyName, changes }: { keyName: string; changes: Ar
     <>
       <ChangeKey>{keyName}</ChangeKey>
       <div className="col-span-4 flex flex-wrap gap-2 justify-self-start">
-        {changes.map((change, idx) => (
-          <Badge key={idx} variant="outline" className="font-normal">
-            {change.type === 'ADD' ? <AddIndicator /> : <RemoveIndicator />}
-            {typeof change.value === 'string' ? change.value : '{...}'}
-          </Badge>
-        ))}
+        {changes.map((change, idx) =>
+          typeof change.value === 'string' ? (
+            <Badge key={idx} variant="outline" className="font-normal">
+              {change.type === 'ADD' ? <AddIndicator /> : <RemoveIndicator />}
+              {change.value}
+            </Badge>
+          ) : (
+            <BlockValue key={idx}>
+              {change.type === 'ADD' ? (
+                <AddIndicator className="mr-1" />
+              ) : (
+                <RemoveIndicator className="mr-1" />
+              )}
+              {JSON.stringify(change.value, null, 2)}
+            </BlockValue>
+          ),
+        )}
       </div>
     </>
   )

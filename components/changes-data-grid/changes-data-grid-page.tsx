@@ -122,9 +122,6 @@ export function ChangesDataGridPage() {
           </ScrollArea>
         </DataGridContainer>
       </div>
-
-      {/* TODO: Add filtering capabilities */}
-      {/* TODO: Add sorting by date/type */}
     </PageContainer>
   )
 }
