@@ -173,22 +173,13 @@ function DataGrid<TData extends object>({ children, table, ...props }: DataGridP
   )
 }
 
-function DataGridContainer({
-  children,
-  className,
-  border = true,
-}: {
-  children: ReactNode
-  className?: string
-  border?: boolean
-}) {
+function DataGridContainer({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="data-grid"
-      className={cn('grid w-full', border && 'rounded-lg border border-border', className)}
-    >
-      {children}
-    </div>
+      className={cn('grid w-full rounded-lg border border-border', className)}
+      {...props}
+    />
   )
 }
 

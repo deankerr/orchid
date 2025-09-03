@@ -5,6 +5,29 @@ alwaysApply: false
 
 # Frontend Development Guide
 
+## Example
+
+```tsx
+import { cn } from '@/lib/utils'
+
+export function LabeledBox({
+  label,
+  className,
+  children,
+  ...props
+}: { label?: string } & React.ComponentProps<'div'>) {
+  return (
+    <div
+      className={cn('bg-card text-card-foreground space-y-2 rounded-sm border p-2', className)}
+      {...props}
+    >
+      {label && <div className="text-muted-foreground font-mono text-sm uppercase">{label}</div>}
+      {children}
+    </div>
+  )
+}
+```
+
 ## Target Audience
 
 ORCHID serves highly technical users who work with OpenRouter and LLMs professionally:
@@ -59,7 +82,7 @@ ORCHID serves highly technical users who work with OpenRouter and LLMs professio
 - Use a shadcn/ui-inspired structure for components, a single file which exports composable component parts, allowing for dynamic customization.
 - Use React.ComponentProps to allow for customization of the outer element, be it a HTML element or another component.
 - Destructure and merge the className prop using the `cn` helper.
-- Never use default exports.
+- Use named exports only. NEVER use default exports.
 
 ### Component File Structure/Locations
 
@@ -70,14 +93,6 @@ ORCHID serves highly technical users who work with OpenRouter and LLMs professio
 - shadcn/ui components only: `components/ui`
 - Mixed/unclear: `components/`
 - No barrel files
-
-## Feature Flags
-
-- The FeatureFlag component is used to conditionally render features based on a localStorage value
-- By design, our frontend does not expose any mutations or sensitive internal data at all
-- There is no risk in any unverified user discovering and toggling feature flags
-- We use it to hide live feature prototypes where using with production data is useful
-- We also use it to hide links to the snapshot dashboard which is not designed for end-users
 
 ## React 19 / Next.js 15
 

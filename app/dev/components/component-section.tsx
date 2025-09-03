@@ -14,15 +14,13 @@ export function ComponentSection({
   className,
 }: ComponentSectionProps) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-6 border p-6 not-last:border-b-transparent">
       <div className="space-y-1">
-        <h3 className="text-lg font-semibold">{title}</h3>
+        <div className="text-lg font-semibold">{title}</div>
         {description && <p className="text-sm text-muted-foreground">{description}</p>}
       </div>
 
-      <div className={cn('flex-warp flex grid-cols-4 gap-3 md:grid md:gap-6', className)}>
-        {children}
-      </div>
+      <div className={cn('flex flex-wrap gap-6 md:grid md:grid-cols-4', className)}>{children}</div>
     </div>
   )
 }

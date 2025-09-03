@@ -5,16 +5,16 @@ import React, { useMemo } from 'react'
 import * as R from 'remeda'
 
 import { ColumnDef, getCoreRowModel, useReactTable } from '@tanstack/react-table'
-import { formatISO9075 } from 'date-fns'
 
 import type { Doc } from '@/convex/_generated/dataModel'
 
 import { Badge } from '@/components/ui/badge'
-import { DataGrid, DataGridContainer } from '@/components/ui/data-grid'
+import { DataGrid } from '@/components/ui/data-grid'
 import { DataGridTable } from '@/components/ui/data-grid-table'
 import { Skeleton } from '@/components/ui/skeleton'
-import { calculatePercentageChange, cn } from '@/lib/utils'
+import { calculatePercentageChange, cn, formatDateTime, formatRelativeTime } from '@/lib/utils'
 
+import { ModelCard, ProviderCard } from '../shared/entity-card'
 import {
   AddIndicator,
   CreateBadge,
@@ -25,7 +25,6 @@ import {
   RightArrow,
 } from './change-indicators'
 import { ChangeItemValue } from './change-item'
-import { ModelNameCell, ProviderNameCell } from './entity-cells'
 import { parseChangeDoc, type ArrayChangeItem } from './parseChange'
 
 type ChangeRow = Doc<'or_changes'>
@@ -45,18 +44,16 @@ export function ChangesDataGrid({
         accessorKey: 'crawl_id',
         cell: ({ getValue }) => {
           const timestamp = Number(getValue())
-          const date = new Date(timestamp)
+          const relativeTime = formatRelativeTime(timestamp, { format: 'long' })
+          const fullDateTime = formatDateTime(timestamp)
 
-          const formatDate = (date: Date) => {
-            try {
-              return formatISO9075(date)
-            } catch (err) {
-              console.error(err)
-              return timestamp
-            }
-          }
           return (
-            <div className="w-20 font-mono text-xs text-muted-foreground">{formatDate(date)}</div>
+            <div
+              className="w-20 cursor-default font-mono text-xs text-muted-foreground"
+              title={fullDateTime}
+            >
+              {relativeTime}
+            </div>
           )
         },
         size: 96,
@@ -70,11 +67,8 @@ export function ChangesDataGrid({
         header: 'Model',
         cell: ({ row }) => {
           const change = row.original
-          if (change.entity_type === 'endpoint' && change.model_variant_slug) {
-            return <ModelNameCell id={change.model_variant_slug} />
-          }
-          if (change.entity_type === 'model') {
-            return <ModelNameCell id={change.model_variant_slug ?? 'unknown'} />
+          if (change.entity_type === 'model' || change.entity_type === 'endpoint') {
+            return <ModelCard slug={change.model_variant_slug ?? 'unknown'} />
           }
           return <div className="text-muted-foreground">—</div>
         },
@@ -90,7 +84,7 @@ export function ChangesDataGrid({
         cell: ({ row }) => {
           const change = row.original
           if (change.entity_type === 'endpoint' || change.entity_type === 'provider') {
-            return <ProviderNameCell id={change.provider_slug ?? 'unknown'} />
+            return <ProviderCard slug={change.provider_slug ?? 'unknown'} />
           }
           return <div className="text-muted-foreground">—</div>
         },
@@ -168,23 +162,18 @@ export function ChangesDataGrid({
   })
 
   return (
-    <DataGridContainer className="overflow-auto">
-      <DataGrid
-        table={table}
-        recordCount={changes.length}
-        isLoading={isLoading}
-        loadingMessage="Loading changes..."
-        emptyMessage="No changes found"
-        tableLayout={{
-          headerSticky: true,
-          rowBorder: true,
-          headerBackground: true,
-          headerBorder: true,
-        }}
-      >
-        <DataGridTable />
-      </DataGrid>
-    </DataGridContainer>
+    <DataGrid
+      table={table}
+      recordCount={changes.length}
+      isLoading={isLoading}
+      loadingMessage="Loading changes..."
+      emptyMessage="No changes found"
+      tableLayout={{
+        headerSticky: true,
+      }}
+    >
+      <DataGridTable />
+    </DataGrid>
   )
 }
 
@@ -202,7 +191,11 @@ function ChangeKey({ children, className, ...props }: React.ComponentProps<'div'
 }
 
 function isBlockUpdate(...values: unknown[]) {
-  return values.some((v) => R.isString(v) && (v.includes(' ') || v.length > 12) && isNaN(Number(v)))
+  return values.some(
+    (v) =>
+      R.isObjectType(v) ||
+      (R.isString(v) && (v.includes(' ') || v.length > 12) && isNaN(Number(v))),
+  )
 }
 
 function ValueUpdate({
@@ -286,12 +279,23 @@ export function ArrayUpdate({ keyName, changes }: { keyName: string; changes: Ar
     <>
       <ChangeKey>{keyName}</ChangeKey>
       <div className="col-span-4 flex flex-wrap gap-2 justify-self-start">
-        {changes.map((change, idx) => (
-          <Badge key={idx} variant="outline" className="font-normal">
-            {change.type === 'ADD' ? <AddIndicator /> : <RemoveIndicator />}
-            {typeof change.value === 'string' ? change.value : '{...}'}
-          </Badge>
-        ))}
+        {changes.map((change, idx) =>
+          typeof change.value === 'string' ? (
+            <Badge key={idx} variant="outline" className="font-normal">
+              {change.type === 'ADD' ? <AddIndicator /> : <RemoveIndicator />}
+              {change.value}
+            </Badge>
+          ) : (
+            <BlockValue key={idx}>
+              {change.type === 'ADD' ? (
+                <AddIndicator className="mr-1" />
+              ) : (
+                <RemoveIndicator className="mr-1" />
+              )}
+              {JSON.stringify(change.value, null, 2)}
+            </BlockValue>
+          ),
+        )}
       </div>
     </>
   )

@@ -7,13 +7,22 @@ import { FeatureFlag } from '@/components/dev-utils/feature-flag'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
-function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
+function NavLink({
+  href,
+  className,
+  children,
+  ...props
+}: { href: string } & React.ComponentProps<typeof Button>) {
   const pathname = usePathname()
   const isActive = pathname.startsWith(href)
   return (
     <Button
       variant="ghost"
-      className={cn(isActive ? 'bg-accent/50 text-accent-foreground' : 'text-muted-foreground')}
+      className={cn(
+        isActive ? 'bg-accent/50 text-accent-foreground' : 'text-muted-foreground',
+        className,
+      )}
+      {...props}
       asChild
     >
       <Link href={href}>{children}</Link>
@@ -31,6 +40,18 @@ export function AppNav() {
       </FeatureFlag>
 
       <NavLink href="/changes">Changes</NavLink>
+
+      <FeatureFlag flag="dev">
+        <div className="ml-auto flex gap-2 font-mono">
+          <NavLink href="/dev/components" className="border border-dashed">
+            Components
+          </NavLink>
+
+          <NavLink href="/dev/changes" className="border border-dashed">
+            Changes
+          </NavLink>
+        </div>
+      </FeatureFlag>
     </nav>
   )
 }
