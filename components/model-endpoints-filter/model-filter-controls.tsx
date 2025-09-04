@@ -21,7 +21,7 @@ export function ModelFilterControls() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="mx-auto max-w-7xl space-y-4 p-2">
       {/* Search Row */}
       <SearchInput
         value={filters.q}

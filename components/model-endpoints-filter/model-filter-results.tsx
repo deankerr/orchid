@@ -1,6 +1,5 @@
 'use client'
 
-import { PageLoading } from '../shared/page-container'
 import { Button } from '../ui/button'
 import { type FilterResult } from './filter'
 import { ModelSummaryCard } from './model-summary-card'
@@ -19,12 +18,12 @@ export function ModelFilterResults({
   onShowMore,
 }: ModelFilterResultsProps) {
   if (isLoading) {
-    return <PageLoading />
+    return <div>loading</div>
   }
 
   if (results.length === 0) {
     return (
-      <div className="py-12 text-center">
+      <div className="mx-auto max-w-7xl py-12 text-center">
         <div className="mb-2 text-lg font-medium text-muted-foreground">No models found</div>
         <div className="text-sm text-muted-foreground">
           Try adjusting your filters or search query
@@ -34,7 +33,7 @@ export function ModelFilterResults({
   }
 
   return (
-    <div className="relative space-y-3">
+    <div className="mx-auto w-full max-w-7xl space-y-3 p-2">
       {results.map((result) => (
         <ModelSummaryCard key={result.modelId} result={result} />
       ))}

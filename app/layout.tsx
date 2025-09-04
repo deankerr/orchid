@@ -7,7 +7,8 @@ import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
 
-import { AppLayout } from './app-layout'
+import { App } from '@/components/app-layout/app'
+
 import { ConvexClientProvider } from './convex-client-provider'
 
 const geistSans = Geist({
@@ -35,7 +36,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} dark font-sans antialiased`}>
         <NuqsAdapter>
           <ConvexClientProvider>
-            <AppLayout>{children}</AppLayout>
+            <App>{children}</App>
           </ConvexClientProvider>
         </NuqsAdapter>
         <Analytics />

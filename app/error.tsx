@@ -2,7 +2,7 @@
 
 import { XCircle } from 'lucide-react'
 
-import { PageContainer } from '@/components/shared/page-container'
+import { PageContainer } from '@/components/app-layout/pages'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 

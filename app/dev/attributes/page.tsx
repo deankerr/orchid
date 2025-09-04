@@ -1,5 +1,5 @@
+import { PageContainer, PageHeader, PageTitle } from '@/components/app-layout/pages'
 import { AttributeBadge, attributes, type AttributeKey } from '@/components/attributes'
-import { PageContainer, PageHeader, PageTitle } from '@/components/shared/page-container'
 
 export default function AttributesPage() {
   return (

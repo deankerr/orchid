@@ -4,6 +4,7 @@ import { AlertTriangleIcon } from 'lucide-react'
 
 import { getModelVariantSlug } from '@/convex/shared'
 
+import { PageContainer, PageHeader, PageLoading, PageTitle } from '@/components/app-layout/pages'
 import { FeatureFlag } from '@/components/dev-utils/feature-flag'
 import { EndpointDataTable } from '@/components/endpoint-data-table/endpoint-data-table'
 import { ModelAppsLeaderboard } from '@/components/model-apps-leaderboard'
@@ -13,12 +14,6 @@ import { CopyToClipboardButton } from '@/components/shared/copy-to-clipboard-but
 import { ExternalLink } from '@/components/shared/external-link'
 import { LoaderBadge } from '@/components/shared/loader'
 import { MarkdownLinks } from '@/components/shared/markdown-links'
-import {
-  PageContainer,
-  PageHeader,
-  PageLoading,
-  PageTitle,
-} from '@/components/shared/page-container'
 import { Pill } from '@/components/shared/pill'
 import {
   Accordion,
@@ -51,8 +46,8 @@ export function ModelPage({ slug }: { slug: string }) {
   }
 
   return (
-    <PageContainer className="space-y-12">
-      <PageHeader>
+    <PageContainer className="space-y-4 px-2">
+      <PageHeader className="gap-4">
         <PageTitle>
           <BrandIcon url={model.icon_url} size={24} />
           {model.name}

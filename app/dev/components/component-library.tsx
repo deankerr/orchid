@@ -2,7 +2,7 @@
 
 import { parseAsString, useQueryState } from 'nuqs'
 
-import { PageContainer, PageHeader, PageTitle } from '@/components/shared/page-container'
+import { PageContainer, PageHeader, PageTitle } from '@/components/app-layout/pages'
 import {
   Select,
   SelectContent,
