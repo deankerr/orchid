@@ -9,7 +9,6 @@ import { Loader2Icon } from 'lucide-react'
 import { api } from '@/convex/_generated/api'
 
 import { ChangesDataGrid } from '@/components/changes-data-grid/changes-data-grid'
-import { PageContainer, PageHeader, PageTitle } from '@/components/shared/page-container'
 import {
   Select,
   SelectContent,
@@ -20,10 +19,9 @@ import {
 import { useModelsList, useProvidersList } from '@/hooks/api'
 import { useInfiniteScroll } from '@/hooks/use-infinite-scroll'
 
+import { PageDescription, PageHeader, PageTitle } from '../app-layout/pages'
 import { DataGridContainer } from '../ui/data-grid'
-import { ScrollArea, ScrollBar } from '../ui/scroll-area'
 
-const DATA_GRID_HEIGHT = 600
 const LOAD_MORE_THRESHOLD = 500
 const ITEMS_PER_PAGE = 40
 const INITIAL_NUM_ITEMS = 20
@@ -66,63 +64,57 @@ export function ChangesDataGridPage() {
   }, [entityType, changeAction, isInitialLoad, scrollRef])
 
   return (
-    <PageContainer>
+    <>
       <PageHeader>
         <PageTitle>Changes</PageTitle>
-        <p className="text-muted-foreground">View changes detected between OpenRouter snapshots</p>
+        <PageDescription>View changes detected between OpenRouter snapshots</PageDescription>
       </PageHeader>
 
-      <div className="flex flex-col items-stretch rounded-md border bg-background">
-        <div className="flex gap-2 px-4 py-4">
-          <Select value={entityType} onValueChange={(value) => setEntityType(value as EntityType)}>
-            <SelectTrigger className="w-48" aria-label="Filter by entity type">
-              <span className="sr-only">Filter by Type</span>
-              <SelectValue placeholder="Filter by Type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="model">Models</SelectItem>
-              <SelectItem value="endpoint">Endpoints</SelectItem>
-              <SelectItem value="provider">Providers</SelectItem>
-            </SelectContent>
-          </Select>
+      <div className="flex gap-2 px-2 py-3">
+        <Select value={entityType} onValueChange={(value) => setEntityType(value as EntityType)}>
+          <SelectTrigger className="w-48" aria-label="Filter by entity type">
+            <span className="sr-only">Filter by Type</span>
+            <SelectValue placeholder="Filter by Type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Types</SelectItem>
+            <SelectItem value="model">Models</SelectItem>
+            <SelectItem value="endpoint">Endpoints</SelectItem>
+            <SelectItem value="provider">Providers</SelectItem>
+          </SelectContent>
+        </Select>
 
-          <Select
-            value={changeAction}
-            onValueChange={(value) => setChangeAction(value as ChangeAction)}
-          >
-            <SelectTrigger className="w-48" aria-label="Filter by change action">
-              <span className="sr-only">Filter by Action</span>
-              <SelectValue placeholder="Filter by Action" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Actions</SelectItem>
-              <SelectItem value="create">Create</SelectItem>
-              <SelectItem value="update">Update</SelectItem>
-              <SelectItem value="delete">Delete</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <DataGridContainer
-          className="rounded-none border-x-0 border-b-0"
-          style={{ height: DATA_GRID_HEIGHT }}
+        <Select
+          value={changeAction}
+          onValueChange={(value) => setChangeAction(value as ChangeAction)}
         >
-          <ScrollArea className="overflow-hidden" ref={scrollRef}>
-            <ChangesDataGrid changes={results || []} isLoading={isInitialLoad} />
-
-            {!isInitialLoad && (
-              <div className="grid h-14 place-content-center border-t font-mono text-sm text-muted-foreground">
-                {isLoadingMore && <Spinner />}
-                {status === 'Exhausted' && 'No more changes found.'}
-              </div>
-            )}
-
-            <ScrollBar orientation="horizontal" />
-          </ScrollArea>
-        </DataGridContainer>
+          <SelectTrigger className="w-48" aria-label="Filter by change action">
+            <span className="sr-only">Filter by Action</span>
+            <SelectValue placeholder="Filter by Action" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Actions</SelectItem>
+            <SelectItem value="create">Create</SelectItem>
+            <SelectItem value="update">Update</SelectItem>
+            <SelectItem value="delete">Delete</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
-    </PageContainer>
+
+      <DataGridContainer
+        ref={scrollRef}
+        className="mb-2 w-[99%] flex-1 self-center overflow-x-auto rounded-none"
+      >
+        <ChangesDataGrid changes={results || []} isLoading={isInitialLoad} />
+
+        {!isInitialLoad && (
+          <div className="grid h-14 place-content-center border-t font-mono text-sm text-muted-foreground">
+            {isLoadingMore && <Spinner />}
+            {status === 'Exhausted' && 'No more changes found.'}
+          </div>
+        )}
+      </DataGridContainer>
+    </>
   )
 }
 

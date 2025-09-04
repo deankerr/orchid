@@ -6,7 +6,7 @@ import { usePaginatedQuery } from 'convex/react'
 
 import { api } from '@/convex/_generated/api'
 
-import { PageContainer, PageHeader, PageTitle } from '@/components/shared/page-container'
+import { PageContainer, PageHeader, PageTitle } from '@/components/app-layout/pages'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import {
