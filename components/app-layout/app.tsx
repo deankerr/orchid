@@ -26,6 +26,33 @@ export function App({ children }: { children: React.ReactNode }) {
               <NavButton href="/dev/changes" className="border border-dashed">
                 Changes
               </NavButton>
+
+              <div className="flex flex-col justify-center rounded border border-dashed px-1 font-mono text-xs text-muted-foreground">
+                <div className="flex gap-1">
+                  models
+                  <a
+                    className="underline decoration-dashed underline-offset-1"
+                    href="https://openrouter.ai/api/v1/models"
+                  >
+                    V1
+                  </a>
+                  <a
+                    className="underline decoration-dashed underline-offset-1"
+                    href="https://openrouter.ai/api/frontend/models"
+                  >
+                    FE
+                  </a>
+                </div>
+                <div className="flex gap-1">
+                  providers
+                  <a
+                    className="underline decoration-dashed underline-offset-1"
+                    href="https://openrouter.ai/api/frontend/all-providers"
+                  >
+                    FE
+                  </a>
+                </div>
+              </div>
             </div>
           </FeatureFlag>
         </nav>

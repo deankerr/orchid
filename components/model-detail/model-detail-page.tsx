@@ -98,13 +98,25 @@ export function ModelDetailPage({ slug }: { slug: string }) {
         )}
 
         {/* External links */}
-        <div className="flex gap-4 text-sm">
+        <div className="flex items-center gap-4 text-sm">
           <ExternalLink href={`https://openrouter.ai/${model.slug}`}>OpenRouter</ExternalLink>
           {model.hugging_face_id && (
             <ExternalLink href={`https://huggingface.co/${model.hugging_face_id}`}>
               HuggingFace
             </ExternalLink>
           )}
+
+          <FeatureFlag flag="dev">
+            {model.variants.map((v) => (
+              <ExternalLink
+                key={v}
+                className="font-mono text-xs outline outline-dashed"
+                href={`https://openrouter.ai/api/frontend/stats/endpoint?permaslug=${model.permaslug}&variant=${v}`}
+              >
+                endpoints :{v}
+              </ExternalLink>
+            ))}
+          </FeatureFlag>
         </div>
       </PageHeader>
 

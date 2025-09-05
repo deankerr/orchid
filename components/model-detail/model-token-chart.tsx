@@ -105,7 +105,9 @@ export function ModelTokenChart({
     return (
       <Card className="rounded-sm bg-card/50">
         <CardHeader>
-          <CardTitle className="font-mono text-sm">{variantSlug}</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            Tokens Processed: <span className="font-mono text-sm font-normal">{variantSlug}</span>
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="font-mono text-sm text-muted-foreground">No data available</div>
@@ -137,7 +139,9 @@ export function ModelTokenChart({
   return (
     <Card className="rounded-sm bg-card/50">
       <CardHeader>
-        <CardTitle className="font-mono text-sm">{`Tokens Processed: ${variantSlug}`}</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          Tokens Processed: <span className="font-mono text-sm font-normal">{variantSlug}</span>
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="aspect-auto h-[250px] w-full font-mono">
