@@ -1,5 +1,6 @@
 'use client'
 
+import { PageLoading } from '../app-layout/pages'
 import { Button } from '../ui/button'
 import { type FilterResult } from './filter'
 import { ModelSummaryCard } from './model-summary-card'
@@ -18,7 +19,7 @@ export function ModelFilterResults({
   onShowMore,
 }: ModelFilterResultsProps) {
   if (isLoading) {
-    return <div>loading</div>
+    return <PageLoading />
   }
 
   if (results.length === 0) {

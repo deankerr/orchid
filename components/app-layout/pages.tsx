@@ -33,5 +33,5 @@ export function PageDescription({ className, ...props }: React.ComponentProps<'p
 }
 
 export function PageLoading() {
-  return <LoaderSquare />
+  return <LoaderSquare className="m-auto" />
 }
