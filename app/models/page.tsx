@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
 
-import { ModelListPage } from './models-list-page'
+import { ModelFilterPage } from '../../components/model-endpoints-filter/models-filter-page'
 
 export const metadata: Metadata = {
   title: 'Models - ORCHID',
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function Page() {
   return (
     <Suspense>
-      <ModelListPage />
+      <ModelFilterPage />
     </Suspense>
   )
 }

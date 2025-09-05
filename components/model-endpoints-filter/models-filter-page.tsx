@@ -9,7 +9,7 @@ import { ModelFilterResults } from '@/components/model-endpoints-filter/model-fi
 import { useModelFilterSearchParams } from '@/components/model-endpoints-filter/search-params'
 import { useEndpointsList, useModelsList } from '@/hooks/api'
 
-export function ModelListPage() {
+export function ModelFilterPage() {
   const [displayCount, setDisplayCount] = useState(20)
 
   // Get data from API

@@ -5,7 +5,7 @@ import { fetchQuery } from 'convex/nextjs'
 
 import { api } from '@/convex/_generated/api'
 
-import { ModelPage } from './model-page'
+import { ModelDetailPage } from '../../../components/model-detail/model-detail-page'
 
 type Props = {
   params: Promise<{ slug: string[] }>
@@ -40,7 +40,7 @@ export default async function Page({ params }: Props) {
   const slug = decodeURIComponent((await params).slug.join('/'))
   return (
     <Suspense>
-      <ModelPage slug={slug} />
+      <ModelDetailPage slug={slug} />
     </Suspense>
   )
 }

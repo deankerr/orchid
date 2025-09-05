@@ -10,7 +10,7 @@ import { ChartConfig, ChartContainer, ChartTooltip } from '@/components/ui/chart
 import { formatCompactNumber } from '@/lib/formatters'
 import { formatIsoDate } from '@/lib/utils'
 
-import { Separator } from './ui/separator'
+import { Separator } from '../ui/separator'
 
 const chartConfig = {
   input: {

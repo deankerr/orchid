@@ -7,8 +7,8 @@ import { getModelVariantSlug } from '@/convex/shared'
 import { PageContainer, PageHeader, PageLoading, PageTitle } from '@/components/app-layout/pages'
 import { FeatureFlag } from '@/components/dev-utils/feature-flag'
 import { EndpointDataTable } from '@/components/endpoint-data-table/endpoint-data-table'
-import { ModelAppsLeaderboard } from '@/components/model-apps-leaderboard'
-import { ModelTokenChart } from '@/components/model-token-chart'
+import { ModelAppsLeaderboard } from '@/components/model-detail/model-apps-leaderboard'
+import { ModelTokenChart } from '@/components/model-detail/model-token-chart'
 import { BrandIcon } from '@/components/shared/brand-icon'
 import { CopyToClipboardButton } from '@/components/shared/copy-to-clipboard-button'
 import { ExternalLink } from '@/components/shared/external-link'
@@ -24,7 +24,7 @@ import {
 import { useModelAppsLeaderboards, useModelData, useModelTokenStats } from '@/hooks/api'
 import { formatIsoDate } from '@/lib/utils'
 
-export function ModelPage({ slug }: { slug: string }) {
+export function ModelDetailPage({ slug }: { slug: string }) {
   const model = useModelData(slug)
   const appLeaderboards = useModelAppsLeaderboards(model)
   const modelTokenStats = useModelTokenStats(model)
