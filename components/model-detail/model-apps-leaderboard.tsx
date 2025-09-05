@@ -42,7 +42,7 @@ export function ModelAppsLeaderboard({
   const { apps } = leaderboard
 
   return (
-    <div className="relative rounded-sm border font-mono">
+    <div className="relative rounded-sm border bg-card/20 font-mono">
       <div className="border-b p-4">
         <div className="flex items-center text-sm font-medium">{title}</div>
       </div>

@@ -48,7 +48,7 @@ export const ModelSummaryCard = memo<ModelSummaryCardProps>(({ result }) => {
   )
 
   return (
-    <div className="space-y-5 rounded-sm border bg-card py-4 text-card-foreground">
+    <div className="space-y-5 rounded-sm border bg-card/50 py-4 text-card-foreground">
       <div className="space-y-4 px-3">
         <div className="flex items-center justify-between pl-1">
           <div className="flex items-center gap-3">
@@ -113,7 +113,7 @@ interface EndpointItemProps {
 
 const EndpointItem = memo<EndpointItemProps>(({ endpoint }) => {
   return (
-    <div className="grid grid-cols-8 gap-1 rounded-sm bg-secondary py-2 font-mono text-sm">
+    <div className="grid grid-cols-8 gap-1 rounded-sm bg-secondary/50 py-2 font-mono text-sm">
       <div className={cn('col-span-2 flex items-center gap-2 font-sans')}>
         {/* Provider */}
         <BrandIcon url={endpoint.icon_url} size={16} />
