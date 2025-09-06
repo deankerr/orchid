@@ -32,12 +32,14 @@ export function App({ children }: { children: React.ReactNode }) {
                   models
                   <a
                     className="underline decoration-dashed underline-offset-1"
+                    target="_blank"
                     href="https://openrouter.ai/api/v1/models"
                   >
                     V1
                   </a>
                   <a
                     className="underline decoration-dashed underline-offset-1"
+                    target="_blank"
                     href="https://openrouter.ai/api/frontend/models"
                   >
                     FE
@@ -47,6 +49,7 @@ export function App({ children }: { children: React.ReactNode }) {
                   providers
                   <a
                     className="underline decoration-dashed underline-offset-1"
+                    target="_blank"
                     href="https://openrouter.ai/api/frontend/all-providers"
                   >
                     FE
