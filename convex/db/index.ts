@@ -9,3 +9,7 @@ export * as OrChanges from './or/changes'
 
 export * as SnapshotCrawlConfig from './snapshot/crawlConfig'
 export * as SnapshotCrawlArchives from './snapshot/crawlArchives'
+
+export * as OrModelsV2 from './or/models_v2'
+export * as OrEndpointsV2 from './or/endpoints_v2'
+export * as OrProvidersV2 from './or/providers_v2'
