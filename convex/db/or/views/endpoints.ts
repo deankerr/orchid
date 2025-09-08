@@ -1,13 +1,13 @@
-import { defineTable } from 'convex/server'
+import { defineTable, paginationOptsValidator } from 'convex/server'
 import { v } from 'convex/values'
 
-import type { QueryCtx } from '../../_generated/server'
-import { createTableVHelper } from '../../table3'
+import { query, type QueryCtx } from '../../../_generated/server'
+import { createTableVHelper } from '../../../table3'
 
 export const table = defineTable({
   uuid: v.string(), // unique id
 
-  // * model (shared by all endpoints for this model)
+  // * model
   model: v.object({
     slug: v.string(), // primary index
     base_slug: v.string(), // secondary index
@@ -111,12 +111,21 @@ export const table = defineTable({
   status: v.number(),
 
   // * orchid
-  inactive_at: v.optional(v.number()),
+  unavailable_at: v.optional(v.number()),
   updated_at: v.number(),
 })
 
-export const vTable = createTableVHelper('or_endpoints_v2', table.validator)
+export const vTable = createTableVHelper('or_views_endpoints', table.validator)
 
-export async function list(ctx: QueryCtx) {
+export async function collect(ctx: QueryCtx) {
   return await ctx.db.query(vTable.name).collect()
 }
+
+export const paginate = query({
+  args: {
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.query(vTable.name).order('asc').paginate(args.paginationOpts)
+  },
+})

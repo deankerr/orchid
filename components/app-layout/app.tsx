@@ -16,6 +16,7 @@ export function App({ children }: { children: React.ReactNode }) {
         <nav className="flex grow items-center gap-2 text-sm font-medium">
           <NavButton href="/models">Models</NavButton>
           <NavButton href="/changes">Changes</NavButton>
+          <NavButton href="/endpoints">Endpoints</NavButton>
 
           <FeatureFlag flag="dev">
             <div className="ml-auto flex gap-2 font-mono">

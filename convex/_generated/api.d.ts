@@ -13,19 +13,20 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as analysis_endpoints from "../analysis/endpoints.js";
 import type * as crons from "../crons.js";
 import type * as db_index from "../db/index.js";
 import type * as db_or_apps from "../db/or/apps.js";
 import type * as db_or_changes from "../db/or/changes.js";
 import type * as db_or_endpoints from "../db/or/endpoints.js";
-import type * as db_or_endpoints_v2 from "../db/or/endpoints_v2.js";
 import type * as db_or_modelAppLeaderboards from "../db/or/modelAppLeaderboards.js";
 import type * as db_or_modelDetails from "../db/or/modelDetails.js";
 import type * as db_or_modelTokenStats from "../db/or/modelTokenStats.js";
 import type * as db_or_models from "../db/or/models.js";
-import type * as db_or_models_v2 from "../db/or/models_v2.js";
 import type * as db_or_providers from "../db/or/providers.js";
-import type * as db_or_providers_v2 from "../db/or/providers_v2.js";
+import type * as db_or_views_endpoints from "../db/or/views/endpoints.js";
+import type * as db_or_views_models from "../db/or/views/models.js";
+import type * as db_or_views_providers from "../db/or/views/providers.js";
 import type * as db_snapshot_crawlArchives from "../db/snapshot/crawlArchives.js";
 import type * as db_snapshot_crawlConfig from "../db/snapshot/crawlConfig.js";
 import type * as dev from "../dev.js";
@@ -39,11 +40,16 @@ import type * as snapshots_changes2_postCrawl from "../snapshots/changes2/postCr
 import type * as snapshots_changes2_process from "../snapshots/changes2/process.js";
 import type * as snapshots_changes2_reprocessDisplay from "../snapshots/changes2/reprocessDisplay.js";
 import type * as snapshots_crawl from "../snapshots/crawl.js";
+import type * as snapshots_icons from "../snapshots/icons.js";
 import type * as snapshots_materialize_apps from "../snapshots/materialize/apps.js";
 import type * as snapshots_materialize_icons from "../snapshots/materialize/icons.js";
 import type * as snapshots_materialize_materialize from "../snapshots/materialize/materialize.js";
 import type * as snapshots_materialize_modelTokenStats from "../snapshots/materialize/modelTokenStats.js";
 import type * as snapshots_materialize_utils from "../snapshots/materialize/utils.js";
+import type * as snapshots_materialize_v2_endpoints from "../snapshots/materialize_v2/endpoints.js";
+import type * as snapshots_materialize_v2_main from "../snapshots/materialize_v2/main.js";
+import type * as snapshots_materialize_v2_models from "../snapshots/materialize_v2/models.js";
+import type * as snapshots_materialize_v2_providers from "../snapshots/materialize_v2/providers.js";
 import type * as snapshots_transforms_apps from "../snapshots/transforms/apps.js";
 import type * as snapshots_transforms_endpoints from "../snapshots/transforms/endpoints.js";
 import type * as snapshots_transforms_index from "../snapshots/transforms/index.js";
@@ -68,19 +74,20 @@ import type * as views_providers from "../views/providers.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  "analysis/endpoints": typeof analysis_endpoints;
   crons: typeof crons;
   "db/index": typeof db_index;
   "db/or/apps": typeof db_or_apps;
   "db/or/changes": typeof db_or_changes;
   "db/or/endpoints": typeof db_or_endpoints;
-  "db/or/endpoints_v2": typeof db_or_endpoints_v2;
   "db/or/modelAppLeaderboards": typeof db_or_modelAppLeaderboards;
   "db/or/modelDetails": typeof db_or_modelDetails;
   "db/or/modelTokenStats": typeof db_or_modelTokenStats;
   "db/or/models": typeof db_or_models;
-  "db/or/models_v2": typeof db_or_models_v2;
   "db/or/providers": typeof db_or_providers;
-  "db/or/providers_v2": typeof db_or_providers_v2;
+  "db/or/views/endpoints": typeof db_or_views_endpoints;
+  "db/or/views/models": typeof db_or_views_models;
+  "db/or/views/providers": typeof db_or_views_providers;
   "db/snapshot/crawlArchives": typeof db_snapshot_crawlArchives;
   "db/snapshot/crawlConfig": typeof db_snapshot_crawlConfig;
   dev: typeof dev;
@@ -94,11 +101,16 @@ declare const fullApi: ApiFromModules<{
   "snapshots/changes2/process": typeof snapshots_changes2_process;
   "snapshots/changes2/reprocessDisplay": typeof snapshots_changes2_reprocessDisplay;
   "snapshots/crawl": typeof snapshots_crawl;
+  "snapshots/icons": typeof snapshots_icons;
   "snapshots/materialize/apps": typeof snapshots_materialize_apps;
   "snapshots/materialize/icons": typeof snapshots_materialize_icons;
   "snapshots/materialize/materialize": typeof snapshots_materialize_materialize;
   "snapshots/materialize/modelTokenStats": typeof snapshots_materialize_modelTokenStats;
   "snapshots/materialize/utils": typeof snapshots_materialize_utils;
+  "snapshots/materialize_v2/endpoints": typeof snapshots_materialize_v2_endpoints;
+  "snapshots/materialize_v2/main": typeof snapshots_materialize_v2_main;
+  "snapshots/materialize_v2/models": typeof snapshots_materialize_v2_models;
+  "snapshots/materialize_v2/providers": typeof snapshots_materialize_v2_providers;
   "snapshots/transforms/apps": typeof snapshots_transforms_apps;
   "snapshots/transforms/endpoints": typeof snapshots_transforms_endpoints;
   "snapshots/transforms/index": typeof snapshots_transforms_index;

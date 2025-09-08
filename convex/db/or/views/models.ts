@@ -1,8 +1,8 @@
 import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
-import type { QueryCtx } from '../../_generated/server'
-import { createTableVHelper } from '../../table3'
+import type { QueryCtx } from '../../../_generated/server'
+import { createTableVHelper } from '../../../table3'
 
 export const table = defineTable({
   slug: v.string(),
@@ -24,7 +24,7 @@ export const table = defineTable({
   reasoning: v.boolean(),
   mandatory_reasoning: v.boolean(),
 
-  // details
+  // details, informational only
   hugging_face_id: v.optional(v.string()),
   description: v.string(),
   tokenizer: v.string(),
@@ -32,13 +32,12 @@ export const table = defineTable({
   warning_message: v.optional(v.string()),
 
   // orchid
-  has_active_endpoint: v.boolean(),
-  inactive_at: v.number(),
+  unavailable_at: v.optional(v.number()),
   updated_at: v.number(),
 })
 
-export const vTable = createTableVHelper('or_models_v2', table.validator)
+export const vTable = createTableVHelper('or_views_models', table.validator)
 
-export async function list(ctx: QueryCtx) {
+export async function collect(ctx: QueryCtx) {
   return await ctx.db.query(vTable.name).collect()
 }
