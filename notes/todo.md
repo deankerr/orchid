@@ -22,13 +22,13 @@
 
 ## OR entity changes tracking
 
-- generate diffs of archive data
+- [X] generate diffs of archive data
 - refine diffs to show e.g. pricing changes
 
 # frontend
 
 - short labels/terms for some metrics, e.g. throughput
-- endpoint table: unit out of data, above/below column header
+- endpoint table: display unit above column header
 - convert rarer elements to something like AttributeBadges, maybe icon only variant
 - our current endpoint data table may be kept as an advanced "show everything" table, but many elements are rare
 
@@ -74,7 +74,7 @@
 - model.reasoning_config CAN be empty for a reasoning model
 - model.context_length is always included in endpoint.context_length[]
 
-- google has 'audio' input
+- [X] add 'audio' input modality
 
 ## endpoints
 

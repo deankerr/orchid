@@ -9,11 +9,18 @@ import { table as ORModelDetailsTable } from './db/or/modelDetails'
 import { table as ORModelsTable } from './db/or/models'
 import { table as ORModelTokenStatsTable } from './db/or/modelTokenStats'
 import { table as ORProvidersTable } from './db/or/providers'
+import { table as ORViewsEndpointsTable } from './db/or/views/endpoints'
+import { table as ORViewsModelsTable } from './db/or/views/models'
+import { table as ORViewsProvidersTable } from './db/or/views/providers'
 import { table as SnapshotCrawlArchivesTable } from './db/snapshot/crawlArchives'
 import { table as SnapshotCrawlConfigTable } from './db/snapshot/crawlConfig'
 
 export default defineSchema(
   {
+    or_views_endpoints: ORViewsEndpointsTable,
+    or_views_models: ORViewsModelsTable,
+    or_views_providers: ORViewsProvidersTable,
+
     or_apps: ORAppsTable,
     or_changes: ORChangesTable,
     or_endpoints: OREndpointsTable,
