@@ -40,6 +40,12 @@ export const snapshotCron = internalAction({
       {},
     )
 
+    await ctx.scheduler.runAfter(
+      delayMs + 12 * 60_000,
+      internal.snapshots.materialize_v2.main.modelEndpoints,
+      {},
+    )
+
     console.log(
       `[cron:snapshot] scheduled crawlB in ${Math.round(delayMs / 60000)}m and materializeb +10m`,
     )
