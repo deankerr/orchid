@@ -6,8 +6,10 @@ export const ModelTransformSchema = z
   .object({
     slug: z.string(),
     hf_slug: z.string().nullable(),
-    updated_at: z.string(),
-    created_at: z.string(),
+    created_at: z
+      .string()
+      .transform((val) => Date.parse(val))
+      .pipe(z.number()),
     name: z.string(),
     short_name: z.string(),
     author: z.string(),
@@ -42,12 +44,12 @@ export const ModelTransformSchema = z
       author_slug: raw.author,
       author_name,
 
-      or_added_at: new Date(raw.created_at).getTime(),
+      or_added_at: raw.created_at,
 
       input_modalities: raw.input_modalities,
       output_modalities: raw.output_modalities,
 
-      reasoning: raw.reasoning_config && raw.reasoning_config !== null,
+      reasoning: raw.reasoning_config !== null,
       mandatory_reasoning: false, // Can only be determined from endpoint data
 
       // details

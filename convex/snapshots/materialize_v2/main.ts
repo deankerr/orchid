@@ -1,4 +1,4 @@
-import { v, type Infer } from 'convex/values'
+import { v } from 'convex/values'
 
 import { diff } from 'json-diff-ts'
 
@@ -6,45 +6,29 @@ import * as DB from '@/convex/db'
 
 import { internal } from '../../_generated/api'
 import { internalAction, internalMutation } from '../../_generated/server'
-import { getArchiveBundle } from '../bundle'
+import { getArchiveBundleOrThrow } from '../bundle'
 import { materializeModelEndpoints } from './endpoints'
 
-type PModel = Infer<typeof DB.OrViewsModels.vTable.validator>
-type PEndpoint = Infer<typeof DB.OrViewsEndpoints.vTable.validator>
+function isEqual(from: Record<string, unknown>, to: Record<string, unknown>) {
+  const changes = diff(from, to, {
+    keysToSkip: ['_id', '_creationTime', 'updated_at'],
+  })
+  return changes.length === 0
+}
 
 export const modelEndpoints = internalAction({
   args: { crawl_id: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    const crawl_id =
-      args.crawl_id ?? (await ctx.runQuery(internal.db.snapshot.crawlArchives.getLatestCrawlId))
+    const bundle = await getArchiveBundleOrThrow(ctx, args.crawl_id)
 
-    if (!crawl_id) {
-      console.log(`[materialize_v2] no crawl_id`)
-      return null
-    }
+    console.log(`[materialize_v2]`, { crawl_id: bundle.crawl_id })
 
-    const bundle = await getArchiveBundle(ctx, crawl_id)
-    if (!bundle) {
-      console.log(`[materialize_v2] no bundle found`, { crawl_id })
-      return null
-    }
+    const { models, endpoints } = materializeModelEndpoints(bundle)
 
-    console.log(`[materialize_v2]`, { crawl_id })
-
-    const modelEndpoints = materializeModelEndpoints(bundle)
-
-    const modelsMap = new Map<string, PModel>()
-    const endpointsMap = new Map<string, PEndpoint>()
-
-    for (const item of modelEndpoints) {
-      modelsMap.set(item.model.slug, item.model)
-      endpointsMap.set(item.endpoint.uuid, item.endpoint)
-    }
-
-    console.log(`[materialize_v2]`, { models: modelsMap.size, endpoints: endpointsMap.size })
+    console.log(`[materialize_v2]`, { models: models.length, endpoints: endpoints.length })
     await ctx.runMutation(internal.snapshots.materialize_v2.main.upsertModelEndpoints, {
-      models: Array.from(modelsMap.values()),
-      endpoints: Array.from(endpointsMap.values()),
+      models,
+      endpoints,
     })
 
     return null
@@ -57,65 +41,86 @@ export const upsertModelEndpoints = internalMutation({
     endpoints: v.array(v.object(DB.OrViewsEndpoints.vTable.validator.fields)),
   },
   handler: async (ctx, args) => {
+    // * initialize counters
+    const counters = {
+      models: { stable: 0, update: 0, insert: 0, unavailable: 0 },
+      endpoints: { stable: 0, update: 0, insert: 0, unavailable: 0 },
+    }
+
     // * models
     const currentModels = await DB.OrViewsModels.collect(ctx)
-    const currentModelsMap = new Map(currentModels.map((m) => [m.slug, m]))
+    const currentModelsMap = new Map(
+      currentModels
+        .filter((m) => !m.unavailable_at)
+        .map((m) => [m.slug, { ...m, updated_at: Date.now() }]),
+    )
 
     for (const model of args.models) {
       const currentModel = currentModelsMap.get(model.slug)
 
-      if (!currentModel) {
-        // * new
-        model.updated_at = Date.now()
+      if (currentModel) {
+        currentModelsMap.delete(currentModel.slug)
+
+        if (isEqual(currentModel, model)) {
+          // * stable
+          counters.models.stable++
+        } else {
+          // * update
+          await ctx.db.replace(currentModel._id, model)
+          counters.models.update++
+        }
+      } else {
+        // * insert
         await ctx.db.insert('or_views_models', model)
-        continue
+        counters.models.insert++
       }
-
-      const changes = diff(currentModel, model, { keysToSkip: ['updated_at'] })
-      if (changes.length > 0) {
-        // * updated
-        model.updated_at = Date.now()
-        await ctx.db.replace(currentModel._id, model)
-      }
-
-      // don't mark as unavailable
-      currentModelsMap.delete(currentModel.slug)
     }
 
     // update unavailable_at for models that are no longer advertised
     for (const currentModel of currentModelsMap.values()) {
-      if (currentModel.unavailable_at) continue
       await ctx.db.patch(currentModel._id, { unavailable_at: Date.now() })
+      counters.models.unavailable++
     }
 
     // * endpoints
     const currentEndpoints = await DB.OrViewsEndpoints.collect(ctx)
-    const currentEndpointsMap = new Map(currentEndpoints.map((e) => [e.uuid, e]))
+    const currentEndpointsMap = new Map(
+      currentEndpoints
+        .filter((e) => !e.unavailable_at)
+        .map((e) => [e.uuid, { ...e, updated_at: Date.now() }]),
+    )
 
     for (const endpoint of args.endpoints) {
       const currentEndpoint = currentEndpointsMap.get(endpoint.uuid)
-      if (!currentEndpoint) {
-        // * new
-        endpoint.updated_at = Date.now()
+
+      if (currentEndpoint) {
+        currentEndpointsMap.delete(currentEndpoint.uuid)
+
+        if (isEqual(currentEndpoint, endpoint)) {
+          // * stable
+          counters.endpoints.stable++
+        } else {
+          // * update
+          await ctx.db.replace(currentEndpoint._id, endpoint)
+          counters.endpoints.update++
+        }
+      } else {
+        // * insert
         await ctx.db.insert('or_views_endpoints', endpoint)
-        continue
+        counters.endpoints.insert++
       }
-
-      const changes = diff(currentEndpoint, endpoint, { keysToSkip: ['updated_at'] })
-      if (changes.length > 0) {
-        // * updated
-        endpoint.updated_at = Date.now()
-        await ctx.db.replace(currentEndpoint._id, endpoint)
-      }
-
-      // don't mark as unavailable
-      currentEndpointsMap.delete(currentEndpoint.uuid)
     }
 
     // update unavailable_at for endpoints that are no longer advertised
     for (const currentEndpoint of currentEndpointsMap.values()) {
-      if (currentEndpoint.unavailable_at) continue
       await ctx.db.patch(currentEndpoint._id, { unavailable_at: Date.now() })
+      counters.endpoints.unavailable++
     }
+
+    // * log final counts
+    console.log(`[materialize_v2:counts]`, {
+      models: counters.models,
+      endpoints: counters.endpoints,
+    })
   },
 })

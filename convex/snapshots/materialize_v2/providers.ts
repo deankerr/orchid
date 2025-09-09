@@ -1,7 +1,6 @@
 import * as R from 'remeda'
 import { z } from 'zod'
 
-import type { CrawlArchiveBundle } from '../crawl'
 import { getIconUrl } from '../icons'
 
 export const ProviderTransformSchema = z
@@ -33,12 +32,3 @@ export const ProviderTransformSchema = z
     terms_of_service_url: raw.dataPolicy.termsOfServiceURL,
     privacy_policy_url: raw.dataPolicy.privacyPolicyURL,
   }))
-
-export function materializeProviders(bundle: CrawlArchiveBundle) {
-  const parsed = bundle.data.providers.map((raw) => ProviderTransformSchema.safeParse(raw))
-
-  const issues = parsed.filter((p) => !p.success).map((p) => z.prettifyError(p.error))
-  if (issues.length) console.error('[materialize_v2:providers]', { issues })
-
-  return parsed.filter((p) => p.success).map((p) => p.data)
-}

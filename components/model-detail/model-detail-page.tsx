@@ -1,5 +1,7 @@
 'use client'
 
+import Link from 'next/link'
+
 import { AlertTriangleIcon } from 'lucide-react'
 
 import { getModelVariantSlug } from '@/convex/shared'
@@ -108,22 +110,23 @@ export function ModelDetailPage({ slug }: { slug: string }) {
 
           <FeatureFlag flag="dev">
             {model.variants.map((v) => (
-              <div key={v} className="font-mono text-xs outline outline-dashed">
-                E:{v}{' '}
-                <a
-                  className="underline decoration-dotted underline-offset-2"
-                  target="_blank"
+              <div
+                key={v}
+                className="flex items-center gap-1 font-mono text-xs outline outline-dashed"
+              >
+                E:{v !== 'standard' && v}{' '}
+                <Link
+                  className="underline underline-offset-2"
                   href={`https://openrouter.ai/api/v1/models/${getModelVariantSlug(model.slug, v)}/endpoints`}
                 >
                   V1
-                </a>{' '}
-                <a
-                  className="underline decoration-dotted underline-offset-2"
-                  target="_blank"
+                </Link>{' '}
+                <Link
+                  className="underline underline-offset-2"
                   href={`https://openrouter.ai/api/frontend/stats/endpoint?permaslug=${model.permaslug}&variant=${v}`}
                 >
                   FE
-                </a>
+                </Link>
               </div>
             ))}
           </FeatureFlag>
