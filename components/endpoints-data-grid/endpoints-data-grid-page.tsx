@@ -56,7 +56,7 @@ export function EndpointsDataGridPage() {
       >
         <EndpointsDataGrid endpoints={results || []} isLoading={isInitialLoad} />
 
-        {!isInitialLoad && (
+        {!isInitialLoad && results.length > 0 && (
           <div className="grid h-14 place-content-center border-t font-mono text-sm text-muted-foreground">
             {isLoadingMore && <Spinner />}
             {status === 'Exhausted' && 'No more endpoints found.'}

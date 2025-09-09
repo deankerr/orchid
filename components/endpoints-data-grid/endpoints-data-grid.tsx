@@ -42,7 +42,7 @@ export function EndpointsDataGrid({
           )
         },
         meta: {
-          skeleton: <Skeleton className="h-12 w-full" />,
+          skeleton: <Skeleton className="h-12 w-60" />,
         },
       },
 
@@ -61,7 +61,7 @@ export function EndpointsDataGrid({
           )
         },
         meta: {
-          skeleton: <Skeleton className="h-12 w-full" />,
+          skeleton: <Skeleton className="h-12 w-44" />,
         },
       },
 
@@ -97,7 +97,7 @@ export function EndpointsDataGrid({
           return <ModalityIcons className="min-w-16" modalities={endpoint.model.input_modalities} />
         },
         meta: {
-          skeleton: <Skeleton className="h-6 w-full" />,
+          skeleton: <Skeleton className="h-6 w-16" />,
         },
       },
 
@@ -112,7 +112,7 @@ export function EndpointsDataGrid({
           )
         },
         meta: {
-          skeleton: <Skeleton className="h-6 w-full" />,
+          skeleton: <Skeleton className="h-6 w-16" />,
         },
       },
 
@@ -124,7 +124,7 @@ export function EndpointsDataGrid({
           return <div className="font-mono text-sm">{formatNumber(contextLength, 0)}</div>
         },
         meta: {
-          skeleton: <Skeleton className="h-4 w-16" />,
+          skeleton: <Skeleton className="h-4 w-20" />,
           cellClassName: 'min-w-28',
         },
       },
@@ -279,7 +279,7 @@ export function EndpointsDataGrid({
           )
         },
         meta: {
-          skeleton: <Skeleton className="h-8 w-full" />,
+          skeleton: <Skeleton className="h-8 w-32" />,
         },
       },
 
@@ -337,7 +337,7 @@ export function EndpointsDataGrid({
           )
         },
         meta: {
-          skeleton: <Skeleton className="h-8 w-full" />,
+          skeleton: <Skeleton className="h-8 w-32" />,
         },
       },
 
@@ -373,7 +373,7 @@ export function EndpointsDataGrid({
           )
         },
         meta: {
-          skeleton: <Skeleton className="h-8 w-full" />,
+          skeleton: <Skeleton className="h-8 w-72" />,
         },
       },
     ],
