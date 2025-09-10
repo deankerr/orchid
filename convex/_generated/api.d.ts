@@ -14,6 +14,7 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as analysis_endpoints from "../analysis/endpoints.js";
+import type * as analysis_stats from "../analysis/stats.js";
 import type * as crons from "../crons.js";
 import type * as db_index from "../db/index.js";
 import type * as db_or_apps from "../db/or/apps.js";
@@ -75,6 +76,7 @@ import type * as views_providers from "../views/providers.js";
  */
 declare const fullApi: ApiFromModules<{
   "analysis/endpoints": typeof analysis_endpoints;
+  "analysis/stats": typeof analysis_stats;
   crons: typeof crons;
   "db/index": typeof db_index;
   "db/or/apps": typeof db_or_apps;

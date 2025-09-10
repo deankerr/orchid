@@ -1,22 +1,15 @@
-import { type Infer } from 'convex/values'
 import * as R from 'remeda'
 import { z } from 'zod'
 
-import * as DB from '@/convex/db'
-
-import type { CrawlArchiveBundle } from '../crawl'
 import { ModelTransformSchema } from './models'
 import { ProviderTransformSchema } from './providers'
-
-type VModel = Infer<typeof DB.OrViewsModels.vTable.validator>
-type VEndpoint = Infer<typeof DB.OrViewsEndpoints.vTable.validator>
 
 const zPrice = z.coerce
   .number()
   .transform((val) => (val !== 0 ? val : undefined))
   .optional()
 
-const ModelEndpointTransformSchema = z
+export const EndpointTransformSchema = z
   .object({
     id: z.string(),
     name: z.string(),
@@ -93,6 +86,12 @@ const ModelEndpointTransformSchema = z
       variant: raw.variant,
       reasoning: raw.supports_reasoning,
       mandatory_reasoning: raw.features.is_mandatory_reasoning || false,
+    }
+
+    const provider = {
+      ...raw.provider_info,
+      slug: raw.provider_slug.split('/')[0] || raw.provider_slug,
+      updated_at: Date.now(),
     }
 
     const endpoint = {
@@ -177,33 +176,5 @@ const ModelEndpointTransformSchema = z
       updated_at: Date.now(),
     }
 
-    return { model, endpoint }
+    return { model, endpoint, provider }
   })
-
-export function materializeModelEndpoints(bundle: CrawlArchiveBundle) {
-  const rawEndpoints = bundle.data.models.flatMap((m) => m.endpoints)
-
-  const modelsMap = new Map<string, VModel>()
-  const endpointsMap = new Map<string, VEndpoint>()
-  const issues: string[] = []
-
-  for (const raw of rawEndpoints) {
-    const parsed = ModelEndpointTransformSchema.safeParse(raw)
-
-    if (!parsed.success) {
-      issues.push(z.prettifyError(parsed.error))
-      continue
-    }
-
-    const { model, endpoint } = parsed.data
-    modelsMap.set(model.slug, model)
-    endpointsMap.set(endpoint.uuid, endpoint)
-  }
-
-  if (issues.length) console.error('[materialize_v2:endpoints]', { issues })
-
-  return {
-    models: Array.from(modelsMap.values()),
-    endpoints: Array.from(endpointsMap.values()),
-  }
-}

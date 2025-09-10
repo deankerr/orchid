@@ -1,7 +1,7 @@
 import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
-import type { QueryCtx } from '../../../_generated/server'
+import { query, type QueryCtx } from '../../../_generated/server'
 import { createTableVHelper } from '../../../table3'
 
 export const table = defineTable({
@@ -35,9 +35,18 @@ export const table = defineTable({
   unavailable_at: v.optional(v.number()),
   updated_at: v.number(),
 })
+  .index('by_name', ['name'])
+  .searchIndex('by_name_search', { searchField: 'name' })
 
 export const vTable = createTableVHelper('or_views_models', table.validator)
 
 export async function collect(ctx: QueryCtx) {
   return await ctx.db.query(vTable.name).collect()
 }
+
+export const list = query({
+  returns: vTable.doc.array(),
+  handler: async (ctx) => {
+    return await collect(ctx)
+  },
+})
