@@ -14,6 +14,7 @@ import {
 import { BadgeComponents } from './sets/badges'
 import { EndpointIdentitySet } from './sets/endpoint-identity'
 import { EntityCardSet } from './sets/entity-card'
+import { OREntityComboboxSet } from './sets/or-entity-combobox'
 
 type ComponentSet = {
   name: string
@@ -35,6 +36,10 @@ export function ComponentLibrary() {
     {
       name: 'badges',
       component: BadgeComponents,
+    },
+    {
+      name: 'OREntityCombobox',
+      component: OREntityComboboxSet,
     },
   ]
 

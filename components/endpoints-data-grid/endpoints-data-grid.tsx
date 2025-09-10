@@ -82,7 +82,7 @@ export function EndpointsDataGrid({
           )
         },
         meta: {
-          skeleton: <Skeleton className="h-6 w-20" />,
+          skeleton: <Skeleton className="h-6 w-16" />,
           headerClassName: 'text-center',
           cellClassName: 'text-center',
         },
