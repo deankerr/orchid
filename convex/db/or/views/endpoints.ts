@@ -2,6 +2,7 @@ import { defineTable, paginationOptsValidator } from 'convex/server'
 import { v } from 'convex/values'
 
 import { query, type QueryCtx } from '../../../_generated/server'
+import { vPaginatedQueryReturn } from '../../../lib/validator'
 import { createTableVHelper } from '../../../table3'
 
 export const table = defineTable({
@@ -114,6 +115,9 @@ export const table = defineTable({
   unavailable_at: v.optional(v.number()),
   updated_at: v.number(),
 })
+  .index('by_model_or_added_at', ['model.or_added_at'])
+  .index('by_model_slug', ['model.slug'])
+  .index('by_provider_slug', ['provider.slug'])
 
 export const vTable = createTableVHelper('or_views_endpoints', table.validator)
 
@@ -121,11 +125,34 @@ export async function collect(ctx: QueryCtx) {
   return await ctx.db.query(vTable.name).collect()
 }
 
-export const paginate = query({
+export const list = query({
   args: {
+    modelSlug: v.optional(v.string()),
+    providerSlug: v.optional(v.string()),
     paginationOpts: paginationOptsValidator,
   },
-  handler: async (ctx, args) => {
-    return await ctx.db.query(vTable.name).order('asc').paginate(args.paginationOpts)
+  returns: vPaginatedQueryReturn(vTable.doc),
+  handler: async (ctx, { modelSlug, providerSlug, paginationOpts }) => {
+    if (modelSlug) {
+      return await ctx.db
+        .query(vTable.name)
+        .withIndex('by_model_slug', (q) => q.eq('model.slug', modelSlug))
+        .order('desc')
+        .paginate(paginationOpts)
+    }
+
+    if (providerSlug) {
+      return await ctx.db
+        .query(vTable.name)
+        .withIndex('by_provider_slug', (q) => q.eq('provider.slug', providerSlug))
+        .order('desc')
+        .paginate(paginationOpts)
+    }
+
+    return await ctx.db
+      .query(vTable.name)
+      .withIndex('by_model_or_added_at')
+      .order('desc')
+      .paginate(paginationOpts)
   },
 })

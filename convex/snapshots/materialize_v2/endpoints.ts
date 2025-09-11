@@ -1,22 +1,15 @@
-import { type Infer } from 'convex/values'
 import * as R from 'remeda'
 import { z } from 'zod'
 
-import * as DB from '@/convex/db'
-
-import type { CrawlArchiveBundle } from '../crawl'
 import { ModelTransformSchema } from './models'
 import { ProviderTransformSchema } from './providers'
-
-type VModel = Infer<typeof DB.OrViewsModels.vTable.validator>
-type VEndpoint = Infer<typeof DB.OrViewsEndpoints.vTable.validator>
 
 const zPrice = z.coerce
   .number()
   .transform((val) => (val !== 0 ? val : undefined))
   .optional()
 
-const ModelEndpointTransformSchema = z
+export const EndpointTransformSchema = z
   .object({
     id: z.string(),
     name: z.string(),
@@ -87,33 +80,55 @@ const ModelEndpointTransformSchema = z
   })
   .transform(R.pickBy(R.isNonNullish))
   .transform((raw) => {
+    // enrich model with data only available on model endpoints
     const model = {
       ...raw.model,
       slug: raw.model_variant_slug,
       variant: raw.variant,
       reasoning: raw.supports_reasoning,
       mandatory_reasoning: raw.features.is_mandatory_reasoning || false,
+      // add variant suffix to name
+      name:
+        raw.variant === 'beta'
+          ? `${raw.model.name} (self-moderated)` // anthropic only, match name on OR
+          : raw.variant !== 'standard'
+            ? `${raw.model.name} (${raw.variant})`
+            : raw.model.name,
+    }
+
+    const provider = {
+      ...raw.provider_info,
+      // remove tag suffix if present
+      slug: raw.provider_slug.split('/')[0],
     }
 
     const endpoint = {
       uuid: raw.id,
 
       // * model
-      model: R.omit(model, [
-        'description',
-        'hugging_face_id',
-        'instruct_type',
-        'tokenizer',
-        'warning_message',
-        'updated_at',
+      model: R.pick(model, [
+        'author_name',
+        'author_slug',
+        'base_slug',
+        'icon_url',
+        'input_modalities',
+        'mandatory_reasoning',
+        'name',
+        'or_added_at',
+        'output_modalities',
+        'reasoning',
+        'slug',
+        'variant',
+        'version_slug',
       ]),
 
       // * provider
       provider: {
-        slug: raw.provider_slug.split('/')[0] || raw.provider_slug,
+        slug: provider.slug,
+        name: provider.name,
+        icon_url: provider.icon_url,
+        // endpoint specific
         tag_slug: raw.provider_slug,
-        name: raw.provider_display_name,
-        icon_url: raw.provider_info.icon_url,
         model_id: raw.provider_model_id,
         region: raw.provider_region,
       },
@@ -173,37 +188,7 @@ const ModelEndpointTransformSchema = z
       deranked: raw.is_deranked,
       disabled: raw.is_disabled,
       status: raw.status || 0,
-
-      updated_at: Date.now(),
     }
 
-    return { model, endpoint }
+    return { model, endpoint, provider }
   })
-
-export function materializeModelEndpoints(bundle: CrawlArchiveBundle) {
-  const rawEndpoints = bundle.data.models.flatMap((m) => m.endpoints)
-
-  const modelsMap = new Map<string, VModel>()
-  const endpointsMap = new Map<string, VEndpoint>()
-  const issues: string[] = []
-
-  for (const raw of rawEndpoints) {
-    const parsed = ModelEndpointTransformSchema.safeParse(raw)
-
-    if (!parsed.success) {
-      issues.push(z.prettifyError(parsed.error))
-      continue
-    }
-
-    const { model, endpoint } = parsed.data
-    modelsMap.set(model.slug, model)
-    endpointsMap.set(endpoint.uuid, endpoint)
-  }
-
-  if (issues.length) console.error('[materialize_v2:endpoints]', { issues })
-
-  return {
-    models: Array.from(modelsMap.values()),
-    endpoints: Array.from(endpointsMap.values()),
-  }
-}

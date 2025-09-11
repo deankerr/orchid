@@ -1,7 +1,7 @@
 import {
   AudioLinesIcon,
   BoxIcon,
-  FileChartColumnIcon,
+  FileChartColumnIncreasingIcon,
   ImageIcon,
   LetterTextIcon,
 } from 'lucide-react'
@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils'
 const modalityIcons = {
   text: <LetterTextIcon />,
   image: <ImageIcon />,
-  file: <FileChartColumnIcon />,
+  file: <FileChartColumnIncreasingIcon />,
   audio: <AudioLinesIcon />,
 }
 

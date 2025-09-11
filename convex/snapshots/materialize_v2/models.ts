@@ -58,7 +58,5 @@ export const ModelTransformSchema = z
       hugging_face_id: raw.hf_slug || undefined,
       instruct_type: raw.instruct_type || undefined,
       warning_message: raw.warning_message || undefined,
-
-      updated_at: Date.now(),
     }
   })

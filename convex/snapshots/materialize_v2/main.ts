@@ -1,4 +1,5 @@
-import { v } from 'convex/values'
+import { v, type Infer } from 'convex/values'
+import { z } from 'zod'
 
 import { diff } from 'json-diff-ts'
 
@@ -7,7 +8,8 @@ import * as DB from '@/convex/db'
 import { internal } from '../../_generated/api'
 import { internalAction, internalMutation } from '../../_generated/server'
 import { getArchiveBundleOrThrow } from '../bundle'
-import { materializeModelEndpoints } from './endpoints'
+import type { CrawlArchiveBundle } from '../crawl'
+import { EndpointTransformSchema } from './endpoints'
 
 function isEqual(from: Record<string, unknown>, to: Record<string, unknown>) {
   const changes = diff(from, to, {
@@ -16,35 +18,75 @@ function isEqual(from: Record<string, unknown>, to: Record<string, unknown>) {
   return changes.length === 0
 }
 
-export const modelEndpoints = internalAction({
+export const run = internalAction({
   args: { crawl_id: v.optional(v.string()) },
   handler: async (ctx, args) => {
     const bundle = await getArchiveBundleOrThrow(ctx, args.crawl_id)
 
     console.log(`[materialize_v2]`, { crawl_id: bundle.crawl_id })
 
-    const { models, endpoints } = materializeModelEndpoints(bundle)
+    const { models, endpoints, providers } = materializeModelEndpoints(bundle)
 
-    console.log(`[materialize_v2]`, { models: models.length, endpoints: endpoints.length })
+    if (endpoints.length === 0) {
+      console.warn(`[materialize_v2] abort: no endpoints found`)
+      return
+    }
+
     await ctx.runMutation(internal.snapshots.materialize_v2.main.upsertModelEndpoints, {
       models,
       endpoints,
+      providers,
     })
-
-    return null
   },
 })
 
+const vUpsertModel = DB.OrViewsModels.vTable.validator.omit('updated_at')
+const vUpsertEndpoint = DB.OrViewsEndpoints.vTable.validator.omit('updated_at')
+const vUpsertProvider = DB.OrViewsProviders.vTable.validator.omit('updated_at')
+
+export function materializeModelEndpoints(bundle: CrawlArchiveBundle) {
+  const rawEndpoints = bundle.data.models.flatMap((m) => m.endpoints)
+
+  const modelsMap = new Map<string, Infer<typeof vUpsertModel>>()
+  const endpointsMap = new Map<string, Infer<typeof vUpsertEndpoint>>()
+  const providersMap = new Map<string, Infer<typeof vUpsertProvider>>()
+  const issues: string[] = []
+
+  for (const raw of rawEndpoints) {
+    const parsed = EndpointTransformSchema.safeParse(raw)
+
+    if (!parsed.success) {
+      issues.push(z.prettifyError(parsed.error))
+      continue
+    }
+
+    const { model, endpoint, provider } = parsed.data
+    modelsMap.set(model.slug, model)
+    endpointsMap.set(endpoint.uuid, endpoint)
+    providersMap.set(provider.slug, provider)
+  }
+
+  if (issues.length) console.error('[materialize_v2:endpoints]', { issues })
+
+  return {
+    models: Array.from(modelsMap.values()),
+    endpoints: Array.from(endpointsMap.values()),
+    providers: Array.from(providersMap.values()),
+  }
+}
+
 export const upsertModelEndpoints = internalMutation({
   args: {
-    models: v.array(v.object(DB.OrViewsModels.vTable.validator.fields)),
-    endpoints: v.array(v.object(DB.OrViewsEndpoints.vTable.validator.fields)),
+    models: vUpsertModel.array(),
+    endpoints: vUpsertEndpoint.array(),
+    providers: vUpsertProvider.array(),
   },
   handler: async (ctx, args) => {
     // * initialize counters
     const counters = {
       models: { stable: 0, update: 0, insert: 0, unavailable: 0 },
       endpoints: { stable: 0, update: 0, insert: 0, unavailable: 0 },
+      providers: { stable: 0, update: 0, insert: 0, unavailable: 0 },
     }
 
     // * models
@@ -117,10 +159,46 @@ export const upsertModelEndpoints = internalMutation({
       counters.endpoints.unavailable++
     }
 
+    // * providers
+    const currentProviders = await DB.OrViewsProviders.collect(ctx)
+    const currentProvidersMap = new Map(
+      currentProviders
+        .filter((p) => !p.unavailable_at)
+        .map((p) => [p.slug, { ...p, updated_at: Date.now() }]),
+    )
+
+    for (const provider of args.providers) {
+      const currentProvider = currentProvidersMap.get(provider.slug)
+
+      if (currentProvider) {
+        currentProvidersMap.delete(currentProvider.slug)
+
+        if (isEqual(currentProvider, provider)) {
+          // * stable
+          counters.providers.stable++
+        } else {
+          // * update
+          await ctx.db.replace(currentProvider._id, provider)
+          counters.providers.update++
+        }
+      } else {
+        // * insert
+        await ctx.db.insert('or_views_providers', provider)
+        counters.providers.insert++
+      }
+    }
+
+    // update unavailable_at for providers that are no longer advertised
+    for (const currentProvider of currentProvidersMap.values()) {
+      await ctx.db.patch(currentProvider._id, { unavailable_at: Date.now() })
+      counters.providers.unavailable++
+    }
+
     // * log final counts
     console.log(`[materialize_v2:counts]`, {
       models: counters.models,
       endpoints: counters.endpoints,
+      providers: counters.providers,
     })
   },
 })
