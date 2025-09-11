@@ -25,7 +25,7 @@ export const EntityCard = memo(
           <div className="truncate text-sm font-medium">{name}</div>
           <div
             className={cn(
-              'relative -mx-1 -my-0.5 w-fit max-w-full overflow-hidden rounded-sm px-1 py-0.5 font-mono text-xs text-ellipsis whitespace-nowrap text-muted-foreground outline outline-transparent select-all',
+              'relative -mx-1 w-fit max-w-full overflow-hidden rounded-sm px-1 font-mono text-xs text-ellipsis whitespace-nowrap text-muted-foreground outline outline-transparent select-all',
               hoverSlugReveal &&
                 'hover:z-10 hover:max-w-none hover:overflow-visible hover:bg-background hover:outline-border/50 hover:transition-colors',
             )}

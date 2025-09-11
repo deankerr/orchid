@@ -396,7 +396,6 @@ export function EndpointsDataGrid({
       tableLayout={{
         headerSticky: true,
         width: 'auto',
-        cellBorder: false,
       }}
       tableClassNames={{
         headerRow: 'font-mono uppercase text-[85%]',
