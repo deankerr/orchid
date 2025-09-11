@@ -92,9 +92,7 @@ export const upsertModelEndpoints = internalMutation({
     // * models
     const currentModels = await DB.OrViewsModels.collect(ctx)
     const currentModelsMap = new Map(
-      currentModels
-        .filter((m) => !m.unavailable_at)
-        .map((m) => [m.slug, { ...m, updated_at: Date.now() }]),
+      currentModels.filter((m) => !m.unavailable_at).map((m) => [m.slug, m]),
     )
 
     for (const model of args.models) {
@@ -108,12 +106,12 @@ export const upsertModelEndpoints = internalMutation({
           counters.models.stable++
         } else {
           // * update
-          await ctx.db.replace(currentModel._id, model)
+          await ctx.db.replace(currentModel._id, { ...model, updated_at: Date.now() })
           counters.models.update++
         }
       } else {
         // * insert
-        await ctx.db.insert('or_views_models', model)
+        await ctx.db.insert('or_views_models', { ...model, updated_at: Date.now() })
         counters.models.insert++
       }
     }
@@ -127,9 +125,7 @@ export const upsertModelEndpoints = internalMutation({
     // * endpoints
     const currentEndpoints = await DB.OrViewsEndpoints.collect(ctx)
     const currentEndpointsMap = new Map(
-      currentEndpoints
-        .filter((e) => !e.unavailable_at)
-        .map((e) => [e.uuid, { ...e, updated_at: Date.now() }]),
+      currentEndpoints.filter((e) => !e.unavailable_at).map((e) => [e.uuid, e]),
     )
 
     for (const endpoint of args.endpoints) {
@@ -143,12 +139,12 @@ export const upsertModelEndpoints = internalMutation({
           counters.endpoints.stable++
         } else {
           // * update
-          await ctx.db.replace(currentEndpoint._id, endpoint)
+          await ctx.db.replace(currentEndpoint._id, { ...endpoint, updated_at: Date.now() })
           counters.endpoints.update++
         }
       } else {
         // * insert
-        await ctx.db.insert('or_views_endpoints', endpoint)
+        await ctx.db.insert('or_views_endpoints', { ...endpoint, updated_at: Date.now() })
         counters.endpoints.insert++
       }
     }
@@ -162,9 +158,7 @@ export const upsertModelEndpoints = internalMutation({
     // * providers
     const currentProviders = await DB.OrViewsProviders.collect(ctx)
     const currentProvidersMap = new Map(
-      currentProviders
-        .filter((p) => !p.unavailable_at)
-        .map((p) => [p.slug, { ...p, updated_at: Date.now() }]),
+      currentProviders.filter((p) => !p.unavailable_at).map((p) => [p.slug, p]),
     )
 
     for (const provider of args.providers) {
@@ -178,12 +172,12 @@ export const upsertModelEndpoints = internalMutation({
           counters.providers.stable++
         } else {
           // * update
-          await ctx.db.replace(currentProvider._id, provider)
+          await ctx.db.replace(currentProvider._id, { ...provider, updated_at: Date.now() })
           counters.providers.update++
         }
       } else {
         // * insert
-        await ctx.db.insert('or_views_providers', provider)
+        await ctx.db.insert('or_views_providers', { ...provider, updated_at: Date.now() })
         counters.providers.insert++
       }
     }
