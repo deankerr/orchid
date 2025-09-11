@@ -41,8 +41,9 @@ export function EndpointsDataGrid({
             />
           )
         },
+        size: 272,
         meta: {
-          skeleton: <Skeleton className="h-12 w-60" />,
+          skeleton: <Skeleton className="h-12 w-full" />,
         },
       },
 
@@ -60,8 +61,9 @@ export function EndpointsDataGrid({
             />
           )
         },
+        size: 218,
         meta: {
-          skeleton: <Skeleton className="h-12 w-44" />,
+          skeleton: <Skeleton className="h-12 w-full" />,
         },
       },
 
@@ -81,9 +83,10 @@ export function EndpointsDataGrid({
             </Badge>
           )
         },
+        size: 112,
         meta: {
-          skeleton: <Skeleton className="h-6 w-16" />,
           headerClassName: 'text-center',
+          skeleton: <Skeleton className="h-6 w-full" />,
           cellClassName: 'text-center',
         },
       },
@@ -94,10 +97,16 @@ export function EndpointsDataGrid({
         cell: ({ row }) => {
           const endpoint = row.original
 
-          return <ModalityIcons className="min-w-16" modalities={endpoint.model.input_modalities} />
+          return (
+            <ModalityIcons
+              className="min-w-16 gap-px"
+              modalities={endpoint.model.input_modalities}
+            />
+          )
         },
+        size: 114,
         meta: {
-          skeleton: <Skeleton className="h-6 w-16" />,
+          skeleton: <Skeleton className="h-6 w-full" />,
         },
       },
 
@@ -111,8 +120,9 @@ export function EndpointsDataGrid({
             <ModalityIcons className="min-w-16" modalities={endpoint.model.output_modalities} />
           )
         },
+        size: 112,
         meta: {
-          skeleton: <Skeleton className="h-6 w-16" />,
+          skeleton: <Skeleton className="h-6 w-full" />,
         },
       },
 
@@ -123,9 +133,11 @@ export function EndpointsDataGrid({
           const contextLength = row.original.context_length
           return <div className="font-mono text-sm">{formatNumber(contextLength, 0)}</div>
         },
+        size: 140,
         meta: {
-          skeleton: <Skeleton className="h-4 w-20" />,
-          cellClassName: 'min-w-28',
+          skeleton: <Skeleton className="h-4 w-full" />,
+          headerClassName: 'text-center',
+          cellClassName: 'text-right',
         },
       },
 
@@ -139,9 +151,11 @@ export function EndpointsDataGrid({
           }
           return <div className="font-mono text-sm">{formatNumber(maxOutput, 0)}</div>
         },
+        size: 112,
         meta: {
-          skeleton: <Skeleton className="h-4 w-16" />,
-          cellClassName: 'min-w-24',
+          skeleton: <Skeleton className="h-4 w-full" />,
+          headerClassName: 'text-center',
+          cellClassName: 'text-right',
         },
       },
 
@@ -156,8 +170,9 @@ export function EndpointsDataGrid({
             </Badge>
           )
         },
+        size: 96,
         meta: {
-          skeleton: <Skeleton className="h-6 w-12" />,
+          skeleton: <Skeleton className="h-6 w-full" />,
           headerClassName: 'text-center',
           cellClassName: 'text-center',
         },
@@ -171,11 +186,13 @@ export function EndpointsDataGrid({
           if (!inputPrice) {
             return <EmptyCell />
           }
-          return <div className="font-mono">{formatNumber(inputPrice * 1_000_000, 2)}</div>
+          return <div className="font-mono">${formatNumber(inputPrice * 1_000_000, 2)}</div>
         },
+        size: 96,
         meta: {
-          skeleton: <Skeleton className="h-4 w-16" />,
-          cellClassName: 'min-w-24',
+          skeleton: <Skeleton className="h-4 w-full" />,
+          headerClassName: 'text-center',
+          cellClassName: 'text-right',
         },
       },
 
@@ -187,11 +204,13 @@ export function EndpointsDataGrid({
           if (!outputPrice) {
             return <EmptyCell />
           }
-          return <div className="font-mono">{formatNumber(outputPrice * 1_000_000, 2)}</div>
+          return <div className="font-mono">${formatNumber(outputPrice * 1_000_000, 2)}</div>
         },
+        size: 96,
         meta: {
-          skeleton: <Skeleton className="h-4 w-16" />,
-          cellClassName: 'min-w-24',
+          skeleton: <Skeleton className="h-4 w-full" />,
+          headerClassName: 'text-center',
+          cellClassName: 'text-right',
         },
       },
 
@@ -278,8 +297,9 @@ export function EndpointsDataGrid({
             </div>
           )
         },
+        size: 160,
         meta: {
-          skeleton: <Skeleton className="h-8 w-32" />,
+          skeleton: <Skeleton className="h-8 w-full" />,
         },
       },
 
@@ -336,8 +356,9 @@ export function EndpointsDataGrid({
             </div>
           )
         },
+        size: 160,
         meta: {
-          skeleton: <Skeleton className="h-8 w-32" />,
+          skeleton: <Skeleton className="h-8 w-full" />,
         },
       },
 
@@ -372,8 +393,9 @@ export function EndpointsDataGrid({
             </div>
           )
         },
+        size: 288,
         meta: {
-          skeleton: <Skeleton className="h-8 w-72" />,
+          skeleton: <Skeleton className="h-8 w-full" />,
         },
       },
     ],
@@ -395,7 +417,8 @@ export function EndpointsDataGrid({
       emptyMessage="No endpoints found"
       tableLayout={{
         headerSticky: true,
-        width: 'auto',
+        width: 'fixed',
+        cellBorder: false,
       }}
       tableClassNames={{
         headerRow: 'font-mono uppercase text-[85%]',
@@ -407,5 +430,5 @@ export function EndpointsDataGrid({
 }
 
 function EmptyCell() {
-  return <div className="text-muted-foreground">—</div>
+  return <div className="text-muted-foreground/60">—</div>
 }
