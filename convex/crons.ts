@@ -42,7 +42,7 @@ export const snapshotCron = internalAction({
 
     await ctx.scheduler.runAfter(
       delayMs + 12 * 60_000,
-      internal.snapshots.materialize_v2.main.modelEndpoints,
+      internal.snapshots.materialize_v2.main.run,
       {},
     )
 

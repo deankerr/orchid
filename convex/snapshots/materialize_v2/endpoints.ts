@@ -87,6 +87,7 @@ export const EndpointTransformSchema = z
       variant: raw.variant,
       reasoning: raw.supports_reasoning,
       mandatory_reasoning: raw.features.is_mandatory_reasoning || false,
+      // add variant suffix to name
       name:
         raw.variant === 'beta'
           ? `${raw.model.name} (self-moderated)` // anthropic only, match name on OR
@@ -97,29 +98,37 @@ export const EndpointTransformSchema = z
 
     const provider = {
       ...raw.provider_info,
-      slug: raw.provider_slug.split('/')[0] || raw.provider_slug,
-      updated_at: Date.now(),
+      // remove tag suffix if present
+      slug: raw.provider_slug.split('/')[0],
     }
 
     const endpoint = {
       uuid: raw.id,
 
       // * model
-      model: R.omit(model, [
-        'description',
-        'hugging_face_id',
-        'instruct_type',
-        'tokenizer',
-        'warning_message',
-        'updated_at',
+      model: R.pick(model, [
+        'author_name',
+        'author_slug',
+        'base_slug',
+        'icon_url',
+        'input_modalities',
+        'mandatory_reasoning',
+        'name',
+        'or_added_at',
+        'output_modalities',
+        'reasoning',
+        'slug',
+        'variant',
+        'version_slug',
       ]),
 
       // * provider
       provider: {
-        slug: raw.provider_slug.split('/')[0] || raw.provider_slug,
+        slug: provider.slug,
+        name: provider.name,
+        icon_url: provider.icon_url,
+        // endpoint specific
         tag_slug: raw.provider_slug,
-        name: raw.provider_display_name,
-        icon_url: raw.provider_info.icon_url,
         model_id: raw.provider_model_id,
         region: raw.provider_region,
       },
@@ -179,8 +188,6 @@ export const EndpointTransformSchema = z
       deranked: raw.is_deranked,
       disabled: raw.is_disabled,
       status: raw.status || 0,
-
-      updated_at: Date.now(),
     }
 
     return { model, endpoint, provider }

@@ -18,7 +18,7 @@ function isEqual(from: Record<string, unknown>, to: Record<string, unknown>) {
   return changes.length === 0
 }
 
-export const modelEndpoints = internalAction({
+export const run = internalAction({
   args: { crawl_id: v.optional(v.string()) },
   handler: async (ctx, args) => {
     const bundle = await getArchiveBundleOrThrow(ctx, args.crawl_id)
@@ -27,27 +27,24 @@ export const modelEndpoints = internalAction({
 
     const { models, endpoints, providers } = materializeModelEndpoints(bundle)
 
-    console.log(`[materialize_v2]`, {
-      models: models.length,
-      endpoints: endpoints.length,
-      providers: providers.length,
-    })
     await ctx.runMutation(internal.snapshots.materialize_v2.main.upsertModelEndpoints, {
       models,
       endpoints,
       providers,
     })
-
-    return null
   },
 })
+
+const vUpsertModel = DB.OrViewsModels.vTable.validator.omit('updated_at')
+const vUpsertEndpoint = DB.OrViewsEndpoints.vTable.validator.omit('updated_at')
+const vUpsertProvider = DB.OrViewsProviders.vTable.validator.omit('updated_at')
 
 export function materializeModelEndpoints(bundle: CrawlArchiveBundle) {
   const rawEndpoints = bundle.data.models.flatMap((m) => m.endpoints)
 
-  const modelsMap = new Map<string, Infer<typeof DB.OrViewsModels.vTable.validator>>()
-  const endpointsMap = new Map<string, Infer<typeof DB.OrViewsEndpoints.vTable.validator>>()
-  const providersMap = new Map<string, Infer<typeof DB.OrViewsProviders.vTable.validator>>()
+  const modelsMap = new Map<string, Infer<typeof vUpsertModel>>()
+  const endpointsMap = new Map<string, Infer<typeof vUpsertEndpoint>>()
+  const providersMap = new Map<string, Infer<typeof vUpsertProvider>>()
   const issues: string[] = []
 
   for (const raw of rawEndpoints) {
@@ -75,9 +72,9 @@ export function materializeModelEndpoints(bundle: CrawlArchiveBundle) {
 
 export const upsertModelEndpoints = internalMutation({
   args: {
-    models: v.array(v.object(DB.OrViewsModels.vTable.validator.fields)),
-    endpoints: v.array(v.object(DB.OrViewsEndpoints.vTable.validator.fields)),
-    providers: v.array(v.object(DB.OrViewsProviders.vTable.validator.fields)),
+    models: vUpsertModel.array(),
+    endpoints: vUpsertEndpoint.array(),
+    providers: vUpsertProvider.array(),
   },
   handler: async (ctx, args) => {
     // * initialize counters
