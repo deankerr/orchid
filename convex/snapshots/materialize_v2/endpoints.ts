@@ -80,12 +80,19 @@ export const EndpointTransformSchema = z
   })
   .transform(R.pickBy(R.isNonNullish))
   .transform((raw) => {
+    // enrich model with data only available on model endpoints
     const model = {
       ...raw.model,
       slug: raw.model_variant_slug,
       variant: raw.variant,
       reasoning: raw.supports_reasoning,
       mandatory_reasoning: raw.features.is_mandatory_reasoning || false,
+      name:
+        raw.variant === 'beta'
+          ? `${raw.model.name} (self-moderated)` // anthropic only, match name on OR
+          : raw.variant !== 'standard'
+            ? `${raw.model.name} (${raw.variant})`
+            : raw.model.name,
     }
 
     const provider = {
