@@ -19,12 +19,12 @@ export const table = defineTable({
   // orchid
   unavailable_at: v.optional(v.number()),
   updated_at: v.number(),
-})
+}).index('by_name', ['name'])
 
 export const vTable = createTableVHelper('or_views_providers', table.validator)
 
 export async function collect(ctx: QueryCtx) {
-  return await ctx.db.query(vTable.name).collect()
+  return await ctx.db.query(vTable.name).withIndex('by_name').order('asc').collect()
 }
 
 export const list = query({
