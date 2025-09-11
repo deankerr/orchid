@@ -27,6 +27,11 @@ export const run = internalAction({
 
     const { models, endpoints, providers } = materializeModelEndpoints(bundle)
 
+    if (endpoints.length === 0) {
+      console.warn(`[materialize_v2] abort: no endpoints found`)
+      return
+    }
+
     await ctx.runMutation(internal.snapshots.materialize_v2.main.upsertModelEndpoints, {
       models,
       endpoints,
