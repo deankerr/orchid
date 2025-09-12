@@ -40,11 +40,7 @@ export default function RootLayout({
           </ConvexClientProvider>
         </NuqsAdapter>
         <SpeedInsights />
-        <Script
-          src="https://app.rybbit.io/api/script.js"
-          data-site-id="2429"
-          strategy="afterInteractive"
-        />
+        <Script src="/api/script.js" data-site-id="2429" strategy="afterInteractive" />
       </body>
     </html>
   )
