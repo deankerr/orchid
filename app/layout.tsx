@@ -39,7 +39,7 @@ export default function RootLayout({
             <App>{children}</App>
           </ConvexClientProvider>
         </NuqsAdapter>
-        <Analytics scriptSrc="https://orchid-three.vercel.app/vi/script.js" />
+        <Analytics />
         <SpeedInsights />
       </body>
     </html>
