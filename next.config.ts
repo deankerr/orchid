@@ -1,13 +1,10 @@
 import type { NextConfig } from 'next'
 
+import bundleAnalyzer from '@next/bundle-analyzer'
+
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'unpkg.com',
-        pathname: '/@lobehub/icons-static-png*/**',
-      },
       {
         protocol: 'https',
         hostname: 't0.gstatic.com',
@@ -26,4 +23,8 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default nextConfig
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+})
+
+export default withBundleAnalyzer(nextConfig)
