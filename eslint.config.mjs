@@ -11,31 +11,21 @@ const compat = new FlatCompat({
 })
 
 const eslintConfig = [
+  {
+    ignores: ['node_modules/**', '.next/**', 'out/**', 'build/**', 'next-env.d.ts'],
+  },
   ...compat.extends('next/core-web-vitals', 'next/typescript'),
+  {
+    ignores: ['convex/_generated/**'],
+  },
   {
     rules: {
       '@typescript-eslint/no-unused-vars': [
         'warn',
         { varsIgnorePattern: '^_', argsIgnorePattern: '^_' },
       ],
-
-      // Allow escaping the compiler
       '@typescript-eslint/ban-ts-comment': 'warn',
-
-      // Allow explicit `any`s
       '@typescript-eslint/no-explicit-any': 'off',
-
-      // START: Allow implicit `any`s
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
-      // END: Allow implicit `any`s
-
-      // Allow async functions without await
-      // for consistency (esp. Convex `handler`s)
-      // '@typescript-eslint/require-await': 'warn',
     },
   },
 ]
