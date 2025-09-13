@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { DataGrid } from '@/components/ui/data-grid'
 import { DataGridTable } from '@/components/ui/data-grid-table'
 import { Skeleton } from '@/components/ui/skeleton'
-import { formatNumber } from '@/lib/formatters'
+import { formatPrice } from '@/lib/formatters'
 
 import { EntityCard } from '../shared/entity-card'
 import { DataGridAttributeBadge, getEndpointAttributes } from './attributes'
@@ -131,7 +131,7 @@ export function EndpointsDataGrid({
         header: 'Context Length',
         cell: ({ row }) => {
           const contextLength = row.original.context_length
-          return <div className="font-mono text-sm">{formatNumber(contextLength, 0)}</div>
+          return <div className="font-mono text-sm">{contextLength.toLocaleString()}</div>
         },
         size: 140,
         meta: {
@@ -149,7 +149,7 @@ export function EndpointsDataGrid({
           if (!maxOutput) {
             return <EmptyCell />
           }
-          return <div className="font-mono text-sm">{formatNumber(maxOutput, 0)}</div>
+          return <div className="font-mono text-sm">{maxOutput.toLocaleString()}</div>
         },
         size: 112,
         meta: {
@@ -186,7 +186,15 @@ export function EndpointsDataGrid({
           if (!inputPrice) {
             return <EmptyCell />
           }
-          return <div className="font-mono">${formatNumber(inputPrice * 1_000_000, 2)}</div>
+          return (
+            <div className="font-mono">
+              {formatPrice({
+                priceKey: 'text_input',
+                priceValue: inputPrice,
+                unitSuffix: false,
+              })}
+            </div>
+          )
         },
         size: 96,
         meta: {
@@ -204,7 +212,15 @@ export function EndpointsDataGrid({
           if (!outputPrice) {
             return <EmptyCell />
           }
-          return <div className="font-mono">${formatNumber(outputPrice * 1_000_000, 2)}</div>
+          return (
+            <div className="font-mono">
+              {formatPrice({
+                priceKey: 'text_output',
+                priceValue: outputPrice,
+                unitSuffix: false,
+              })}
+            </div>
+          )
         },
         size: 96,
         meta: {
@@ -224,61 +240,67 @@ export function EndpointsDataGrid({
           if (pricing.internal_reasoning) {
             otherPrices.push({
               label: 'reasoning:',
-              value: `$${formatNumber(pricing.internal_reasoning * 1_000_000, 2)}/MTOK`,
+              value: formatPrice({
+                priceKey: 'internal_reasoning',
+                priceValue: pricing.internal_reasoning,
+              }),
             })
           }
           if (pricing.image_input) {
             otherPrices.push({
               label: 'images_input:',
-              value: `$${formatNumber(pricing.image_input * 1_000, 2)}/K IMAGES`,
+              value: formatPrice({ priceKey: 'image_input', priceValue: pricing.image_input }),
             })
           }
           if (pricing.image_output) {
             otherPrices.push({
               label: 'images_output:',
-              value: `$${formatNumber(pricing.image_output * 1_000, 2)}/K IMAGES`,
+              value: formatPrice({ priceKey: 'image_output', priceValue: pricing.image_output }),
             })
           }
           if (pricing.audio_input) {
             otherPrices.push({
               label: 'audio_input:',
-              value: `$${formatNumber(pricing.audio_input * 1_000_000, 2)}/MTOK`,
+              value: formatPrice({ priceKey: 'audio_input', priceValue: pricing.audio_input }),
             })
           }
           if (pricing.audio_cache_input) {
             otherPrices.push({
               label: 'audio_cache_input:',
-              value: `$${formatNumber(pricing.audio_cache_input * 1_000_000, 2)}/MTOK`,
+              value: formatPrice({
+                priceKey: 'audio_cache_input',
+                priceValue: pricing.audio_cache_input,
+              }),
             })
           }
           if (pricing.cache_read) {
             otherPrices.push({
               label: 'cache_read:',
-              value: `$${formatNumber(pricing.cache_read * 1_000_000, 2)}/MTOK`,
+              value: formatPrice({ priceKey: 'cache_read', priceValue: pricing.cache_read }),
             })
           }
           if (pricing.cache_write) {
             otherPrices.push({
               label: 'cache_write:',
-              value: `$${formatNumber(pricing.cache_write * 1_000_000, 2)}/MTOK`,
+              value: formatPrice({ priceKey: 'cache_write', priceValue: pricing.cache_write }),
             })
           }
           if (pricing.request) {
             otherPrices.push({
               label: 'per_request:',
-              value: `$${formatNumber(pricing.request, 2)}`,
+              value: formatPrice({ priceKey: 'request', priceValue: pricing.request }),
             })
           }
           if (pricing.web_search) {
             otherPrices.push({
               label: 'web_search:',
-              value: `$${formatNumber(pricing.web_search, 2)}`,
+              value: formatPrice({ priceKey: 'web_search', priceValue: pricing.web_search }),
             })
           }
           if (pricing.discount && pricing.discount > 0) {
             otherPrices.push({
               label: 'discount:',
-              value: `${formatNumber(pricing.discount * 100, 1)}%`,
+              value: formatPrice({ priceKey: 'discount', priceValue: pricing.discount }),
             })
           }
 
@@ -313,31 +335,31 @@ export function EndpointsDataGrid({
           if (limits.text_input_tokens) {
             limitsList.push({
               label: 'max_input:',
-              value: `${formatNumber(limits.text_input_tokens, 0)}`,
+              value: `${limits.text_input_tokens.toLocaleString()}`,
             })
           }
           if (limits.image_input_tokens) {
             limitsList.push({
               label: 'max_image_tokens:',
-              value: `${formatNumber(limits.image_input_tokens, 0)}`,
+              value: `${limits.image_input_tokens.toLocaleString()}`,
             })
           }
           if (limits.images_per_input) {
             limitsList.push({
               label: 'images_per_input:',
-              value: `${limits.images_per_input}`,
+              value: `${limits.images_per_input.toLocaleString()}`,
             })
           }
           if (limits.requests_per_minute) {
             limitsList.push({
               label: 'req_per_min:',
-              value: `${formatNumber(limits.requests_per_minute, 0)}`,
+              value: `${limits.requests_per_minute.toLocaleString()}`,
             })
           }
           if (limits.requests_per_day) {
             limitsList.push({
               label: 'req_per_day:',
-              value: `${formatNumber(limits.requests_per_day, 0)}`,
+              value: `${limits.requests_per_day.toLocaleString()}`,
             })
           }
 
