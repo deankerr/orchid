@@ -33,13 +33,7 @@ export const snapshotCron = internalAction({
       processChanges: true,
     })
 
-    // Actions have a 10m max runtime; schedule materializeb for after that window
-    await ctx.scheduler.runAfter(
-      delayMs + 10 * 60_000,
-      internal.snapshots.materialize.materialize.run,
-      {},
-    )
-
+    // Actions have a 10m max runtime; schedule materialize for after that window
     await ctx.scheduler.runAfter(
       delayMs + 12 * 60_000,
       internal.snapshots.materialize_v2.main.run,

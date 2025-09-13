@@ -1,14 +1,7 @@
 import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
-import { table as ORAppsTable } from './db/or/apps'
 import { table as ORChangesTable } from './db/or/changes'
-import { table as OREndpointsTable } from './db/or/endpoints'
-import { table as ORModelAppLeaderboardsTable } from './db/or/modelAppLeaderboards'
-import { table as ORModelDetailsTable } from './db/or/modelDetails'
-import { table as ORModelsTable } from './db/or/models'
-import { table as ORModelTokenStatsTable } from './db/or/modelTokenStats'
-import { table as ORProvidersTable } from './db/or/providers'
 import { table as ORViewsEndpointsTable } from './db/or/views/endpoints'
 import { table as ORViewsModelsTable } from './db/or/views/models'
 import { table as ORViewsProvidersTable } from './db/or/views/providers'
@@ -21,14 +14,7 @@ export default defineSchema(
     or_views_models: ORViewsModelsTable,
     or_views_providers: ORViewsProvidersTable,
 
-    or_apps: ORAppsTable,
     or_changes: ORChangesTable,
-    or_endpoints: OREndpointsTable,
-    or_model_app_leaderboards: ORModelAppLeaderboardsTable,
-    or_model_details: ORModelDetailsTable,
-    or_model_token_stats: ORModelTokenStatsTable,
-    or_models: ORModelsTable,
-    or_providers: ORProvidersTable,
 
     snapshot_crawl_config: SnapshotCrawlConfigTable,
     snapshot_crawl_archives: SnapshotCrawlArchivesTable,
