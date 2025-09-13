@@ -31,14 +31,6 @@ const nextConfig: NextConfig = {
         source: '/snarf/:path*',
         destination: 'https://us.i.posthog.com/:path*',
       },
-      {
-        source: '/api/script.js',
-        destination: `${process.env.NEXT_PUBLIC_RYBBIT_HOST}/api/script.js`,
-      },
-      {
-        source: '/api/track',
-        destination: `${process.env.NEXT_PUBLIC_RYBBIT_HOST}/api/track`,
-      },
     ]
   },
   // This is required to support PostHog trailing slash API requests
