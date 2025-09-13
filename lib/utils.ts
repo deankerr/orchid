@@ -7,10 +7,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function formatIsoDate(date: number) {
-  return new Date(date).toISOString().split('T')[0]
-}
-
 /**
  * Calculate percentage change between two numeric values
  * Returns null if either value is not a number or if old value is 0
@@ -39,17 +35,6 @@ export function calculatePercentageChange(from: unknown, to: unknown): number | 
 
   // Calculate percentage change: ((new - old) / old) * 100
   return ((toValue - fromValue) / Math.abs(fromValue)) * 100
-}
-
-export function formatTimestampToYMDHM(timestamp: number) {
-  const date = new Date(timestamp)
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  const hour = String(date.getHours()).padStart(2, '0')
-  const minute = String(date.getMinutes()).padStart(2, '0')
-
-  return `${year}-${month}-${day} ${hour}:${minute}`
 }
 
 /**
