@@ -12,7 +12,6 @@ import {
 } from '@/components/ui/select'
 
 import { BadgeComponents } from './sets/badges'
-import { EndpointIdentitySet } from './sets/endpoint-identity'
 import { EntityCardSet } from './sets/entity-card'
 import { OREntityComboboxSet } from './sets/or-entity-combobox'
 
@@ -28,10 +27,6 @@ export function ComponentLibrary() {
     {
       name: 'entity cards',
       component: EntityCardSet,
-    },
-    {
-      name: 'endpoint identity',
-      component: EndpointIdentitySet,
     },
     {
       name: 'badges',

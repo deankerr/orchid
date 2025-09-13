@@ -16,7 +16,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/',
-        destination: '/models',
+        destination: '/endpoints',
         permanent: false,
       },
     ]
