@@ -15,7 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useCachedQuery } from '@/hooks/use-cached-query'
 import { cn } from '@/lib/utils'
 
-import { EntityCard } from './entity-card'
+import { EntityCard } from '../shared/entity-card'
 
 export function OREntityCombobox({
   value,

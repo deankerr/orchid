@@ -12,8 +12,8 @@ import { DataGridTable } from '@/components/ui/data-grid-table'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatNumber } from '@/lib/formatters'
 
+import { EntityCard } from '../shared/entity-card'
 import { DataGridAttributeBadge, getEndpointAttributes } from './attributes'
-import { EntityCard } from './entity-card'
 import { ModalityIcons } from './modalities'
 
 type EndpointRow = Doc<'or_views_endpoints'>
