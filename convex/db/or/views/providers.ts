@@ -2,7 +2,7 @@ import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
 import { query, type QueryCtx } from '../../../_generated/server'
-import { createTableVHelper } from '../../../table3'
+import { createTableVHelper } from '../../../lib/vTable'
 
 export const table = defineTable({
   slug: v.string(),

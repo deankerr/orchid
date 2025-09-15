@@ -13,7 +13,7 @@ export const run = internalAction({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    console.log('[changes2:backfill] starting', {
+    console.log('[changes:backfill] starting', {
       fromCrawlId: args.fromCrawlId,
       cursor: args.cursor,
     })
@@ -22,7 +22,7 @@ export const run = internalAction({
     let previousBundle: CrawlArchiveBundle | null = null
 
     while (true) {
-      const results = await ctx.runQuery(internal.db.snapshot.crawlArchives.list, {
+      const results = await ctx.runQuery(internal.db.snapshot.crawl.archives.list, {
         paginationOpts: {
           numItems: 1,
           cursor,
@@ -32,7 +32,7 @@ export const run = internalAction({
 
       const currentArchive = results.page[0]
       if (!currentArchive) {
-        console.log('[changes2:backfill] no more archives to process')
+        console.log('[changes:backfill] no more archives to process')
         break
       }
 
@@ -42,7 +42,7 @@ export const run = internalAction({
       }
 
       if (previousBundle) {
-        console.log('[changes2:backfill] processing pair', {
+        console.log('[changes:backfill] processing pair', {
           from: previousBundle.crawl_id,
           to: currentBundle.crawl_id,
         })
@@ -56,7 +56,7 @@ export const run = internalAction({
           await ctx.runMutation(internal.db.or.changes.insert, {
             changes,
           })
-          console.log(`[changes2:backfill] inserted ${changes.length} changes`)
+          console.log(`[changes:backfill] inserted ${changes.length} changes`)
         }
       }
 
@@ -64,6 +64,6 @@ export const run = internalAction({
       cursor = results.continueCursor
     }
 
-    console.log('[changes2:backfill] all archives complete')
+    console.log('[changes:backfill] all archives complete')
   },
 })

@@ -164,7 +164,7 @@ export const run = internalAction({
       console.log(`[crawl] complete`, { crawl_id, args })
 
       if (args.processChanges) {
-        await ctx.scheduler.runAfter(0, internal.snapshots.changes2.postCrawl.runPostCrawl, {
+        await ctx.scheduler.runAfter(0, internal.snapshots.changes.postCrawl.runPostCrawl, {
           crawl_id,
         })
       }
@@ -260,7 +260,7 @@ export async function storeCrawlBundle(ctx: ActionCtx, bundle: CrawlArchiveBundl
     modelAuthors: parsed.data.modelAuthors.length,
   }
 
-  await ctx.runMutation(internal.db.snapshot.crawlArchives.insert, {
+  await ctx.runMutation(internal.db.snapshot.crawl.archives.insert, {
     crawl_id: parsed.crawl_id,
     storage_id,
     data: {

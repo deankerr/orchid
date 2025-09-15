@@ -2,7 +2,7 @@ import { type AsObjectValidator, type Infer } from 'convex/values'
 
 import { diff, type Options } from 'json-diff-ts'
 
-import * as DB from '@/convex/db'
+import { db } from '@/convex/db'
 
 import type { CrawlArchiveBundle } from '../crawl'
 import { shouldDisplayChange } from './display'
@@ -24,7 +24,7 @@ export function processBundleChanges({ fromBundle, toBundle }: ProcessBundleArgs
 type EntityMetadata = Infer<
   AsObjectValidator<
     Pick<
-      typeof DB.OrChanges.vTable.doc.fields,
+      typeof db.or.changes.vTable.doc.fields,
       | 'entity_id'
       | 'entity_display_name'
       | 'model_variant_slug'
@@ -36,7 +36,7 @@ type EntityMetadata = Infer<
 >
 
 type ChangeBase = {
-  entity_type: Infer<typeof DB.OrChanges.vTable.validator.fields.entity_type>
+  entity_type: Infer<typeof db.or.changes.vTable.validator.fields.entity_type>
   crawl_id: string
   from_crawl_id: string
   is_display: boolean
@@ -47,7 +47,7 @@ function providerChanges({ fromBundle, toBundle }: ProcessBundleArgs) {
   const toEntityMap = new Map(toBundle.data.providers.map((entity) => [entity.name, entity]))
 
   const entityIds = new Set([...fromEntityMap.keys(), ...toEntityMap.keys()])
-  const changes: Infer<AsObjectValidator<typeof DB.OrChanges.vTable.validator>>[] = []
+  const changes: Infer<AsObjectValidator<typeof db.or.changes.vTable.validator>>[] = []
 
   for (const entityId of entityIds) {
     const fromEntity = fromEntityMap.get(entityId)
@@ -97,7 +97,7 @@ function modelEndpointChanges({ fromBundle, toBundle }: ProcessBundleArgs) {
   )
 
   const entityIds = new Set([...fromEntityMap.keys(), ...toEntityMap.keys()])
-  const changes: Infer<AsObjectValidator<typeof DB.OrChanges.vTable.validator>>[] = []
+  const changes: Infer<AsObjectValidator<typeof db.or.changes.vTable.validator>>[] = []
 
   for (const entityId of entityIds) {
     const fromEntity = fromEntityMap.get(entityId)

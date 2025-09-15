@@ -2,7 +2,7 @@ import { defineTable, paginationOptsValidator } from 'convex/server'
 import { v } from 'convex/values'
 
 import { internalMutation, internalQuery } from '../../_generated/server'
-import { createTableVHelper } from '../../table3'
+import { createTableVHelper } from '../../lib/vTable'
 
 export type ChangeBody = {
   type: 'ADD' | 'UPDATE' | 'REMOVE'

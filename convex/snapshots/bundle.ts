@@ -11,7 +11,7 @@ export async function getArchiveBundleOrThrow(
   crawl_id?: string,
 ): Promise<CrawlArchiveBundle> {
   const resolved_crawl_id =
-    crawl_id ?? (await ctx.runQuery(internal.db.snapshot.crawlArchives.getLatestCrawlId))
+    crawl_id ?? (await ctx.runQuery(internal.db.snapshot.crawl.archives.getLatestCrawlId))
 
   if (!resolved_crawl_id) {
     throw new Error('[bundle] no crawl_id found')
@@ -29,7 +29,7 @@ export async function getArchiveBundle(
   ctx: ActionCtx,
   crawlId: string,
 ): Promise<CrawlArchiveBundle | null> {
-  const archive = await ctx.runQuery(internal.db.snapshot.crawlArchives.getByCrawlId, {
+  const archive = await ctx.runQuery(internal.db.snapshot.crawl.archives.getByCrawlId, {
     crawl_id: crawlId,
   })
   if (!archive) return null

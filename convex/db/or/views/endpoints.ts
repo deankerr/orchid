@@ -3,7 +3,7 @@ import { v } from 'convex/values'
 
 import { query, type QueryCtx } from '../../../_generated/server'
 import { vPaginatedQueryReturn } from '../../../lib/validator'
-import { createTableVHelper } from '../../../table3'
+import { createTableVHelper } from '../../../lib/vTable'
 
 export const table = defineTable({
   uuid: v.string(), // unique id

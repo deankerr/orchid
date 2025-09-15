@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 import { diff } from 'json-diff-ts'
 
-import * as DB from '@/convex/db'
+import { db } from '@/convex/db'
 
 import { internal } from '../../_generated/api'
 import { internalAction, internalMutation } from '../../_generated/server'
@@ -23,16 +23,16 @@ export const run = internalAction({
   handler: async (ctx, args) => {
     const bundle = await getArchiveBundleOrThrow(ctx, args.crawl_id)
 
-    console.log(`[materialize_v2]`, { crawl_id: bundle.crawl_id })
+    console.log(`[materialize]`, { crawl_id: bundle.crawl_id })
 
     const { models, endpoints, providers } = materializeModelEndpoints(bundle)
 
     if (endpoints.length === 0) {
-      console.warn(`[materialize_v2] abort: no endpoints found`)
+      console.warn(`[materialize] abort: no endpoints found`)
       return
     }
 
-    await ctx.runMutation(internal.snapshots.materialize_v2.main.upsertModelEndpoints, {
+    await ctx.runMutation(internal.snapshots.materialize.main.upsertModelEndpoints, {
       models,
       endpoints,
       providers,
@@ -40,9 +40,9 @@ export const run = internalAction({
   },
 })
 
-const vUpsertModel = DB.OrViewsModels.vTable.validator.omit('updated_at')
-const vUpsertEndpoint = DB.OrViewsEndpoints.vTable.validator.omit('updated_at')
-const vUpsertProvider = DB.OrViewsProviders.vTable.validator.omit('updated_at')
+const vUpsertModel = db.or.views.models.vTable.validator.omit('updated_at')
+const vUpsertEndpoint = db.or.views.endpoints.vTable.validator.omit('updated_at')
+const vUpsertProvider = db.or.views.providers.vTable.validator.omit('updated_at')
 
 export function materializeModelEndpoints(bundle: CrawlArchiveBundle) {
   const rawEndpoints = bundle.data.models.flatMap((m) => m.endpoints)
@@ -66,7 +66,7 @@ export function materializeModelEndpoints(bundle: CrawlArchiveBundle) {
     providersMap.set(provider.slug, provider)
   }
 
-  if (issues.length) console.error('[materialize_v2:endpoints]', { issues })
+  if (issues.length) console.error('[materialize:endpoints]', { issues })
 
   return {
     models: Array.from(modelsMap.values()),
@@ -90,7 +90,7 @@ export const upsertModelEndpoints = internalMutation({
     }
 
     // * models
-    const currentModels = await DB.OrViewsModels.collect(ctx)
+    const currentModels = await db.or.views.models.collect(ctx)
     const currentModelsMap = new Map(
       currentModels.filter((m) => !m.unavailable_at).map((m) => [m.slug, m]),
     )
@@ -123,7 +123,7 @@ export const upsertModelEndpoints = internalMutation({
     }
 
     // * endpoints
-    const currentEndpoints = await DB.OrViewsEndpoints.collect(ctx)
+    const currentEndpoints = await db.or.views.endpoints.collect(ctx)
     const currentEndpointsMap = new Map(
       currentEndpoints.filter((e) => !e.unavailable_at).map((e) => [e.uuid, e]),
     )
@@ -156,7 +156,7 @@ export const upsertModelEndpoints = internalMutation({
     }
 
     // * providers
-    const currentProviders = await DB.OrViewsProviders.collect(ctx)
+    const currentProviders = await db.or.views.providers.collect(ctx)
     const currentProvidersMap = new Map(
       currentProviders.filter((p) => !p.unavailable_at).map((p) => [p.slug, p]),
     )
@@ -189,7 +189,7 @@ export const upsertModelEndpoints = internalMutation({
     }
 
     // * log final counts
-    console.log(`[materialize_v2:counts]`, {
+    console.log(`[materialize:counts]`, {
       models: counters.models,
       endpoints: counters.endpoints,
       providers: counters.providers,

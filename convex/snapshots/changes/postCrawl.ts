@@ -15,7 +15,7 @@ export const runPostCrawl = internalMutation({
       .first()
 
     if (prevCrawl) {
-      await ctx.scheduler.runAfter(0, internal.snapshots.changes2.backfill.run, {
+      await ctx.scheduler.runAfter(0, internal.snapshots.changes.backfill.run, {
         fromCrawlId: prevCrawl.crawl_id,
       })
     } else {

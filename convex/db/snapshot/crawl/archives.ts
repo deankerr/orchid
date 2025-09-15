@@ -2,10 +2,10 @@ import { nullable } from 'convex-helpers/validators'
 import { defineTable, paginationOptsValidator } from 'convex/server'
 import { v } from 'convex/values'
 
-import { internal } from '../../_generated/api'
-import type { Id } from '../../_generated/dataModel'
-import { internalMutation, internalQuery } from '../../_generated/server'
-import { createTableVHelper } from '../../table3'
+import { internal } from '../../../_generated/api'
+import type { Id } from '../../../_generated/dataModel'
+import { internalMutation, internalQuery } from '../../../_generated/server'
+import { createTableVHelper } from '../../../lib/vTable'
 
 export const table = defineTable({
   crawl_id: v.string(),
