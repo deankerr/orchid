@@ -40,24 +40,6 @@ export const getByCrawlId = internalQuery({
   },
 })
 
-export const collect = internalQuery({
-  handler: async (ctx) => {
-    return await ctx.db.query('snapshot_crawl_archives').collect()
-  },
-})
-
-export const getAllByCrawlId = internalQuery({
-  args: {
-    crawl_id: v.string(),
-  },
-  handler: async (ctx, args) => {
-    return await ctx.db
-      .query('snapshot_crawl_archives')
-      .withIndex('by_crawl_id', (q) => q.eq('crawl_id', args.crawl_id))
-      .collect()
-  },
-})
-
 export const getLatestCrawlId = internalQuery({
   returns: nullable(v.string()),
   handler: async (ctx) => {

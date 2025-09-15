@@ -1,34 +1,41 @@
-import { v } from 'convex/values'
+import type { PaginationResult } from 'convex/server'
 
 import { internal } from '../../_generated/api'
+import type { Doc } from '../../_generated/dataModel'
 import { internalAction } from '../../_generated/server'
 import { getArchiveBundle } from '../bundle'
 import type { CrawlArchiveBundle } from '../crawl'
 import { processBundleChanges } from './process'
 
 export const run = internalAction({
-  args: {
-    fromCrawlId: v.optional(v.string()),
-    cursor: v.optional(v.string()),
-  },
-  returns: v.null(),
-  handler: async (ctx, args) => {
-    console.log('[changes:backfill] starting', {
-      fromCrawlId: args.fromCrawlId,
-      cursor: args.cursor,
+  handler: async (ctx) => {
+    const latestChange = await ctx.runQuery(internal.db.or.changes.list, {
+      paginationOpts: {
+        numItems: 1,
+        cursor: null,
+      },
     })
 
-    let cursor = args.cursor ?? null
+    const fromCrawlId = latestChange.page[0]?.crawl_id
+
+    console.log('[changes:backfill] starting', {
+      fromCrawlId,
+    })
+
+    let cursor: string | null = null
     let previousBundle: CrawlArchiveBundle | null = null
 
     while (true) {
-      const results = await ctx.runQuery(internal.db.snapshot.crawl.archives.list, {
-        paginationOpts: {
-          numItems: 1,
-          cursor,
+      const results: PaginationResult<Doc<'snapshot_crawl_archives'>> = await ctx.runQuery(
+        internal.db.snapshot.crawl.archives.list,
+        {
+          paginationOpts: {
+            numItems: 1,
+            cursor,
+          },
+          fromCrawlId,
         },
-        fromCrawlId: args.fromCrawlId,
-      })
+      )
 
       const currentArchive = results.page[0]
       if (!currentArchive) {

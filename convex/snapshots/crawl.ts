@@ -105,7 +105,6 @@ export const run = internalAction({
     apps: v.boolean(),
     uptimes: v.boolean(),
     modelAuthors: v.boolean(),
-    processChanges: v.boolean(),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
@@ -162,12 +161,6 @@ export const run = internalAction({
     try {
       await storeCrawlBundle(ctx, bundle)
       console.log(`[crawl] complete`, { crawl_id, args })
-
-      if (args.processChanges) {
-        await ctx.scheduler.runAfter(0, internal.snapshots.changes.postCrawl.runPostCrawl, {
-          crawl_id,
-        })
-      }
     } catch (err) {
       console.error('[crawl] failed', { crawl_id, args, error: getErrorMessage(err) })
     }
