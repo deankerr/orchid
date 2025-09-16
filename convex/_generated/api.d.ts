@@ -34,10 +34,11 @@ import type * as snapshots_changes_process from "../snapshots/changes/process.js
 import type * as snapshots_changes_reprocessDisplay from "../snapshots/changes/reprocessDisplay.js";
 import type * as snapshots_crawl from "../snapshots/crawl.js";
 import type * as snapshots_icons from "../snapshots/icons.js";
-import type * as snapshots_materialize_endpoints from "../snapshots/materialize/endpoints.js";
 import type * as snapshots_materialize_main from "../snapshots/materialize/main.js";
-import type * as snapshots_materialize_models from "../snapshots/materialize/models.js";
-import type * as snapshots_materialize_providers from "../snapshots/materialize/providers.js";
+import type * as snapshots_materialize_output from "../snapshots/materialize/output.js";
+import type * as snapshots_materialize_validators_endpoints from "../snapshots/materialize/validators/endpoints.js";
+import type * as snapshots_materialize_validators_models from "../snapshots/materialize/validators/models.js";
+import type * as snapshots_materialize_validators_providers from "../snapshots/materialize/validators/providers.js";
 import type * as storage from "../storage.js";
 import type * as views_changes from "../views/changes.js";
 
@@ -71,10 +72,11 @@ declare const fullApi: ApiFromModules<{
   "snapshots/changes/reprocessDisplay": typeof snapshots_changes_reprocessDisplay;
   "snapshots/crawl": typeof snapshots_crawl;
   "snapshots/icons": typeof snapshots_icons;
-  "snapshots/materialize/endpoints": typeof snapshots_materialize_endpoints;
   "snapshots/materialize/main": typeof snapshots_materialize_main;
-  "snapshots/materialize/models": typeof snapshots_materialize_models;
-  "snapshots/materialize/providers": typeof snapshots_materialize_providers;
+  "snapshots/materialize/output": typeof snapshots_materialize_output;
+  "snapshots/materialize/validators/endpoints": typeof snapshots_materialize_validators_endpoints;
+  "snapshots/materialize/validators/models": typeof snapshots_materialize_validators_models;
+  "snapshots/materialize/validators/providers": typeof snapshots_materialize_validators_providers;
   storage: typeof storage;
   "views/changes": typeof views_changes;
 }>;

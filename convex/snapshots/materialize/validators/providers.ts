@@ -1,7 +1,7 @@
 import * as R from 'remeda'
 import { z } from 'zod'
 
-import { getIconUrl } from '../icons'
+import { getIconUrl } from '../../icons'
 
 export const ProviderTransformSchema = z
   .object({

@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { getIconUrl } from '../icons'
+import { getIconUrl } from '../../icons'
 
 export const ModelTransformSchema = z
   .object({
