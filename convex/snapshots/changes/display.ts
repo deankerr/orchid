@@ -9,12 +9,16 @@ type HideRule = {
   path?: string[]
   values?: [string, string] // [oldValue, value] using type strings like 'nullish', 'false', etc.
   changeType?: 'ADD' | 'REMOVE' // For json-diff-ts change types
-  changeValue?: string // Value type for ADD/REMOVE operations (e.g., 'false', 'true', 'nullish')
+  changeValue?: string // Value type for ADD/REMOVE operations (e.g., 'false', 'true', 'nullish', 'empty-array', 'empty-object')
 }
 
 const HIDE_RULES: HideRule[] = [
   { changeType: 'ADD', changeValue: 'null' },
   { changeType: 'REMOVE', changeValue: 'null' },
+  { changeType: 'ADD', changeValue: 'empty-array' },
+  { changeType: 'REMOVE', changeValue: 'empty-array' },
+  { changeType: 'ADD', changeValue: 'empty-object' },
+  { changeType: 'REMOVE', changeValue: 'empty-object' },
 
   { entity: 'model', path: ['features'] },
   { entity: 'model', path: ['description'] },
@@ -237,6 +241,15 @@ function matchesValueType(value: any, expectedType: string): boolean {
       return typeof value === 'object' && value !== null
     case 'array':
       return Array.isArray(value)
+    case 'empty-array':
+      return Array.isArray(value) && value.length === 0
+    case 'empty-object':
+      return (
+        typeof value === 'object' &&
+        value !== null &&
+        !Array.isArray(value) &&
+        Object.keys(value).length === 0
+      )
     default:
       return false
   }
