@@ -33,7 +33,7 @@ export function ChangesDataGridPage() {
   const [changeAction, setChangeAction] = useState<ChangeAction>('all')
 
   const { results, status, loadMore } = usePaginatedQuery(
-    api.views.changes.list,
+    api.db.or.changes.list,
     {
       entity_type: entityType === 'all' ? undefined : entityType,
       change_action: changeAction === 'all' ? undefined : changeAction,

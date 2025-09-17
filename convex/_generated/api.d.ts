@@ -40,7 +40,6 @@ import type * as snapshots_materialize_validators_providers from "../snapshots/m
 import type * as snapshots_shared_bundle from "../snapshots/shared/bundle.js";
 import type * as snapshots_shared_icons from "../snapshots/shared/icons.js";
 import type * as storage from "../storage.js";
-import type * as views_changes from "../views/changes.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -78,7 +77,6 @@ declare const fullApi: ApiFromModules<{
   "snapshots/shared/bundle": typeof snapshots_shared_bundle;
   "snapshots/shared/icons": typeof snapshots_shared_icons;
   storage: typeof storage;
-  "views/changes": typeof views_changes;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

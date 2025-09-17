@@ -100,7 +100,7 @@ function ChangesResults({
   includeHidden: boolean
 }) {
   const { results, status, loadMore } = usePaginatedQuery(
-    api.views.changes.list,
+    api.db.or.changes.list,
     {
       entity_type: entityType === 'all' ? undefined : entityType,
       include_hidden: includeHidden,

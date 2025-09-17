@@ -1,6 +1,6 @@
 import type { PaginationResult } from 'convex/server'
 
-import { internal } from '../../_generated/api'
+import { api, internal } from '../../_generated/api'
 import type { Doc } from '../../_generated/dataModel'
 import { internalAction } from '../../_generated/server'
 import type { CrawlArchiveBundle } from '../crawl/main'
@@ -9,7 +9,7 @@ import { processBundleChanges } from './process'
 
 export const run = internalAction({
   handler: async (ctx) => {
-    const latestChange = await ctx.runQuery(internal.db.or.changes.list, {
+    const latestChange = await ctx.runQuery(api.db.or.changes.list, {
       paginationOpts: {
         numItems: 1,
         cursor: null,
