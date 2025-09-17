@@ -5,9 +5,9 @@ import { gzipSync } from 'fflate'
 import prettyBytes from 'pretty-bytes'
 import { up } from 'up-fetch'
 
-import { internal } from '../_generated/api'
-import { internalAction, type ActionCtx } from '../_generated/server'
-import { getErrorMessage } from '../shared'
+import { internal } from '../../_generated/api'
+import { internalAction, type ActionCtx } from '../../_generated/server'
+import { getErrorMessage } from '../../shared'
 
 export const orFetch = up(fetch, () => ({
   baseUrl: 'https://openrouter.ai',

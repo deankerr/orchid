@@ -3,8 +3,8 @@ import type { PaginationResult } from 'convex/server'
 import { internal } from '../../_generated/api'
 import type { Doc } from '../../_generated/dataModel'
 import { internalAction } from '../../_generated/server'
-import { getArchiveBundle } from '../bundle'
-import type { CrawlArchiveBundle } from '../crawl'
+import type { CrawlArchiveBundle } from '../crawl/main'
+import { getArchiveBundle } from '../shared/bundle'
 import { processBundleChanges } from './process'
 
 export const run = internalAction({

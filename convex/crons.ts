@@ -26,7 +26,7 @@ export const snapshotCron = internalAction({
     const delayMs = cfg.delay_minutes * 60_000 + jitter
 
     // Use the new single-bundle crawler
-    await ctx.scheduler.runAfter(delayMs, internal.snapshots.crawl.run, {
+    await ctx.scheduler.runAfter(delayMs, internal.snapshots.crawl.main.run, {
       apps: on(cfg.apps_every_hours),
       uptimes: on(cfg.uptimes_every_hours),
       modelAuthors: on(cfg.authors_every_hours),

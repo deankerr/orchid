@@ -1,8 +1,8 @@
 import { gunzipSync } from 'fflate'
 
-import { internal } from '../_generated/api'
-import { type ActionCtx } from '../_generated/server'
-import type { CrawlArchiveBundle } from './crawl'
+import { internal } from '../../_generated/api'
+import { type ActionCtx } from '../../_generated/server'
+import type { CrawlArchiveBundle } from '../crawl/main'
 
 const textDecoder = new TextDecoder()
 

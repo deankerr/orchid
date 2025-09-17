@@ -5,8 +5,8 @@ import { db } from '@/convex/db'
 
 import { internal } from '../../_generated/api'
 import { internalAction } from '../../_generated/server'
-import { getArchiveBundleOrThrow } from '../bundle'
-import type { CrawlArchiveBundle } from '../crawl'
+import type { CrawlArchiveBundle } from '../crawl/main'
+import { getArchiveBundleOrThrow } from '../shared/bundle'
 import { EndpointTransformSchema } from './validators/endpoints'
 
 export const run = internalAction({

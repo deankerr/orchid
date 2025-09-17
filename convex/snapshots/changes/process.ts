@@ -4,7 +4,7 @@ import { diff, type Options } from 'json-diff-ts'
 
 import { db } from '@/convex/db'
 
-import type { CrawlArchiveBundle } from '../crawl'
+import type { CrawlArchiveBundle } from '../crawl/main'
 import { shouldDisplayChange } from './display'
 
 type ProcessBundleArgs = {
