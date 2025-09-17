@@ -34,7 +34,6 @@ export function EndpointsDataGrid({
           const endpoint = row.original
           return (
             <EntityCard
-              className="w-60"
               icon_url={endpoint.model.icon_url}
               name={endpoint.model.name}
               slug={endpoint.model.slug}
@@ -54,14 +53,13 @@ export function EndpointsDataGrid({
           const endpoint = row.original
           return (
             <EntityCard
-              className="w-44"
               icon_url={endpoint.provider.icon_url}
               name={endpoint.provider.name}
-              slug={endpoint.provider.slug}
+              slug={endpoint.provider.tag_slug}
             />
           )
         },
-        size: 218,
+        size: 200,
         meta: {
           skeleton: <Skeleton className="h-12 w-full" />,
         },
