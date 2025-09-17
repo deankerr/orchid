@@ -16,7 +16,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useModelsList, useProvidersList } from '@/hooks/api'
 import { useInfiniteScroll } from '@/hooks/use-infinite-scroll'
 
 import { PageDescription, PageHeader, PageTitle } from '../app-layout/pages'
@@ -43,9 +42,7 @@ export function ChangesDataGridPage() {
     { initialNumItems: INITIAL_NUM_ITEMS },
   )
 
-  const models = useModelsList()
-  const providers = useProvidersList()
-  const isInitialLoad = status === 'LoadingFirstPage' || !models || !providers
+  const isInitialLoad = status === 'LoadingFirstPage'
   const isLoadingMore = status === 'LoadingMore'
   const canLoadMore = status === 'CanLoadMore'
 

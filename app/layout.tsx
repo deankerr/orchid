@@ -2,7 +2,6 @@ import './globals.css'
 
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
-import Script from 'next/script'
 
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
@@ -40,7 +39,6 @@ export default function RootLayout({
           </ConvexClientProvider>
         </NuqsAdapter>
         <SpeedInsights />
-        <Script src="/api/script.js" data-site-id="2429" strategy="afterInteractive" />
       </body>
     </html>
   )

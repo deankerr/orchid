@@ -16,7 +16,17 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/',
-        destination: '/models',
+        destination: '/endpoints',
+        permanent: false,
+      },
+      {
+        source: '/models',
+        destination: '/',
+        permanent: false,
+      },
+      {
+        source: '/models/:path*',
+        destination: '/',
         permanent: false,
       },
     ]
@@ -30,14 +40,6 @@ const nextConfig: NextConfig = {
       {
         source: '/snarf/:path*',
         destination: 'https://us.i.posthog.com/:path*',
-      },
-      {
-        source: '/api/script.js',
-        destination: `${process.env.NEXT_PUBLIC_RYBBIT_HOST}/api/script.js`,
-      },
-      {
-        source: '/api/track',
-        destination: `${process.env.NEXT_PUBLIC_RYBBIT_HOST}/api/track`,
       },
     ]
   },

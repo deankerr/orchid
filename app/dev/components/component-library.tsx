@@ -12,8 +12,6 @@ import {
 } from '@/components/ui/select'
 
 import { BadgeComponents } from './sets/badges'
-import { EndpointIdentitySet } from './sets/endpoint-identity'
-import { EntityCardSet } from './sets/entity-card'
 import { OREntityComboboxSet } from './sets/or-entity-combobox'
 
 type ComponentSet = {
@@ -25,14 +23,6 @@ export function ComponentLibrary() {
   const [selectedSet, setSelectedSet] = useQueryState('set', parseAsString.withDefault(''))
 
   const componentSets: ComponentSet[] = [
-    {
-      name: 'entity cards',
-      component: EntityCardSet,
-    },
-    {
-      name: 'endpoint identity',
-      component: EndpointIdentitySet,
-    },
     {
       name: 'badges',
       component: BadgeComponents,

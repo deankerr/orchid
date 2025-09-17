@@ -1,52 +1,89 @@
-export function formatCompactNumber(value: number, digits = 1): string {
-  const formatted = new Intl.NumberFormat('en-US', {
-    notation: 'compact',
-    maximumFractionDigits: digits,
-  }).format(value)
-  
-  // Remove decimal part if integer portion has 3+ digits (e.g., "314.6B" → "314B")
-  return formatted.replace(/^(\d{3,})\.\d+([KMBT])$/, '$1$2')
+type PricingFormat = {
+  transform: (value: number) => number
+  unit: string
 }
 
-export function formatNumber(value: number, decimals: number) {
-  return new Intl.NumberFormat('en-US', {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  }).format(value)
+// Pricing format configurations using our schema keys
+export const pricingFormats: Record<string, PricingFormat> = {
+  // Per-token pricing (display per million tokens)
+  text_input: { transform: (v) => v * 1_000_000, unit: '/MTOK' },
+  text_output: { transform: (v) => v * 1_000_000, unit: '/MTOK' },
+  internal_reasoning: { transform: (v) => v * 1_000_000, unit: '/MTOK' },
+  cache_read: { transform: (v) => v * 1_000_000, unit: '/MTOK' },
+  cache_write: { transform: (v) => v * 1_000_000, unit: '/MTOK' },
+  audio_input: { transform: (v) => v * 1_000_000, unit: '/MTOK' },
+  audio_cache_input: { transform: (v) => v * 1_000_000, unit: '/MTOK' },
+
+  // Per-unit pricing (display per thousand units)
+  image_input: { transform: (v) => v * 1_000, unit: '/K IMAGES' },
+  image_output: { transform: (v) => v * 1_000, unit: '/K IMAGES' },
+
+  // Per-request pricing
+  request: { transform: (v) => v, unit: '' },
+  web_search: { transform: (v) => v, unit: '' },
+
+  // Percentage (discount)
+  discount: { transform: (v) => v * 100, unit: '%' },
 }
 
-/**
- * Common number transformations used throughout the app
- */
-export const transforms = {
-  toMillion: (v: number) => v * 1_000_000,
-  toThousand: (v: number) => v * 1_000,
-  toPercent: (v: number) => v * 100,
-  identity: (v: number) => v,
-} as const
+// Key mappings from raw API keys to our schema keys
+const rawKeyMappings: Record<string, string> = {
+  // Raw API keys -> our schema keys
+  prompt: 'text_input',
+  completion: 'text_output',
+  image: 'image_input',
+  internal_reasoning: 'internal_reasoning',
+  request: 'request',
+  cache_read: 'cache_read',
+  cache_write: 'cache_write',
+  web_search: 'web_search',
+  discount: 'discount',
+  audio: 'audio_input',
+  input_audio_cache: 'audio_cache_input',
+  input_cache_read: 'cache_read',
+  input_cache_write: 'cache_write',
+  image_output: 'image_output',
+}
 
-/**
- * Pricing field configurations with units and transformations
- */
-export const pricingFormats = {
-  input: { unit: '/MTOK', transform: transforms.toMillion, digits: 2 },
-  output: { unit: '/MTOK', transform: transforms.toMillion, digits: 2 },
-  reasoning_output: { unit: '/MTOK', transform: transforms.toMillion, digits: 2 },
-  cache_read: { unit: '/MTOK', transform: transforms.toMillion, digits: 2 },
-  cache_write: { unit: '/MTOK', transform: transforms.toMillion, digits: 2 },
-  image_input: { unit: '/KTOK', transform: transforms.toThousand, digits: 2 },
-  web_search: { unit: '', transform: transforms.identity, digits: 2 },
-  per_request: { unit: '', transform: transforms.identity, digits: 2 },
-  discount: { unit: '%', transform: transforms.toPercent, digits: 0 },
-} as const
+export function formatPrice({
+  priceKey,
+  priceValue,
+  unitPrefix = true,
+  unitSuffix = true,
+}: {
+  priceKey: string
+  priceValue: number
+  unitPrefix?: boolean
+  unitSuffix?: boolean
+}): string {
+  // Map from raw API keys to our schema keys if needed
+  const schemaKey = rawKeyMappings[priceKey] || priceKey
 
-/**
- * Common metric formats used in the app
- */
-export const metricFormats = {
-  tokens: { unit: 'TOK', digits: 0 },
-  tokensPerSecond: { unit: 'TOK/S', digits: 0 },
-  milliseconds: { unit: 'MS', digits: 0 },
-  percentage: { unit: '%', digits: 0, transform: transforms.toPercent },
-  count: { unit: '', digits: 0 },
-} as const
+  // Get the format configuration
+  const format = pricingFormats[schemaKey]
+
+  if (!format) {
+    return String(priceValue)
+  }
+
+  const transformedValue = format.transform(priceValue)
+
+  // Special handling for discount (percentage formatting)
+  if (schemaKey === 'discount') {
+    const formattedValue = transformedValue.toLocaleString('en-US', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    })
+    const suffix = unitSuffix ? format.unit : ''
+    return `${formattedValue}${suffix}`
+  }
+
+  const formattedValue = transformedValue.toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 3,
+  })
+
+  const prefix = unitPrefix ? '$' : ''
+  const suffix = unitSuffix ? format.unit : ''
+  return `${prefix}${formattedValue}${suffix}`
+}

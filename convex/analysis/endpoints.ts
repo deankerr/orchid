@@ -7,6 +7,8 @@ export const run = internalMutation({
     const endpoints = await DB.OrViewsEndpoints.collect(ctx)
     const total = endpoints.length
 
+    if (total === 0) return 'no endpoints found'
+
     // Helper function to calculate percentage
     const pct = (count: number) => Math.round((count / total) * 100 * 100) / 100
 
