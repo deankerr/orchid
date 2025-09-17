@@ -8,7 +8,7 @@ const crons = cronJobs()
 export const snapshotCron = internalAction({
   args: {},
   handler: async (ctx) => {
-    const cfg = await ctx.runQuery(internal.db.snapshot.crawlConfig.getFirst)
+    const cfg = await ctx.runQuery(internal.db.snapshot.crawl.config.getFirst)
     if (!cfg?.enabled) return
 
     const h = new Date().getUTCHours()
@@ -26,23 +26,17 @@ export const snapshotCron = internalAction({
     const delayMs = cfg.delay_minutes * 60_000 + jitter
 
     // Use the new single-bundle crawler
-    await ctx.scheduler.runAfter(delayMs, internal.snapshots.crawl.run, {
+    await ctx.scheduler.runAfter(delayMs, internal.snapshots.crawl.main.run, {
       apps: on(cfg.apps_every_hours),
       uptimes: on(cfg.uptimes_every_hours),
       modelAuthors: on(cfg.authors_every_hours),
-      processChanges: true,
     })
 
     // Actions have a 10m max runtime; schedule materialize for after that window
-    await ctx.scheduler.runAfter(
-      delayMs + 12 * 60_000,
-      internal.snapshots.materialize_v2.main.run,
-      {},
-    )
+    await ctx.scheduler.runAfter(delayMs + 10 * 60_000, internal.snapshots.materialize.main.run, {})
+    await ctx.scheduler.runAfter(delayMs + 10 * 60_000, internal.snapshots.changes.main.run, {})
 
-    console.log(
-      `[cron:snapshot] scheduled crawlB in ${Math.round(delayMs / 60000)}m and materializeb +10m`,
-    )
+    console.log(`[cron:snapshot] scheduled crawl in ${Math.round(delayMs / 60000)}m`)
   },
 })
 

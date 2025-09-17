@@ -1,10 +1,10 @@
-import * as DB from '@/convex/db'
+import { db } from '@/convex/db'
 
 import { internalMutation } from '../_generated/server'
 
 export const run = internalMutation({
   handler: async (ctx) => {
-    const endpoints = await DB.OrViewsEndpoints.collect(ctx)
+    const endpoints = await db.or.views.endpoints.collect(ctx)
     const total = endpoints.length
 
     if (total === 0) return 'no endpoints found'

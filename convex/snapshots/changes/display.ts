@@ -1,8 +1,8 @@
 import type { AsObjectValidator, Infer } from 'convex/values'
 
-import * as DB from '@/convex/db'
+import { db } from '@/convex/db'
 
-type ChangeObject = Infer<AsObjectValidator<typeof DB.OrChanges.vTable.validator>>
+type ChangeObject = Infer<AsObjectValidator<typeof db.or.changes.vTable.validator>>
 
 type HideRule = {
   entity?: 'provider' | 'model' | 'endpoint'

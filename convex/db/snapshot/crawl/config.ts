@@ -1,8 +1,8 @@
 import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
-import { internalQuery } from '../../_generated/server'
-import { createTableVHelper } from '../../table3'
+import { internalQuery } from '../../../_generated/server'
+import { createTableVHelper } from '../../../lib/vTable'
 
 export const table = defineTable({
   enabled: v.boolean(), // turn the whole thing on/off

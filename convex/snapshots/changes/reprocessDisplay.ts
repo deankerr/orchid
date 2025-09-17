@@ -1,6 +1,6 @@
 import { v } from 'convex/values'
 
-import { internal } from '../../_generated/api'
+import { api, internal } from '../../_generated/api'
 import type { Doc } from '../../_generated/dataModel'
 import { internalAction } from '../../_generated/server'
 import { shouldDisplayChange } from './display'
@@ -18,7 +18,7 @@ export const reprocessDisplayStatus = internalAction({
     while (true) {
       // * fetch next batch of changes
       const result: { page: Doc<'or_changes'>[]; continueCursor: string | null; isDone: boolean } =
-        await ctx.runQuery(internal.db.or.changes.list, {
+        await ctx.runQuery(api.db.or.changes.list, {
           paginationOpts: {
             numItems: BATCH_SIZE,
             cursor,

@@ -1,8 +1,8 @@
 import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
-import { query, type QueryCtx } from '../../../_generated/server'
-import { createTableVHelper } from '../../../table3'
+import { query, type MutationCtx, type QueryCtx } from '../../../_generated/server'
+import { createTableVHelper } from '../../../lib/vTable'
 
 export const table = defineTable({
   slug: v.string(),
@@ -50,3 +50,26 @@ export const list = query({
     return await collect(ctx)
   },
 })
+
+export async function insert(
+  ctx: MutationCtx,
+  data: Omit<typeof vTable.validator.type, 'updated_at'>,
+) {
+  return await ctx.db.insert(vTable.name, { ...data, updated_at: Date.now() })
+}
+
+export async function patch(
+  ctx: MutationCtx,
+  id: typeof vTable._id.type,
+  updates: Partial<Omit<typeof vTable.validator.type, 'updated_at'>>,
+) {
+  return await ctx.db.patch(id, { ...updates, updated_at: Date.now() })
+}
+
+export async function replace(
+  ctx: MutationCtx,
+  id: typeof vTable._id.type,
+  data: Omit<typeof vTable.validator.type, 'updated_at'>,
+) {
+  return await ctx.db.replace(id, { ...data, updated_at: Date.now() })
+}

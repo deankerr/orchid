@@ -2,10 +2,10 @@ import { nullable } from 'convex-helpers/validators'
 import { defineTable, paginationOptsValidator } from 'convex/server'
 import { v } from 'convex/values'
 
-import { internal } from '../../_generated/api'
-import type { Id } from '../../_generated/dataModel'
-import { internalMutation, internalQuery } from '../../_generated/server'
-import { createTableVHelper } from '../../table3'
+import { internal } from '../../../_generated/api'
+import type { Id } from '../../../_generated/dataModel'
+import { internalMutation, internalQuery } from '../../../_generated/server'
+import { createTableVHelper } from '../../../lib/vTable'
 
 export const table = defineTable({
   crawl_id: v.string(),
@@ -37,24 +37,6 @@ export const getByCrawlId = internalQuery({
       .query('snapshot_crawl_archives')
       .withIndex('by_crawl_id', (q) => q.eq('crawl_id', args.crawl_id))
       .first()
-  },
-})
-
-export const collect = internalQuery({
-  handler: async (ctx) => {
-    return await ctx.db.query('snapshot_crawl_archives').collect()
-  },
-})
-
-export const getAllByCrawlId = internalQuery({
-  args: {
-    crawl_id: v.string(),
-  },
-  handler: async (ctx, args) => {
-    return await ctx.db
-      .query('snapshot_crawl_archives')
-      .withIndex('by_crawl_id', (q) => q.eq('crawl_id', args.crawl_id))
-      .collect()
   },
 })
 
