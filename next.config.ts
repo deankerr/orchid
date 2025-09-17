@@ -19,6 +19,16 @@ const nextConfig: NextConfig = {
         destination: '/endpoints',
         permanent: false,
       },
+      {
+        source: '/models',
+        destination: '/',
+        permanent: false,
+      },
+      {
+        source: '/models/:path*',
+        destination: '/',
+        permanent: false,
+      },
     ]
   },
   rewrites: async () => {
