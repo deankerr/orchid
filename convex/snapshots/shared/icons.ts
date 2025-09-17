@@ -48,5 +48,5 @@ export function getIconUrl(slug: string) {
   const iconSlug = resolveIconSlug(slug)
   if (!iconSlug) return undefined
 
-  return `/${PUBLIC_ICONS_DIR}/${iconSlug}.png`
+  return `/${PUBLIC_ICONS_DIR}/32/${iconSlug}.png`
 }

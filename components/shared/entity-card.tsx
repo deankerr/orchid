@@ -21,14 +21,16 @@ export const EntityCard = memo(
     slug: string
     hoverSlugReveal?: boolean
   } & React.ComponentProps<'div'>) => {
+    const fallback = name || slug
+
     return (
       <div className={cn('flex min-w-0 items-center gap-2 text-left', className)} {...props}>
-        <EntityAvatar src={icon_url} fallback={name} />
+        <EntityAvatar src={icon_url} fallback={fallback} />
         <div className="min-w-0 flex-1">
-          <div className="truncate text-sm font-medium">{name}</div>
+          <div className={cn('truncate text-sm leading-tight font-medium')}>{name}</div>
           <div
             className={cn(
-              'relative -mx-1 w-fit max-w-full overflow-hidden rounded-sm px-1 font-mono text-xs text-ellipsis whitespace-nowrap text-muted-foreground outline outline-transparent select-all',
+              'relative -mx-1 w-fit max-w-full overflow-hidden rounded-sm px-1 font-mono text-xs leading-none text-ellipsis whitespace-nowrap text-muted-foreground outline outline-transparent select-all',
               hoverSlugReveal &&
                 'hover:z-10 hover:max-w-none hover:overflow-visible hover:bg-background hover:outline-border/50 hover:transition-colors',
             )}
@@ -50,8 +52,8 @@ export function ProviderCard({ slug }: { slug: string }) {
 
   return (
     <EntityCard
-      name={provider?.name ?? 'Unknown'}
-      slug={provider?.slug ?? 'unknown'}
+      name={provider?.name ?? ''}
+      slug={provider?.slug ?? (slug || 'unknown')}
       icon_url={provider?.icon_url ?? ''}
     />
   )
@@ -63,8 +65,8 @@ export function ModelCard({ slug }: { slug: string }) {
 
   return (
     <EntityCard
-      name={model?.name ?? 'Unknown'}
-      slug={model?.slug ?? 'unknown'}
+      name={model?.name ?? ''}
+      slug={model?.slug ?? (slug || 'unknown')}
       icon_url={model?.icon_url ?? ''}
     />
   )
