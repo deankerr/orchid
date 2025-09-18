@@ -1,16 +1,25 @@
 'use client'
 
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 
 import * as R from 'remeda'
 
 import { ColumnDef, getCoreRowModel, useReactTable } from '@tanstack/react-table'
+import { SearchCodeIcon } from 'lucide-react'
 
 import type { Doc } from '@/convex/_generated/dataModel'
 
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { DataGrid } from '@/components/ui/data-grid'
 import { DataGridTable } from '@/components/ui/data-grid-table'
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
 import { calculatePercentageChange, cn, formatDateTime, formatRelativeTime } from '@/lib/utils'
 
@@ -36,29 +45,46 @@ export function ChangesDataGrid({
   changes: ChangeRow[]
   isLoading?: boolean
 }) {
+  const [selectedChange, setSelectedChange] = useState<ChangeRow | null>(null)
+  const [sheetOpen, setSheetOpen] = useState(false)
+
   const columns = useMemo<ColumnDef<ChangeRow>[]>(
     () => [
       {
         id: 'time',
         header: 'Time',
         accessorKey: 'crawl_id',
-        cell: ({ getValue }) => {
+        cell: ({ getValue, row }) => {
           const timestamp = Number(getValue())
           const relativeTime = formatRelativeTime(timestamp, { format: 'long' })
           const fullDateTime = formatDateTime(timestamp)
 
           return (
-            <div
-              className="w-20 cursor-default font-mono text-xs text-muted-foreground"
-              title={fullDateTime}
-            >
-              {relativeTime}
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                className="-ml-3 size-6 text-muted-foreground/50"
+                size="icon"
+                onClick={() => {
+                  setSelectedChange(row.original)
+                  setSheetOpen(true)
+                }}
+              >
+                <SearchCodeIcon />
+              </Button>
+
+              <div
+                className="w-20 cursor-default font-mono text-xs text-muted-foreground"
+                title={fullDateTime}
+              >
+                {relativeTime}
+              </div>
             </div>
           )
         },
-        size: 96,
+        size: 130,
         meta: {
-          skeleton: <Skeleton className="h-10 w-20" />,
+          skeleton: <Skeleton className="h-6 w-20" />,
         },
       },
 
@@ -74,7 +100,7 @@ export function ChangesDataGrid({
         },
         size: 260,
         meta: {
-          skeleton: <Skeleton className="h-10 w-full" />,
+          skeleton: <Skeleton className="h-8 w-56" />,
         },
       },
 
@@ -90,7 +116,7 @@ export function ChangesDataGrid({
         },
         size: 180,
         meta: {
-          skeleton: <Skeleton className="h-10 w-full" />,
+          skeleton: <Skeleton className="h-8 w-44" />,
         },
       },
 
@@ -99,7 +125,7 @@ export function ChangesDataGrid({
         header: 'Change',
         size: 480,
         meta: {
-          skeleton: <Skeleton className="h-10 w-full" />,
+          skeleton: <Skeleton className="h-8 w-full" />,
         },
         cell: ({ row }) => {
           const change = parseChangeDoc(row.original)
@@ -162,18 +188,34 @@ export function ChangesDataGrid({
   })
 
   return (
-    <DataGrid
-      table={table}
-      recordCount={changes.length}
-      isLoading={isLoading}
-      loadingMessage="Loading changes..."
-      emptyMessage="No changes found"
-      tableLayout={{
-        headerSticky: true,
-      }}
-    >
-      <DataGridTable />
-    </DataGrid>
+    <>
+      <DataGrid
+        table={table}
+        recordCount={changes.length}
+        isLoading={isLoading}
+        loadingMessage="Loading changes..."
+        emptyMessage="No changes found"
+        tableLayout={{
+          headerSticky: true,
+        }}
+      >
+        <DataGridTable />
+      </DataGrid>
+
+      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+        <SheetContent className="sm:max-w-xl">
+          <SheetHeader>
+            <SheetTitle>Change Entry</SheetTitle>
+            <SheetDescription>Raw change entry data</SheetDescription>
+          </SheetHeader>
+          <div className="overflow-auto">
+            <pre className="p-4 pt-0 text-xs leading-relaxed break-words whitespace-pre-wrap">
+              {selectedChange ? JSON.stringify(selectedChange, null, 2) : 'No data selected'}
+            </pre>
+          </div>
+        </SheetContent>
+      </Sheet>
+    </>
   )
 }
 
