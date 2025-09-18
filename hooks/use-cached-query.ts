@@ -4,7 +4,7 @@ import { useQuery } from 'convex-helpers/react/cache/hooks'
 import type { OptionalRestArgsOrSkip } from 'convex/react'
 import type { FunctionReference, FunctionReturnType } from 'convex/server'
 
-function useQueryTimer<T>(result: T, label?: string): T {
+export function useQueryTimer<T>(result: T, label?: string): T {
   const startTimeRef = useRef<number | null>(null)
 
   useEffect(() => {

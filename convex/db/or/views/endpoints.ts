@@ -125,6 +125,29 @@ export async function collect(ctx: QueryCtx) {
   return await ctx.db.query(vTable.name).collect()
 }
 
+export async function insert(
+  ctx: MutationCtx,
+  data: Omit<typeof vTable.validator.type, 'updated_at'>,
+) {
+  return await ctx.db.insert(vTable.name, { ...data, updated_at: Date.now() })
+}
+
+export async function patch(
+  ctx: MutationCtx,
+  id: typeof vTable._id.type,
+  updates: Partial<Omit<typeof vTable.validator.type, 'updated_at'>>,
+) {
+  return await ctx.db.patch(id, { ...updates, updated_at: Date.now() })
+}
+
+export async function replace(
+  ctx: MutationCtx,
+  id: typeof vTable._id.type,
+  data: Omit<typeof vTable.validator.type, 'updated_at'>,
+) {
+  return await ctx.db.replace(id, { ...data, updated_at: Date.now() })
+}
+
 export const list = query({
   args: {
     modelSlug: v.optional(v.string()),
@@ -157,25 +180,7 @@ export const list = query({
   },
 })
 
-export async function insert(
-  ctx: MutationCtx,
-  data: Omit<typeof vTable.validator.type, 'updated_at'>,
-) {
-  return await ctx.db.insert(vTable.name, { ...data, updated_at: Date.now() })
-}
-
-export async function patch(
-  ctx: MutationCtx,
-  id: typeof vTable._id.type,
-  updates: Partial<Omit<typeof vTable.validator.type, 'updated_at'>>,
-) {
-  return await ctx.db.patch(id, { ...updates, updated_at: Date.now() })
-}
-
-export async function replace(
-  ctx: MutationCtx,
-  id: typeof vTable._id.type,
-  data: Omit<typeof vTable.validator.type, 'updated_at'>,
-) {
-  return await ctx.db.replace(id, { ...data, updated_at: Date.now() })
-}
+export const _collect = query({
+  args: { cache_bust: v.number() },
+  handler: async (ctx) => await collect(ctx),
+})

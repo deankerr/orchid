@@ -1,13 +1,15 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client'
 
 import { useEffect, useState } from 'react'
 
-import { usePaginatedQuery } from 'convex/react'
+import { usePaginatedQuery, useQuery } from 'convex/react'
 
 import { Loader2Icon } from 'lucide-react'
 
 import { api } from '@/convex/_generated/api'
 
+import { useQueryTimer } from '@/hooks/use-cached-query'
 import { useInfiniteScroll } from '@/hooks/use-infinite-scroll'
 
 import { PageDescription, PageHeader, PageTitle } from '../app-layout/pages'
@@ -22,37 +24,47 @@ import { OREntityCombobox } from './or-entity-combobox'
 
 const LOAD_MORE_THRESHOLD = 500
 const ITEMS_PER_PAGE = 40
-const INITIAL_NUM_ITEMS = 20
+const INITIAL_NUM_ITEMS = 1
+
+const cache_bust = Math.random()
 
 export function EndpointsDataGridPage() {
   const [selectedEntity, setSelectedEntity] = useState('')
   const [forceLoading, setForceLoading] = useState(false)
 
-  const { results, status, loadMore, isLoading } = usePaginatedQuery(
-    api.db.or.views.endpoints.list,
-    {
-      modelSlug: selectedEntity && selectedEntity.includes('/') ? selectedEntity : undefined,
-      providerSlug: selectedEntity && !selectedEntity.includes('/') ? selectedEntity : undefined,
-    },
-
-    { initialNumItems: INITIAL_NUM_ITEMS },
+  const allEndpoints = useQueryTimer(
+    useQuery(api.db.or.views.endpoints._collect, { cache_bust }),
+    'load all endpoints',
   )
 
-  const isInitialLoad = status === 'LoadingFirstPage'
+  const isInitialLoad = !allEndpoints
+  const isLoading = !allEndpoints
 
-  // Set up infinite scrolling
-  const scrollRef = useInfiniteScroll(() => loadMore(ITEMS_PER_PAGE), {
-    threshold: LOAD_MORE_THRESHOLD,
-    hasMore: status === 'CanLoadMore',
-    isLoading: status === 'LoadingMore',
-  })
+  // const { results, status, loadMore, isLoading } = usePaginatedQuery(
+  //   api.db.or.views.endpoints.list,
+  //   {
+  //     modelSlug: selectedEntity && selectedEntity.includes('/') ? selectedEntity : undefined,
+  //     providerSlug: selectedEntity && !selectedEntity.includes('/') ? selectedEntity : undefined,
+  //   },
 
-  // Reset data grid scroll position on initial load
-  useEffect(() => {
-    if (scrollRef.current && status === 'LoadingFirstPage') {
-      scrollRef.current.scrollTop = 0
-    }
-  }, [status, scrollRef])
+  //   { initialNumItems: INITIAL_NUM_ITEMS },
+  // )
+
+  // const isInitialLoad = status === 'LoadingFirstPage' || !loadall
+
+  // // Set up infinite scrolling
+  // const scrollRef = useInfiniteScroll(() => loadMore(ITEMS_PER_PAGE), {
+  //   threshold: LOAD_MORE_THRESHOLD,
+  //   hasMore: status === 'CanLoadMore',
+  //   isLoading: status === 'LoadingMore',
+  // })
+
+  // // Reset data grid scroll position on initial load
+  // useEffect(() => {
+  //   if (scrollRef.current && status === 'LoadingFirstPage') {
+  //     scrollRef.current.scrollTop = 0
+  //   }
+  // }, [status, scrollRef])
 
   return (
     <>
@@ -74,10 +86,13 @@ export function EndpointsDataGridPage() {
         </DataGridFrameToolbar>
 
         <DataGridContainer
-          ref={scrollRef}
+          // ref={scrollRef}
           className="flex-1 items-start overflow-x-auto overscroll-none rounded-none border-x-0"
         >
-          <EndpointsDataGrid endpoints={results || []} isLoading={isInitialLoad || forceLoading} />
+          <EndpointsDataGrid
+            endpoints={allEndpoints || []}
+            isLoading={isInitialLoad || forceLoading}
+          />
         </DataGridContainer>
 
         <DataGridFrameFooter>
@@ -98,7 +113,9 @@ export function EndpointsDataGridPage() {
 
           <div className="">{isLoading && <Spinner />}</div>
 
-          <div className="justify-self-end font-mono text-xs">{results.length} items loaded</div>
+          <div className="justify-self-end font-mono text-xs">
+            {allEndpoints?.length ?? 0} items loaded
+          </div>
         </DataGridFrameFooter>
       </DataGridFrame>
     </>
