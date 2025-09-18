@@ -24,7 +24,7 @@ export const EntityCard = memo(
     const fallback = name || slug
 
     return (
-      <div className={cn('flex min-w-0 items-center gap-2 text-left', className)} {...props}>
+      <div className={cn('flex min-w-0 items-center gap-2 p-0.5 text-left', className)} {...props}>
         <EntityAvatar src={icon_url} fallback={fallback} />
         <div className="min-w-0 flex-1">
           <div className={cn('truncate text-sm leading-tight font-medium')}>{name}</div>
