@@ -63,7 +63,7 @@ export function ChangesDataGrid({
             <div className="flex items-center gap-1">
               <Button
                 variant="ghost"
-                className="-ml-3 size-6 text-muted-foreground/50"
+                className="-ml-1.5 size-6 text-muted-foreground/50"
                 size="icon"
                 onClick={() => {
                   setSelectedChange(row.original)
@@ -74,7 +74,7 @@ export function ChangesDataGrid({
               </Button>
 
               <div
-                className="w-20 cursor-default font-mono text-xs text-muted-foreground"
+                className="w-20 flex-1 cursor-default font-mono text-xs text-muted-foreground"
                 title={fullDateTime}
               >
                 {relativeTime}
@@ -82,7 +82,7 @@ export function ChangesDataGrid({
             </div>
           )
         },
-        size: 130,
+        size: 150,
         meta: {
           skeleton: <Skeleton className="h-6 w-20" />,
         },
@@ -96,11 +96,11 @@ export function ChangesDataGrid({
           if (change.entity_type === 'model' || change.entity_type === 'endpoint') {
             return <ModelCard slug={change.model_variant_slug ?? 'unknown'} />
           }
-          return <div className="text-muted-foreground">—</div>
+          return <EmptyCell />
         },
-        size: 260,
+        size: 290,
         meta: {
-          skeleton: <Skeleton className="h-8 w-56" />,
+          skeleton: <Skeleton className="h-8 w-full" />,
         },
       },
 
@@ -112,11 +112,11 @@ export function ChangesDataGrid({
           if (change.entity_type === 'endpoint' || change.entity_type === 'provider') {
             return <ProviderCard slug={change.provider_slug ?? 'unknown'} />
           }
-          return <div className="text-muted-foreground">—</div>
+          return <EmptyCell />
         },
-        size: 180,
+        size: 225,
         meta: {
-          skeleton: <Skeleton className="h-8 w-44" />,
+          skeleton: <Skeleton className="h-8 w-full" />,
         },
       },
 
@@ -195,9 +195,11 @@ export function ChangesDataGrid({
         isLoading={isLoading}
         loadingMessage="Loading changes..."
         emptyMessage="No changes found"
-        skeletonRows={12}
+        skeletonRows={20}
         tableLayout={{
           headerSticky: true,
+          width: 'fixed',
+          cellBorder: false,
         }}
       >
         <DataGridTable />
@@ -342,4 +344,8 @@ export function ArrayUpdate({ keyName, changes }: { keyName: string; changes: Ar
       </div>
     </>
   )
+}
+
+function EmptyCell() {
+  return <div className="text-muted-foreground/60">—</div>
 }

@@ -40,9 +40,9 @@ export function EndpointsDataGrid({
             />
           )
         },
-        size: 272,
+        size: 290,
         meta: {
-          skeleton: <Skeleton className="h-12 w-full" />,
+          skeleton: <Skeleton className="h-8 w-full" />,
         },
       },
 
@@ -59,9 +59,9 @@ export function EndpointsDataGrid({
             />
           )
         },
-        size: 200,
+        size: 225,
         meta: {
-          skeleton: <Skeleton className="h-12 w-full" />,
+          skeleton: <Skeleton className="h-8 w-full" />,
         },
       },
 
@@ -435,7 +435,7 @@ export function EndpointsDataGrid({
       isLoading={isLoading}
       loadingMessage="Loading endpoints..."
       emptyMessage="No endpoints found"
-      skeletonRows={15}
+      skeletonRows={20}
       tableLayout={{
         headerSticky: true,
         width: 'fixed',
