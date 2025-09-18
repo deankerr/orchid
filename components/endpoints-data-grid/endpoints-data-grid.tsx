@@ -435,6 +435,7 @@ export function EndpointsDataGrid({
       isLoading={isLoading}
       loadingMessage="Loading endpoints..."
       emptyMessage="No endpoints found"
+      skeletonRows={15}
       tableLayout={{
         headerSticky: true,
         width: 'fixed',

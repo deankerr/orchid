@@ -11,6 +11,7 @@ import { api } from '@/convex/_generated/api'
 import { useInfiniteScroll } from '@/hooks/use-infinite-scroll'
 
 import { PageDescription, PageHeader, PageTitle } from '../app-layout/pages'
+import { DataGridFrame, DataGridFrameFooter, DataGridFrameToolbar } from '../data-grid-frame'
 import { FeatureFlag } from '../dev-utils/feature-flag'
 import { Button } from '../ui/button'
 import { Checkbox } from '../ui/checkbox'
@@ -21,13 +22,13 @@ import { OREntityCombobox } from './or-entity-combobox'
 
 const LOAD_MORE_THRESHOLD = 500
 const ITEMS_PER_PAGE = 40
-const INITIAL_NUM_ITEMS = 40
+const INITIAL_NUM_ITEMS = 20
 
 export function EndpointsDataGridPage() {
   const [selectedEntity, setSelectedEntity] = useState('')
   const [forceLoading, setForceLoading] = useState(false)
 
-  const { results, status, loadMore } = usePaginatedQuery(
+  const { results, status, loadMore, isLoading } = usePaginatedQuery(
     api.db.or.views.endpoints.list,
     {
       modelSlug: selectedEntity && selectedEntity.includes('/') ? selectedEntity : undefined,
@@ -38,7 +39,6 @@ export function EndpointsDataGridPage() {
   )
 
   const isInitialLoad = status === 'LoadingFirstPage'
-  const isLoadingMore = status === 'LoadingMore'
 
   // Set up infinite scrolling
   const scrollRef = useInfiniteScroll(() => loadMore(ITEMS_PER_PAGE), {
@@ -61,39 +61,46 @@ export function EndpointsDataGridPage() {
         <PageDescription>Browse models and providers available on OpenRouter</PageDescription>
       </PageHeader>
 
-      <div className="mb-1 flex items-center gap-2 p-2">
-        <OREntityCombobox value={selectedEntity} onValueChange={setSelectedEntity} />
-        <Button variant="outline" disabled={!selectedEntity} onClick={() => setSelectedEntity('')}>
-          Clear
-        </Button>
+      <DataGridFrame>
+        <DataGridFrameToolbar>
+          <OREntityCombobox value={selectedEntity} onValueChange={setSelectedEntity} />
+          <Button
+            variant="outline"
+            disabled={!selectedEntity}
+            onClick={() => setSelectedEntity('')}
+          >
+            Clear
+          </Button>
+        </DataGridFrameToolbar>
 
-        <FeatureFlag flag="dev">
-          <div className="ml-auto border border-dashed p-1 font-mono">
-            <Label className="text-xs">
-              isInitialLoad
-              <Checkbox
-                checked={forceLoading}
-                onCheckedChange={(checked) => setForceLoading(checked === true)}
-                title="Force loading state (debug)"
-              />
-            </Label>
+        <DataGridContainer
+          ref={scrollRef}
+          className="flex-1 items-start overflow-x-auto overscroll-none rounded-none border-x-0"
+        >
+          <EndpointsDataGrid endpoints={results || []} isLoading={isInitialLoad || forceLoading} />
+        </DataGridContainer>
+
+        <DataGridFrameFooter>
+          <div className="justify-self-start">
+            <FeatureFlag flag="dev">
+              <div className="ml-auto border border-dashed p-1 font-mono">
+                <Label className="text-xs">
+                  loading
+                  <Checkbox
+                    checked={forceLoading}
+                    onCheckedChange={(checked) => setForceLoading(checked === true)}
+                    title="Force loading state (debug)"
+                  />
+                </Label>
+              </div>
+            </FeatureFlag>
           </div>
-        </FeatureFlag>
-      </div>
 
-      <DataGridContainer
-        ref={scrollRef}
-        className="mb-2 w-[99%] flex-1 self-center overflow-x-auto rounded-none"
-      >
-        <EndpointsDataGrid endpoints={results || []} isLoading={isInitialLoad || forceLoading} />
+          <div className="">{isLoading && <Spinner />}</div>
 
-        {!isInitialLoad && results.length > 0 && (
-          <div className="grid h-14 place-content-center font-mono text-sm text-muted-foreground">
-            {isLoadingMore && <Spinner />}
-            {status === 'Exhausted' && 'No more endpoints found.'}
-          </div>
-        )}
-      </DataGridContainer>
+          <div className="justify-self-end font-mono text-xs">{results.length} items loaded</div>
+        </DataGridFrameFooter>
+      </DataGridFrame>
     </>
   )
 }

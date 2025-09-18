@@ -195,6 +195,7 @@ export function ChangesDataGrid({
         isLoading={isLoading}
         loadingMessage="Loading changes..."
         emptyMessage="No changes found"
+        skeletonRows={12}
         tableLayout={{
           headerSticky: true,
         }}
