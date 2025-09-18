@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+/* eslint-disable @next/next/no-img-element */
 import { cn } from '@/lib/utils'
 
 export function EntityAvatar({
@@ -7,15 +7,21 @@ export function EntityAvatar({
   className,
   ...props
 }: {
-  src: string
+  src: string | null | undefined
   fallback: string
-} & React.ComponentProps<typeof Avatar>) {
+} & React.ComponentProps<'div'>) {
   return (
-    <Avatar className={cn('size-6 shrink-0 rounded-sm', className)} {...props}>
-      {src && <AvatarImage src={src} />}
-      <AvatarFallback className="rounded-sm font-mono text-sm uppercase">
-        {fallback.replace(/[^a-zA-Z0-9]/g, '').slice(0, 2)}
-      </AvatarFallback>
-    </Avatar>
+    <div
+      className={cn('grid size-6 shrink-0 place-content-stretch rounded-sm', className)}
+      {...props}
+    >
+      {src ? (
+        <img src={src} className="size-full object-cover" alt="" />
+      ) : (
+        <span className="content-center bg-muted text-center font-mono text-sm uppercase">
+          {fallback.replace(/[^a-zA-Z0-9]/g, '').slice(0, 2)}
+        </span>
+      )}
+    </div>
   )
 }

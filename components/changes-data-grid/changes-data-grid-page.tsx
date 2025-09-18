@@ -8,7 +8,6 @@ import { Loader2Icon } from 'lucide-react'
 
 import { api } from '@/convex/_generated/api'
 
-import { ChangesDataGrid } from '@/components/changes-data-grid/changes-data-grid'
 import {
   Select,
   SelectContent,
@@ -19,7 +18,12 @@ import {
 import { useInfiniteScroll } from '@/hooks/use-infinite-scroll'
 
 import { PageDescription, PageHeader, PageTitle } from '../app-layout/pages'
+import { DataGridFrame, DataGridFrameFooter, DataGridFrameToolbar } from '../data-grid-frame'
+import { FeatureFlag } from '../dev-utils/feature-flag'
+import { Checkbox } from '../ui/checkbox'
 import { DataGridContainer } from '../ui/data-grid'
+import { Label } from '../ui/label'
+import { ChangesDataGrid } from './changes-data-grid'
 
 const LOAD_MORE_THRESHOLD = 500
 const ITEMS_PER_PAGE = 40
@@ -31,8 +35,9 @@ type ChangeAction = 'all' | 'create' | 'update' | 'delete'
 export function ChangesDataGridPage() {
   const [entityType, setEntityType] = useState<EntityType>('all') // Show all changes to see record changes
   const [changeAction, setChangeAction] = useState<ChangeAction>('all')
+  const [forceLoading, setForceLoading] = useState(false)
 
-  const { results, status, loadMore } = usePaginatedQuery(
+  const { results, status, loadMore, isLoading } = usePaginatedQuery(
     api.db.or.changes.list,
     {
       entity_type: entityType === 'all' ? undefined : entityType,
@@ -43,22 +48,20 @@ export function ChangesDataGridPage() {
   )
 
   const isInitialLoad = status === 'LoadingFirstPage'
-  const isLoadingMore = status === 'LoadingMore'
-  const canLoadMore = status === 'CanLoadMore'
 
-  // Set up infinite scrolling with 400px threshold from bottom
+  // Set up infinite scrolling
   const scrollRef = useInfiniteScroll(() => loadMore(ITEMS_PER_PAGE), {
     threshold: LOAD_MORE_THRESHOLD,
-    hasMore: canLoadMore,
-    isLoading: isLoadingMore,
+    hasMore: status === 'CanLoadMore',
+    isLoading: status === 'LoadingMore',
   })
 
-  // Reset scroll position when filters change or on initial load
+  // Reset data grid scroll position on initial load
   useEffect(() => {
-    if (scrollRef.current) {
+    if (scrollRef.current && status === 'LoadingFirstPage') {
       scrollRef.current.scrollTop = 0
     }
-  }, [entityType, changeAction, isInitialLoad, scrollRef])
+  }, [status, scrollRef])
 
   return (
     <>
@@ -67,50 +70,68 @@ export function ChangesDataGridPage() {
         <PageDescription>View changes detected between OpenRouter snapshots</PageDescription>
       </PageHeader>
 
-      <div className="flex gap-2 px-2 py-3">
-        <Select value={entityType} onValueChange={(value) => setEntityType(value as EntityType)}>
-          <SelectTrigger className="w-48" aria-label="Filter by entity type">
-            <span className="sr-only">Filter by Type</span>
-            <SelectValue placeholder="Filter by Type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Types</SelectItem>
-            <SelectItem value="model">Models</SelectItem>
-            <SelectItem value="endpoint">Endpoints</SelectItem>
-            <SelectItem value="provider">Providers</SelectItem>
-          </SelectContent>
-        </Select>
+      <DataGridFrame>
+        <DataGridFrameToolbar>
+          <Select value={entityType} onValueChange={(value) => setEntityType(value as EntityType)}>
+            <SelectTrigger className="w-48" aria-label="Filter by entity type">
+              <span className="sr-only">Filter by Type</span>
+              <SelectValue placeholder="Filter by Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value="model">Models</SelectItem>
+              <SelectItem value="endpoint">Endpoints</SelectItem>
+              <SelectItem value="provider">Providers</SelectItem>
+            </SelectContent>
+          </Select>
 
-        <Select
-          value={changeAction}
-          onValueChange={(value) => setChangeAction(value as ChangeAction)}
+          <Select
+            value={changeAction}
+            onValueChange={(value) => setChangeAction(value as ChangeAction)}
+          >
+            <SelectTrigger className="w-48" aria-label="Filter by change action">
+              <span className="sr-only">Filter by Action</span>
+              <SelectValue placeholder="Filter by Action" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Actions</SelectItem>
+              <SelectItem value="create">Create</SelectItem>
+              <SelectItem value="update">Update</SelectItem>
+              <SelectItem value="delete">Delete</SelectItem>
+            </SelectContent>
+          </Select>
+        </DataGridFrameToolbar>
+
+        <DataGridContainer
+          ref={scrollRef}
+          className="flex-1 items-start overflow-x-auto overscroll-none rounded-none border-x-0"
         >
-          <SelectTrigger className="w-48" aria-label="Filter by change action">
-            <span className="sr-only">Filter by Action</span>
-            <SelectValue placeholder="Filter by Action" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Actions</SelectItem>
-            <SelectItem value="create">Create</SelectItem>
-            <SelectItem value="update">Update</SelectItem>
-            <SelectItem value="delete">Delete</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+          <ChangesDataGrid changes={results || []} isLoading={isInitialLoad || forceLoading} />
+        </DataGridContainer>
 
-      <DataGridContainer
-        ref={scrollRef}
-        className="mb-2 w-[99%] flex-1 self-center overflow-x-auto rounded-none"
-      >
-        <ChangesDataGrid changes={results || []} isLoading={isInitialLoad} />
-
-        {!isInitialLoad && (
-          <div className="grid h-14 place-content-center border-t font-mono text-sm text-muted-foreground">
-            {isLoadingMore && <Spinner />}
-            {status === 'Exhausted' && 'No more changes found.'}
+        <DataGridFrameFooter>
+          <div className="justify-self-start">
+            <FeatureFlag flag="dev">
+              <div className="ml-auto border border-dashed p-1 font-mono">
+                <Label className="text-xs">
+                  loading
+                  <Checkbox
+                    checked={forceLoading}
+                    onCheckedChange={(checked) => setForceLoading(checked === true)}
+                    title="Force loading state (debug)"
+                  />
+                </Label>
+              </div>
+            </FeatureFlag>
           </div>
-        )}
-      </DataGridContainer>
+
+          <div className="">{isLoading && <Spinner />}</div>
+
+          <div className="justify-self-end font-mono text-xs">
+            {results?.length || 0} items loaded
+          </div>
+        </DataGridFrameFooter>
+      </DataGridFrame>
     </>
   )
 }

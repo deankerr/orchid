@@ -20,8 +20,24 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 })
 
+// Determine environment emoji prefix
+const getEnvironmentPrefix = () => {
+  if (process.env.NODE_ENV === 'development') {
+    return '🚧 '
+  }
+  if (process.env.VERCEL_ENV === 'preview') {
+    return '🔍 '
+  }
+  return '' // Production - no emoji
+}
+
+const envPrefix = getEnvironmentPrefix()
+
 export const metadata: Metadata = {
-  title: 'ORCHID',
+  title: {
+    template: `${envPrefix}%s - ORCHID`,
+    default: `${envPrefix}ORCHID`,
+  },
   description: 'ORCHID: OpenRouter Capability & Health Intelligence Dashboard',
 }
 

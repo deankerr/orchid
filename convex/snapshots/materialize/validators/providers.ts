@@ -24,7 +24,7 @@ export const ProviderTransformSchema = z
   .transform((raw) => ({
     slug: raw.slug,
     name: raw.displayName,
-    icon_url: getIconUrl(raw.slug) ?? raw.icon.url,
+    icon_url: getIconUrl(raw.slug) ?? (raw.icon.url.startsWith('http') ? raw.icon.url : ''),
 
     headquarters: raw.headquarters,
     datacenters: raw.datacenters,
