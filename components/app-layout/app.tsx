@@ -19,6 +19,10 @@ export function App({ children }: { children: React.ReactNode }) {
 
           <FeatureFlag flag="dev">
             <div className="ml-auto flex gap-2 font-mono">
+              <NavButton href="/dev/resources" className="border border-dashed">
+                Resources
+              </NavButton>
+
               <NavButton href="/dev/components" className="border border-dashed">
                 Components
               </NavButton>
@@ -26,33 +30,6 @@ export function App({ children }: { children: React.ReactNode }) {
               <NavButton href="/dev/changes" className="border border-dashed">
                 Changes
               </NavButton>
-
-              <div className="flex flex-col justify-center rounded border border-dashed px-1 font-mono text-xs text-muted-foreground">
-                <div className="flex gap-1">
-                  M:
-                  <Link
-                    className="underline underline-offset-2"
-                    href="https://openrouter.ai/api/v1/models"
-                  >
-                    V1
-                  </Link>
-                  <Link
-                    className="underline underline-offset-2"
-                    href="https://openrouter.ai/api/frontend/models"
-                  >
-                    FE
-                  </Link>
-                </div>
-                <div className="flex gap-1">
-                  P:
-                  <Link
-                    className="underline underline-offset-2"
-                    href="https://openrouter.ai/api/frontend/all-providers"
-                  >
-                    FE
-                  </Link>
-                </div>
-              </div>
             </div>
           </FeatureFlag>
         </nav>
