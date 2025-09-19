@@ -13,6 +13,7 @@
 
 ## Additions
 
+- provider shares state between components
 - nuqs: query param state, source of truth
 - break up pricing, limits, data policy where needed
 - some key attributes become columns

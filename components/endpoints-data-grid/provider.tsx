@@ -2,7 +2,14 @@
 
 import { createContext, ReactNode, useContext, useState } from 'react'
 
-import { getCoreRowModel, useReactTable } from '@tanstack/react-table'
+import {
+  getCoreRowModel,
+  getFilteredRowModel,
+  getSortedRowModel,
+  SortingState,
+  Table,
+  useReactTable,
+} from '@tanstack/react-table'
 
 import { DataGrid, DataGridContainer } from '../ui/data-grid'
 import { DataGridTable } from '../ui/data-grid-table'
@@ -18,6 +25,11 @@ interface EndpointsContextValue {
   isLoading: boolean
   cellBorder: boolean
   setCellBorder?: (value: boolean) => void
+  sorting: SortingState
+  setSorting?: (value: SortingState | ((prev: SortingState) => SortingState)) => void
+  globalFilter: string
+  setGlobalFilter?: (value: string) => void
+  table: Table<EndpointRow>
 }
 
 const EndpointsContext = createContext<EndpointsContextValue | null>(null)
@@ -32,15 +44,31 @@ export function useEndpoints() {
 
 export function EndpointsProvider({ data, children }: EndpointsProviderProps) {
   const [cellBorder, setCellBorder] = useState(false)
+  const [sorting, setSorting] = useState<SortingState>([])
+  const [globalFilter, setGlobalFilter] = useState('')
 
   const isLoading = data === undefined
-  const safeData = data || []
 
   const columns = useEndpointsColumns()
   const table = useReactTable({
-    data: safeData,
+    data: data ?? [],
     columns,
+    state: {
+      sorting,
+      globalFilter,
+    },
+    onSortingChange: setSorting,
+    onGlobalFilterChange: setGlobalFilter,
+    globalFilterFn: (row, _columnId, filterValue: string) => {
+      const searchValue = filterValue.toLowerCase()
+      const modelName = row.original.model.name.toLowerCase()
+      const providerName = row.original.provider.name.toLowerCase()
+
+      return modelName.includes(searchValue) || providerName.includes(searchValue)
+    },
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     meta: {
       cellBorder,
     },
@@ -49,15 +77,20 @@ export function EndpointsProvider({ data, children }: EndpointsProviderProps) {
   return (
     <EndpointsContext.Provider
       value={{
-        recordCount: safeData.length,
+        recordCount: table.getFilteredRowModel().rows.length,
         isLoading,
         cellBorder,
         setCellBorder,
+        sorting,
+        setSorting,
+        globalFilter,
+        setGlobalFilter,
+        table,
       }}
     >
       <DataGrid
         table={table}
-        recordCount={safeData.length}
+        recordCount={table.getFilteredRowModel().rows.length}
         isLoading={isLoading}
         loadingMessage="Loading endpoints..."
         emptyMessage="No endpoints found"
@@ -68,7 +101,7 @@ export function EndpointsProvider({ data, children }: EndpointsProviderProps) {
           cellBorder,
         }}
         tableClassNames={{
-          headerRow: 'font-mono uppercase text-[85%]',
+          headerRow: '',
         }}
       >
         {children}

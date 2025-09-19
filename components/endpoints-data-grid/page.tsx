@@ -10,7 +10,11 @@ import { EndpointsFooter, EndpointsFrame } from './frame'
 import { EndpointsProvider, EndpointsTable } from './provider'
 
 export function EndpointsPage() {
-  const endpointsList = useCachedQuery(api.db.or.views.endpoints.all, {}, 'endpoints-all')
+  const endpointsList = useCachedQuery(
+    api.db.or.views.endpoints.all,
+    { limit: 30 },
+    'endpoints-all',
+  )
 
   return (
     <>

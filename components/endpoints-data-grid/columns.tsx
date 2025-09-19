@@ -5,6 +5,7 @@ import { ColumnDef } from '@tanstack/react-table'
 import type { Doc } from '@/convex/_generated/dataModel'
 
 import { Badge } from '@/components/ui/badge'
+import { DataGridColumnHeader } from '@/components/ui/data-grid-column-header'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatPrice } from '@/lib/formatters'
 
@@ -19,7 +20,8 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
     () => [
       {
         id: 'model',
-        header: 'Model',
+        accessorFn: (row) => row.model.name,
+        header: ({ column }) => <DataGridColumnHeader column={column} title="Model" />,
         cell: ({ row }) => {
           const endpoint = row.original
           return (
@@ -31,14 +33,18 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
           )
         },
         size: 290,
+        enableSorting: true,
+        enableHiding: true,
         meta: {
+          headerTitle: 'Model',
           skeleton: <Skeleton className="h-8 w-full" />,
         },
       },
 
       {
         id: 'provider',
-        header: 'Provider',
+        accessorFn: (row) => row.provider.name,
+        header: ({ column }) => <DataGridColumnHeader column={column} title="Provider" />,
         cell: ({ row }) => {
           const endpoint = row.original
           return (
@@ -50,7 +56,10 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
           )
         },
         size: 225,
+        enableSorting: true,
+        enableHiding: true,
         meta: {
+          headerTitle: 'Provider',
           skeleton: <Skeleton className="h-8 w-full" />,
         },
       },
@@ -72,7 +81,9 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
           )
         },
         size: 112,
+        enableHiding: true,
         meta: {
+          headerTitle: 'Variant',
           headerClassName: 'text-center',
           skeleton: <Skeleton className="h-6 w-full" />,
           cellClassName: 'text-center',
@@ -93,7 +104,9 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
           )
         },
         size: 114,
+        enableHiding: true,
         meta: {
+          headerTitle: 'Input Modalities',
           skeleton: <Skeleton className="h-6 w-full" />,
         },
       },
@@ -109,20 +122,26 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
           )
         },
         size: 112,
+        enableHiding: true,
         meta: {
+          headerTitle: 'Output Modalities',
           skeleton: <Skeleton className="h-6 w-full" />,
         },
       },
 
       {
         id: 'contextLength',
-        header: 'Context Length',
+        accessorFn: (row) => row.context_length,
+        header: ({ column }) => <DataGridColumnHeader column={column} title="Context Length" />,
         cell: ({ row }) => {
           const contextLength = row.original.context_length
           return <div className="font-mono text-sm">{contextLength.toLocaleString()}</div>
         },
         size: 140,
+        enableSorting: true,
+        enableHiding: true,
         meta: {
+          headerTitle: 'Context Length',
           skeleton: <Skeleton className="h-4 w-full" />,
           headerClassName: 'text-center',
           cellClassName: 'text-right',
@@ -131,7 +150,8 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
 
       {
         id: 'maxOutput',
-        header: 'Max Output',
+        accessorFn: (row) => row.limits.text_output_tokens || 0,
+        header: ({ column }) => <DataGridColumnHeader column={column} title="Max Output" />,
         cell: ({ row }) => {
           const maxOutput = row.original.limits.text_output_tokens
           if (!maxOutput) {
@@ -140,7 +160,10 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
           return <div className="font-mono text-sm">{maxOutput.toLocaleString()}</div>
         },
         size: 112,
+        enableSorting: true,
+        enableHiding: true,
         meta: {
+          headerTitle: 'Max Output',
           skeleton: <Skeleton className="h-4 w-full" />,
           headerClassName: 'text-center',
           cellClassName: 'text-right',
@@ -159,7 +182,9 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
           )
         },
         size: 96,
+        enableHiding: true,
         meta: {
+          headerTitle: 'Quantization',
           skeleton: <Skeleton className="h-6 w-full" />,
           headerClassName: 'text-center',
           cellClassName: 'text-center',
@@ -168,7 +193,8 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
 
       {
         id: 'inputPrice',
-        header: 'Input $ per MTOK',
+        accessorFn: (row) => row.pricing.text_input || 0,
+        header: ({ column }) => <DataGridColumnHeader column={column} title="Input $ per MTOK" />,
         cell: ({ row }) => {
           const inputPrice = row.original.pricing.text_input
           if (!inputPrice) {
@@ -185,7 +211,10 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
           )
         },
         size: 96,
+        enableSorting: true,
+        enableHiding: true,
         meta: {
+          headerTitle: 'Input $ per MTOK',
           skeleton: <Skeleton className="h-4 w-full" />,
           headerClassName: 'text-center',
           cellClassName: 'text-right',
@@ -194,7 +223,8 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
 
       {
         id: 'outputPrice',
-        header: 'Output $ per MTOK',
+        accessorFn: (row) => row.pricing.text_output || 0,
+        header: ({ column }) => <DataGridColumnHeader column={column} title="Output $ per MTOK" />,
         cell: ({ row }) => {
           const outputPrice = row.original.pricing.text_output
           if (!outputPrice) {
@@ -211,7 +241,10 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
           )
         },
         size: 96,
+        enableSorting: true,
+        enableHiding: true,
         meta: {
+          headerTitle: 'Output $ per MTOK',
           skeleton: <Skeleton className="h-4 w-full" />,
           headerClassName: 'text-center',
           cellClassName: 'text-right',
@@ -308,7 +341,9 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
           )
         },
         size: 160,
+        enableHiding: true,
         meta: {
+          headerTitle: 'Misc $',
           skeleton: <Skeleton className="h-8 w-full" />,
         },
       },
@@ -367,7 +402,9 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
           )
         },
         size: 160,
+        enableHiding: true,
         meta: {
+          headerTitle: 'Limits',
           skeleton: <Skeleton className="h-8 w-full" />,
         },
       },
@@ -404,7 +441,9 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
           )
         },
         size: 288,
+        enableHiding: true,
         meta: {
+          headerTitle: 'Attributes',
           skeleton: <Skeleton className="h-8 w-full" />,
         },
       },
