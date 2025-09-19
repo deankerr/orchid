@@ -70,6 +70,7 @@ export type CrawlArchiveBundle = {
     }>
     providers: DataRecordItemArray
     modelAuthors: Array<DataRecordItem>
+    analytics?: DataRecordItem
   }
 }
 
@@ -97,6 +98,7 @@ const CrawlArchiveBundleSchema = z.strictObject({
     ),
     providers: z.array(DataRecordSchema),
     modelAuthors: z.array(DataRecordSchema),
+    analytics: DataRecordSchema.optional(),
   }),
 })
 
@@ -105,6 +107,7 @@ export const run = internalAction({
     apps: v.boolean(),
     uptimes: v.boolean(),
     modelAuthors: v.boolean(),
+    analytics: v.boolean(),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
@@ -156,6 +159,17 @@ export const run = internalAction({
       }
 
       bundle.data.modelAuthors = modelAuthors
+    }
+
+    // * analytics
+    if (args.analytics) {
+      try {
+        bundle.data.analytics = await orFetch('/api/frontend/models/find', {
+          schema: DataRecord,
+        })
+      } catch (err) {
+        console.error('[crawl:analytics]', { error: getErrorMessage(err) })
+      }
     }
 
     try {
@@ -251,6 +265,7 @@ export async function storeCrawlBundle(ctx: ActionCtx, bundle: CrawlArchiveBundl
     uptimes: parsed.data.models.reduce((sum, m) => sum + m.uptimes.length, 0),
     providers: parsed.data.providers.length,
     modelAuthors: parsed.data.modelAuthors.length,
+    analytics: parsed.data.analytics ? 1 : 0,
   }
 
   await ctx.runMutation(internal.db.snapshot.crawl.archives.insert, {

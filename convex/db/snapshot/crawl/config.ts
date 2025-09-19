@@ -11,6 +11,7 @@ export const table = defineTable({
   authors_every_hours: v.number(), // model-author                  (e.g. 24)
   apps_every_hours: v.number(), // apps                           (e.g. 24)
   uptimes_every_hours: v.number(), // uptimes                        (e.g. 6)
+  analytics_every_hours: v.optional(v.number()), // analytics                      (e.g. 24)
 
   delay_minutes: v.number(), // fixed offset after the top of the hour
   jitter_minutes: v.number(), // random extra delay
