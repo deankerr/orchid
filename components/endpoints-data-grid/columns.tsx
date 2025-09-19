@@ -1,14 +1,10 @@
-'use client'
-
 import { useMemo } from 'react'
 
-import { ColumnDef, getCoreRowModel, useReactTable } from '@tanstack/react-table'
+import { ColumnDef } from '@tanstack/react-table'
 
 import type { Doc } from '@/convex/_generated/dataModel'
 
 import { Badge } from '@/components/ui/badge'
-import { DataGrid } from '@/components/ui/data-grid'
-import { DataGridTable } from '@/components/ui/data-grid-table'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatPrice } from '@/lib/formatters'
 
@@ -16,16 +12,10 @@ import { EntityCard } from '../shared/entity-card'
 import { DataGridAttributeBadge, getEndpointAttributes } from './attributes'
 import { ModalityIcons } from './modalities'
 
-type EndpointRow = Doc<'or_views_endpoints'>
+export type EndpointRow = Doc<'or_views_endpoints'>
 
-export function EndpointsDataGrid({
-  endpoints,
-  isLoading = false,
-}: {
-  endpoints: EndpointRow[]
-  isLoading?: boolean
-}) {
-  const columns = useMemo<ColumnDef<EndpointRow>[]>(
+export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
+  return useMemo<ColumnDef<EndpointRow>[]>(
     () => [
       {
         id: 'model',
@@ -421,35 +411,8 @@ export function EndpointsDataGrid({
     ],
     [],
   )
-
-  const table = useReactTable({
-    data: endpoints,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-  })
-
-  return (
-    <DataGrid
-      table={table}
-      recordCount={endpoints.length}
-      isLoading={isLoading}
-      loadingMessage="Loading endpoints..."
-      emptyMessage="No endpoints found"
-      skeletonRows={20}
-      tableLayout={{
-        headerSticky: true,
-        width: 'fixed',
-        cellBorder: false,
-      }}
-      tableClassNames={{
-        headerRow: 'font-mono uppercase text-[85%]',
-      }}
-    >
-      <DataGridTable />
-    </DataGrid>
-  )
 }
 
-function EmptyCell() {
+export function EmptyCell() {
   return <div className="text-muted-foreground/60">—</div>
 }

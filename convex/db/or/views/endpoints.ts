@@ -184,3 +184,7 @@ export const _collect = query({
   args: { cache_bust: v.number() },
   handler: async (ctx) => await collect(ctx),
 })
+
+export const all = query({
+  handler: async (ctx) => await collect(ctx),
+})
