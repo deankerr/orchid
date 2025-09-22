@@ -6,7 +6,7 @@ import {
   LetterTextIcon,
 } from 'lucide-react'
 
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 
 const modalityIcons = {
@@ -24,26 +24,24 @@ export function ModalityIconBadge({
   modality: string
 } & React.ComponentProps<'div'>) {
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div
-            className={cn(
-              'grid size-6.5 cursor-default rounded-sm bg-secondary p-1 font-mono text-secondary-foreground uppercase [&_svg]:size-full',
-              className,
-            )}
-            {...props}
-          >
-            {modalityIcons[modality as keyof typeof modalityIcons] ?? <BoxIcon />}
-          </div>
-        </TooltipTrigger>
-        <TooltipContent className="font-mono uppercase">{modality}</TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div
+          className={cn(
+            'grid size-6.5 cursor-default rounded-sm bg-secondary p-1 font-mono text-secondary-foreground uppercase [&_svg]:size-full',
+            className,
+          )}
+          {...props}
+        >
+          {modalityIcons[modality as keyof typeof modalityIcons] ?? <BoxIcon />}
+        </div>
+      </TooltipTrigger>
+      <TooltipContent className="font-mono uppercase">{modality}</TooltipContent>
+    </Tooltip>
   )
 }
 
-export function ModalityIcons({
+export function ModalityIconBadges({
   modalities,
   className,
   ...props

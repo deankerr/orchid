@@ -9,7 +9,7 @@ import { Label } from '../ui/label'
 import { SearchInput } from '../ui/search-input'
 import { useEndpoints } from './data-grid'
 
-export function EndpointsControls() {
+export function EndpointsDataGridControls() {
   const { cellBorder, setCellBorder, sorting, setSorting, globalFilter, setGlobalFilter, table } =
     useEndpoints()
 

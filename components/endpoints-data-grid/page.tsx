@@ -6,14 +6,14 @@ import { useCachedQuery } from '@/hooks/use-cached-query'
 
 import { PageDescription, PageHeader, PageTitle } from '../app-layout/pages'
 import { DataGridFrame } from '../shared/data-grid-frame'
-import { EndpointsControls } from './controls'
+import { EndpointsDataGridControls } from './controls'
 import { EndpointsDataGrid, EndpointsDataGridTable } from './data-grid'
-import { EndpointsFooter } from './footer'
+import { EndpointsDataGridFooter } from './footer'
 
 export function EndpointsPage() {
   const endpointsList = useCachedQuery(
     api.db.or.views.endpoints.all,
-    { limit: 30 },
+    { limit: 200 },
     'endpoints-all',
   )
 
@@ -26,9 +26,9 @@ export function EndpointsPage() {
 
       <EndpointsDataGrid data={endpointsList}>
         <DataGridFrame>
-          <EndpointsControls />
+          <EndpointsDataGridControls />
           <EndpointsDataGridTable />
-          <EndpointsFooter />
+          <EndpointsDataGridFooter />
         </DataGridFrame>
       </EndpointsDataGrid>
     </>

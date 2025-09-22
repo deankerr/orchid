@@ -9,9 +9,13 @@ import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatPrice } from '@/lib/formatters'
 
+import {
+  AttributeBadge,
+  getEndpointAttributes,
+  hasEndpointAttribute,
+} from '../shared/attribute-badge'
 import { EntityCard } from '../shared/entity-card'
-import { DataGridAttributeBadge, getEndpointAttributes } from './attributes'
-import { ModalityIcons } from './modalities'
+import { ModalityIconBadges } from '../shared/modality-icon-badge'
 
 export type EndpointRow = Doc<'or_views_endpoints'>
 
@@ -25,14 +29,23 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
         cell: ({ row }) => {
           const endpoint = row.original
           return (
-            <EntityCard
-              icon_url={endpoint.model.icon_url}
-              name={endpoint.model.name}
-              slug={endpoint.model.slug}
-            />
+            <div className="flex items-center gap-1">
+              <EntityCard
+                icon_url={endpoint.model.icon_url}
+                name={endpoint.model.name}
+                slug={endpoint.model.slug}
+                className="grow"
+              />
+
+              {hasEndpointAttribute(endpoint, 'mandatory_reasoning') ? (
+                <AttributeBadge value="mandatory_reasoning" />
+              ) : hasEndpointAttribute(endpoint, 'reasoning') ? (
+                <AttributeBadge value="reasoning" />
+              ) : null}
+            </div>
           )
         },
-        size: 290,
+        size: 310,
         enableSorting: true,
         enableHiding: true,
         meta: {
@@ -48,14 +61,22 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
         cell: ({ row }) => {
           const endpoint = row.original
           return (
-            <EntityCard
-              icon_url={endpoint.provider.icon_url}
-              name={endpoint.provider.name}
-              slug={endpoint.provider.tag_slug}
-            />
+            <div className="flex items-center gap-1">
+              <EntityCard
+                icon_url={endpoint.provider.icon_url}
+                name={endpoint.provider.name}
+                slug={endpoint.provider.tag_slug}
+                className="grow"
+              />
+
+              {hasEndpointAttribute(endpoint, 'free') && <AttributeBadge value="free" />}
+              {hasEndpointAttribute(endpoint, 'moderated') && <AttributeBadge value="moderated" />}
+              {hasEndpointAttribute(endpoint, 'deranked') && <AttributeBadge value="deranked" />}
+              {hasEndpointAttribute(endpoint, 'disabled') && <AttributeBadge value="disabled" />}
+            </div>
           )
         },
-        size: 225,
+        size: 240,
         enableSorting: true,
         enableHiding: true,
         meta: {
@@ -65,22 +86,34 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
       },
 
       {
-        id: 'variant',
-        header: 'VARIANT',
+        id: 'features',
+        header: 'Features',
         cell: ({ row }) => {
-          const variant = row.original.model.variant
-
-          if (variant === 'standard') {
-            return <EmptyCell />
-          }
+          const endpoint = row.original
 
           return (
-            <Badge variant="outline" className="font-mono">
-              {variant}
-            </Badge>
+            <div className="flex gap-1">
+              {hasEndpointAttribute(endpoint, 'tools') && <AttributeBadge value="tools" />}
+
+              {hasEndpointAttribute(endpoint, 'json_struct') ? (
+                <AttributeBadge value="json_struct" />
+              ) : hasEndpointAttribute(endpoint, 'json_format') ? (
+                <AttributeBadge value="json_format" />
+              ) : null}
+
+              {hasEndpointAttribute(endpoint, 'implicit_caching') ? (
+                <AttributeBadge value="implicit_caching" />
+              ) : hasEndpointAttribute(endpoint, 'caching') ? (
+                <AttributeBadge value="caching" />
+              ) : null}
+
+              {hasEndpointAttribute(endpoint, 'native_web_search') && (
+                <AttributeBadge value="native_web_search" />
+              )}
+            </div>
           )
         },
-        size: 112,
+        size: 160,
         enableHiding: true,
         meta: {
           headerTitle: 'Variant',
@@ -97,7 +130,7 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
           const endpoint = row.original
 
           return (
-            <ModalityIcons
+            <ModalityIconBadges
               className="min-w-16 gap-px"
               modalities={endpoint.model.input_modalities}
             />
@@ -118,7 +151,10 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
           const endpoint = row.original
 
           return (
-            <ModalityIcons className="min-w-16" modalities={endpoint.model.output_modalities} />
+            <ModalityIconBadges
+              className="min-w-16"
+              modalities={endpoint.model.output_modalities}
+            />
           )
         },
         size: 112,
@@ -265,6 +301,76 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
       },
 
       {
+        id: 'cacheReadPrice',
+        accessorFn: (row) => row.pricing.cache_read || 0,
+        header: ({ column }) => (
+          <DataGridColumnHeader
+            column={column}
+            title="CACHE READ $ PER MTOK"
+            className="text-right"
+          />
+        ),
+        cell: ({ row }) => {
+          const cacheReadPrice = row.original.pricing.cache_read
+          if (!cacheReadPrice) {
+            return <EmptyCell />
+          }
+          return (
+            <div className="font-mono">
+              {formatPrice({
+                priceKey: 'cache_read',
+                priceValue: cacheReadPrice,
+                unitSuffix: false,
+              })}
+            </div>
+          )
+        },
+        size: 115,
+        enableSorting: true,
+        enableHiding: true,
+        meta: {
+          headerTitle: 'Cache Read $ per MTOK',
+          skeleton: <Skeleton className="h-4 w-full" />,
+          cellClassName: 'text-right',
+        },
+      },
+
+      {
+        id: 'imageInputPrice',
+        accessorFn: (row) => row.pricing.image_input || 0,
+        header: ({ column }) => (
+          <DataGridColumnHeader
+            column={column}
+            title="IMAGE INPUT $ PER K"
+            className="text-right"
+          />
+        ),
+        cell: ({ row }) => {
+          const imageInputPrice = row.original.pricing.image_input
+          if (!imageInputPrice) {
+            return <EmptyCell />
+          }
+          return (
+            <div className="font-mono">
+              {formatPrice({
+                priceKey: 'image_input',
+                priceValue: imageInputPrice,
+                unitSuffix: false,
+              })}
+            </div>
+          )
+        },
+        size: 125,
+        enableSorting: true,
+        enableHiding: true,
+        meta: {
+          headerTitle: 'Image Input $ per K',
+          skeleton: <Skeleton className="h-4 w-full" />,
+          cellClassName: 'text-right',
+        },
+      },
+
+      {
         id: 'miscPricing',
         header: 'MISC $',
         cell: ({ row }) => {
@@ -278,12 +384,6 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
                 priceKey: 'internal_reasoning',
                 priceValue: pricing.internal_reasoning,
               }),
-            })
-          }
-          if (pricing.image_input) {
-            otherPrices.push({
-              label: 'images_input:',
-              value: formatPrice({ priceKey: 'image_input', priceValue: pricing.image_input }),
             })
           }
           if (pricing.image_output) {
@@ -307,12 +407,6 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
               }),
             })
           }
-          if (pricing.cache_read) {
-            otherPrices.push({
-              label: 'cache_read:',
-              value: formatPrice({ priceKey: 'cache_read', priceValue: pricing.cache_read }),
-            })
-          }
           if (pricing.cache_write) {
             otherPrices.push({
               label: 'cache_write:',
@@ -329,12 +423,6 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
             otherPrices.push({
               label: 'web_search:',
               value: formatPrice({ priceKey: 'web_search', priceValue: pricing.web_search }),
-            })
-          }
-          if (pricing.discount && pricing.discount > 0) {
-            otherPrices.push({
-              label: 'discount:',
-              value: formatPrice({ priceKey: 'discount', priceValue: pricing.discount }),
             })
           }
 
@@ -423,40 +511,29 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
       },
 
       {
-        id: 'attributes',
-        header: 'ATTRIBUTES',
+        id: 'dataPolicy',
+        header: 'Data Policy',
         cell: ({ row }) => {
           const endpoint = row.original
-          const attributes = getEndpointAttributes(endpoint).filter(
-            (attr) =>
-              ![
-                'completions',
-                'chat_completions',
-                'stream_cancellation',
-                'cache_pricing',
-                'implicit_caching',
-                'free',
-                'mandatory_reasoning',
-              ].includes(attr.key),
-          )
+          const attributes = getEndpointAttributes(endpoint, [
+            'trains',
+            'publishes',
+            'requires_ids',
+            'retains',
+          ])
 
           return (
-            <div className="flex w-64 flex-wrap gap-1">
-              {attributes.map((attribute) => (
-                <DataGridAttributeBadge
-                  key={attribute.key}
-                  icon={attribute.icon}
-                  label={attribute.label}
-                  variant={attribute.variant}
-                />
+            <div className="flex gap-1">
+              {attributes.map((attr) => (
+                <AttributeBadge key={attr} value={attr} />
               ))}
             </div>
           )
         },
-        size: 288,
+        size: 160,
         enableHiding: true,
         meta: {
-          headerTitle: 'Attributes',
+          headerTitle: 'Data Policy',
           skeleton: <Skeleton className="h-8 w-full" />,
         },
       },

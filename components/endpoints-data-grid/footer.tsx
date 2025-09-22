@@ -3,7 +3,7 @@ import { ArrowDown, ArrowUp } from 'lucide-react'
 import { DataGridFrameFooter } from '../shared/data-grid-frame'
 import { useEndpoints } from './data-grid'
 
-export function EndpointsFooter({ children, ...props }: React.ComponentProps<'div'>) {
+export function EndpointsDataGridFooter({ children, ...props }: React.ComponentProps<'div'>) {
   const { recordCount, isLoading, sorting, table } = useEndpoints()
 
   const currentSort = sorting[0]
