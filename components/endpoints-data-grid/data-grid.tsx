@@ -11,14 +11,9 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 
-import { DataGrid, DataGridContainer } from '../ui/data-grid'
-import { DataGridTable } from '../ui/data-grid-table'
+import { DataGrid, DataGridContainer } from '../data-grid/data-grid'
+import { DataGridTable } from '../data-grid/data-grid-table'
 import { useEndpointsColumns, type EndpointRow } from './columns'
-
-interface EndpointsProviderProps {
-  data: EndpointRow[] | undefined
-  children: ReactNode
-}
 
 interface EndpointsContextValue {
   recordCount: number
@@ -42,7 +37,13 @@ export function useEndpoints() {
   return context
 }
 
-export function EndpointsProvider({ data, children }: EndpointsProviderProps) {
+export function EndpointsDataGrid({
+  data,
+  children,
+}: {
+  data: EndpointRow[] | undefined
+  children: ReactNode
+}) {
   const [cellBorder, setCellBorder] = useState(false)
   const [sorting, setSorting] = useState<SortingState>([])
   const [globalFilter, setGlobalFilter] = useState('')
@@ -101,7 +102,7 @@ export function EndpointsProvider({ data, children }: EndpointsProviderProps) {
           cellBorder,
         }}
         tableClassNames={{
-          headerRow: '',
+          headerRow: 'uppercase font-mono text-[12px]',
         }}
       >
         {children}
@@ -110,7 +111,7 @@ export function EndpointsProvider({ data, children }: EndpointsProviderProps) {
   )
 }
 
-export function EndpointsTable() {
+export function EndpointsDataGridTable() {
   return (
     <DataGridContainer className="flex-1 items-start overflow-x-auto overscroll-none rounded-none border-x-0">
       <DataGridTable />

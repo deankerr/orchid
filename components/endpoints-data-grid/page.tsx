@@ -5,9 +5,10 @@ import { api } from '@/convex/_generated/api'
 import { useCachedQuery } from '@/hooks/use-cached-query'
 
 import { PageDescription, PageHeader, PageTitle } from '../app-layout/pages'
+import { DataGridFrame } from '../shared/data-grid-frame'
 import { EndpointsControls } from './controls'
-import { EndpointsFooter, EndpointsFrame } from './frame'
-import { EndpointsProvider, EndpointsTable } from './provider'
+import { EndpointsDataGrid, EndpointsDataGridTable } from './data-grid'
+import { EndpointsFooter } from './footer'
 
 export function EndpointsPage() {
   const endpointsList = useCachedQuery(
@@ -23,13 +24,13 @@ export function EndpointsPage() {
         <PageDescription>Browse models and providers available on OpenRouter</PageDescription>
       </PageHeader>
 
-      <EndpointsProvider data={endpointsList}>
-        <EndpointsFrame>
+      <EndpointsDataGrid data={endpointsList}>
+        <DataGridFrame>
           <EndpointsControls />
-          <EndpointsTable />
+          <EndpointsDataGridTable />
           <EndpointsFooter />
-        </EndpointsFrame>
-      </EndpointsProvider>
+        </DataGridFrame>
+      </EndpointsDataGrid>
     </>
   )
 }

@@ -4,8 +4,8 @@ import { ColumnDef } from '@tanstack/react-table'
 
 import type { Doc } from '@/convex/_generated/dataModel'
 
+import { DataGridColumnHeader } from '@/components/data-grid/data-grid-column-header'
 import { Badge } from '@/components/ui/badge'
-import { DataGridColumnHeader } from '@/components/ui/data-grid-column-header'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatPrice } from '@/lib/formatters'
 
@@ -21,7 +21,7 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
       {
         id: 'model',
         accessorFn: (row) => row.model.name,
-        header: ({ column }) => <DataGridColumnHeader column={column} title="Model" />,
+        header: ({ column }) => <DataGridColumnHeader column={column} title="MODEL" />,
         cell: ({ row }) => {
           const endpoint = row.original
           return (
@@ -44,7 +44,7 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
       {
         id: 'provider',
         accessorFn: (row) => row.provider.name,
-        header: ({ column }) => <DataGridColumnHeader column={column} title="Provider" />,
+        header: ({ column }) => <DataGridColumnHeader column={column} title="PROVIDER" />,
         cell: ({ row }) => {
           const endpoint = row.original
           return (
@@ -66,7 +66,7 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
 
       {
         id: 'variant',
-        header: 'Variant',
+        header: 'VARIANT',
         cell: ({ row }) => {
           const variant = row.original.model.variant
 
@@ -92,7 +92,7 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
 
       {
         id: 'inputModalities',
-        header: 'Input Modalities',
+        header: 'INPUT MODALITIES',
         cell: ({ row }) => {
           const endpoint = row.original
 
@@ -103,7 +103,7 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
             />
           )
         },
-        size: 114,
+        size: 112,
         enableHiding: true,
         meta: {
           headerTitle: 'Input Modalities',
@@ -113,7 +113,7 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
 
       {
         id: 'outputModalities',
-        header: 'Output Modalities',
+        header: 'OUTPUT MODALITIES',
         cell: ({ row }) => {
           const endpoint = row.original
 
@@ -132,18 +132,24 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
       {
         id: 'contextLength',
         accessorFn: (row) => row.context_length,
-        header: ({ column }) => <DataGridColumnHeader column={column} title="Context Length" />,
+        header: ({ column }) => (
+          <DataGridColumnHeader
+            column={column}
+            title="CONTEXT"
+            className="justify-end text-right"
+          />
+        ),
         cell: ({ row }) => {
           const contextLength = row.original.context_length
           return <div className="font-mono text-sm">{contextLength.toLocaleString()}</div>
         },
-        size: 140,
+        size: 110,
         enableSorting: true,
         enableHiding: true,
         meta: {
-          headerTitle: 'Context Length',
+          headerTitle: 'Context',
           skeleton: <Skeleton className="h-4 w-full" />,
-          headerClassName: 'text-center',
+          headerClassName: 'text-right',
           cellClassName: 'text-right',
         },
       },
@@ -151,7 +157,13 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
       {
         id: 'maxOutput',
         accessorFn: (row) => row.limits.text_output_tokens || 0,
-        header: ({ column }) => <DataGridColumnHeader column={column} title="Max Output" />,
+        header: ({ column }) => (
+          <DataGridColumnHeader
+            column={column}
+            title="MAX OUTPUT"
+            className="justify-end text-right"
+          />
+        ),
         cell: ({ row }) => {
           const maxOutput = row.original.limits.text_output_tokens
           if (!maxOutput) {
@@ -159,20 +171,19 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
           }
           return <div className="font-mono text-sm">{maxOutput.toLocaleString()}</div>
         },
-        size: 112,
+        size: 120,
         enableSorting: true,
         enableHiding: true,
         meta: {
           headerTitle: 'Max Output',
           skeleton: <Skeleton className="h-4 w-full" />,
-          headerClassName: 'text-center',
           cellClassName: 'text-right',
         },
       },
 
       {
         id: 'quantization',
-        header: 'Quant.',
+        header: 'QUANT.',
         cell: ({ row }) => {
           const quantization = row.original.quantization
           return (
@@ -194,7 +205,9 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
       {
         id: 'inputPrice',
         accessorFn: (row) => row.pricing.text_input || 0,
-        header: ({ column }) => <DataGridColumnHeader column={column} title="Input $ per MTOK" />,
+        header: ({ column }) => (
+          <DataGridColumnHeader column={column} title="INPUT $ PER MTOK" className="text-right" />
+        ),
         cell: ({ row }) => {
           const inputPrice = row.original.pricing.text_input
           if (!inputPrice) {
@@ -210,13 +223,12 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
             </div>
           )
         },
-        size: 96,
+        size: 115,
         enableSorting: true,
         enableHiding: true,
         meta: {
           headerTitle: 'Input $ per MTOK',
           skeleton: <Skeleton className="h-4 w-full" />,
-          headerClassName: 'text-center',
           cellClassName: 'text-right',
         },
       },
@@ -224,7 +236,9 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
       {
         id: 'outputPrice',
         accessorFn: (row) => row.pricing.text_output || 0,
-        header: ({ column }) => <DataGridColumnHeader column={column} title="Output $ per MTOK" />,
+        header: ({ column }) => (
+          <DataGridColumnHeader column={column} title="OUTPUT $ PER MTOK" className="text-right" />
+        ),
         cell: ({ row }) => {
           const outputPrice = row.original.pricing.text_output
           if (!outputPrice) {
@@ -240,20 +254,19 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
             </div>
           )
         },
-        size: 96,
+        size: 115,
         enableSorting: true,
         enableHiding: true,
         meta: {
           headerTitle: 'Output $ per MTOK',
           skeleton: <Skeleton className="h-4 w-full" />,
-          headerClassName: 'text-center',
           cellClassName: 'text-right',
         },
       },
 
       {
         id: 'miscPricing',
-        header: 'Misc $',
+        header: 'MISC $',
         cell: ({ row }) => {
           const pricing = row.original.pricing
           const otherPrices = []
@@ -350,7 +363,7 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
 
       {
         id: 'limits',
-        header: 'Limits',
+        header: 'LIMITS',
         cell: ({ row }) => {
           const limits = row.original.limits
           const limitsList = []
@@ -411,7 +424,7 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
 
       {
         id: 'attributes',
-        header: 'Attributes',
+        header: 'ATTRIBUTES',
         cell: ({ row }) => {
           const endpoint = row.original
           const attributes = getEndpointAttributes(endpoint).filter(

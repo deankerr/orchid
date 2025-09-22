@@ -18,8 +18,8 @@ import {
 import { useInfiniteScroll } from '@/hooks/use-infinite-scroll'
 
 import { PageDescription, PageHeader, PageTitle } from '../app-layout/pages'
-import { DataGridFrame, DataGridFrameFooter, DataGridFrameToolbar } from '../data-grid-frame'
 import { FeatureFlag } from '../dev-utils/feature-flag'
+import { DataGridFrame, DataGridFrameFooter, DataGridFrameToolbar } from '../shared/data-grid-frame'
 import { Checkbox } from '../ui/checkbox'
 import { DataGridContainer } from '../ui/data-grid'
 import { Label } from '../ui/label'

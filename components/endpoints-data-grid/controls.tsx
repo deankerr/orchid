@@ -1,13 +1,13 @@
 import { Settings2, XIcon } from 'lucide-react'
 
+import { DataGridColumnVisibility } from '../data-grid/data-grid-column-visibility'
 import { FeatureFlag } from '../dev-utils/feature-flag'
+import { DataGridFrameToolbar } from '../shared/data-grid-frame'
 import { Button } from '../ui/button'
 import { Checkbox } from '../ui/checkbox'
-import { DataGridColumnVisibility } from '../ui/data-grid-column-visibility'
 import { Label } from '../ui/label'
 import { SearchInput } from '../ui/search-input'
-import { EndpointsToolbar } from './frame'
-import { useEndpoints } from './provider'
+import { useEndpoints } from './data-grid'
 
 export function EndpointsControls() {
   const { cellBorder, setCellBorder, sorting, setSorting, globalFilter, setGlobalFilter, table } =
@@ -17,7 +17,7 @@ export function EndpointsControls() {
   const clearSorting = () => setSorting?.([])
 
   return (
-    <EndpointsToolbar>
+    <DataGridFrameToolbar>
       <SearchInput
         placeholder="Search models and providers..."
         value={globalFilter}
@@ -53,6 +53,6 @@ export function EndpointsControls() {
           />
         </Label>
       </FeatureFlag>
-    </EndpointsToolbar>
+    </DataGridFrameToolbar>
   )
 }
