@@ -13,6 +13,7 @@ import {
 
 import { DataGrid, DataGridContainer } from '../data-grid/data-grid'
 import { DataGridTable } from '../data-grid/data-grid-table'
+import { ScrollArea, ScrollBar } from '../ui/scroll-area'
 import { useEndpointsColumns, type EndpointRow } from './columns'
 
 interface EndpointsContextValue {
@@ -113,8 +114,11 @@ export function EndpointsDataGrid({
 
 export function EndpointsDataGridTable() {
   return (
-    <DataGridContainer className="flex-1 items-start overflow-x-auto overscroll-none rounded-none border-x-0">
-      <DataGridTable />
+    <DataGridContainer className="flex-1 overflow-hidden border-x-0">
+      <ScrollArea type="auto">
+        <DataGridTable />
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
     </DataGridContainer>
   )
 }
