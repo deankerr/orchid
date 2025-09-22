@@ -13,6 +13,7 @@ import {
 
 import { BadgeComponents } from './sets/badges'
 import { OREntityComboboxSet } from './sets/or-entity-combobox'
+import { RadBadgeComponents } from './sets/rad-badge'
 
 type ComponentSet = {
   name: string
@@ -26,6 +27,10 @@ export function ComponentLibrary() {
     {
       name: 'badges',
       component: BadgeComponents,
+    },
+    {
+      name: 'RadBadge',
+      component: RadBadgeComponents,
     },
     {
       name: 'OREntityCombobox',
