@@ -1,6 +1,18 @@
 import { useMemo } from 'react'
 
 import { ColumnDef } from '@tanstack/react-table'
+import {
+  AlarmClockIcon,
+  AudioLinesIcon,
+  BrainCogIcon,
+  CalendarIcon,
+  DatabaseIcon,
+  FlagIcon,
+  GlobeIcon,
+  ImageIcon,
+  LetterTextIcon,
+  SaveIcon,
+} from 'lucide-react'
 
 import type { Doc } from '@/convex/_generated/dataModel'
 
@@ -11,11 +23,12 @@ import { formatPrice } from '@/lib/formatters'
 
 import {
   AttributeBadge,
+  CustomAttributeBadge,
   getEndpointAttributes,
   hasEndpointAttribute,
 } from '../shared/attribute-badge'
 import { EntityCard } from '../shared/entity-card'
-import { ModalityIconBadges } from '../shared/modality-icon-badge'
+import { ModalityBadges } from '../shared/modality-badge'
 
 export type EndpointRow = Doc<'or_views_endpoints'>
 
@@ -69,10 +82,10 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
                 className="grow"
               />
 
-              {hasEndpointAttribute(endpoint, 'free') && <AttributeBadge value="free" />}
               {hasEndpointAttribute(endpoint, 'moderated') && <AttributeBadge value="moderated" />}
               {hasEndpointAttribute(endpoint, 'deranked') && <AttributeBadge value="deranked" />}
               {hasEndpointAttribute(endpoint, 'disabled') && <AttributeBadge value="disabled" />}
+              {hasEndpointAttribute(endpoint, 'free') && <AttributeBadge value="free" />}
             </div>
           )
         },
@@ -128,18 +141,13 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
         header: 'INPUT MODALITIES',
         cell: ({ row }) => {
           const endpoint = row.original
-
-          return (
-            <ModalityIconBadges
-              className="min-w-16 gap-px"
-              modalities={endpoint.model.input_modalities}
-            />
-          )
+          return <ModalityBadges modalities={endpoint.model.input_modalities} />
         },
-        size: 112,
+        size: 160,
         enableHiding: true,
         meta: {
           headerTitle: 'Input Modalities',
+          headerClassName: 'text-center',
           skeleton: <Skeleton className="h-6 w-full" />,
         },
       },
@@ -149,18 +157,13 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
         header: 'OUTPUT MODALITIES',
         cell: ({ row }) => {
           const endpoint = row.original
-
-          return (
-            <ModalityIconBadges
-              className="min-w-16"
-              modalities={endpoint.model.output_modalities}
-            />
-          )
+          return <ModalityBadges modalities={endpoint.model.output_modalities} />
         },
         size: 112,
         enableHiding: true,
         meta: {
           headerTitle: 'Output Modalities',
+          headerClassName: 'text-center',
           skeleton: <Skeleton className="h-6 w-full" />,
         },
       },
@@ -169,23 +172,18 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
         id: 'contextLength',
         accessorFn: (row) => row.context_length,
         header: ({ column }) => (
-          <DataGridColumnHeader
-            column={column}
-            title="CONTEXT"
-            className="justify-end text-right"
-          />
+          <DataGridColumnHeader column={column} title="CONTEXT" className="justify-center" />
         ),
         cell: ({ row }) => {
           const contextLength = row.original.context_length
           return <div className="font-mono text-sm">{contextLength.toLocaleString()}</div>
         },
-        size: 110,
+        size: 120,
         enableSorting: true,
         enableHiding: true,
         meta: {
           headerTitle: 'Context',
-          skeleton: <Skeleton className="h-4 w-full" />,
-          headerClassName: 'text-right',
+          skeleton: <Skeleton className="h-5 w-full" />,
           cellClassName: 'text-right',
         },
       },
@@ -194,11 +192,7 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
         id: 'maxOutput',
         accessorFn: (row) => row.limits.text_output_tokens || 0,
         header: ({ column }) => (
-          <DataGridColumnHeader
-            column={column}
-            title="MAX OUTPUT"
-            className="justify-end text-right"
-          />
+          <DataGridColumnHeader column={column} title="MAX OUTPUT" className="justify-center" />
         ),
         cell: ({ row }) => {
           const maxOutput = row.original.limits.text_output_tokens
@@ -212,7 +206,7 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
         enableHiding: true,
         meta: {
           headerTitle: 'Max Output',
-          skeleton: <Skeleton className="h-4 w-full" />,
+          skeleton: <Skeleton className="h-5 w-full" />,
           cellClassName: 'text-right',
         },
       },
@@ -242,7 +236,7 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
         id: 'inputPrice',
         accessorFn: (row) => row.pricing.text_input || 0,
         header: ({ column }) => (
-          <DataGridColumnHeader column={column} title="INPUT $ PER MTOK" className="text-right" />
+          <DataGridColumnHeader column={column} title="INPUT $ PER MTOK" className="text-center" />
         ),
         cell: ({ row }) => {
           const inputPrice = row.original.pricing.text_input
@@ -259,12 +253,12 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
             </div>
           )
         },
-        size: 115,
+        size: 118,
         enableSorting: true,
         enableHiding: true,
         meta: {
           headerTitle: 'Input $ per MTOK',
-          skeleton: <Skeleton className="h-4 w-full" />,
+          skeleton: <Skeleton className="h-5 w-full" />,
           cellClassName: 'text-right',
         },
       },
@@ -273,7 +267,7 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
         id: 'outputPrice',
         accessorFn: (row) => row.pricing.text_output || 0,
         header: ({ column }) => (
-          <DataGridColumnHeader column={column} title="OUTPUT $ PER MTOK" className="text-right" />
+          <DataGridColumnHeader column={column} title="OUTPUT $ PER MTOK" className="text-center" />
         ),
         cell: ({ row }) => {
           const outputPrice = row.original.pricing.text_output
@@ -290,12 +284,12 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
             </div>
           )
         },
-        size: 115,
+        size: 118,
         enableSorting: true,
         enableHiding: true,
         meta: {
           headerTitle: 'Output $ per MTOK',
-          skeleton: <Skeleton className="h-4 w-full" />,
+          skeleton: <Skeleton className="h-5 w-full" />,
           cellClassName: 'text-right',
         },
       },
@@ -307,7 +301,7 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
           <DataGridColumnHeader
             column={column}
             title="CACHE READ $ PER MTOK"
-            className="text-right"
+            className="text-center"
           />
         ),
         cell: ({ row }) => {
@@ -325,12 +319,12 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
             </div>
           )
         },
-        size: 115,
+        size: 118,
         enableSorting: true,
         enableHiding: true,
         meta: {
           headerTitle: 'Cache Read $ per MTOK',
-          skeleton: <Skeleton className="h-4 w-full" />,
+          skeleton: <Skeleton className="h-5 w-full" />,
           cellClassName: 'text-right',
         },
       },
@@ -342,7 +336,7 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
           <DataGridColumnHeader
             column={column}
             title="IMAGE INPUT $ PER K"
-            className="text-right"
+            className="text-center"
           />
         ),
         cell: ({ row }) => {
@@ -360,91 +354,146 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
             </div>
           )
         },
-        size: 125,
+        size: 120,
         enableSorting: true,
         enableHiding: true,
         meta: {
           headerTitle: 'Image Input $ per K',
-          skeleton: <Skeleton className="h-4 w-full" />,
+          skeleton: <Skeleton className="h-5 w-full" />,
           cellClassName: 'text-right',
         },
       },
 
       {
         id: 'miscPricing',
-        header: 'MISC $',
+        header: 'Other $',
         cell: ({ row }) => {
           const pricing = row.original.pricing
-          const otherPrices = []
+          const pricingItems = []
 
           if (pricing.internal_reasoning) {
-            otherPrices.push({
-              label: 'reasoning:',
-              value: formatPrice({
-                priceKey: 'internal_reasoning',
-                priceValue: pricing.internal_reasoning,
-              }),
-            })
-          }
-          if (pricing.image_output) {
-            otherPrices.push({
-              label: 'images_output:',
-              value: formatPrice({ priceKey: 'image_output', priceValue: pricing.image_output }),
-            })
-          }
-          if (pricing.audio_input) {
-            otherPrices.push({
-              label: 'audio_input:',
-              value: formatPrice({ priceKey: 'audio_input', priceValue: pricing.audio_input }),
-            })
-          }
-          if (pricing.audio_cache_input) {
-            otherPrices.push({
-              label: 'audio_cache_input:',
-              value: formatPrice({
-                priceKey: 'audio_cache_input',
-                priceValue: pricing.audio_cache_input,
-              }),
-            })
-          }
-          if (pricing.cache_write) {
-            otherPrices.push({
-              label: 'cache_write:',
-              value: formatPrice({ priceKey: 'cache_write', priceValue: pricing.cache_write }),
-            })
-          }
-          if (pricing.request) {
-            otherPrices.push({
-              label: 'per_request:',
-              value: formatPrice({ priceKey: 'request', priceValue: pricing.request }),
-            })
-          }
-          if (pricing.web_search) {
-            otherPrices.push({
-              label: 'web_search:',
-              value: formatPrice({ priceKey: 'web_search', priceValue: pricing.web_search }),
-            })
+            pricingItems.push(
+              <CustomAttributeBadge
+                key="reasoning"
+                label="reasoning:"
+                icon={<BrainCogIcon />}
+                formattedValue={formatPrice({
+                  priceKey: 'internal_reasoning',
+                  priceValue: pricing.internal_reasoning,
+                })}
+                color="blue"
+                variant="surface"
+              />,
+            )
           }
 
-          if (otherPrices.length === 0) {
+          if (pricing.image_output) {
+            pricingItems.push(
+              <CustomAttributeBadge
+                key="image_output"
+                label="images_output:"
+                icon={<ImageIcon />}
+                formattedValue={formatPrice({
+                  priceKey: 'image_output',
+                  priceValue: pricing.image_output,
+                })}
+                color="purple"
+                variant="surface"
+              />,
+            )
+          }
+
+          if (pricing.audio_input) {
+            pricingItems.push(
+              <CustomAttributeBadge
+                key="audio_input"
+                label="audio_input:"
+                icon={<AudioLinesIcon />}
+                formattedValue={formatPrice({
+                  priceKey: 'audio_input',
+                  priceValue: pricing.audio_input,
+                })}
+                color="green"
+                variant="surface"
+              />,
+            )
+          }
+
+          if (pricing.audio_cache_input) {
+            pricingItems.push(
+              <CustomAttributeBadge
+                key="audio_cache_input"
+                label="audio_cache_input:"
+                icon={<AudioLinesIcon />}
+                formattedValue={formatPrice({
+                  priceKey: 'audio_cache_input',
+                  priceValue: pricing.audio_cache_input,
+                })}
+                color="cyan"
+                variant="surface"
+              />,
+            )
+          }
+
+          if (pricing.cache_write) {
+            pricingItems.push(
+              <CustomAttributeBadge
+                key="cache_write"
+                label="cache_write:"
+                icon={<DatabaseIcon />}
+                formattedValue={formatPrice({
+                  priceKey: 'cache_write',
+                  priceValue: pricing.cache_write,
+                })}
+                color="cyan"
+                variant="surface"
+              />,
+            )
+          }
+
+          if (pricing.request) {
+            pricingItems.push(
+              <CustomAttributeBadge
+                key="request"
+                label="per_request:"
+                icon={<FlagIcon />}
+                formattedValue={formatPrice({
+                  priceKey: 'request',
+                  priceValue: pricing.request,
+                })}
+                color="yellow"
+                variant="surface"
+              />,
+            )
+          }
+
+          if (pricing.web_search) {
+            pricingItems.push(
+              <CustomAttributeBadge
+                key="web_search"
+                label="web_search:"
+                icon={<GlobeIcon />}
+                formattedValue={formatPrice({
+                  priceKey: 'web_search',
+                  priceValue: pricing.web_search,
+                })}
+                color="teal"
+                variant="surface"
+              />,
+            )
+          }
+
+          if (pricingItems.length === 0) {
             return <EmptyCell />
           }
 
-          return (
-            <div className="space-y-1 font-mono text-xs">
-              {otherPrices.map((price, idx) => (
-                <div key={idx}>
-                  <div>{price.label}</div>
-                  <div>{price.value}</div>
-                </div>
-              ))}
-            </div>
-          )
+          return <div className="flex flex-wrap gap-1">{pricingItems}</div>
         },
-        size: 160,
+        size: 130,
         enableHiding: true,
         meta: {
           headerTitle: 'Misc $',
+          headerClassName: 'text-center',
           skeleton: <Skeleton className="h-8 w-full" />,
         },
       },
@@ -454,58 +503,84 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
         header: 'LIMITS',
         cell: ({ row }) => {
           const limits = row.original.limits
-          const limitsList = []
+          const limitItems = []
 
           if (limits.text_input_tokens) {
-            limitsList.push({
-              label: 'max_input:',
-              value: `${limits.text_input_tokens.toLocaleString()}`,
-            })
-          }
-          if (limits.image_input_tokens) {
-            limitsList.push({
-              label: 'max_image_tokens:',
-              value: `${limits.image_input_tokens.toLocaleString()}`,
-            })
-          }
-          if (limits.images_per_input) {
-            limitsList.push({
-              label: 'images_per_input:',
-              value: `${limits.images_per_input.toLocaleString()}`,
-            })
-          }
-          if (limits.requests_per_minute) {
-            limitsList.push({
-              label: 'req_per_min:',
-              value: `${limits.requests_per_minute.toLocaleString()}`,
-            })
-          }
-          if (limits.requests_per_day) {
-            limitsList.push({
-              label: 'req_per_day:',
-              value: `${limits.requests_per_day.toLocaleString()}`,
-            })
+            limitItems.push(
+              <CustomAttributeBadge
+                key="text_input_tokens"
+                label="max_input:"
+                icon={<LetterTextIcon />}
+                formattedValue={`${limits.text_input_tokens.toLocaleString()}`}
+                color="yellow"
+                variant="surface"
+              />,
+            )
           }
 
-          if (limitsList.length === 0) {
+          if (limits.image_input_tokens) {
+            limitItems.push(
+              <CustomAttributeBadge
+                key="image_input_tokens"
+                label="max_image_tokens:"
+                icon={<ImageIcon />}
+                formattedValue={`${limits.image_input_tokens.toLocaleString()}`}
+                color="yellow"
+                variant="surface"
+              />,
+            )
+          }
+
+          if (limits.images_per_input) {
+            limitItems.push(
+              <CustomAttributeBadge
+                key="images_per_input"
+                label="images_per_input:"
+                icon={<ImageIcon />}
+                formattedValue={`${limits.images_per_input.toLocaleString()}`}
+                color="yellow"
+                variant="surface"
+              />,
+            )
+          }
+
+          if (limits.requests_per_minute) {
+            limitItems.push(
+              <CustomAttributeBadge
+                key="requests_per_minute"
+                label="req_per_min:"
+                icon={<AlarmClockIcon />}
+                formattedValue={`${limits.requests_per_minute.toLocaleString()}`}
+                color="yellow"
+                variant="surface"
+              />,
+            )
+          }
+
+          if (limits.requests_per_day) {
+            limitItems.push(
+              <CustomAttributeBadge
+                key="requests_per_day"
+                label="req_per_day:"
+                icon={<CalendarIcon />}
+                formattedValue={`${limits.requests_per_day.toLocaleString()}`}
+                color="yellow"
+                variant="surface"
+              />,
+            )
+          }
+
+          if (limitItems.length === 0) {
             return <EmptyCell />
           }
 
-          return (
-            <div className="space-y-1 font-mono text-xs">
-              {limitsList.map((limit, idx) => (
-                <div key={idx}>
-                  <div>{limit.label}</div>
-                  <div>{limit.value}</div>
-                </div>
-              ))}
-            </div>
-          )
+          return <div className="flex flex-wrap gap-1">{limitItems}</div>
         },
-        size: 160,
+        size: 130,
         enableHiding: true,
         meta: {
           headerTitle: 'Limits',
+          headerClassName: 'text-center',
           skeleton: <Skeleton className="h-8 w-full" />,
         },
       },
@@ -519,7 +594,6 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
             'trains',
             'publishes',
             'requires_ids',
-            'retains',
           ])
 
           return (
@@ -527,13 +601,24 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
               {attributes.map((attr) => (
                 <AttributeBadge key={attr} value={attr} />
               ))}
+
+              {hasEndpointAttribute(endpoint, 'retains') && (
+                <CustomAttributeBadge
+                  label="retains"
+                  icon={<SaveIcon />}
+                  formattedValue={`${endpoint.data_policy.retains_prompts_days?.toLocaleString() ?? 'unknown'} days`}
+                  color="orange"
+                  variant="surface"
+                />
+              )}
             </div>
           )
         },
-        size: 160,
+        size: 130,
         enableHiding: true,
         meta: {
           headerTitle: 'Data Policy',
+          headerClassName: 'text-center',
           skeleton: <Skeleton className="h-8 w-full" />,
         },
       },

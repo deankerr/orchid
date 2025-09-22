@@ -407,12 +407,12 @@ const radBadgeVariants = cva(
       {
         variant: 'soft',
         color: 'gray',
-        className: 'bg-gray-900 text-gray-300',
+        className: 'bg-gray-800 text-gray-300',
       },
       {
         variant: 'surface',
         color: 'gray',
-        className: 'bg-gray-900/50 text-gray-300 border-gray-800',
+        className: 'bg-gray-900/50 text-gray-400 border-gray-700',
       },
       {
         variant: 'outline',
@@ -428,12 +428,12 @@ const radBadgeVariants = cva(
       {
         variant: 'soft',
         color: 'slate',
-        className: 'bg-slate-900 text-slate-300',
+        className: 'bg-slate-800 text-slate-300',
       },
       {
         variant: 'surface',
         color: 'slate',
-        className: 'bg-slate-900/50 text-slate-300 border-slate-800',
+        className: 'bg-slate-900/50 text-slate-400 border-slate-700',
       },
       {
         variant: 'outline',
@@ -449,12 +449,12 @@ const radBadgeVariants = cva(
       {
         variant: 'soft',
         color: 'zinc',
-        className: 'bg-zinc-900 text-zinc-300',
+        className: 'bg-zinc-800 text-zinc-300',
       },
       {
         variant: 'surface',
         color: 'zinc',
-        className: 'bg-zinc-900/50 text-zinc-300 border-zinc-800',
+        className: 'bg-zinc-900/50 text-zinc-400 border-zinc-700',
       },
       {
         variant: 'outline',
@@ -470,12 +470,12 @@ const radBadgeVariants = cva(
       {
         variant: 'soft',
         color: 'neutral',
-        className: 'bg-neutral-900 text-neutral-300',
+        className: 'bg-neutral-800 text-neutral-300',
       },
       {
         variant: 'surface',
         color: 'neutral',
-        className: 'bg-neutral-900/50 text-neutral-300 border-neutral-800',
+        className: 'bg-neutral-900/50 text-neutral-400 border-neutral-700',
       },
       {
         variant: 'outline',
@@ -491,12 +491,12 @@ const radBadgeVariants = cva(
       {
         variant: 'soft',
         color: 'stone',
-        className: 'bg-stone-900 text-stone-300',
+        className: 'bg-stone-800 text-stone-300',
       },
       {
         variant: 'surface',
         color: 'stone',
-        className: 'bg-stone-900/50 text-stone-300 border-stone-800',
+        className: 'bg-stone-900/50 text-stone-400 border-stone-700',
       },
       {
         variant: 'outline',
@@ -506,7 +506,7 @@ const radBadgeVariants = cva(
     ],
     defaultVariants: {
       variant: 'soft',
-      color: 'red',
+      color: 'neutral',
     },
   },
 )
@@ -517,7 +517,7 @@ function RadBadge({
   color,
   asChild = false,
   ...props
-}: React.ComponentProps<'span'> &
+}: Omit<React.ComponentProps<'span'>, 'color'> &
   VariantProps<typeof radBadgeVariants> & {
     asChild?: boolean
   }) {

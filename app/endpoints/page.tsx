@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
 
-import { EndpointsPage } from '@/components/endpoints-data-grid/page'
+import { EndpointsDataGridPage } from '@/components/endpoints-data-grid/page'
 
 export const metadata: Metadata = {
   title: 'Endpoints',
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function Page() {
   return (
     <Suspense>
-      <EndpointsPage />
+      <EndpointsDataGridPage />
     </Suspense>
   )
 }

@@ -1,3 +1,4 @@
+import type { VariantProps } from 'class-variance-authority'
 import {
   BracesIcon,
   BrainCogIcon,
@@ -39,7 +40,7 @@ const attributeData = {
   },
   mandatory_reasoning: {
     icon: <BrainCogIcon />,
-    label: 'Reason!',
+    label: 'Must Reason',
     tooltip: 'Model always uses reasoning',
     color: 'indigo',
     variant: 'soft',
@@ -128,7 +129,7 @@ const attributeData = {
   native_web_search: {
     icon: <GlobeIcon />,
     label: 'Search',
-    tooltip: 'Native web search capabilities',
+    tooltip: 'Use native web search capabilities',
     color: 'teal',
     variant: 'soft',
     has: (endpoint: EndpointPartial) => endpoint.native_web_search ?? false,
@@ -139,7 +140,7 @@ const attributeData = {
     icon: <CakeSliceIcon />,
     label: 'Free',
     tooltip: 'Free model variant',
-    color: 'emerald',
+    color: 'pink',
     variant: 'soft',
     has: (endpoint: EndpointPartial) => endpoint.model?.variant === 'free',
   },
@@ -148,7 +149,7 @@ const attributeData = {
   moderated: {
     icon: <ShieldAlertIcon />,
     label: 'Mods',
-    tooltip: 'Content moderation enabled',
+    tooltip: 'Content moderation enforced',
     color: 'amber',
     variant: 'surface',
     has: (endpoint: EndpointPartial) => endpoint.moderated ?? false,
@@ -190,7 +191,7 @@ const attributeData = {
   requires_ids: {
     icon: <FingerprintIcon />,
     label: 'User ID',
-    tooltip: 'Requires user identification',
+    tooltip: 'Requires user IDs',
     color: 'orange',
     variant: 'surface',
     has: (endpoint: EndpointPartial) => endpoint.data_policy?.requires_user_ids === true,
@@ -198,7 +199,7 @@ const attributeData = {
   retains: {
     icon: <SaveIcon />,
     label: 'Retain',
-    tooltip: 'Prompts and data are retained',
+    tooltip: 'Prompts/data are retained',
     color: 'orange',
     variant: 'surface',
     has: (endpoint: EndpointPartial) => endpoint.data_policy?.retains_prompts === true,
@@ -233,13 +234,49 @@ export function AttributeBadge({ value }: { value: AttributeKey }) {
           className={cn('size-7 shrink-0 px-1 py-1 font-mono uppercase [&>svg]:size-full')}
           variant={data.variant}
           color={data.color}
+          aria-label={data.label}
         >
           {data.icon}
-          <span className="sr-only">{data.label}</span>
         </RadBadge>
       </TooltipTrigger>
 
       <TooltipContent className="">{data.tooltip}</TooltipContent>
+    </Tooltip>
+  )
+}
+
+export function CustomAttributeBadge({
+  label,
+  formattedValue,
+  icon,
+  color = 'gray',
+  variant = 'soft',
+}: {
+  label: string
+  formattedValue: string
+  icon?: React.ReactNode
+  color?: VariantProps<typeof RadBadge>['color']
+  variant?: VariantProps<typeof RadBadge>['variant']
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <RadBadge
+          className={cn('size-7 shrink-0 px-1 py-1 font-mono uppercase [&>svg]:size-full')}
+          variant={variant}
+          color={color}
+          aria-label={label}
+        >
+          {icon}
+        </RadBadge>
+      </TooltipTrigger>
+
+      <TooltipContent className="font-mono">
+        <div className="space-y-1">
+          <div className="font-semibold">{label}</div>
+          <div>{formattedValue}</div>
+        </div>
+      </TooltipContent>
     </Tooltip>
   )
 }

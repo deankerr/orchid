@@ -1,5 +1,7 @@
 'use client'
 
+import { parseAsInteger, useQueryState } from 'nuqs'
+
 import { api } from '@/convex/_generated/api'
 
 import { useCachedQuery } from '@/hooks/use-cached-query'
@@ -10,12 +12,10 @@ import { EndpointsDataGridControls } from './controls'
 import { EndpointsDataGrid, EndpointsDataGridTable } from './data-grid'
 import { EndpointsDataGridFooter } from './footer'
 
-export function EndpointsPage() {
-  const endpointsList = useCachedQuery(
-    api.db.or.views.endpoints.all,
-    { limit: 200 },
-    'endpoints-all',
-  )
+export function EndpointsDataGridPage() {
+  const [limit] = useQueryState('limit', parseAsInteger.withDefault(99999))
+
+  const endpointsList = useCachedQuery(api.db.or.views.endpoints.all, { limit }, 'endpoints-all')
 
   return (
     <>
