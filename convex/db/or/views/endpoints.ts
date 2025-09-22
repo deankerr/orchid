@@ -1,8 +1,7 @@
-import { defineTable, paginationOptsValidator } from 'convex/server'
+import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
 import { query, type MutationCtx, type QueryCtx } from '../../../_generated/server'
-import { vPaginatedQueryReturn } from '../../../lib/validator'
 import { createTableVHelper } from '../../../lib/vTable'
 
 export const table = defineTable({
@@ -125,38 +124,6 @@ export async function collect(ctx: QueryCtx) {
   return await ctx.db.query(vTable.name).collect()
 }
 
-export const list = query({
-  args: {
-    modelSlug: v.optional(v.string()),
-    providerSlug: v.optional(v.string()),
-    paginationOpts: paginationOptsValidator,
-  },
-  returns: vPaginatedQueryReturn(vTable.doc),
-  handler: async (ctx, { modelSlug, providerSlug, paginationOpts }) => {
-    if (modelSlug) {
-      return await ctx.db
-        .query(vTable.name)
-        .withIndex('by_model_slug', (q) => q.eq('model.slug', modelSlug))
-        .order('desc')
-        .paginate(paginationOpts)
-    }
-
-    if (providerSlug) {
-      return await ctx.db
-        .query(vTable.name)
-        .withIndex('by_provider_slug', (q) => q.eq('provider.slug', providerSlug))
-        .order('desc')
-        .paginate(paginationOpts)
-    }
-
-    return await ctx.db
-      .query(vTable.name)
-      .withIndex('by_model_or_added_at')
-      .order('desc')
-      .paginate(paginationOpts)
-  },
-})
-
 export async function insert(
   ctx: MutationCtx,
   data: Omit<typeof vTable.validator.type, 'updated_at'>,
@@ -179,3 +146,15 @@ export async function replace(
 ) {
   return await ctx.db.replace(id, { ...data, updated_at: Date.now() })
 }
+
+export const all = query({
+  args: { limit: v.optional(v.number()) },
+  handler: async (ctx, { limit }) => {
+    const q = ctx.db.query(vTable.name).withIndex('by_model_or_added_at').order('desc')
+
+    if (limit !== undefined) {
+      return await q.take(limit)
+    }
+    return await q.collect()
+  },
+})

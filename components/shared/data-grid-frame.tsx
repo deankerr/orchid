@@ -3,11 +3,11 @@ import { cn } from '@/lib/utils'
 export function DataGridFrame({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
-      {...props}
       className={cn(
         'm-0.5 flex flex-1 flex-col overflow-hidden rounded-md border sm:m-1',
         className,
       )}
+      {...props}
     />
   )
 }
@@ -15,8 +15,8 @@ export function DataGridFrame({ className, ...props }: React.ComponentProps<'div
 export function DataGridFrameToolbar({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
+      className={cn('flex shrink-0 items-center gap-2 overflow-x-auto px-2 py-3', className)}
       {...props}
-      className={cn('flex items-center gap-2 overflow-x-auto px-2 py-3', className)}
     />
   )
 }
@@ -24,11 +24,11 @@ export function DataGridFrameToolbar({ className, ...props }: React.ComponentPro
 export function DataGridFrameFooter({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
-      {...props}
       className={cn(
-        'grid h-9 grid-cols-3 items-center justify-items-center px-3 text-sm text-muted-foreground',
+        'grid h-9 shrink-0 grid-cols-3 items-center justify-items-center px-3 text-sm text-muted-foreground',
         className,
       )}
+      {...props}
     />
   )
 }

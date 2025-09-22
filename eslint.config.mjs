@@ -24,7 +24,7 @@ const eslintConfig = [
         'warn',
         { varsIgnorePattern: '^_', argsIgnorePattern: '^_' },
       ],
-      '@typescript-eslint/ban-ts-comment': 'warn',
+      '@typescript-eslint/ban-ts-comment': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
     },
   },
