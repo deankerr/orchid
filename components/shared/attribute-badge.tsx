@@ -1,282 +1,109 @@
 import type { VariantProps } from 'class-variance-authority'
-import {
-  BracesIcon,
-  BrainCogIcon,
-  CakeSliceIcon,
-  ChevronsDownIcon,
-  DatabaseIcon,
-  FingerprintIcon,
-  GlobeIcon,
-  LinkIcon,
-  MessageSquareIcon,
-  MessagesSquareIcon,
-  OctagonXIcon,
-  SaveIcon,
-  ScanEyeIcon,
-  ScrollTextIcon,
-  ShieldAlertIcon,
-  SquareStopIcon,
-  WrenchIcon,
-} from 'lucide-react'
+import { type LucideIcon } from 'lucide-react'
 
 import { Doc } from '@/convex/_generated/dataModel'
 
-import { cn } from '@/lib/utils'
+import { AttributeName, attributes, getEndpointAttributeData } from '@/lib/attributes'
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { RadBadge } from './rad-badge'
 
-type EndpointPartial = Partial<Doc<'or_views_endpoints'>>
-
-const attributeData = {
-  // Model Capabilities
-  reasoning: {
-    icon: <BrainCogIcon />,
-    label: 'Reason',
-    tooltip: 'Model supports reasoning capabilities',
-    color: 'indigo',
-    variant: 'surface',
-    has: (endpoint: EndpointPartial) => endpoint.model?.reasoning ?? false,
-  },
-  mandatory_reasoning: {
-    icon: <BrainCogIcon />,
-    label: 'Must Reason',
-    tooltip: 'Model always uses reasoning',
-    color: 'indigo',
-    variant: 'soft',
-    has: (endpoint: EndpointPartial) => endpoint.model?.mandatory_reasoning ?? false,
-  },
-
-  // Advanced Features
-  tools: {
-    icon: <WrenchIcon />,
-    label: 'Tools',
-    tooltip: 'Supports tool use/function calling',
-    color: 'blue',
-    variant: 'surface',
-    has: (endpoint: EndpointPartial) => endpoint.supported_parameters?.includes('tools') ?? false,
-  },
-  json_format: {
-    icon: <BracesIcon />,
-    label: 'JSON',
-    tooltip: 'Supports JSON response format',
-    color: 'teal',
-    variant: 'surface',
-    has: (endpoint: EndpointPartial) =>
-      endpoint.supported_parameters?.includes('response_format') ?? false,
-  },
-  json_struct: {
-    icon: <BracesIcon />,
-    label: 'Struct',
-    tooltip: 'Supports structured outputs',
-    color: 'teal',
-    variant: 'soft',
-    has: (endpoint: EndpointPartial) =>
-      endpoint.supported_parameters?.includes('structured_outputs') ?? false,
-  },
-
-  // Endpoint Capabilities
-  caching: {
-    icon: <DatabaseIcon />,
-    label: 'Cache',
-    tooltip: 'Inputs can be cached',
-    color: 'cyan',
-    variant: 'surface',
-    has: (endpoint: EndpointPartial) => !!endpoint.pricing?.cache_read,
-  },
-  implicit_caching: {
-    icon: <DatabaseIcon />,
-    label: 'Cache',
-    tooltip: 'Inputs are cached automatically',
-    color: 'cyan',
-    variant: 'soft',
-    has: (endpoint: EndpointPartial) => endpoint.implicit_caching ?? false,
-  },
-
-  completions: {
-    icon: <MessageSquareIcon />,
-    label: 'Complete',
-    tooltip: 'Supports text completion API',
-    color: 'blue',
-    variant: 'outline',
-    has: (endpoint: EndpointPartial) => endpoint.completions ?? false,
-  },
-  chat_completions: {
-    icon: <MessagesSquareIcon />,
-    label: 'Chat',
-    tooltip: 'Supports chat completion API',
-    color: 'blue',
-    variant: 'outline',
-    has: (endpoint: EndpointPartial) => endpoint.chat_completions ?? false,
-  },
-  stream_cancellation: {
-    icon: <SquareStopIcon />,
-    label: 'Abort',
-    tooltip: 'Supports streaming cancellation',
-    color: 'gray',
-    variant: 'soft',
-    has: (endpoint: EndpointPartial) => endpoint.stream_cancellation ?? false,
-  },
-
-  file_urls: {
-    icon: <LinkIcon />,
-    label: 'File URL',
-    tooltip: 'Supports file URL inputs',
-    color: 'purple',
-    variant: 'soft',
-    has: (endpoint: EndpointPartial) => endpoint.file_urls ?? false,
-  },
-  native_web_search: {
-    icon: <GlobeIcon />,
-    label: 'Search',
-    tooltip: 'Use native web search capabilities',
-    color: 'teal',
-    variant: 'soft',
-    has: (endpoint: EndpointPartial) => endpoint.native_web_search ?? false,
-  },
-
-  // Variant/Pricing
-  free: {
-    icon: <CakeSliceIcon />,
-    label: 'Free',
-    tooltip: 'Free model variant',
-    color: 'pink',
-    variant: 'soft',
-    has: (endpoint: EndpointPartial) => endpoint.model?.variant === 'free',
-  },
-
-  // Status Flags
-  moderated: {
-    icon: <ShieldAlertIcon />,
-    label: 'Mods',
-    tooltip: 'Content moderation enforced',
-    color: 'amber',
-    variant: 'surface',
-    has: (endpoint: EndpointPartial) => endpoint.moderated ?? false,
-  },
-  deranked: {
-    icon: <ChevronsDownIcon />,
-    label: 'Deranked',
-    tooltip: 'Will only be routed to as a fallback',
-    color: 'amber',
-    variant: 'surface',
-    has: (endpoint: EndpointPartial) => endpoint.deranked ?? false,
-  },
-  disabled: {
-    icon: <OctagonXIcon />,
-    label: 'Disabled',
-    tooltip: 'Endpoint is currently disabled',
-    color: 'red',
-    variant: 'solid',
-    has: (endpoint: EndpointPartial) => endpoint.disabled ?? false,
-  },
-
-  // Data Policy
-  trains: {
-    icon: <ScanEyeIcon />,
-    label: 'Train',
-    tooltip: 'Data used for training purposes',
-    color: 'orange',
-    variant: 'surface',
-    has: (endpoint: EndpointPartial) => endpoint.data_policy?.training === true,
-  },
-  publishes: {
-    icon: <ScrollTextIcon />,
-    label: 'Publish',
-    tooltip: 'Data may be published or shared',
-    color: 'orange',
-    variant: 'surface',
-    has: (endpoint: EndpointPartial) => endpoint.data_policy?.can_publish === true,
-  },
-  requires_ids: {
-    icon: <FingerprintIcon />,
-    label: 'User ID',
-    tooltip: 'Requires user IDs',
-    color: 'orange',
-    variant: 'surface',
-    has: (endpoint: EndpointPartial) => endpoint.data_policy?.requires_user_ids === true,
-  },
-  retains: {
-    icon: <SaveIcon />,
-    label: 'Retain',
-    tooltip: 'Prompts/data are retained',
-    color: 'orange',
-    variant: 'surface',
-    has: (endpoint: EndpointPartial) => endpoint.data_policy?.retains_prompts === true,
-  },
-} as const
-
-export type AttributeKey = keyof typeof attributeData
-
-export function getEndpointAttributes(endpoint: EndpointPartial, filter?: AttributeKey[]) {
-  return Object.entries(attributeData)
-    .filter(([key]) => (filter ? filter.includes(key as AttributeKey) : true))
-    .filter(([_key, config]) => config.has(endpoint))
-    .map(([key]) => key as AttributeKey)
-}
-
-export function hasEndpointAttribute(endpoint: EndpointPartial, attribute: AttributeKey) {
-  const data = attributeData[attribute]
-  return data && data.has(endpoint)
-}
-
-export function AttributeBadge({ value }: { value: AttributeKey }) {
-  const data = attributeData[value]
-
-  if (!data) {
-    return null
-  }
-
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <RadBadge
-          className={cn('size-7 shrink-0 px-1 py-1 font-mono uppercase [&>svg]:size-full')}
-          variant={data.variant}
-          color={data.color}
-          aria-label={data.label}
-        >
-          {data.icon}
-        </RadBadge>
-      </TooltipTrigger>
-
-      <TooltipContent className="">{data.tooltip}</TooltipContent>
-    </Tooltip>
-  )
-}
-
-export function CustomAttributeBadge({
-  label,
-  formattedValue,
-  icon,
-  color = 'gray',
-  variant = 'soft',
+export function AttributeBadge({
+  icon: Icon,
+  name,
+  details,
+  detailsValue,
+  color,
+  variant = 'surface',
+  disabled,
 }: {
-  label: string
-  formattedValue: string
-  icon?: React.ReactNode
-  color?: VariantProps<typeof RadBadge>['color']
+  icon: LucideIcon
+  name: string
+  details: string
+  detailsValue?: string
+  color: VariantProps<typeof RadBadge>['color']
   variant?: VariantProps<typeof RadBadge>['variant']
+  disabled?: boolean
 }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <RadBadge
-          className={cn('size-7 shrink-0 px-1 py-1 font-mono uppercase [&>svg]:size-full')}
+          className="size-7 shrink-0 px-1 py-1 font-mono uppercase aria-disabled:opacity-20 aria-disabled:saturate-[20%] [&>svg]:size-full"
           variant={variant}
           color={color}
-          aria-label={label}
+          aria-label={name}
+          aria-disabled={disabled}
         >
-          {icon}
+          <Icon />
         </RadBadge>
       </TooltipTrigger>
 
-      <TooltipContent className="font-mono">
+      <TooltipContent>
         <div className="space-y-1">
-          <div className="font-semibold">{label}</div>
-          <div>{formattedValue}</div>
+          <div className="font-mono font-medium uppercase">{name}</div>
+          <div>{details}</div>
+          {detailsValue !== undefined && (
+            <div className="font-mono font-medium">{detailsValue}</div>
+          )}
         </div>
       </TooltipContent>
     </Tooltip>
   )
+}
+
+export function AttributeBadgeName({ name }: { name: AttributeName }) {
+  const attr = attributes[name]
+  return (
+    <AttributeBadge
+      icon={attr.icon}
+      name={name}
+      details={attr.details}
+      color={attr.color}
+      disabled={!attr.has}
+    />
+  )
+}
+
+export function AttributeBadgeSet({
+  endpoint,
+  attributes,
+}: {
+  endpoint: Doc<'or_views_endpoints'>
+  attributes: AttributeName[]
+}) {
+  const data = attributes.map((attr) => getEndpointAttributeData(endpoint, attr))
+  const pdata = processPairs(data)
+
+  return (
+    <div className="flex gap-1">
+      {pdata.map((attr) => (
+        <AttributeBadge
+          key={attr.name}
+          icon={attr.icon}
+          name={attr.name}
+          details={attr.details}
+          detailsValue={attr.value}
+          color={attr.color}
+          variant={attr.variant}
+          disabled={!attr.has}
+        />
+      ))}
+    </div>
+  )
+}
+
+const pairs = [
+  ['reasoning', 'mandatory_reasoning'],
+  ['response_format', 'structured_outputs'],
+  ['caching', 'implicit_caching'],
+]
+
+function processPairs<T extends { name: string; has: boolean }>(attributeData: T[]) {
+  const map = new Map(attributeData.map((attr) => [attr.name, attr]))
+  for (const [a1, a2] of pairs) {
+    if (map.get(a2)?.has) map.delete(a1)
+    else map.delete(a2)
+  }
+  return [...map.values()]
 }

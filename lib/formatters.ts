@@ -15,8 +15,8 @@ export const pricingFormats: Record<string, PricingFormat> = {
   audio_cache_input: { transform: (v) => v * 1_000_000, unit: '/MTOK' },
 
   // Per-unit pricing (display per thousand units)
-  image_input: { transform: (v) => v * 1_000, unit: '/K IMAGES' },
-  image_output: { transform: (v) => v * 1_000, unit: '/K IMAGES' },
+  image_input: { transform: (v) => v * 1_000, unit: '/1000 IMAGES' },
+  image_output: { transform: (v) => v * 1_000, unit: '/1000 IMAGES' },
 
   // Per-request pricing
   request: { transform: (v) => v, unit: '' },
