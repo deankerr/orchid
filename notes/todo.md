@@ -1,18 +1,11 @@
 # backend
 
-- reassess file structure/patterns (db modules, table helper)
-- consider model/modelDetails/endpoints fields rebalance
-- consider query structure, e.g. combine models with endpoints
-- `snapshot_at` rethink (re: changes tracking)
-- consider multi-stage/async data collection and materialization
-- consider paginated queries, caching
-
 ## custom entity data
 
 - e.g. our own description of models, guides, notes/messages about providers, benchmarks pulled from other APIs etc.
 - distinct from `or_*` tables, persisted
 - related by slug
-- flexible structure, frontend can interpret as desired
+- flexible structure, frontend can interpret as required
 
 ### Artificial Analysis API
 
@@ -27,40 +20,15 @@
 
 # frontend
 
-- short labels/terms for some metrics, e.g. throughput
-- endpoint table: display unit above column header
-- convert rarer elements to something like AttributeBadges, maybe icon only variant
 - our current endpoint data table may be kept as an advanced "show everything" table, but many elements are rare
-
-## models browser
-
-- enhanced filter controls
-- click on element to pop open more information
-- should be able to compare the major stats for all endpoints without going to another page, click through for more details
-- group/ungroup models: show all endpoints with a model column. could start with a separate table to prototype
-- better filtering: should match slug/permaslug etc.
-- filter by author, provider
-
-## model panel
-
-- tabs
-- intercepted route in model browser?
-- changes
 
 ## supported parameters explorer
 
 - per model, supported params can vary
 - rather than just listing all params for each endpoint, design a more intuitive way to see the differences
 
-## token stats charts
-
-- single chart with modes: combined variants total, show/hide variants
-- seeing input/output/reasoning token breakdowns isn't that useful (usually 99% input), change to line graph?
-- compare multiple models
-
 ## API
 
-- consider schema/query restructure for more efficiently
 - consider caching results in localStorage
 
 # convex notes
