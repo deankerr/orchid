@@ -2,16 +2,12 @@ import { useMemo } from 'react'
 
 import { ColumnDef } from '@tanstack/react-table'
 import {
-  AlarmClockIcon,
   AudioLinesIcon,
   BrainCogIcon,
-  CalendarIcon,
   DatabaseIcon,
   FlagIcon,
   GlobeIcon,
   ImageIcon,
-  LetterTextIcon,
-  SaveIcon,
 } from 'lucide-react'
 
 import type { Doc } from '@/convex/_generated/dataModel'
@@ -21,14 +17,9 @@ import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatPrice } from '@/lib/formatters'
 
-import {
-  AttributeBadge,
-  CustomAttributeBadge,
-  getEndpointAttributes,
-  hasEndpointAttribute,
-} from '../shared/attribute-badge'
+import { AttributeBadge, AttributeBadgeName, AttributeBadgeSet } from '../shared/attribute-badge'
 import { EntityCard } from '../shared/entity-card'
-import { ModalityBadges } from '../shared/modality-badge'
+import { ModalityBadgeSet } from '../shared/modality-badge'
 
 export type EndpointRow = Doc<'or_views_endpoints'>
 
@@ -41,28 +32,20 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
         header: ({ column }) => <DataGridColumnHeader column={column} title="MODEL" />,
         cell: ({ row }) => {
           const endpoint = row.original
-          return (
-            <div className="flex items-center gap-1">
-              <EntityCard
-                icon_url={endpoint.model.icon_url}
-                name={endpoint.model.name}
-                slug={endpoint.model.slug}
-                className="grow"
-              />
 
-              {hasEndpointAttribute(endpoint, 'mandatory_reasoning') ? (
-                <AttributeBadge value="mandatory_reasoning" />
-              ) : hasEndpointAttribute(endpoint, 'reasoning') ? (
-                <AttributeBadge value="reasoning" />
-              ) : null}
-            </div>
+          return (
+            <EntityCard
+              icon_url={endpoint.model.icon_url}
+              name={endpoint.model.name}
+              slug={endpoint.model.slug}
+              className="grow"
+            />
           )
         },
         size: 310,
         enableSorting: true,
         enableHiding: true,
         meta: {
-          headerTitle: 'Model',
           skeleton: <Skeleton className="h-8 w-full" />,
         },
       },
@@ -74,27 +57,54 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
         cell: ({ row }) => {
           const endpoint = row.original
           return (
-            <div className="flex items-center gap-1">
-              <EntityCard
-                icon_url={endpoint.provider.icon_url}
-                name={endpoint.provider.name}
-                slug={endpoint.provider.tag_slug}
-                className="grow"
-              />
-
-              {hasEndpointAttribute(endpoint, 'moderated') && <AttributeBadge value="moderated" />}
-              {hasEndpointAttribute(endpoint, 'deranked') && <AttributeBadge value="deranked" />}
-              {hasEndpointAttribute(endpoint, 'disabled') && <AttributeBadge value="disabled" />}
-              {hasEndpointAttribute(endpoint, 'free') && <AttributeBadge value="free" />}
-            </div>
+            <EntityCard
+              icon_url={endpoint.provider.icon_url}
+              name={endpoint.provider.name}
+              slug={endpoint.provider.tag_slug}
+              className="grow"
+            />
           )
         },
         size: 240,
         enableSorting: true,
         enableHiding: true,
         meta: {
-          headerTitle: 'Provider',
           skeleton: <Skeleton className="h-8 w-full" />,
+        },
+      },
+
+      {
+        id: 'status',
+        header: 'Status',
+        cell: ({ row }) => {
+          const endpoint = row.original
+          return endpoint.disabled ? (
+            <AttributeBadgeName name="disabled" />
+          ) : endpoint.deranked ? (
+            <AttributeBadgeName name="deranked" />
+          ) : null
+        },
+        size: 80,
+        enableHiding: true,
+        meta: {
+          headerClassName: 'text-center',
+          skeleton: <Skeleton className="h-6 w-full" />,
+          cellClassName: 'text-center',
+        },
+      },
+
+      {
+        id: 'modalities',
+        header: 'Modalities',
+        cell: ({ row }) => {
+          const endpoint = row.original
+          return <ModalityBadgeSet endpoint={endpoint} />
+        },
+        size: 160,
+        enableHiding: true,
+        meta: {
+          headerClassName: 'text-center',
+          skeleton: <Skeleton className="h-6 w-full" />,
         },
       },
 
@@ -103,68 +113,30 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
         header: 'Features',
         cell: ({ row }) => {
           const endpoint = row.original
-
           return (
-            <div className="flex gap-1">
-              {hasEndpointAttribute(endpoint, 'tools') && <AttributeBadge value="tools" />}
-
-              {hasEndpointAttribute(endpoint, 'json_struct') ? (
-                <AttributeBadge value="json_struct" />
-              ) : hasEndpointAttribute(endpoint, 'json_format') ? (
-                <AttributeBadge value="json_format" />
-              ) : null}
-
-              {hasEndpointAttribute(endpoint, 'implicit_caching') ? (
-                <AttributeBadge value="implicit_caching" />
-              ) : hasEndpointAttribute(endpoint, 'caching') ? (
-                <AttributeBadge value="caching" />
-              ) : null}
-
-              {hasEndpointAttribute(endpoint, 'native_web_search') && (
-                <AttributeBadge value="native_web_search" />
-              )}
-            </div>
+            <AttributeBadgeSet
+              endpoint={endpoint}
+              attributes={[
+                'reasoning',
+                'mandatory_reasoning',
+                'tools',
+                'response_format',
+                'structured_outputs',
+                'caching',
+                'implicit_caching',
+                'native_web_search',
+                'moderated',
+                'free',
+              ]}
+            />
           )
         },
-        size: 160,
+        size: 255,
         enableHiding: true,
         meta: {
-          headerTitle: 'Variant',
           headerClassName: 'text-center',
           skeleton: <Skeleton className="h-6 w-full" />,
           cellClassName: 'text-center',
-        },
-      },
-
-      {
-        id: 'inputModalities',
-        header: 'INPUT MODALITIES',
-        cell: ({ row }) => {
-          const endpoint = row.original
-          return <ModalityBadges modalities={endpoint.model.input_modalities} />
-        },
-        size: 160,
-        enableHiding: true,
-        meta: {
-          headerTitle: 'Input Modalities',
-          headerClassName: 'text-center',
-          skeleton: <Skeleton className="h-6 w-full" />,
-        },
-      },
-
-      {
-        id: 'outputModalities',
-        header: 'OUTPUT MODALITIES',
-        cell: ({ row }) => {
-          const endpoint = row.original
-          return <ModalityBadges modalities={endpoint.model.output_modalities} />
-        },
-        size: 112,
-        enableHiding: true,
-        meta: {
-          headerTitle: 'Output Modalities',
-          headerClassName: 'text-center',
-          skeleton: <Skeleton className="h-6 w-full" />,
         },
       },
 
@@ -182,7 +154,6 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
         enableSorting: true,
         enableHiding: true,
         meta: {
-          headerTitle: 'Context',
           skeleton: <Skeleton className="h-5 w-full" />,
           cellClassName: 'text-right',
         },
@@ -205,7 +176,6 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
         enableSorting: true,
         enableHiding: true,
         meta: {
-          headerTitle: 'Max Output',
           skeleton: <Skeleton className="h-5 w-full" />,
           cellClassName: 'text-right',
         },
@@ -225,7 +195,6 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
         size: 96,
         enableHiding: true,
         meta: {
-          headerTitle: 'Quantization',
           skeleton: <Skeleton className="h-6 w-full" />,
           headerClassName: 'text-center',
           cellClassName: 'text-center',
@@ -257,7 +226,6 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
         enableSorting: true,
         enableHiding: true,
         meta: {
-          headerTitle: 'Input $ per MTOK',
           skeleton: <Skeleton className="h-5 w-full" />,
           cellClassName: 'text-right',
         },
@@ -288,7 +256,6 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
         enableSorting: true,
         enableHiding: true,
         meta: {
-          headerTitle: 'Output $ per MTOK',
           skeleton: <Skeleton className="h-5 w-full" />,
           cellClassName: 'text-right',
         },
@@ -323,7 +290,6 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
         enableSorting: true,
         enableHiding: true,
         meta: {
-          headerTitle: 'Cache Read $ per MTOK',
           skeleton: <Skeleton className="h-5 w-full" />,
           cellClassName: 'text-right',
         },
@@ -358,7 +324,6 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
         enableSorting: true,
         enableHiding: true,
         meta: {
-          headerTitle: 'Image Input $ per K',
           skeleton: <Skeleton className="h-5 w-full" />,
           cellClassName: 'text-right',
         },
@@ -373,112 +338,105 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
 
           if (pricing.internal_reasoning) {
             pricingItems.push(
-              <CustomAttributeBadge
+              <AttributeBadge
                 key="reasoning"
-                label="reasoning:"
-                icon={<BrainCogIcon />}
-                formattedValue={formatPrice({
+                icon={BrainCogIcon}
+                name="internal_reasoning"
+                details={formatPrice({
                   priceKey: 'internal_reasoning',
                   priceValue: pricing.internal_reasoning,
                 })}
                 color="blue"
-                variant="surface"
               />,
             )
           }
 
           if (pricing.image_output) {
             pricingItems.push(
-              <CustomAttributeBadge
+              <AttributeBadge
                 key="image_output"
-                label="images_output:"
-                icon={<ImageIcon />}
-                formattedValue={formatPrice({
+                icon={ImageIcon}
+                name="image_output"
+                details={formatPrice({
                   priceKey: 'image_output',
                   priceValue: pricing.image_output,
                 })}
                 color="purple"
-                variant="surface"
               />,
             )
           }
 
           if (pricing.audio_input) {
             pricingItems.push(
-              <CustomAttributeBadge
+              <AttributeBadge
                 key="audio_input"
-                label="audio_input:"
-                icon={<AudioLinesIcon />}
-                formattedValue={formatPrice({
+                icon={AudioLinesIcon}
+                name="audio_input"
+                details={formatPrice({
                   priceKey: 'audio_input',
                   priceValue: pricing.audio_input,
                 })}
                 color="green"
-                variant="surface"
               />,
             )
           }
 
           if (pricing.audio_cache_input) {
             pricingItems.push(
-              <CustomAttributeBadge
+              <AttributeBadge
                 key="audio_cache_input"
-                label="audio_cache_input:"
-                icon={<AudioLinesIcon />}
-                formattedValue={formatPrice({
+                icon={AudioLinesIcon}
+                name="audio_cache_input"
+                details={formatPrice({
                   priceKey: 'audio_cache_input',
                   priceValue: pricing.audio_cache_input,
                 })}
                 color="cyan"
-                variant="surface"
               />,
             )
           }
 
           if (pricing.cache_write) {
             pricingItems.push(
-              <CustomAttributeBadge
+              <AttributeBadge
                 key="cache_write"
-                label="cache_write:"
-                icon={<DatabaseIcon />}
-                formattedValue={formatPrice({
+                icon={DatabaseIcon}
+                name="cache_write"
+                details={formatPrice({
                   priceKey: 'cache_write',
                   priceValue: pricing.cache_write,
                 })}
                 color="cyan"
-                variant="surface"
               />,
             )
           }
 
           if (pricing.request) {
             pricingItems.push(
-              <CustomAttributeBadge
+              <AttributeBadge
                 key="request"
-                label="per_request:"
-                icon={<FlagIcon />}
-                formattedValue={formatPrice({
+                icon={FlagIcon}
+                name="request"
+                details={formatPrice({
                   priceKey: 'request',
                   priceValue: pricing.request,
                 })}
                 color="yellow"
-                variant="surface"
               />,
             )
           }
 
           if (pricing.web_search) {
             pricingItems.push(
-              <CustomAttributeBadge
+              <AttributeBadge
                 key="web_search"
-                label="web_search:"
-                icon={<GlobeIcon />}
-                formattedValue={formatPrice({
+                icon={GlobeIcon}
+                name="web_search"
+                details={formatPrice({
                   priceKey: 'web_search',
                   priceValue: pricing.web_search,
                 })}
                 color="teal"
-                variant="surface"
               />,
             )
           }
@@ -492,7 +450,6 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
         size: 130,
         enableHiding: true,
         meta: {
-          headerTitle: 'Misc $',
           headerClassName: 'text-center',
           skeleton: <Skeleton className="h-8 w-full" />,
         },
@@ -502,84 +459,23 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
         id: 'limits',
         header: 'LIMITS',
         cell: ({ row }) => {
-          const limits = row.original.limits
-          const limitItems = []
-
-          if (limits.text_input_tokens) {
-            limitItems.push(
-              <CustomAttributeBadge
-                key="text_input_tokens"
-                label="max_input:"
-                icon={<LetterTextIcon />}
-                formattedValue={`${limits.text_input_tokens.toLocaleString()}`}
-                color="yellow"
-                variant="surface"
-              />,
-            )
-          }
-
-          if (limits.image_input_tokens) {
-            limitItems.push(
-              <CustomAttributeBadge
-                key="image_input_tokens"
-                label="max_image_tokens:"
-                icon={<ImageIcon />}
-                formattedValue={`${limits.image_input_tokens.toLocaleString()}`}
-                color="yellow"
-                variant="surface"
-              />,
-            )
-          }
-
-          if (limits.images_per_input) {
-            limitItems.push(
-              <CustomAttributeBadge
-                key="images_per_input"
-                label="images_per_input:"
-                icon={<ImageIcon />}
-                formattedValue={`${limits.images_per_input.toLocaleString()}`}
-                color="yellow"
-                variant="surface"
-              />,
-            )
-          }
-
-          if (limits.requests_per_minute) {
-            limitItems.push(
-              <CustomAttributeBadge
-                key="requests_per_minute"
-                label="req_per_min:"
-                icon={<AlarmClockIcon />}
-                formattedValue={`${limits.requests_per_minute.toLocaleString()}`}
-                color="yellow"
-                variant="surface"
-              />,
-            )
-          }
-
-          if (limits.requests_per_day) {
-            limitItems.push(
-              <CustomAttributeBadge
-                key="requests_per_day"
-                label="req_per_day:"
-                icon={<CalendarIcon />}
-                formattedValue={`${limits.requests_per_day.toLocaleString()}`}
-                color="yellow"
-                variant="surface"
-              />,
-            )
-          }
-
-          if (limitItems.length === 0) {
-            return <EmptyCell />
-          }
-
-          return <div className="flex flex-wrap gap-1">{limitItems}</div>
+          const endpoint = row.original
+          return (
+            <AttributeBadgeSet
+              endpoint={endpoint}
+              attributes={[
+                'max_text_input_tokens',
+                'max_image_input_tokens',
+                'max_images_per_input',
+                'max_requests_per_minute',
+                'max_requests_per_day',
+              ]}
+            />
+          )
         },
-        size: 130,
+        size: 190,
         enableHiding: true,
         meta: {
-          headerTitle: 'Limits',
           headerClassName: 'text-center',
           skeleton: <Skeleton className="h-8 w-full" />,
         },
@@ -590,34 +486,17 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
         header: 'Data Policy',
         cell: ({ row }) => {
           const endpoint = row.original
-          const attributes = getEndpointAttributes(endpoint, [
-            'trains',
-            'publishes',
-            'requires_ids',
-          ])
 
           return (
-            <div className="flex gap-1">
-              {attributes.map((attr) => (
-                <AttributeBadge key={attr} value={attr} />
-              ))}
-
-              {hasEndpointAttribute(endpoint, 'retains') && (
-                <CustomAttributeBadge
-                  label="retains"
-                  icon={<SaveIcon />}
-                  formattedValue={`${endpoint.data_policy.retains_prompts_days?.toLocaleString() ?? 'unknown'} days`}
-                  color="orange"
-                  variant="surface"
-                />
-              )}
-            </div>
+            <AttributeBadgeSet
+              endpoint={endpoint}
+              attributes={['training', 'data_publishing', 'user_id', 'data_retention']}
+            />
           )
         },
-        size: 130,
+        size: 160,
         enableHiding: true,
         meta: {
-          headerTitle: 'Data Policy',
           headerClassName: 'text-center',
           skeleton: <Skeleton className="h-8 w-full" />,
         },

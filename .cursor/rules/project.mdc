@@ -6,9 +6,10 @@ alwaysApply: true
 
 ## Environment
 
-- bun is the package manager, and script runner. The bun runtime is never actually used.
-- `bun check` to typecheck and lint your work.
-- Don't try to start the dev server. It's already running in my terminal.
+- bun is the package manager, and script runner. The bun runtime itself is not used.
+- Do not start the dev server.
+- Do not build the project.
+- Do not deploy Convex functions.
 
 ## Libraries
 
@@ -20,7 +21,5 @@ alwaysApply: true
 
 ## Status
 
-- Production version has been soft-launched and is publicly available at a temporary URL.
+- Production version has been soft-launched and is publicly available.
 - The snapshot system is running, creating production and archived data.
-- There are no public links to the site, nor has it been promoted - traffic is negligible.
-- It's acceptable to launch features in an alpha/beta state, as we gain feedback from product testers.
