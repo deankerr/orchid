@@ -10,8 +10,17 @@ import { SearchInput } from '../ui/search-input'
 import { useEndpoints } from './data-grid'
 
 export function EndpointsDataGridControls() {
-  const { cellBorder, setCellBorder, sorting, setSorting, globalFilter, setGlobalFilter, table } =
-    useEndpoints()
+  const {
+    cellBorder,
+    setCellBorder,
+    rowBorder,
+    setRowBorder,
+    sorting,
+    setSorting,
+    globalFilter,
+    setGlobalFilter,
+    table,
+  } = useEndpoints()
 
   const hasSorting = sorting.length > 0
   const clearSorting = () => setSorting?.([])
@@ -50,6 +59,14 @@ export function EndpointsDataGridControls() {
             checked={cellBorder}
             onCheckedChange={(checked) => setCellBorder?.(checked === true)}
             title="Toggle cell borders"
+          />
+        </Label>
+        <Label className="flex items-center gap-2 text-xs">
+          Row Borders
+          <Checkbox
+            checked={rowBorder}
+            onCheckedChange={(checked) => setRowBorder?.(checked === true)}
+            title="Toggle row borders"
           />
         </Label>
       </FeatureFlag>

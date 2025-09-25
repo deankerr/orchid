@@ -58,8 +58,8 @@ export interface DataGridProps<TData extends object> {
   loadingMode?: 'skeleton' | 'spinner'
   loadingMessage?: ReactNode | string
   emptyMessage?: ReactNode | string
-  skeletonRows?: number
-  tableLayout?: {
+  skeletonRows: number
+  tableLayout: {
     dense?: boolean
     cellBorder?: boolean
     rowBorder?: boolean
@@ -75,8 +75,10 @@ export interface DataGridProps<TData extends object> {
     columnsMovable?: boolean
     columnsDraggable?: boolean
     rowsDraggable?: boolean
+    virtualRowHeight: number
+    virtualOverscan: number
   }
-  tableClassNames?: {
+  tableClassNames: {
     base?: string
     header?: string
     headerRow?: string
@@ -90,12 +92,12 @@ export interface DataGridProps<TData extends object> {
 
 const DataGridContext = createContext<DataGridContextProps<any> | undefined>(undefined)
 
-function useDataGrid() {
+function useDataGrid<TData extends object = any>() {
   const context = useContext(DataGridContext)
   if (!context) {
     throw new Error('useDataGrid must be used within a DataGridProvider')
   }
-  return context
+  return context as DataGridContextProps<TData>
 }
 
 function DataGridProvider<TData extends object>({
@@ -118,8 +120,10 @@ function DataGridProvider<TData extends object>({
 }
 
 function DataGrid<TData extends object>({ children, table, ...props }: DataGridProps<TData>) {
-  const defaultProps: Partial<DataGridProps<TData>> = {
+  const defaultProps: DataGridProps<TData> = {
+    recordCount: 0,
     loadingMode: 'skeleton',
+    skeletonRows: 10,
     tableLayout: {
       dense: false,
       cellBorder: false,
@@ -136,6 +140,8 @@ function DataGrid<TData extends object>({ children, table, ...props }: DataGridP
       columnsMovable: false,
       columnsDraggable: false,
       rowsDraggable: false,
+      virtualRowHeight: 60,
+      virtualOverscan: 10,
     },
     tableClassNames: {
       base: '',

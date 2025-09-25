@@ -13,7 +13,6 @@ import {
 
 import { DataGrid, DataGridContainer } from '../data-grid/data-grid'
 import { DataGridTable } from '../data-grid/data-grid-table'
-import { ScrollArea, ScrollBar } from '../ui/scroll-area'
 import { useEndpointsColumns, type EndpointRow } from './columns'
 
 interface EndpointsContextValue {
@@ -21,6 +20,8 @@ interface EndpointsContextValue {
   isLoading: boolean
   cellBorder: boolean
   setCellBorder?: (value: boolean) => void
+  rowBorder: boolean
+  setRowBorder?: (value: boolean) => void
   sorting: SortingState
   setSorting?: (value: SortingState | ((prev: SortingState) => SortingState)) => void
   globalFilter: string
@@ -46,6 +47,7 @@ export function EndpointsDataGrid({
   children: ReactNode
 }) {
   const [cellBorder, setCellBorder] = useState(false)
+  const [rowBorder, setRowBorder] = useState(true)
   const [sorting, setSorting] = useState<SortingState>([])
   const [globalFilter, setGlobalFilter] = useState('')
 
@@ -71,9 +73,7 @@ export function EndpointsDataGrid({
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    meta: {
-      cellBorder,
-    },
+    manualPagination: true, // prevents error from state update during initial render
   })
 
   return (
@@ -83,6 +83,8 @@ export function EndpointsDataGrid({
         isLoading,
         cellBorder,
         setCellBorder,
+        rowBorder,
+        setRowBorder,
         sorting,
         setSorting,
         globalFilter,
@@ -101,6 +103,9 @@ export function EndpointsDataGrid({
           headerSticky: true,
           width: 'fixed',
           cellBorder,
+          rowBorder,
+          virtualRowHeight: 60,
+          virtualOverscan: 10,
         }}
         tableClassNames={{
           headerRow: 'uppercase font-mono text-[12px]',
@@ -115,10 +120,7 @@ export function EndpointsDataGrid({
 export function EndpointsDataGridTable() {
   return (
     <DataGridContainer className="flex-1 overflow-hidden border-x-0">
-      <ScrollArea type="auto">
-        <DataGridTable />
-        <ScrollBar orientation="horizontal" />
-      </ScrollArea>
+      <DataGridTable />
     </DataGridContainer>
   )
 }

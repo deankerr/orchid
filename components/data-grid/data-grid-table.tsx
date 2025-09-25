@@ -1,10 +1,12 @@
 import * as React from 'react'
-import { CSSProperties, Fragment, ReactNode } from 'react'
+import { CSSProperties, Fragment, ReactNode, useRef } from 'react'
 
 import { Cell, Column, flexRender, Header, HeaderGroup, Row } from '@tanstack/react-table'
+import { useVirtualizer } from '@tanstack/react-virtual'
 import { cva } from 'class-variance-authority'
 
 import { Checkbox } from '@/components/ui/checkbox'
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
 
 import { useDataGrid } from './data-grid'
@@ -431,43 +433,85 @@ function DataGridTableRowSelectAll() {
   )
 }
 
-function DataGridTable<TData>() {
-  const { table, isLoading, props } = useDataGrid()
-  const pagination = table.getState().pagination
+/**
+ * DataGridTable - Virtualized table component for high-performance rendering of large datasets
+ *
+ * How virtualization works:
+ * 1. Only renders visible rows + overscan buffer (e.g., 10-15 rows instead of 10,000)
+ * 2. Uses padding elements to maintain correct scrollbar size and position
+ * 3. ScrollArea provides the scrollable container that virtualizer monitors
+ * 4. As user scrolls, virtualizer calculates which rows should be visible
+ * 5. Component re-renders with new set of virtual rows, maintaining scroll position
+ */
+function DataGridTable<TData extends object>() {
+  const { table, isLoading, props } = useDataGrid<TData>()
+
+  // ScrollArea viewport ref - this is the element that virtualizer monitors for scroll events
+  const scrollAreaViewportRef = useRef<HTMLDivElement>(null)
+  const { rows } = table.getRowModel()
+
+  // Setup virtualizer with configuration from props
+  const virtualizer = useVirtualizer({
+    count: rows.length, // Total number of rows in dataset
+    getScrollElement: () => scrollAreaViewportRef.current, // Element to monitor for scrolling
+    estimateSize: () => props.tableLayout.virtualRowHeight,
+    overscan: props.tableLayout.virtualOverscan, // Extra rows to render outside viewport
+  })
+
+  // Get the virtual items (rows) that should currently be rendered
+  const virtualRows = virtualizer.getVirtualItems()
+  const totalSize = virtualizer.getTotalSize() // Total height if all rows were rendered
+
+  // Calculate padding to maintain correct scrollbar behavior
+  // paddingTop: space above visible rows (represents all rows before first visible)
+  // paddingBottom: space below visible rows (represents all rows after last visible)
+  const paddingTop = virtualRows.length > 0 ? virtualRows[0]?.start || 0 : 0
+  const paddingBottom =
+    virtualRows.length > 0 ? totalSize - (virtualRows[virtualRows.length - 1]?.end || 0) : 0
 
   return (
-    <DataGridTableBase>
-      <DataGridTableHead>
-        {table.getHeaderGroups().map((headerGroup: HeaderGroup<TData>, index) => {
-          return (
-            <DataGridTableHeadRow headerGroup={headerGroup} key={index}>
-              {headerGroup.headers.map((header, index) => {
-                const { column } = header
+    <ScrollArea className="h-full" type="auto" ref={scrollAreaViewportRef}>
+      <DataGridTableBase>
+        <DataGridTableHead>
+          {table.getHeaderGroups().map((headerGroup: HeaderGroup<TData>, index) => {
+            return (
+              <DataGridTableHeadRow headerGroup={headerGroup} key={index}>
+                {headerGroup.headers.map((header, index) => {
+                  const { column } = header
 
-                return (
-                  <DataGridTableHeadRowCell header={header} key={index}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
-                    {props.tableLayout?.columnsResizable && column.getCanResize() && (
-                      <DataGridTableHeadRowCellResize header={header} />
-                    )}
-                  </DataGridTableHeadRowCell>
-                )
-              })}
-            </DataGridTableHeadRow>
-          )
-        })}
-      </DataGridTableHead>
+                  return (
+                    <DataGridTableHeadRowCell header={header} key={index}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(header.column.columnDef.header, header.getContext())}
+                      {props.tableLayout?.columnsResizable && column.getCanResize() && (
+                        <DataGridTableHeadRowCellResize header={header} />
+                      )}
+                    </DataGridTableHeadRowCell>
+                  )
+                })}
+              </DataGridTableHeadRow>
+            )
+          })}
+        </DataGridTableHead>
 
-      {(props.tableLayout?.stripped || !props.tableLayout?.rowBorder) && <DataGridTableRowSpacer />}
+        {(props.tableLayout?.stripped || !props.tableLayout?.rowBorder) && (
+          <DataGridTableRowSpacer />
+        )}
 
-      <DataGridTableBody>
-        {props.loadingMode === 'skeleton' &&
-        isLoading &&
-        (props.skeletonRows || pagination?.pageSize) ? (
-          Array.from({ length: props.skeletonRows || pagination?.pageSize || 10 }).map(
-            (_, rowIndex) => (
+        <DataGridTableBody>
+          {/* Top padding: represents space for all rows before the first visible row */}
+          {paddingTop > 0 && (
+            <tr>
+              <td style={{ height: `${paddingTop}px` }} />
+            </tr>
+          )}
+
+          {/* Loading state: show skeleton rows */}
+          {props.loadingMode === 'skeleton' && isLoading ? (
+            Array.from({
+              length: props.skeletonRows,
+            }).map((_, rowIndex) => (
               <DataGridTableBodyRowSkeleton key={rowIndex}>
                 {table.getVisibleFlatColumns().map((column, colIndex) => {
                   return (
@@ -477,30 +521,46 @@ function DataGridTable<TData>() {
                   )
                 })}
               </DataGridTableBodyRowSkeleton>
-            ),
-          )
-        ) : table.getRowModel().rows.length ? (
-          table.getRowModel().rows.map((row: Row<TData>, index) => {
-            return (
-              <Fragment key={row.id}>
-                <DataGridTableBodyRow row={row} key={index}>
-                  {row.getVisibleCells().map((cell: Cell<TData, unknown>, colIndex) => {
-                    return (
-                      <DataGridTableBodyRowCell cell={cell} key={colIndex}>
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </DataGridTableBodyRowCell>
-                    )
-                  })}
-                </DataGridTableBodyRow>
-                {row.getIsExpanded() && <DataGridTableBodyRowExpanded row={row} />}
-              </Fragment>
-            )
-          })
-        ) : (
-          <DataGridTableEmpty />
-        )}
-      </DataGridTableBody>
-    </DataGridTableBase>
+            ))
+          ) : virtualRows.length ? (
+            // Render only the virtual rows (visible + overscan buffer)
+            virtualRows.map((virtualRow) => {
+              const row = rows[virtualRow.index] as Row<TData>
+              return (
+                <Fragment key={row.id}>
+                  <DataGridTableBodyRow
+                    row={row}
+                    key={virtualRow.index}
+                    dndStyle={{
+                      height: `${virtualRow.size}px`, // Explicit height for consistent virtualization
+                    }}
+                  >
+                    {row.getVisibleCells().map((cell: Cell<TData, unknown>, colIndex) => {
+                      return (
+                        <DataGridTableBodyRowCell cell={cell} key={colIndex}>
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </DataGridTableBodyRowCell>
+                      )
+                    })}
+                  </DataGridTableBodyRow>
+                  {row.getIsExpanded() && <DataGridTableBodyRowExpanded row={row} />}
+                </Fragment>
+              )
+            })
+          ) : (
+            <DataGridTableEmpty />
+          )}
+
+          {/* Bottom padding: represents space for all rows after the last visible row */}
+          {paddingBottom > 0 && (
+            <tr>
+              <td style={{ height: `${paddingBottom}px` }} />
+            </tr>
+          )}
+        </DataGridTableBody>
+      </DataGridTableBase>
+      <ScrollBar orientation="horizontal" />
+    </ScrollArea>
   )
 }
 
