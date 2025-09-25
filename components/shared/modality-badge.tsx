@@ -1,10 +1,3 @@
-import {
-  AudioLinesIcon,
-  FileChartColumnIncreasingIcon,
-  ImageDownIcon,
-  ImageUpIcon,
-} from 'lucide-react'
-
 import { Doc } from '@/convex/_generated/dataModel'
 
 import { AttributeBadge } from './attribute-badge'
@@ -13,7 +6,7 @@ export function ModalityBadgeSet({ endpoint }: { endpoint: Doc<'or_views_endpoin
   return (
     <div className="flex gap-1">
       <AttributeBadge
-        icon={ImageUpIcon}
+        icon="image-up"
         name="Input Modality"
         details="Image"
         color="slate"
@@ -22,7 +15,7 @@ export function ModalityBadgeSet({ endpoint }: { endpoint: Doc<'or_views_endpoin
       />
 
       <AttributeBadge
-        icon={FileChartColumnIncreasingIcon}
+        icon="file-chart-column-increasing"
         name="Input Modality"
         details="File"
         color="slate"
@@ -31,7 +24,7 @@ export function ModalityBadgeSet({ endpoint }: { endpoint: Doc<'or_views_endpoin
       />
 
       <AttributeBadge
-        icon={AudioLinesIcon}
+        icon="audio-lines"
         name="Input Modality"
         details="Audio"
         color="slate"
@@ -40,7 +33,7 @@ export function ModalityBadgeSet({ endpoint }: { endpoint: Doc<'or_views_endpoin
       />
 
       <AttributeBadge
-        icon={ImageDownIcon}
+        icon="image-down"
         name="Output Modality"
         details="Image"
         color="slate"

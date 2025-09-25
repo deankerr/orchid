@@ -1,42 +1,20 @@
-import {
-  AlarmClockIcon,
-  BracesIcon,
-  BrainCogIcon,
-  CakeSliceIcon,
-  CalendarIcon,
-  ChevronsDownIcon,
-  DatabaseIcon,
-  FingerprintIcon,
-  GlobeIcon,
-  ImageIcon,
-  LetterTextIcon,
-  LinkIcon,
-  MessageSquareIcon,
-  MessagesSquareIcon,
-  OctagonXIcon,
-  SaveIcon,
-  ScanEyeIcon,
-  ScrollTextIcon,
-  ShieldAlertIcon,
-  SquareStopIcon,
-  WrenchIcon,
-} from 'lucide-react'
-
 import { Doc } from '@/convex/_generated/dataModel'
+
+import { formatPrice } from './formatters'
 
 type EndpointPartial = Partial<Doc<'or_views_endpoints'>>
 
 export const attributes = {
   // Features (model)
   reasoning: {
-    icon: BrainCogIcon,
+    icon: 'brain-cog',
     details: 'Model supports reasoning capabilities',
     color: 'indigo',
     has: (endpoint: EndpointPartial) => endpoint.model?.reasoning ?? false,
   },
 
   mandatory_reasoning: {
-    icon: BrainCogIcon,
+    icon: 'brain-cog',
     details: 'Model always uses reasoning',
     color: 'indigo',
     variant: 'soft',
@@ -45,14 +23,14 @@ export const attributes = {
 
   // Features (endpoint)
   tools: {
-    icon: WrenchIcon,
+    icon: 'wrench',
     details: 'Supports tool parameters',
     color: 'blue',
     has: (endpoint: EndpointPartial) => endpoint.supported_parameters?.includes('tools') ?? false,
   },
 
   response_format: {
-    icon: BracesIcon,
+    icon: 'braces',
     details: 'Supports the response_format parameter with json_object type',
     color: 'teal',
     has: (endpoint: EndpointPartial) =>
@@ -60,7 +38,7 @@ export const attributes = {
   },
 
   structured_outputs: {
-    icon: BracesIcon,
+    icon: 'braces',
     details: 'Supports the response_format parameter with json_schema type',
     color: 'teal',
     variant: 'soft',
@@ -69,14 +47,14 @@ export const attributes = {
   },
 
   caching: {
-    icon: DatabaseIcon,
+    icon: 'database',
     details: 'Inputs can be cached',
     color: 'cyan',
     has: (endpoint: EndpointPartial) => !!endpoint.pricing?.cache_read,
   },
 
   implicit_caching: {
-    icon: DatabaseIcon,
+    icon: 'database',
     details: 'Inputs are cached automatically',
     color: 'cyan',
     variant: 'soft',
@@ -85,7 +63,7 @@ export const attributes = {
 
   // Features (OpenRouter)
   moderated: {
-    icon: ShieldAlertIcon,
+    icon: 'shield-alert',
     details: 'Content is moderated by OpenRouter before being sent to the provider.',
     color: 'amber',
     has: (endpoint: EndpointPartial) => endpoint.moderated ?? false,
@@ -93,35 +71,44 @@ export const attributes = {
 
   // Other features
   file_urls: {
-    icon: LinkIcon,
+    icon: 'link',
     details: 'Supports file URL inputs',
     color: 'purple',
     has: (endpoint: EndpointPartial) => endpoint.file_urls ?? false,
   },
 
   native_web_search: {
-    icon: GlobeIcon,
+    icon: 'globe',
     details: 'Use native web search capabilities',
     color: 'emerald',
     has: (endpoint: EndpointPartial) => endpoint.native_web_search ?? false,
+    getValue: (endpoint: EndpointPartial) => {
+      if (endpoint.pricing?.web_search) {
+        return formatPrice({
+          priceKey: 'web_search',
+          priceValue: endpoint.pricing.web_search,
+        })
+      }
+      return undefined
+    },
   },
 
   completions: {
-    icon: MessageSquareIcon,
+    icon: 'message-square',
     details: 'Supports text completion API',
     color: 'blue',
     has: (endpoint: EndpointPartial) => endpoint.completions ?? false,
   },
 
   chat_completions: {
-    icon: MessagesSquareIcon,
+    icon: 'messages-square',
     details: 'Supports chat completion API',
     color: 'blue',
     has: (endpoint: EndpointPartial) => endpoint.chat_completions ?? false,
   },
 
   stream_cancellation: {
-    icon: SquareStopIcon,
+    icon: 'square-stop',
     details: 'Supports streaming cancellation',
     color: 'gray',
     has: (endpoint: EndpointPartial) => endpoint.stream_cancellation ?? false,
@@ -129,7 +116,7 @@ export const attributes = {
 
   // Variant
   free: {
-    icon: CakeSliceIcon,
+    icon: 'cake-slice',
     details: 'Free variant, subject to request limits and may have low availability.',
     color: 'pink',
     has: (endpoint: EndpointPartial) => endpoint.model?.variant === 'free',
@@ -137,43 +124,52 @@ export const attributes = {
 
   // Status Flags
   deranked: {
-    icon: ChevronsDownIcon,
+    icon: 'chevrons-down',
     details: 'Will only be routed to as a fallback',
     color: 'amber',
     has: (endpoint: EndpointPartial) => endpoint.deranked ?? false,
   },
 
   disabled: {
-    icon: OctagonXIcon,
+    icon: 'octagon-x',
     details: 'Endpoint is currently disabled',
     color: 'red',
     has: (endpoint: EndpointPartial) => endpoint.disabled ?? false,
   },
 
+  gone: {
+    icon: 'skull',
+    details: 'This endpoint no longer exists.',
+    color: 'rose',
+    has: (endpoint: EndpointPartial) => !!endpoint.unavailable_at,
+    getValue: (endpoint: EndpointPartial) =>
+      `Last seen: ${endpoint.unavailable_at?.toLocaleString() ?? 'unknown'}`,
+  },
+
   // Data Policy
   training: {
-    icon: ScanEyeIcon,
+    icon: 'scan-eye',
     details: 'Your data may be used to train new models.',
     color: 'orange',
     has: (endpoint: EndpointPartial) => endpoint.data_policy?.training === true,
   },
 
   data_publishing: {
-    icon: ScrollTextIcon,
+    icon: 'scroll-text',
     details: 'Your data may be published or shared publicly.',
     color: 'orange',
     has: (endpoint: EndpointPartial) => endpoint.data_policy?.can_publish === true,
   },
 
   user_id: {
-    icon: FingerprintIcon,
+    icon: 'fingerprint',
     details: 'An anonymous user ID is shared with the provider.',
     color: 'orange',
     has: (endpoint: EndpointPartial) => endpoint.data_policy?.requires_user_ids === true,
   },
 
   data_retention: {
-    icon: SaveIcon,
+    icon: 'save',
     details: 'Your data may be retained by the provider.',
     color: 'orange',
     has: (endpoint: EndpointPartial) => endpoint.data_policy?.retains_prompts === true,
@@ -185,7 +181,7 @@ export const attributes = {
 
   // Limits
   max_text_input_tokens: {
-    icon: LetterTextIcon,
+    icon: 'letter-text',
     details: 'Maximum text input tokens allowed',
     color: 'yellow',
     has: (endpoint: EndpointPartial) => endpoint.limits?.text_input_tokens != null,
@@ -193,7 +189,7 @@ export const attributes = {
   },
 
   max_image_input_tokens: {
-    icon: ImageIcon,
+    icon: 'image',
     details: 'Maximum image input tokens allowed',
     color: 'yellow',
     has: (endpoint: EndpointPartial) => endpoint.limits?.image_input_tokens != null,
@@ -201,7 +197,7 @@ export const attributes = {
   },
 
   max_images_per_input: {
-    icon: ImageIcon,
+    icon: 'image',
     details: 'Maximum number of images per input',
     color: 'yellow',
     has: (endpoint: EndpointPartial) => endpoint.limits?.images_per_input != null,
@@ -209,7 +205,7 @@ export const attributes = {
   },
 
   max_requests_per_minute: {
-    icon: AlarmClockIcon,
+    icon: 'alarm-clock',
     details: 'Maximum requests per minute allowed',
     color: 'yellow',
     has: (endpoint: EndpointPartial) => endpoint.limits?.requests_per_minute != null,
@@ -217,7 +213,7 @@ export const attributes = {
   },
 
   max_requests_per_day: {
-    icon: CalendarIcon,
+    icon: 'calendar',
     details: 'Maximum requests per day allowed',
     color: 'yellow',
     has: (endpoint: EndpointPartial) => endpoint.limits?.requests_per_day != null,
