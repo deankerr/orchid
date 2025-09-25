@@ -1,14 +1,6 @@
 import { useMemo } from 'react'
 
 import { ColumnDef } from '@tanstack/react-table'
-import {
-  AudioLinesIcon,
-  BrainCogIcon,
-  DatabaseIcon,
-  FlagIcon,
-  GlobeIcon,
-  ImageIcon,
-} from 'lucide-react'
 
 import type { Doc } from '@/convex/_generated/dataModel'
 
@@ -340,7 +332,7 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
             pricingItems.push(
               <AttributeBadge
                 key="reasoning"
-                icon={BrainCogIcon}
+                icon="brain-cog"
                 name="internal_reasoning"
                 details={formatPrice({
                   priceKey: 'internal_reasoning',
@@ -355,7 +347,7 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
             pricingItems.push(
               <AttributeBadge
                 key="image_output"
-                icon={ImageIcon}
+                icon="image"
                 name="image_output"
                 details={formatPrice({
                   priceKey: 'image_output',
@@ -370,7 +362,7 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
             pricingItems.push(
               <AttributeBadge
                 key="audio_input"
-                icon={AudioLinesIcon}
+                icon="audio-lines"
                 name="audio_input"
                 details={formatPrice({
                   priceKey: 'audio_input',
@@ -385,7 +377,7 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
             pricingItems.push(
               <AttributeBadge
                 key="audio_cache_input"
-                icon={AudioLinesIcon}
+                icon="audio-lines"
                 name="audio_cache_input"
                 details={formatPrice({
                   priceKey: 'audio_cache_input',
@@ -400,7 +392,7 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
             pricingItems.push(
               <AttributeBadge
                 key="cache_write"
-                icon={DatabaseIcon}
+                icon="database"
                 name="cache_write"
                 details={formatPrice({
                   priceKey: 'cache_write',
@@ -415,7 +407,7 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
             pricingItems.push(
               <AttributeBadge
                 key="request"
-                icon={FlagIcon}
+                icon="flag"
                 name="request"
                 details={formatPrice({
                   priceKey: 'request',
@@ -430,7 +422,7 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
             pricingItems.push(
               <AttributeBadge
                 key="web_search"
-                icon={GlobeIcon}
+                icon="globe"
                 name="web_search"
                 details={formatPrice({
                   priceKey: 'web_search',

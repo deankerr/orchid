@@ -1,15 +1,16 @@
 import type { VariantProps } from 'class-variance-authority'
-import { type LucideIcon } from 'lucide-react'
 
 import { Doc } from '@/convex/_generated/dataModel'
 
 import { AttributeName, attributes, getEndpointAttributeData } from '@/lib/attributes'
+import type { SpriteIconName } from '@/lib/sprite-icons'
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
+import { SpriteIcon } from '../ui/sprite-icon'
 import { RadBadge } from './rad-badge'
 
 export function AttributeBadge({
-  icon: Icon,
+  icon,
   name,
   details,
   detailsValue,
@@ -17,7 +18,7 @@ export function AttributeBadge({
   variant = 'surface',
   disabled,
 }: {
-  icon: LucideIcon
+  icon: SpriteIconName
   name: string
   details: string
   detailsValue?: string
@@ -35,7 +36,7 @@ export function AttributeBadge({
           aria-label={name}
           aria-disabled={disabled}
         >
-          <Icon />
+          <SpriteIcon name={icon} className="size-full" />
         </RadBadge>
       </TooltipTrigger>
 
