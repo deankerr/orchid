@@ -8,8 +8,9 @@ import {
   getSortedRowModel,
   SortingState,
   Table,
-  useReactTable,
 } from '@tanstack/react-table'
+
+import { useReactTable } from '@/hooks/use-react-table'
 
 import { DataGrid, DataGridContainer } from '../data-grid/data-grid'
 import { DataGridTable } from '../data-grid/data-grid-table'

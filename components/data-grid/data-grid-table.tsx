@@ -433,6 +433,13 @@ function DataGridTableRowSelectAll() {
   )
 }
 
+// disable react compiler
+function useVirtual(options: Parameters<typeof useVirtualizer>[0]) {
+  'use no memo'
+  const { getVirtualItems, getTotalSize } = useVirtualizer(options)
+  return { virtualItems: getVirtualItems(), totalSize: getTotalSize() }
+}
+
 /**
  * DataGridTable - Virtualized table component for high-performance rendering of large datasets
  *
@@ -451,16 +458,12 @@ function DataGridTable<TData extends object>() {
   const { rows } = table.getRowModel()
 
   // Setup virtualizer with configuration from props
-  const virtualizer = useVirtualizer({
+  const { virtualItems: virtualRows, totalSize } = useVirtual({
     count: rows.length, // Total number of rows in dataset
     getScrollElement: () => scrollAreaViewportRef.current, // Element to monitor for scrolling
     estimateSize: () => props.tableLayout.virtualRowHeight,
     overscan: props.tableLayout.virtualOverscan, // Extra rows to render outside viewport
   })
-
-  // Get the virtual items (rows) that should currently be rendered
-  const virtualRows = virtualizer.getVirtualItems()
-  const totalSize = virtualizer.getTotalSize() // Total height if all rows were rendered
 
   // Calculate padding to maintain correct scrollbar behavior
   // paddingTop: space above visible rows (represents all rows before first visible)
