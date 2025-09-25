@@ -104,6 +104,7 @@ export function EndpointsDataGrid({
         }}
         tableClassNames={{
           headerRow: 'uppercase font-mono text-[12px]',
+          bodyRow: 'has-aria-[label=disabled]:opacity-50 has-aria-[label=gone]:opacity-50',
         }}
       >
         {children}

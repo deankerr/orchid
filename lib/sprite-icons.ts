@@ -19,6 +19,8 @@ export type SpriteIconName =
   | 'message-square'
   | 'messages-square'
   | 'octagon-x'
+  | 'skull'
+  | 'siren'
   | 'save'
   | 'scan-eye'
   | 'scroll-text'
@@ -28,10 +30,11 @@ export type SpriteIconName =
   | 'file-chart-column-increasing'
   | 'image-down'
   | 'image-up'
+  | 'bug'
 
 /**
  * Get the sprite URL for an icon (for use in <use> elements)
  */
 export function getSpriteUrl(iconName: SpriteIconName): string {
-  return `/sprites/lucide-sprite.svg#lucide-${iconName}`
+  return `/sprites/lucide-sprite.03caac8d.svg#lucide-${iconName}`
 }

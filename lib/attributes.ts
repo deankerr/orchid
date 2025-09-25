@@ -137,6 +137,15 @@ export const attributes = {
     has: (endpoint: EndpointPartial) => endpoint.disabled ?? false,
   },
 
+  gone: {
+    icon: 'skull',
+    details: 'This endpoint no longer exists.',
+    color: 'rose',
+    has: (endpoint: EndpointPartial) => !!endpoint.unavailable_at,
+    getValue: (endpoint: EndpointPartial) =>
+      `Last seen: ${endpoint.unavailable_at?.toLocaleString() ?? 'unknown'}`,
+  },
+
   // Data Policy
   training: {
     icon: 'scan-eye',

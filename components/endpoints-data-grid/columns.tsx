@@ -7,9 +7,10 @@ import type { Doc } from '@/convex/_generated/dataModel'
 import { DataGridColumnHeader } from '@/components/data-grid/data-grid-column-header'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { getEndpointAttributeData } from '@/lib/attributes'
 import { formatPrice } from '@/lib/formatters'
 
-import { AttributeBadgeName, AttributeBadgeSet } from '../shared/attribute-badge'
+import { AttributeBadge, AttributeBadgeName, AttributeBadgeSet } from '../shared/attribute-badge'
 import { EntityCard } from '../shared/entity-card'
 import { ModalityBadgeSet } from '../shared/modality-badge'
 import { PricingBadgeSet } from '../shared/pricing-badges'
@@ -49,6 +50,9 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
         header: ({ column }) => <DataGridColumnHeader column={column} title="PROVIDER" />,
         cell: ({ row }) => {
           const endpoint = row.original
+
+          const endpointGone = getEndpointAttributeData(endpoint, 'gone')
+
           return (
             <div className="flex items-center">
               <EntityCard
@@ -58,7 +62,15 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
                 className="grow"
               />
 
-              {endpoint.disabled ? (
+              {endpointGone.has ? (
+                <AttributeBadge
+                  icon={endpointGone.icon}
+                  name={endpointGone.name}
+                  details={endpointGone.details}
+                  color={endpointGone.color}
+                  variant="soft"
+                />
+              ) : endpoint.disabled ? (
                 <AttributeBadgeName name="disabled" />
               ) : endpoint.deranked ? (
                 <AttributeBadgeName name="deranked" />
