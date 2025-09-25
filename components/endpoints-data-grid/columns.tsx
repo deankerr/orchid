@@ -462,10 +462,11 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
                 'max_requests_per_minute',
                 'max_requests_per_day',
               ]}
+              hideUnavailable
             />
           )
         },
-        size: 190,
+        size: 130,
         enableHiding: true,
         meta: {
           headerClassName: 'text-center',
@@ -483,10 +484,11 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
             <AttributeBadgeSet
               endpoint={endpoint}
               attributes={['training', 'data_publishing', 'user_id', 'data_retention']}
+              hideUnavailable
             />
           )
         },
-        size: 160,
+        size: 130,
         enableHiding: true,
         meta: {
           headerClassName: 'text-center',
