@@ -13,7 +13,7 @@ import {
 import { useReactTable } from '@/hooks/use-react-table'
 
 import { DataGrid, DataGridContainer } from '../data-grid/data-grid'
-import { DataGridTable } from '../data-grid/data-grid-table'
+import { DataGridTable, DataGridTableV } from '../data-grid/data-grid-table'
 import { useEndpointsColumns, type EndpointRow } from './columns'
 
 interface EndpointsContextValue {
@@ -40,17 +40,14 @@ export function useEndpoints() {
   return context
 }
 
-export function EndpointsDataGrid({
+export function EndpointsDataGridLite({
   data,
   children,
 }: {
   data: EndpointRow[] | undefined
   children: ReactNode
 }) {
-  const [cellBorder, setCellBorder] = useState(false)
-  const [rowBorder, setRowBorder] = useState(true)
-  const [sorting, setSorting] = useState<SortingState>([])
-  const [globalFilter, setGlobalFilter] = useState('')
+  'use no memo'
 
   const isLoading = data === undefined
 
@@ -58,65 +55,112 @@ export function EndpointsDataGrid({
   const table = useReactTable({
     data: data ?? [],
     columns,
-    state: {
-      sorting,
-      globalFilter,
-    },
-    onSortingChange: setSorting,
-    onGlobalFilterChange: setGlobalFilter,
-    globalFilterFn: (row, _columnId, filterValue: string) => {
-      const searchValue = filterValue.toLowerCase()
-      const modelName = row.original.model.name.toLowerCase()
-      const providerName = row.original.provider.name.toLowerCase()
-
-      return modelName.includes(searchValue) || providerName.includes(searchValue)
-    },
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
+    // getFilteredRowModel: getFilteredRowModel(),
     manualPagination: true, // prevents error from state update during initial render
   })
 
   return (
-    <EndpointsContext.Provider
-      value={{
-        recordCount: table.getFilteredRowModel().rows.length,
-        isLoading,
-        cellBorder,
-        setCellBorder,
-        rowBorder,
-        setRowBorder,
-        sorting,
-        setSorting,
-        globalFilter,
-        setGlobalFilter,
-        table,
+    <DataGrid
+      table={table}
+      recordCount={data?.length ?? 0}
+      isLoading={isLoading}
+      loadingMessage="Loading endpoints..."
+      emptyMessage="No endpoints found"
+      skeletonRows={20}
+      tableLayout={{
+        headerSticky: true,
+        width: 'fixed',
+        virtualRowHeight: 60,
+        virtualOverscan: 10,
+      }}
+      tableClassNames={{
+        headerRow: 'uppercase font-mono text-[12px]',
       }}
     >
-      <DataGrid
-        table={table}
-        recordCount={table.getFilteredRowModel().rows.length}
-        isLoading={isLoading}
-        loadingMessage="Loading endpoints..."
-        emptyMessage="No endpoints found"
-        skeletonRows={20}
-        tableLayout={{
-          headerSticky: true,
-          width: 'fixed',
-          cellBorder,
-          rowBorder,
-          virtualRowHeight: 60,
-          virtualOverscan: 10,
-        }}
-        tableClassNames={{
-          headerRow: 'uppercase font-mono text-[12px]',
-        }}
-      >
-        {children}
-      </DataGrid>
-    </EndpointsContext.Provider>
+      {children}
+    </DataGrid>
   )
 }
+
+// export function EndpointsDataGrid({
+//   data,
+//   children,
+// }: {
+//   data: EndpointRow[] | undefined
+//   children: ReactNode
+// }) {
+//   const [cellBorder, setCellBorder] = useState(false)
+//   const [rowBorder, setRowBorder] = useState(true)
+//   const [sorting, setSorting] = useState<SortingState>([])
+//   const [globalFilter, setGlobalFilter] = useState('')
+
+//   const isLoading = data === undefined
+
+//   const columns = useEndpointsColumns()
+//   const table = useReactTable({
+//     data: data ?? [],
+//     columns,
+//     state: {
+//       sorting,
+//       globalFilter,
+//     },
+//     onSortingChange: setSorting,
+//     onGlobalFilterChange: setGlobalFilter,
+//     globalFilterFn: (row, _columnId, filterValue: string) => {
+//       const searchValue = filterValue.toLowerCase()
+//       const modelName = row.original.model.name.toLowerCase()
+//       const providerName = row.original.provider.name.toLowerCase()
+
+//       return modelName.includes(searchValue) || providerName.includes(searchValue)
+//     },
+//     getCoreRowModel: getCoreRowModel(),
+//     getSortedRowModel: getSortedRowModel(),
+//     getFilteredRowModel: getFilteredRowModel(),
+//     manualPagination: true, // prevents error from state update during initial render
+//   })
+
+//   return (
+//     <EndpointsContext.Provider
+//       value={{
+//         recordCount: table.getFilteredRowModel().rows.length,
+//         isLoading,
+//         cellBorder,
+//         setCellBorder,
+//         rowBorder,
+//         setRowBorder,
+//         sorting,
+//         setSorting,
+//         globalFilter,
+//         setGlobalFilter,
+//         table,
+//       }}
+//     >
+//       <DataGrid
+//         table={table}
+//         recordCount={table.getFilteredRowModel().rows.length}
+//         isLoading={isLoading}
+//         loadingMessage="Loading endpoints..."
+//         emptyMessage="No endpoints found"
+//         skeletonRows={20}
+//         tableLayout={{
+//           headerSticky: true,
+//           width: 'fixed',
+//           cellBorder,
+//           rowBorder,
+//           virtualRowHeight: 60,
+//           virtualOverscan: 10,
+//         }}
+//         tableClassNames={{
+//           headerRow: 'uppercase font-mono text-[12px]',
+//         }}
+//       >
+//         {children}
+//       </DataGrid>
+//     </EndpointsContext.Provider>
+//   )
+// }
 
 export function EndpointsDataGridTable() {
   return (

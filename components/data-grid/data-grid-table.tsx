@@ -441,7 +441,88 @@ function useVirtual(options: Parameters<typeof useVirtualizer>[0]) {
 }
 
 /**
- * DataGridTable - Virtualized table component for high-performance rendering of large datasets
+ * DataGridTable - Standard (non-virtualized) table component
+ */
+function DataGridTable<TData>() {
+  const { table, isLoading, props } = useDataGrid()
+  const pagination = table.getState().pagination
+
+  return (
+    <ScrollArea className="h-full" type="auto">
+      <DataGridTableBase>
+        <DataGridTableHead>
+          {table.getHeaderGroups().map((headerGroup: HeaderGroup<TData>, index) => {
+            return (
+              <DataGridTableHeadRow headerGroup={headerGroup} key={index}>
+                {headerGroup.headers.map((header, index) => {
+                  const { column } = header
+
+                  return (
+                    <DataGridTableHeadRowCell header={header} key={index}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(header.column.columnDef.header, header.getContext())}
+                      {props.tableLayout?.columnsResizable && column.getCanResize() && (
+                        <DataGridTableHeadRowCellResize header={header} />
+                      )}
+                    </DataGridTableHeadRowCell>
+                  )
+                })}
+              </DataGridTableHeadRow>
+            )
+          })}
+        </DataGridTableHead>
+
+        {(props.tableLayout?.stripped || !props.tableLayout?.rowBorder) && (
+          <DataGridTableRowSpacer />
+        )}
+
+        <DataGridTableBody>
+          {props.loadingMode === 'skeleton' &&
+          isLoading &&
+          (props.skeletonRows || pagination?.pageSize) ? (
+            Array.from({ length: props.skeletonRows || pagination?.pageSize || 10 }).map(
+              (_, rowIndex) => (
+                <DataGridTableBodyRowSkeleton key={rowIndex}>
+                  {table.getVisibleFlatColumns().map((column, colIndex) => {
+                    return (
+                      <DataGridTableBodyRowSkeletonCell column={column} key={colIndex}>
+                        {column.columnDef.meta?.skeleton}
+                      </DataGridTableBodyRowSkeletonCell>
+                    )
+                  })}
+                </DataGridTableBodyRowSkeleton>
+              ),
+            )
+          ) : table.getRowModel().rows.length ? (
+            table.getRowModel().rows.map((row: Row<TData>, index) => {
+              return (
+                <Fragment key={row.id}>
+                  <DataGridTableBodyRow row={row} key={index}>
+                    {row.getVisibleCells().map((cell: Cell<TData, unknown>, colIndex) => {
+                      return (
+                        <DataGridTableBodyRowCell cell={cell} key={colIndex}>
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </DataGridTableBodyRowCell>
+                      )
+                    })}
+                  </DataGridTableBodyRow>
+                  {row.getIsExpanded() && <DataGridTableBodyRowExpanded row={row} />}
+                </Fragment>
+              )
+            })
+          ) : (
+            <DataGridTableEmpty />
+          )}
+        </DataGridTableBody>
+      </DataGridTableBase>
+      <ScrollBar orientation="horizontal" />
+    </ScrollArea>
+  )
+}
+
+/**
+ * DataGridTableV - Virtualized table component for high-performance rendering of large datasets
  *
  * How virtualization works:
  * 1. Only renders visible rows + overscan buffer (e.g., 10-15 rows instead of 10,000)
@@ -450,7 +531,7 @@ function useVirtual(options: Parameters<typeof useVirtualizer>[0]) {
  * 4. As user scrolls, virtualizer calculates which rows should be visible
  * 5. Component re-renders with new set of virtual rows, maintaining scroll position
  */
-function DataGridTable<TData extends object>() {
+function DataGridTableV<TData extends object>() {
   const { table, isLoading, props } = useDataGrid<TData>()
 
   // ScrollArea viewport ref - this is the element that virtualizer monitors for scroll events
@@ -569,6 +650,7 @@ function DataGridTable<TData extends object>() {
 
 export {
   DataGridTable,
+  DataGridTableV,
   DataGridTableBase,
   DataGridTableBody,
   DataGridTableBodyRow,

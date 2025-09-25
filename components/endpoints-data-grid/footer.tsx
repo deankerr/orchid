@@ -4,15 +4,15 @@ import { DataGridFrameFooter } from '../shared/data-grid-frame'
 import { useEndpoints } from './data-grid'
 
 export function EndpointsDataGridFooter({ children, ...props }: React.ComponentProps<'div'>) {
-  const { recordCount, isLoading, sorting, table } = useEndpoints()
+  // const { recordCount, isLoading, sorting, table } = useEndpoints()
 
-  const currentSort = sorting[0]
-  const sortedColumn = currentSort ? table.getColumn(currentSort.id) : null
-  const sortedColumnTitle = sortedColumn?.columnDef.meta?.headerTitle || currentSort?.id
+  // const currentSort = sorting[0]
+  // const sortedColumn = currentSort ? table.getColumn(currentSort.id) : null
+  // const sortedColumnTitle = sortedColumn?.columnDef.meta?.headerTitle || currentSort?.id
 
   return (
     <DataGridFrameFooter {...props}>
-      <div className="justify-self-start">{children}</div>
+      {/* <div className="justify-self-start">{children}</div>
 
       <div className="flex items-center gap-1 text-xs">
         {isLoading && <div>Loading...</div>}
@@ -24,7 +24,7 @@ export function EndpointsDataGridFooter({ children, ...props }: React.ComponentP
         )}
       </div>
 
-      <div className="justify-self-end font-mono text-xs">{recordCount} items loaded</div>
+      <div className="justify-self-end font-mono text-xs">{recordCount} items loaded</div> */}
     </DataGridFrameFooter>
   )
 }

@@ -1,40 +1,32 @@
-import { Settings2, XIcon } from 'lucide-react'
-
-import { DataGridColumnVisibility } from '../data-grid/data-grid-column-visibility'
-import { FeatureFlag } from '../dev-utils/feature-flag'
 import { DataGridFrameToolbar } from '../shared/data-grid-frame'
-import { Button } from '../ui/button'
-import { Checkbox } from '../ui/checkbox'
-import { Label } from '../ui/label'
-import { SearchInput } from '../ui/search-input'
-import { useEndpoints } from './data-grid'
 
 export function EndpointsDataGridControls() {
-  const {
-    cellBorder,
-    setCellBorder,
-    rowBorder,
-    setRowBorder,
-    sorting,
-    setSorting,
-    globalFilter,
-    setGlobalFilter,
-    table,
-  } = useEndpoints()
+  // const {
+  //   cellBorder,
+  //   setCellBorder,
+  //   rowBorder,
+  //   setRowBorder,
+  //   sorting,
+  //   setSorting,
+  //   globalFilter,
+  //   setGlobalFilter,
+  //   table,
+  // } = useEndpoints()
 
-  const hasSorting = sorting.length > 0
-  const clearSorting = () => setSorting?.([])
+  // const hasSorting = sorting.length > 0
+  // const clearSorting = () => setSorting?.([])
 
   return (
     <DataGridFrameToolbar>
-      <SearchInput
+      {/* <SearchInput
         placeholder="Search models and providers..."
         value={globalFilter}
         onChange={(e) => setGlobalFilter?.(e.target.value)}
         onClear={() => setGlobalFilter?.('')}
         className="w-64"
-      />
+      /> */}
 
+      {/* 
       <DataGridColumnVisibility
         table={table}
         trigger={
@@ -69,7 +61,7 @@ export function EndpointsDataGridControls() {
             title="Toggle row borders"
           />
         </Label>
-      </FeatureFlag>
+      </FeatureFlag> */}
     </DataGridFrameToolbar>
   )
 }

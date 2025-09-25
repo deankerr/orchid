@@ -9,7 +9,7 @@ import { useCachedQuery } from '@/hooks/use-cached-query'
 import { PageDescription, PageHeader, PageTitle } from '../app-layout/pages'
 import { DataGridFrame } from '../shared/data-grid-frame'
 import { EndpointsDataGridControls } from './controls'
-import { EndpointsDataGrid, EndpointsDataGridTable } from './data-grid'
+import { EndpointsDataGridLite, EndpointsDataGridTable } from './data-grid'
 import { EndpointsDataGridFooter } from './footer'
 
 export function EndpointsDataGridPage() {
@@ -24,13 +24,13 @@ export function EndpointsDataGridPage() {
         <PageDescription>Browse models and providers available on OpenRouter</PageDescription>
       </PageHeader>
 
-      <EndpointsDataGrid data={endpointsList}>
+      <EndpointsDataGridLite data={endpointsList}>
         <DataGridFrame>
           <EndpointsDataGridControls />
           <EndpointsDataGridTable />
           <EndpointsDataGridFooter />
         </DataGridFrame>
-      </EndpointsDataGrid>
+      </EndpointsDataGridLite>
     </>
   )
 }
