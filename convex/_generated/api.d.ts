@@ -24,6 +24,7 @@ import type * as db_or_views_providers from "../db/or/views/providers.js";
 import type * as db_snapshot_crawl_archives from "../db/snapshot/crawl/archives.js";
 import type * as db_snapshot_crawl_config from "../db/snapshot/crawl/config.js";
 import type * as http from "../http.js";
+import type * as init from "../init.js";
 import type * as lib_vTable from "../lib/vTable.js";
 import type * as lib_validator from "../lib/validator.js";
 import type * as shared from "../shared.js";
@@ -61,6 +62,7 @@ declare const fullApi: ApiFromModules<{
   "db/snapshot/crawl/archives": typeof db_snapshot_crawl_archives;
   "db/snapshot/crawl/config": typeof db_snapshot_crawl_config;
   http: typeof http;
+  init: typeof init;
   "lib/vTable": typeof lib_vTable;
   "lib/validator": typeof lib_validator;
   shared: typeof shared;
