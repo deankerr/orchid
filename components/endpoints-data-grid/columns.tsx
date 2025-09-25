@@ -9,9 +9,10 @@ import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatPrice } from '@/lib/formatters'
 
-import { AttributeBadge, AttributeBadgeName, AttributeBadgeSet } from '../shared/attribute-badge'
+import { AttributeBadgeName, AttributeBadgeSet } from '../shared/attribute-badge'
 import { EntityCard } from '../shared/entity-card'
 import { ModalityBadgeSet } from '../shared/modality-badge'
+import { PricingBadgeSet } from '../shared/pricing-badges'
 
 export type EndpointRow = Doc<'or_views_endpoints'>
 
@@ -49,12 +50,20 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
         cell: ({ row }) => {
           const endpoint = row.original
           return (
-            <EntityCard
-              icon_url={endpoint.provider.icon_url}
-              name={endpoint.provider.name}
-              slug={endpoint.provider.tag_slug}
-              className="grow"
-            />
+            <div className="flex items-center">
+              <EntityCard
+                icon_url={endpoint.provider.icon_url}
+                name={endpoint.provider.name}
+                slug={endpoint.provider.tag_slug}
+                className="grow"
+              />
+
+              {endpoint.disabled ? (
+                <AttributeBadgeName name="disabled" />
+              ) : endpoint.deranked ? (
+                <AttributeBadgeName name="deranked" />
+              ) : null}
+            </div>
           )
         },
         size: 240,
@@ -62,26 +71,6 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
         enableHiding: true,
         meta: {
           skeleton: <Skeleton className="h-8 w-full" />,
-        },
-      },
-
-      {
-        id: 'status',
-        header: 'Status',
-        cell: ({ row }) => {
-          const endpoint = row.original
-          return endpoint.disabled ? (
-            <AttributeBadgeName name="disabled" />
-          ) : endpoint.deranked ? (
-            <AttributeBadgeName name="deranked" />
-          ) : null
-        },
-        size: 80,
-        enableHiding: true,
-        meta: {
-          headerClassName: 'text-center',
-          skeleton: <Skeleton className="h-6 w-full" />,
-          cellClassName: 'text-center',
         },
       },
 
@@ -254,190 +243,17 @@ export function useEndpointsColumns(): ColumnDef<EndpointRow>[] {
       },
 
       {
-        id: 'cacheReadPrice',
-        accessorFn: (row) => row.pricing.cache_read || 0,
-        header: ({ column }) => (
-          <DataGridColumnHeader
-            column={column}
-            title="CACHE READ $ PER MTOK"
-            className="text-center"
-          />
-        ),
-        cell: ({ row }) => {
-          const cacheReadPrice = row.original.pricing.cache_read
-          if (!cacheReadPrice) {
-            return <EmptyCell />
-          }
-          return (
-            <div className="font-mono">
-              {formatPrice({
-                priceKey: 'cache_read',
-                priceValue: cacheReadPrice,
-                unitSuffix: false,
-              })}
-            </div>
-          )
-        },
-        size: 118,
-        enableSorting: true,
-        enableHiding: true,
-        meta: {
-          skeleton: <Skeleton className="h-5 w-full" />,
-          cellClassName: 'text-right',
-        },
-      },
-
-      {
-        id: 'imageInputPrice',
-        accessorFn: (row) => row.pricing.image_input || 0,
-        header: ({ column }) => (
-          <DataGridColumnHeader
-            column={column}
-            title="IMAGE INPUT $ PER K"
-            className="text-center"
-          />
-        ),
-        cell: ({ row }) => {
-          const imageInputPrice = row.original.pricing.image_input
-          if (!imageInputPrice) {
-            return <EmptyCell />
-          }
-          return (
-            <div className="font-mono">
-              {formatPrice({
-                priceKey: 'image_input',
-                priceValue: imageInputPrice,
-                unitSuffix: false,
-              })}
-            </div>
-          )
-        },
-        size: 120,
-        enableSorting: true,
-        enableHiding: true,
-        meta: {
-          skeleton: <Skeleton className="h-5 w-full" />,
-          cellClassName: 'text-right',
-        },
-      },
-
-      {
         id: 'miscPricing',
         header: 'Other $',
         cell: ({ row }) => {
-          const pricing = row.original.pricing
-          const pricingItems = []
+          const endpoint = row.original
+          const pricingBadges = <PricingBadgeSet endpoint={endpoint} />
 
-          if (pricing.internal_reasoning) {
-            pricingItems.push(
-              <AttributeBadge
-                key="reasoning"
-                icon="brain-cog"
-                name="internal_reasoning"
-                details={formatPrice({
-                  priceKey: 'internal_reasoning',
-                  priceValue: pricing.internal_reasoning,
-                })}
-                color="blue"
-              />,
-            )
-          }
-
-          if (pricing.image_output) {
-            pricingItems.push(
-              <AttributeBadge
-                key="image_output"
-                icon="image"
-                name="image_output"
-                details={formatPrice({
-                  priceKey: 'image_output',
-                  priceValue: pricing.image_output,
-                })}
-                color="purple"
-              />,
-            )
-          }
-
-          if (pricing.audio_input) {
-            pricingItems.push(
-              <AttributeBadge
-                key="audio_input"
-                icon="audio-lines"
-                name="audio_input"
-                details={formatPrice({
-                  priceKey: 'audio_input',
-                  priceValue: pricing.audio_input,
-                })}
-                color="green"
-              />,
-            )
-          }
-
-          if (pricing.audio_cache_input) {
-            pricingItems.push(
-              <AttributeBadge
-                key="audio_cache_input"
-                icon="audio-lines"
-                name="audio_cache_input"
-                details={formatPrice({
-                  priceKey: 'audio_cache_input',
-                  priceValue: pricing.audio_cache_input,
-                })}
-                color="cyan"
-              />,
-            )
-          }
-
-          if (pricing.cache_write) {
-            pricingItems.push(
-              <AttributeBadge
-                key="cache_write"
-                icon="database"
-                name="cache_write"
-                details={formatPrice({
-                  priceKey: 'cache_write',
-                  priceValue: pricing.cache_write,
-                })}
-                color="cyan"
-              />,
-            )
-          }
-
-          if (pricing.request) {
-            pricingItems.push(
-              <AttributeBadge
-                key="request"
-                icon="flag"
-                name="request"
-                details={formatPrice({
-                  priceKey: 'request',
-                  priceValue: pricing.request,
-                })}
-                color="yellow"
-              />,
-            )
-          }
-
-          if (pricing.web_search) {
-            pricingItems.push(
-              <AttributeBadge
-                key="web_search"
-                icon="globe"
-                name="web_search"
-                details={formatPrice({
-                  priceKey: 'web_search',
-                  priceValue: pricing.web_search,
-                })}
-                color="teal"
-              />,
-            )
-          }
-
-          if (pricingItems.length === 0) {
+          if (!pricingBadges) {
             return <EmptyCell />
           }
 
-          return <div className="flex flex-wrap gap-1">{pricingItems}</div>
+          return pricingBadges
         },
         size: 130,
         enableHiding: true,

@@ -33,7 +33,7 @@ export function AttributeBadge({
       color={color}
       aria-label={name}
       aria-disabled={disabled}
-      title={`${name}: ${details}${detailsValue ? ` - ${detailsValue}` : ''}`} // TODO
+      title={`${name}\n${details}${detailsValue ? ` - ${detailsValue}` : ''}`} // TODO
     >
       <SpriteIcon name={icon} />
     </RadBadge>

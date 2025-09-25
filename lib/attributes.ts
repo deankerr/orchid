@@ -1,5 +1,7 @@
 import { Doc } from '@/convex/_generated/dataModel'
 
+import { formatPrice } from './formatters'
+
 type EndpointPartial = Partial<Doc<'or_views_endpoints'>>
 
 export const attributes = {
@@ -80,6 +82,15 @@ export const attributes = {
     details: 'Use native web search capabilities',
     color: 'emerald',
     has: (endpoint: EndpointPartial) => endpoint.native_web_search ?? false,
+    getValue: (endpoint: EndpointPartial) => {
+      if (endpoint.pricing?.web_search) {
+        return formatPrice({
+          priceKey: 'web_search',
+          priceValue: endpoint.pricing.web_search,
+        })
+      }
+      return undefined
+    },
   },
 
   completions: {
