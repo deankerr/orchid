@@ -1,45 +1,41 @@
 import { Doc } from '@/convex/_generated/dataModel'
 
-import { AttributeBadge } from './attribute-badge'
+import { SpriteIcon } from '../ui/sprite-icon'
 
 export function ModalityBadgeSet({ endpoint }: { endpoint: Doc<'or_views_endpoints'> }) {
   return (
-    <div className="flex gap-1">
-      <AttributeBadge
-        icon="image-up"
-        name="Input Modality"
-        details="Image"
-        color="slate"
-        variant="soft"
-        disabled={!endpoint.model.input_modalities.includes('image')}
-      />
+    <div className="flex items-center gap-1">
+      {endpoint.model.input_modalities.includes('image') ? (
+        <div className="flex size-7 items-center justify-center" title="Image Input">
+          <SpriteIcon name="image-up" className="size-5.5 text-neutral-200" />
+        </div>
+      ) : (
+        <div className="size-7" />
+      )}
 
-      <AttributeBadge
-        icon="file-chart-column-increasing"
-        name="Input Modality"
-        details="File"
-        color="slate"
-        variant="soft"
-        disabled={!endpoint.model.input_modalities.includes('file')}
-      />
+      {endpoint.model.input_modalities.includes('file') ? (
+        <div className="flex size-7 items-center justify-center" title="File Input">
+          <SpriteIcon name="file-chart-column-increasing" className="size-5.5 text-neutral-200" />
+        </div>
+      ) : (
+        <div className="size-7" />
+      )}
 
-      <AttributeBadge
-        icon="audio-lines"
-        name="Input Modality"
-        details="Audio"
-        color="slate"
-        variant="soft"
-        disabled={!endpoint.model.input_modalities.includes('audio')}
-      />
+      {endpoint.model.input_modalities.includes('audio') ? (
+        <div className="flex size-7 items-center justify-center" title="Audio Input">
+          <SpriteIcon name="audio-lines" className="size-5.5 text-neutral-200" />
+        </div>
+      ) : (
+        <div className="size-7" />
+      )}
 
-      <AttributeBadge
-        icon="image-down"
-        name="Output Modality"
-        details="Image"
-        color="slate"
-        variant="soft"
-        disabled={!endpoint.model.output_modalities.includes('image')}
-      />
+      {endpoint.model.output_modalities.includes('image') ? (
+        <div className="flex size-7 items-center justify-center" title="Image Output">
+          <SpriteIcon name="image-down" className="size-5.5 text-neutral-200" />
+        </div>
+      ) : (
+        <div className="size-7" />
+      )}
     </div>
   )
 }

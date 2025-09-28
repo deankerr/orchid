@@ -6,11 +6,10 @@ import { AttributeName, attributes, getEndpointAttributeData } from '@/lib/attri
 import type { SpriteIconName } from '@/lib/sprite-icons'
 
 import { SpriteIcon } from '../ui/sprite-icon'
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
-import { RadBadge } from './rad-badge'
+import { RadBadge, RadIconBadge } from './rad-badge'
 
 export function AttributeBadge({
-  icon,
+  sprite,
   name,
   details,
   detailsValue,
@@ -18,7 +17,7 @@ export function AttributeBadge({
   variant = 'surface',
   disabled,
 }: {
-  icon: SpriteIconName
+  sprite: SpriteIconName
   name: string
   details: string
   detailsValue?: string
@@ -27,60 +26,15 @@ export function AttributeBadge({
   disabled?: boolean
 }) {
   return (
-    <RadBadge
-      size="icon"
+    <RadIconBadge
       variant={variant}
       color={color}
       aria-label={name}
       aria-disabled={disabled}
       title={`${name}\n${details}${detailsValue ? ` - ${detailsValue}` : ''}`} // TODO
     >
-      <SpriteIcon name={icon} />
-    </RadBadge>
-  )
-}
-
-export function AttributeTooltipBadge({
-  icon,
-  name,
-  details,
-  detailsValue,
-  color,
-  variant = 'surface',
-  disabled,
-}: {
-  icon: SpriteIconName
-  name: string
-  details: string
-  detailsValue?: string
-  color: VariantProps<typeof RadBadge>['color']
-  variant?: VariantProps<typeof RadBadge>['variant']
-  disabled?: boolean
-}) {
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <RadBadge
-          size="icon"
-          variant={variant}
-          color={color}
-          aria-label={name}
-          aria-disabled={disabled}
-        >
-          <SpriteIcon name={icon} />
-        </RadBadge>
-      </TooltipTrigger>
-
-      <TooltipContent>
-        <div className="space-y-1">
-          <div className="font-mono font-medium uppercase">{name}</div>
-          <div>{details}</div>
-          {detailsValue !== undefined && (
-            <div className="font-mono font-medium">{detailsValue}</div>
-          )}
-        </div>
-      </TooltipContent>
-    </Tooltip>
+      <SpriteIcon name={sprite} className="size-full" />
+    </RadIconBadge>
   )
 }
 
@@ -88,7 +42,7 @@ export function AttributeBadgeName({ name }: { name: AttributeName }) {
   const attr = attributes[name]
   return (
     <AttributeBadge
-      icon={attr.icon}
+      sprite={attr.icon}
       name={name}
       details={attr.details}
       color={attr.color}
@@ -111,20 +65,21 @@ export function AttributeBadgeSet({
 
   return (
     <div className="flex gap-1">
-      {pdata.map(
-        (attr) =>
-          (!hideUnavailable || attr.has) && (
-            <AttributeBadge
-              key={attr.name}
-              icon={attr.icon}
-              name={attr.name}
-              details={attr.details}
-              detailsValue={attr.value}
-              color={attr.color}
-              variant={attr.variant}
-              disabled={!attr.has}
-            />
-          ),
+      {pdata.map((attr) =>
+        attr.has ? (
+          <AttributeBadge
+            key={attr.name}
+            sprite={attr.icon}
+            name={attr.name}
+            details={attr.details}
+            detailsValue={attr.value}
+            color={attr.color}
+            variant={attr.variant}
+            disabled={!attr.has}
+          />
+        ) : hideUnavailable ? null : (
+          <div key={attr.name} className="size-7" />
+        ),
       )}
     </div>
   )

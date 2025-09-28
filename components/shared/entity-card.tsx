@@ -27,7 +27,7 @@ export const EntityCard = memo(
       <div className={cn('flex min-w-0 items-center gap-2 p-0.5 text-left', className)} {...props}>
         <EntityAvatar src={icon_url} fallback={fallback} />
         <div className="min-w-0 flex-1">
-          <div className={cn('truncate text-sm leading-tight font-medium')}>{name}</div>
+          <div className={cn('truncate font-sans text-sm leading-tight font-medium')}>{name}</div>
           <div
             className={cn(
               'relative -mx-1 w-fit max-w-full overflow-hidden rounded-sm px-1 font-mono text-xs leading-none text-ellipsis whitespace-nowrap text-muted-foreground outline outline-transparent select-all',

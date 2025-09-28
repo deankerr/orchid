@@ -7,26 +7,19 @@ import { Button } from '../ui/button'
 import { Checkbox } from '../ui/checkbox'
 import { Label } from '../ui/label'
 import { SearchInput } from '../ui/search-input'
-import { useEndpoints } from './data-grid'
 
 export function EndpointsDataGridControls() {
-  const { cellBorder, setCellBorder, sorting, setSorting, globalFilter, setGlobalFilter, table } =
-    useEndpoints()
-
-  const hasSorting = sorting.length > 0
-  const clearSorting = () => setSorting?.([])
-
   return (
     <DataGridFrameToolbar>
-      <SearchInput
+      {/* <SearchInput
         placeholder="Search models and providers..."
         value={globalFilter}
         onChange={(e) => setGlobalFilter?.(e.target.value)}
         onClear={() => setGlobalFilter?.('')}
         className="w-64"
-      />
+      /> */}
 
-      <DataGridColumnVisibility
+      {/* <DataGridColumnVisibility
         table={table}
         trigger={
           <Button variant="outline" size="sm">
@@ -34,25 +27,7 @@ export function EndpointsDataGridControls() {
             Columns
           </Button>
         }
-      />
-
-      {hasSorting && (
-        <Button variant="outline" size="sm" onClick={clearSorting}>
-          <XIcon className="h-4 w-4" />
-          Clear sorting
-        </Button>
-      )}
-
-      <FeatureFlag flag="dev">
-        <Label className="flex items-center gap-2 text-xs">
-          Cell Borders
-          <Checkbox
-            checked={cellBorder}
-            onCheckedChange={(checked) => setCellBorder?.(checked === true)}
-            title="Toggle cell borders"
-          />
-        </Label>
-      </FeatureFlag>
+      /> */}
     </DataGridFrameToolbar>
   )
 }
