@@ -43,5 +43,13 @@ export function DataGridCardContent({
 }
 
 export function DataGridCardFooter({ className, ...props }: React.ComponentProps<'div'>) {
-  return <div className={cn('h-9 shrink-0 px-3 text-sm', className)} {...props} />
+  return (
+    <div
+      className={cn(
+        'flex h-8 shrink-0 items-center justify-center px-3 font-mono text-xs text-muted-foreground',
+        className,
+      )}
+      {...props}
+    />
+  )
 }

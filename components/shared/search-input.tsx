@@ -11,11 +11,13 @@ export function SearchInput({
   initialValue = '',
   onValueChange,
   label,
+  placeholder,
   hideLabel = false,
 }: {
   initialValue?: string
   onValueChange?: (value: string) => void
   label?: string
+  placeholder?: string
   hideLabel?: boolean
 }) {
   const id = useId()
@@ -34,15 +36,15 @@ export function SearchInput({
 
   return (
     <div className="grid gap-2">
-      <Label htmlFor={id} className={hideLabel ? 'sr-only' : undefined}>
-        {label ?? 'Text search'}
+      <Label htmlFor={id} className={!label || hideLabel ? 'sr-only' : undefined}>
+        {label ?? 'Search'}
       </Label>
       <div className="relative">
         <Input
           id={id}
           ref={inputRef}
-          className="peer ps-9 pe-9 [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none [&::-webkit-search-results-button]:appearance-none [&::-webkit-search-results-decoration]:appearance-none"
-          placeholder="Search..."
+          className="peer w-64 px-9 [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none [&::-webkit-search-results-button]:appearance-none [&::-webkit-search-results-decoration]:appearance-none"
+          placeholder={placeholder ?? 'Search...'}
           type="search"
           value={searchValue}
           onChange={(e) => {
