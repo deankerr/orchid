@@ -28,6 +28,9 @@ export type SpriteIconName =
   | 'square-stop'
   | 'wrench'
   | 'file-chart-column-increasing'
+  | 'file-spreadsheet'
+  | 'file-text'
+  | 'file-up'
   | 'image-down'
   | 'image-up'
   | 'bug'
@@ -36,5 +39,5 @@ export type SpriteIconName =
  * Get the sprite URL for an icon (for use in <use> elements)
  */
 export function getSpriteUrl(iconName: SpriteIconName): string {
-  return `/sprites/lucide-sprite.03caac8d.svg#lucide-${iconName}`
+  return `/sprites/lucide-sprite.16cb546f.svg#lucide-${iconName}`
 }

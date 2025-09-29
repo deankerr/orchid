@@ -17,7 +17,7 @@ export function PricingBadgeSet({ endpoint }: PricingBadgeProps) {
     pricingItems.push(
       <AttributeBadge
         key="internal_reasoning"
-        icon="brain-cog"
+        sprite="brain-cog"
         name="internal_reasoning"
         details={formatPrice({
           priceKey: 'internal_reasoning',
@@ -33,7 +33,7 @@ export function PricingBadgeSet({ endpoint }: PricingBadgeProps) {
     pricingItems.push(
       <AttributeBadge
         key="image_input"
-        icon="image"
+        sprite="image"
         name="image_input"
         details={formatPrice({
           priceKey: 'image_input',
@@ -49,7 +49,7 @@ export function PricingBadgeSet({ endpoint }: PricingBadgeProps) {
     pricingItems.push(
       <AttributeBadge
         key="image_output"
-        icon="image"
+        sprite="image"
         name="image_output"
         details={formatPrice({
           priceKey: 'image_output',
@@ -87,7 +87,7 @@ export function PricingBadgeSet({ endpoint }: PricingBadgeProps) {
     pricingItems.push(
       <AttributeBadge
         key="audio"
-        icon="audio-lines"
+        sprite="audio-lines"
         name="audio"
         details={audioDetails.join('\n')}
         color="green"
@@ -120,7 +120,7 @@ export function PricingBadgeSet({ endpoint }: PricingBadgeProps) {
     pricingItems.push(
       <AttributeBadge
         key="cache"
-        icon="database"
+        sprite="database"
         name="cache"
         details={cacheDetails.join('\n')}
         color="cyan"
@@ -133,7 +133,7 @@ export function PricingBadgeSet({ endpoint }: PricingBadgeProps) {
     pricingItems.push(
       <AttributeBadge
         key="request"
-        icon="flag"
+        sprite="flag"
         name="request"
         details={formatPrice({
           priceKey: 'request',

@@ -23,6 +23,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { calculatePercentageChange, cn, formatDateTime, formatRelativeTime } from '@/lib/utils'
 
+import { fuzzyFilter } from '../data-grid/data-grid-fuzzy'
 import { ModelCard, ProviderCard } from '../shared/entity-card'
 import {
   AddIndicator,
@@ -182,8 +183,11 @@ export function ChangesDataGrid({
   )
 
   const table = useReactTable({
-    data: changes,
     columns,
+    data: changes,
+    filterFns: {
+      fuzzy: fuzzyFilter, //define as a filter function that can be used in column definitions
+    },
     getCoreRowModel: getCoreRowModel(),
   })
 

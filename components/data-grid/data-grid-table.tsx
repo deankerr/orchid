@@ -265,7 +265,11 @@ function DataGridTableBodyRow<TData>({
   return (
     <tr
       ref={dndRef}
-      style={{ ...(dndStyle ? dndStyle : null) }}
+      style={{
+        ...(dndStyle ? dndStyle : null),
+        contentVisibility: 'auto',
+        containIntrinsicHeight: '58.5px',
+      }}
       data-state={table.options.enableRowSelection && row.getIsSelected() ? 'selected' : undefined}
       onClick={() => props.onRowClick && props.onRowClick(row.original)}
       className={cn(

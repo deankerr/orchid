@@ -13,15 +13,12 @@ const TYPES_FILE = 'lib/sprite-icons.ts'
 
 // Icons used in endpoints data grid system
 const REQUIRED_ICONS = [
-  // Core data grid icons
   'audio-lines',
   'brain-cog',
   'database',
   'flag',
   'globe',
   'image',
-
-  // Attribute system icons
   'alarm-clock',
   'braces',
   'cake-slice',
@@ -42,8 +39,10 @@ const REQUIRED_ICONS = [
   'square-stop',
   'wrench',
 
-  // Modality badge icons
   'file-chart-column-increasing',
+  'file-spreadsheet',
+  'file-text',
+  'file-up',
   'image-down',
   'image-up',
 

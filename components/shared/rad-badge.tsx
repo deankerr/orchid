@@ -6,7 +6,7 @@ import { Slot as SlotPrimitive } from 'radix-ui'
 import { cn } from '@/lib/utils'
 
 const radBadgeVariants = cva(
-  'inline-flex items-center justify-center rounded-sm aria-disabled:opacity-20 aria-disabled:saturate-[20%] w-fit whitespace-nowrap shrink-0 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden',
+  'inline-flex items-center justify-center rounded-sm aria-disabled:opacity-20 aria-disabled:saturate-[20%] w-fit  shrink-0 [&>svg]:pointer-events-none  overflow-hidden',
   {
     variants: {
       variant: {
@@ -14,10 +14,6 @@ const radBadgeVariants = cva(
         soft: '',
         surface: 'border',
         outline: 'border',
-      },
-      size: {
-        default: 'px-2 py-0.5 text-sm font-medium [&>svg]:size-3 gap-1',
-        icon: 'size-7 px-1 py-1 [&>svg]:size-full',
       },
       color: {
         red: '',
@@ -511,16 +507,25 @@ const radBadgeVariants = cva(
     defaultVariants: {
       variant: 'soft',
       color: 'neutral',
-      size: 'default',
     },
   },
 )
+
+export function RadIconBadge({
+  variant,
+  color,
+  ...props
+}: Omit<React.ComponentProps<'span'>, 'color' | 'className'> &
+  Omit<VariantProps<typeof radBadgeVariants>, 'size'>) {
+  return (
+    <span className={cn('size-7 px-1 py-1', radBadgeVariants({ variant, color }))} {...props} />
+  )
+}
 
 function RadBadge({
   className,
   variant,
   color,
-  size,
   asChild = false,
   ...props
 }: Omit<React.ComponentProps<'span'>, 'color'> &
@@ -532,7 +537,7 @@ function RadBadge({
   return (
     <Comp
       data-slot="rad-badge"
-      className={cn(radBadgeVariants({ variant, color, size }), className)}
+      className={cn(radBadgeVariants({ variant, color }), className)}
       {...props}
     />
   )
