@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { getEndpointAttributeData } from '@/lib/attributes'
 import { formatPrice } from '@/lib/formatters'
 
+import { fuzzySort } from '../data-grid/data-grid-fuzzy'
 import { AttributeBadge, AttributeBadgeName, AttributeBadgeSet } from '../shared/attribute-badge'
 import { EntityCard } from '../shared/entity-card'
 import { ModalityBadgeSet } from '../shared/modality-badge'
@@ -18,7 +19,7 @@ export type EndpointRow = Doc<'or_views_endpoints'>
 export const columns: ColumnDef<EndpointRow>[] = [
   {
     id: 'model',
-    accessorFn: (row) => row.model.name,
+    accessorFn: (row) => `${row.model.name} ${row.model.slug}`,
     header: ({ column }) => <DataGridColumnHeader column={column} title="MODEL" />,
     cell: ({ row }) => {
       const endpoint = row.original
@@ -33,6 +34,8 @@ export const columns: ColumnDef<EndpointRow>[] = [
     },
     size: 310,
     enableSorting: true,
+    sortingFn: fuzzySort,
+    enableHiding: false,
     meta: {
       skeleton: <Skeleton className="h-8 w-full" />,
     },
@@ -74,6 +77,8 @@ export const columns: ColumnDef<EndpointRow>[] = [
     },
     size: 240,
     enableSorting: true,
+    sortingFn: fuzzySort,
+    enableHiding: false,
     meta: {
       skeleton: <Skeleton className="h-8 w-full" />,
     },
@@ -87,7 +92,6 @@ export const columns: ColumnDef<EndpointRow>[] = [
       return <ModalityBadgeSet endpoint={endpoint} />
     },
     size: 160,
-    enableHiding: true,
     meta: {
       headerClassName: 'text-center',
       skeleton: <Skeleton className="h-6 w-full" />,
@@ -118,7 +122,6 @@ export const columns: ColumnDef<EndpointRow>[] = [
       )
     },
     size: 255,
-    enableHiding: true,
     meta: {
       headerClassName: 'text-center',
       skeleton: <Skeleton className="h-6 w-full" />,
@@ -134,7 +137,6 @@ export const columns: ColumnDef<EndpointRow>[] = [
     cell: ({ getValue }) => getValue<number>().toLocaleString(),
     size: 120,
     enableSorting: true,
-    enableHiding: true,
     meta: {
       skeleton: <Skeleton className="h-5 w-full" />,
       cellClassName: 'text-right',
@@ -151,7 +153,6 @@ export const columns: ColumnDef<EndpointRow>[] = [
     size: 120,
     enableSorting: true,
     sortUndefined: -1,
-    enableHiding: true,
     meta: {
       skeleton: <Skeleton className="h-5 w-full" />,
       cellClassName: 'text-right',
@@ -172,7 +173,6 @@ export const columns: ColumnDef<EndpointRow>[] = [
       )
     },
     size: 96,
-    enableHiding: true,
     enableSorting: true,
     meta: {
       skeleton: <Skeleton className="h-6 w-full" />,
@@ -200,7 +200,6 @@ export const columns: ColumnDef<EndpointRow>[] = [
     size: 118,
     enableSorting: true,
     sortUndefined: -1,
-    enableHiding: true,
     meta: {
       skeleton: <Skeleton className="h-5 w-full" />,
       cellClassName: 'text-right',
@@ -226,7 +225,6 @@ export const columns: ColumnDef<EndpointRow>[] = [
     size: 118,
     enableSorting: true,
     sortUndefined: -1,
-    enableHiding: true,
     meta: {
       skeleton: <Skeleton className="h-5 w-full" />,
       cellClassName: 'text-right',
@@ -243,7 +241,6 @@ export const columns: ColumnDef<EndpointRow>[] = [
       return pricingBadges
     },
     size: 130,
-    enableHiding: true,
     meta: {
       headerClassName: 'text-center',
       skeleton: <Skeleton className="h-8 w-full" />,
@@ -270,7 +267,6 @@ export const columns: ColumnDef<EndpointRow>[] = [
       )
     },
     size: 130,
-    enableHiding: true,
     meta: {
       headerClassName: 'text-center',
       skeleton: <Skeleton className="h-8 w-full" />,
@@ -292,7 +288,6 @@ export const columns: ColumnDef<EndpointRow>[] = [
       )
     },
     size: 130,
-    enableHiding: true,
     meta: {
       headerClassName: 'text-center',
       skeleton: <Skeleton className="h-8 w-full" />,

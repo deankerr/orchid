@@ -16,6 +16,7 @@ import { useCachedQuery } from '@/hooks/use-cached-query'
 import { PageDescription, PageHeader, PageTitle } from '../app-layout/pages'
 import { DataGrid } from '../data-grid/data-grid'
 import { DataGridCard, DataGridCardContent, DataGridCardFooter } from '../data-grid/data-grid-card'
+import { fuzzyFilter } from '../data-grid/data-grid-fuzzy'
 import { DataGridTable } from '../data-grid/data-grid-table'
 import { columns } from './columns'
 import { EndpointsDataGridControls } from './controls'
@@ -26,8 +27,12 @@ export function EndpointsDataGridPage() {
   const endpointsList = useCachedQuery(api.db.or.views.endpoints.all, { limit }, 'endpoints-all')
 
   const table = useReactTable({
-    data: endpointsList ?? [],
     columns,
+    data: endpointsList ?? [],
+    filterFns: {
+      fuzzy: fuzzyFilter, //define as a filter function that can be used in column definitions
+    },
+    globalFilterFn: 'fuzzy',
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -51,6 +56,7 @@ export function EndpointsDataGridPage() {
         tableLayout={{
           headerSticky: true,
           width: 'fixed',
+          cellBorder: false,
         }}
         tableClassNames={{
           headerRow: 'uppercase font-mono text-[12px]',
@@ -73,14 +79,20 @@ export function EndpointsDataGridPage() {
 }
 
 function Footer({ endpointsList }: { endpointsList?: Doc<'or_views_endpoints'>[] }) {
+  if (!endpointsList) {
+    return <DataGridCardFooter className="content-center text-center"></DataGridCardFooter>
+  }
+
+  const availableEndpoints = endpointsList.filter((endp) => !endp.unavailable_at)
+
+  const totalModelsCount = new Set(endpointsList.map((endp) => endp.model.slug)).size
+  const availableModelsCount = new Set(availableEndpoints.map((endp) => endp.model.slug)).size
   return (
-    <DataGridCardFooter className="content-center text-center">
+    <DataGridCardFooter className="content-center text-center font-mono text-xs text-muted-foreground">
       {endpointsList ? (
         <div className="">
-          Models: {new Set(endpointsList.map((endp) => endp.model.slug)).size} | Endpoints:{' '}
-          {endpointsList.filter((endp) => !endp.unavailable_at).length} available,{' '}
-          {endpointsList.filter((endp) => endp.unavailable_at).length} unavailable,{' '}
-          {endpointsList.length} total
+          Models: {availableModelsCount} available ({totalModelsCount} total) ⋅ Endpoints:{' '}
+          {availableEndpoints.length} available ({endpointsList.length} total)
         </div>
       ) : (
         <div>Loading</div>

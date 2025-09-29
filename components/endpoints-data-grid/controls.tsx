@@ -1,33 +1,32 @@
-import { Settings2, XIcon } from 'lucide-react'
+import { Settings2 } from 'lucide-react'
 
+import { useDataGrid } from '../data-grid/data-grid'
 import { DataGridColumnVisibility } from '../data-grid/data-grid-column-visibility'
-import { FeatureFlag } from '../dev-utils/feature-flag'
 import { DataGridFrameToolbar } from '../shared/data-grid-frame'
+import { SearchInput } from '../shared/search-input'
 import { Button } from '../ui/button'
-import { Checkbox } from '../ui/checkbox'
-import { Label } from '../ui/label'
-import { SearchInput } from '../ui/search-input'
+
+function ColumnsButton(props: React.ComponentProps<typeof Button>) {
+  return (
+    <Button variant="outline" size="sm" {...props}>
+      <Settings2 />
+      Columns
+    </Button>
+  )
+}
 
 export function EndpointsDataGridControls() {
+  const { table } = useDataGrid()
+
   return (
     <DataGridFrameToolbar>
-      {/* <SearchInput
-        placeholder="Search models and providers..."
-        value={globalFilter}
-        onChange={(e) => setGlobalFilter?.(e.target.value)}
-        onClear={() => setGlobalFilter?.('')}
-        className="w-64"
-      /> */}
+      <SearchInput
+        onValueChange={table.setGlobalFilter}
+        label="Search models, providers, ids, etc."
+        hideLabel
+      />
 
-      {/* <DataGridColumnVisibility
-        table={table}
-        trigger={
-          <Button variant="outline" size="sm">
-            <Settings2 className="h-4 w-4" />
-            Columns
-          </Button>
-        }
-      /> */}
+      <DataGridColumnVisibility table={table} trigger={<ColumnsButton />} />
     </DataGridFrameToolbar>
   )
 }
