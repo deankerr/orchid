@@ -129,6 +129,52 @@ export const columns: ColumnDef<EndpointRow>[] = [
   },
 
   {
+    id: 'throughput',
+    accessorFn: (row) => row.stats?.p50_throughput,
+    header: ({ column }) => (
+      <DataGridColumnHeader column={column} title="TOKENS PER SEC" className="justify-center" />
+    ),
+    cell: ({ getValue }) => {
+      const throughput = getValue<number | undefined>()
+      if (throughput) {
+        return `${throughput.toLocaleString('en-US', {
+          maximumFractionDigits: 0,
+        })}`
+      }
+    },
+    size: 100,
+    enableSorting: true,
+    sortUndefined: -1,
+    meta: {
+      skeleton: <Skeleton className="h-5 w-full" />,
+      cellClassName: 'text-right',
+    },
+  },
+
+  {
+    id: 'latency',
+    accessorFn: (row) => row.stats?.p50_latency,
+    header: ({ column }) => (
+      <DataGridColumnHeader column={column} title="LATENCY MS" className="justify-center" />
+    ),
+    cell: ({ getValue }) => {
+      const latency = getValue<number | undefined>()
+      if (latency) {
+        return `${latency.toLocaleString('en-US', {
+          maximumFractionDigits: 0,
+        })}`
+      }
+    },
+    size: 100,
+    enableSorting: true,
+    sortUndefined: -1,
+    meta: {
+      skeleton: <Skeleton className="h-5 w-full" />,
+      cellClassName: 'text-right',
+    },
+  },
+
+  {
     id: 'contextLength',
     accessorFn: (row) => row.context_length,
     header: ({ column }) => (

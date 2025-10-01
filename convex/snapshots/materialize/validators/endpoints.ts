@@ -77,6 +77,13 @@ export const EndpointTransformSchema = z
     is_disabled: z.boolean(),
 
     status: z.number().optional(),
+
+    stats: z
+      .object({
+        p50_throughput: z.number(),
+        p50_latency: z.number(),
+      })
+      .optional(),
   })
   .transform(R.pickBy(R.isNonNullish))
   .transform((raw) => {
@@ -188,6 +195,9 @@ export const EndpointTransformSchema = z
       deranked: raw.is_deranked,
       disabled: raw.is_disabled,
       status: raw.status || 0,
+
+      // * stats
+      stats: raw.stats,
     }
 
     return { model, endpoint, provider }

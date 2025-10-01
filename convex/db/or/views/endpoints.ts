@@ -110,6 +110,13 @@ export const table = defineTable({
   disabled: v.boolean(),
   status: v.number(),
 
+  stats: v.optional(
+    v.object({
+      p50_throughput: v.number(),
+      p50_latency: v.number(),
+    }),
+  ),
+
   // * orchid
   unavailable_at: v.optional(v.number()),
   updated_at: v.number(),

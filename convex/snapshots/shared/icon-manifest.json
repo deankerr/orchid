@@ -17,6 +17,7 @@
     "antgroup",
     "anthropic",
     "anyscale",
+    "arcee",
     "assemblyai",
     "automatic",
     "aws",
@@ -267,6 +268,7 @@
     "antgroup",
     "anthropic",
     "anyscale",
+    "arcee",
     "assemblyai",
     "automatic",
     "aws",
@@ -499,7 +501,7 @@
     "zeroone",
     "zhipu"
   ],
-  "count": 248,
-  "resizedCount": 248,
-  "generated": "2025-09-17T03:32:55.779Z"
+  "count": 249,
+  "resizedCount": 249,
+  "generated": "2025-10-01T18:26:04.380Z"
 }
