@@ -21,6 +21,7 @@ const parseAsAttributeArray = parseAsArrayOf(parseAsString).withDefault([])
 export function useEndpointFilters() {
   const [filters, setFilters] = useQueryStates(
     {
+      q: parseAsString.withDefault(''),
       has: parseAsAttributeArray,
       not: parseAsAttributeArray,
     },
@@ -82,9 +83,15 @@ export function useEndpointFilters() {
     }
   }
 
+  // Helper to update search with debouncing
+  const setGlobalFilter = (value: string) => {
+    setFilters({ q: value })
+  }
+
   // Helper to clear all filters
   const clearAllFilters = () => {
     setFilters({
+      q: '',
       has: [],
       not: [],
     })
@@ -94,6 +101,8 @@ export function useEndpointFilters() {
   const activeFilterCount = filters.has.length + filters.not.length
 
   return {
+    globalFilter: filters.q,
+    setGlobalFilter,
     modalityFilters,
     attributeFilters,
     setModalityFilter,

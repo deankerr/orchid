@@ -61,7 +61,7 @@ function useEndpointsListQuery() {
 
 function EndpointsDataGrid({ children }: { children: React.ReactNode }) {
   const endpointsList = useEndpointsListQuery()
-  const { attributeFilters } = useEndpointFilters()
+  const { globalFilter, attributeFilters } = useEndpointFilters()
 
   const filteredEndpoints = useMemo(() => {
     if (!endpointsList) return []
@@ -106,6 +106,9 @@ function EndpointsDataGrid({ children }: { children: React.ReactNode }) {
       fuzzy: fuzzyFilter,
     },
     globalFilterFn: 'fuzzy',
+    state: {
+      globalFilter,
+    },
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),

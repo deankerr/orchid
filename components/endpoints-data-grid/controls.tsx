@@ -5,6 +5,7 @@ import { DataGridColumnVisibility } from '../data-grid/data-grid-column-visibili
 import { SearchInput } from '../shared/search-input'
 import { Button } from '../ui/button'
 import { FilterControls } from './filter-controls'
+import { useEndpointFilters } from './use-endpoint-filters'
 
 function ColumnsButton(props: React.ComponentProps<typeof Button>) {
   return (
@@ -15,17 +16,26 @@ function ColumnsButton(props: React.ComponentProps<typeof Button>) {
   )
 }
 
+function EndpointsSearchInput() {
+  const { globalFilter, setGlobalFilter } = useEndpointFilters()
+
+  return (
+    <SearchInput
+      value={globalFilter}
+      onValueChange={setGlobalFilter}
+      label="Search models/providers..."
+      placeholder="Search models/providers..."
+      hideLabel
+    />
+  )
+}
+
 export function Controls() {
   const { table } = useDataGrid()
 
   return (
     <>
-      <SearchInput
-        onValueChange={table.setGlobalFilter}
-        label="Search models/providers..."
-        placeholder="Search models/providers..."
-        hideLabel
-      />
+      <EndpointsSearchInput />
 
       <FilterControls />
 
