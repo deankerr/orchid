@@ -31,11 +31,11 @@ export const snapshotCron = internalAction({
       uptimes: on(cfg.uptimes_every_hours),
       modelAuthors: on(cfg.authors_every_hours),
       analytics: on(cfg.analytics_every_hours ?? 0),
+      onComplete: {
+        materialize: true,
+        changes: true,
+      },
     })
-
-    // Actions have a 10m max runtime; schedule materialize for after that window
-    await ctx.scheduler.runAfter(delayMs + 10 * 60_000, internal.snapshots.materialize.main.run, {})
-    await ctx.scheduler.runAfter(delayMs + 10 * 60_000, internal.snapshots.changes.main.run, {})
 
     console.log(`[cron:snapshot] scheduled crawl in ${Math.round(delayMs / 60000)}m`)
   },

@@ -18,6 +18,10 @@ const init = internalMutation({
       uptimes: false,
       modelAuthors: false,
       analytics: false,
+      onComplete: {
+        materialize: true,
+        changes: false,
+      },
     })
 
     await ctx.scheduler.runAfter(5 * 60_000, internal.snapshots.materialize.main.run, {})

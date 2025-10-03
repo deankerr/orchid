@@ -60,7 +60,7 @@ type DataRecordItemArray = z.infer<typeof DataRecordArray>
 
 export type CrawlArchiveBundle = {
   crawl_id: string
-  args: Record<string, boolean>
+  args: Record<string, boolean | Record<string, boolean>>
   data: {
     models: Array<{
       model: ModelsArray[number]
@@ -86,7 +86,7 @@ const DataRecordSchema = z.record(z.string(), z.unknown())
 
 const CrawlArchiveBundleSchema = z.strictObject({
   crawl_id: z.string(),
-  args: z.record(z.string(), z.boolean()),
+  args: z.record(z.string(), z.union([z.boolean(), z.record(z.string(), z.boolean())])),
   data: z.strictObject({
     models: z.array(
       z.strictObject({
@@ -108,6 +108,10 @@ export const run = internalAction({
     uptimes: v.boolean(),
     modelAuthors: v.boolean(),
     analytics: v.boolean(),
+    onComplete: v.object({
+      materialize: v.boolean(),
+      changes: v.boolean(),
+    }),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
@@ -175,6 +179,12 @@ export const run = internalAction({
     try {
       await storeCrawlBundle(ctx, bundle)
       console.log(`[crawl] complete`, { crawl_id, args })
+
+      if (args.onComplete.materialize)
+        await ctx.scheduler.runAfter(0, internal.snapshots.materialize.main.run, {})
+
+      if (args.onComplete.changes)
+        await ctx.scheduler.runAfter(0, internal.snapshots.changes.main.run, {})
     } catch (err) {
       console.error('[crawl] failed', { crawl_id, args, error: getErrorMessage(err) })
     }
