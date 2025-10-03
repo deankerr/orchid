@@ -4,6 +4,7 @@ import { useDataGrid } from '../data-grid/data-grid'
 import { DataGridColumnVisibility } from '../data-grid/data-grid-column-visibility'
 import { SearchInput } from '../shared/search-input'
 import { Button } from '../ui/button'
+import { FilterControls } from './filter-controls'
 
 function ColumnsButton(props: React.ComponentProps<typeof Button>) {
   return (
@@ -25,6 +26,8 @@ export function Controls() {
         placeholder="Search models/providers..."
         hideLabel
       />
+
+      <FilterControls />
 
       <DataGridColumnVisibility table={table} trigger={<ColumnsButton />} />
     </>

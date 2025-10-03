@@ -1,19 +1,21 @@
 'use client'
 
+import { useMemo } from 'react'
+
 import {
   getCoreRowModel,
   getFilteredRowModel,
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { parseAsInteger, useQueryState } from 'nuqs'
 
 import { api } from '@/convex/_generated/api'
 
 import { useCachedQuery } from '@/hooks/use-cached-query'
+import { attributes } from '@/lib/attributes'
 
 import { PageDescription, PageHeader, PageTitle } from '../app-layout/pages'
-import { DataGrid } from '../data-grid/data-grid'
+import { DataGrid, useDataGrid } from '../data-grid/data-grid'
 import {
   DataGridCard,
   DataGridCardContent,
@@ -24,6 +26,7 @@ import { fuzzyFilter } from '../data-grid/data-grid-fuzzy'
 import { DataGridTableVirtual } from '../data-grid/data-grid-table'
 import { columns } from './columns'
 import { Controls } from './controls'
+import { useEndpointFilters } from './use-endpoint-filters'
 
 export function EndpointsDataGridPage() {
   return (
@@ -53,16 +56,52 @@ export function EndpointsDataGridPage() {
 }
 
 function useEndpointsListQuery() {
-  const [limit] = useQueryState('limit', parseAsInteger.withDefault(99999))
-  return useCachedQuery(api.db.or.views.endpoints.all, { limit }, 'endpoints-all')
+  return useCachedQuery(api.db.or.views.endpoints.all, {}, 'endpoints-all')
 }
 
 function EndpointsDataGrid({ children }: { children: React.ReactNode }) {
   const endpointsList = useEndpointsListQuery()
+  const { attributeFilters } = useEndpointFilters()
+
+  const filteredEndpoints = useMemo(() => {
+    if (!endpointsList) return []
+
+    return endpointsList.filter((endpoint) => {
+      for (const [filterName, mode] of Object.entries(attributeFilters)) {
+        let hasAttribute = false
+
+        // Handle modality filters
+        if (filterName === 'image_input') {
+          hasAttribute = endpoint.model.input_modalities.includes('image')
+        } else if (filterName === 'file_input') {
+          hasAttribute = endpoint.model.input_modalities.includes('file')
+        } else if (filterName === 'audio_input') {
+          hasAttribute = endpoint.model.input_modalities.includes('audio')
+        } else if (filterName === 'image_output') {
+          hasAttribute = endpoint.model.output_modalities.includes('image')
+        } else {
+          // Handle regular attribute filters
+          const attr = attributes[filterName as keyof typeof attributes]
+          if (attr) {
+            hasAttribute = attr.has(endpoint)
+          }
+        }
+
+        if (mode === 'include' && !hasAttribute) {
+          return false
+        }
+        if (mode === 'exclude' && hasAttribute) {
+          return false
+        }
+      }
+
+      return true
+    })
+  }, [endpointsList, attributeFilters])
 
   const table = useReactTable({
     columns,
-    data: endpointsList ?? [],
+    data: filteredEndpoints,
     filterFns: {
       fuzzy: fuzzyFilter,
     },
@@ -102,12 +141,26 @@ function EndpointsDataGrid({ children }: { children: React.ReactNode }) {
 }
 
 function Footer() {
+  const { table } = useDataGrid()
   const endpointsList = useEndpointsListQuery()
+
   if (!endpointsList) return null
 
-  const availableEndpoints = endpointsList.filter((endp) => !endp.unavailable_at)
-  const totalModelsCount = new Set(endpointsList.map((endp) => endp.model.slug)).size
-  const availableModelsCount = new Set(availableEndpoints.map((endp) => endp.model.slug)).size
+  const rows = table.getFilteredRowModel().rows
+  const filteredEndpoints = rows.map((row) => row.original)
 
-  return `Models: ${availableModelsCount} available (${totalModelsCount} total) ⋅ Endpoints: ${availableEndpoints.length} available (${endpointsList.length} total)`
+  const totalEndpoints = endpointsList
+  const totalAvailableEndpoints = totalEndpoints.filter((endp) => !endp.unavailable_at)
+  const totalAvailableModelsCount = new Set(totalAvailableEndpoints.map((endp) => endp.model.slug))
+    .size
+
+  const filteredAvailableEndpoints = filteredEndpoints.filter((endp) => !endp.unavailable_at)
+  const filteredAvailableModelsCount = new Set(
+    filteredAvailableEndpoints.map((endp) => endp.model.slug),
+  ).size
+
+  const isFiltered = filteredEndpoints.length !== totalEndpoints.length
+  const label = isFiltered ? 'filtered' : 'available'
+
+  return `Models: ${filteredAvailableModelsCount} ${label} (${totalAvailableModelsCount} total) ⋅ Endpoints: ${filteredAvailableEndpoints.length} ${label} (${totalAvailableEndpoints.length} total)`
 }
