@@ -1,10 +1,12 @@
 import * as React from 'react'
-import { CSSProperties, Fragment, ReactNode } from 'react'
+import { CSSProperties, Fragment, ReactNode, useRef } from 'react'
 
 import { Cell, Column, flexRender, Header, HeaderGroup, Row } from '@tanstack/react-table'
+import { useVirtualizer } from '@tanstack/react-virtual'
 import { cva } from 'class-variance-authority'
 
 import { Checkbox } from '@/components/ui/checkbox'
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
 
 import { useDataGrid } from './data-grid'
@@ -254,11 +256,13 @@ function DataGridTableBodyRow<TData>({
   row,
   dndRef,
   dndStyle,
+  contentVisibility,
 }: {
   children: ReactNode
   row: Row<TData>
   dndRef?: React.Ref<HTMLTableRowElement>
   dndStyle?: CSSProperties
+  contentVisibility?: boolean
 }) {
   const { props, table } = useDataGrid()
 
@@ -267,8 +271,12 @@ function DataGridTableBodyRow<TData>({
       ref={dndRef}
       style={{
         ...(dndStyle ? dndStyle : null),
-        contentVisibility: 'auto',
-        containIntrinsicHeight: '58.5px',
+        ...(contentVisibility
+          ? {
+              contentVisibility: 'auto',
+              containIntrinsicHeight: props.tableLayout?.rowHeight ?? 58.5,
+            }
+          : null),
       }}
       data-state={table.options.enableRowSelection && row.getIsSelected() ? 'selected' : undefined}
       onClick={() => props.onRowClick && props.onRowClick(row.original)}
@@ -440,39 +448,154 @@ function DataGridTable<TData>() {
   const pagination = table.getState().pagination
 
   return (
-    <DataGridTableBase>
-      <DataGridTableHead>
-        {table.getHeaderGroups().map((headerGroup: HeaderGroup<TData>, index) => {
-          return (
-            <DataGridTableHeadRow headerGroup={headerGroup} key={index}>
-              {headerGroup.headers.map((header, index) => {
-                const { column } = header
+    <ScrollArea className="flex-1" viewportClassName="flex" maskHeight={0}>
+      <DataGridTableBase>
+        <DataGridTableHead>
+          {table.getHeaderGroups().map((headerGroup: HeaderGroup<TData>, index) => {
+            return (
+              <DataGridTableHeadRow headerGroup={headerGroup} key={index}>
+                {headerGroup.headers.map((header, index) => {
+                  const { column } = header
 
-                return (
-                  <DataGridTableHeadRowCell header={header} key={index}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
-                    {props.tableLayout?.columnsResizable && column.getCanResize() && (
-                      <DataGridTableHeadRowCellResize header={header} />
-                    )}
-                  </DataGridTableHeadRowCell>
-                )
-              })}
-            </DataGridTableHeadRow>
-          )
-        })}
-      </DataGridTableHead>
+                  return (
+                    <DataGridTableHeadRowCell header={header} key={index}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(header.column.columnDef.header, header.getContext())}
+                      {props.tableLayout?.columnsResizable && column.getCanResize() && (
+                        <DataGridTableHeadRowCellResize header={header} />
+                      )}
+                    </DataGridTableHeadRowCell>
+                  )
+                })}
+              </DataGridTableHeadRow>
+            )
+          })}
+        </DataGridTableHead>
 
-      {(props.tableLayout?.stripped || !props.tableLayout?.rowBorder) && <DataGridTableRowSpacer />}
+        {(props.tableLayout?.stripped || !props.tableLayout?.rowBorder) && (
+          <DataGridTableRowSpacer />
+        )}
 
-      <DataGridTableBody>
-        {props.loadingMode === 'skeleton' &&
-        isLoading &&
-        (props.skeletonRows || pagination?.pageSize) ? (
-          Array.from({ length: props.skeletonRows || pagination?.pageSize || 10 }).map(
-            (_, rowIndex) => (
-              <DataGridTableBodyRowSkeleton key={rowIndex}>
+        <DataGridTableBody>
+          {props.loadingMode === 'skeleton' &&
+          isLoading &&
+          (props.skeletonRows || pagination?.pageSize) ? (
+            Array.from({ length: props.skeletonRows || pagination?.pageSize || 10 }).map(
+              (_, rowIndex) => (
+                <DataGridTableBodyRowSkeleton key={rowIndex}>
+                  {table.getVisibleFlatColumns().map((column, colIndex) => {
+                    return (
+                      <DataGridTableBodyRowSkeletonCell column={column} key={colIndex}>
+                        {column.columnDef.meta?.skeleton}
+                      </DataGridTableBodyRowSkeletonCell>
+                    )
+                  })}
+                </DataGridTableBodyRowSkeleton>
+              ),
+            )
+          ) : table.getRowModel().rows.length ? (
+            table.getRowModel().rows.map((row: Row<TData>, index) => {
+              return (
+                <Fragment key={row.id}>
+                  <DataGridTableBodyRow row={row} key={index} contentVisibility>
+                    {row.getVisibleCells().map((cell: Cell<TData, unknown>, colIndex) => {
+                      return (
+                        <DataGridTableBodyRowCell cell={cell} key={colIndex}>
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </DataGridTableBodyRowCell>
+                      )
+                    })}
+                  </DataGridTableBodyRow>
+                  {row.getIsExpanded() && <DataGridTableBodyRowExpanded row={row} />}
+                </Fragment>
+              )
+            })
+          ) : (
+            <DataGridTableEmpty />
+          )}
+        </DataGridTableBody>
+      </DataGridTableBase>
+    </ScrollArea>
+  )
+}
+
+function DataGridTableVirtual<TData>() {
+  const { table, isLoading, props } = useDataGrid()
+  const scrollElementRef = useRef<HTMLDivElement>(null)
+  const pagination = table.getState().pagination
+  const rowHeight = props.tableLayout?.rowHeight ?? 58.5
+  const overscan = props.tableLayout?.overscan ?? 3
+
+  const rowCount =
+    isLoading && props.loadingMode === 'skeleton'
+      ? props.skeletonRows || pagination?.pageSize || 10
+      : table.getRowModel().rows.length
+
+  const virtualizer = useVirtualizer({
+    count: rowCount,
+    getScrollElement: () => scrollElementRef.current,
+    estimateSize: () => rowHeight,
+    overscan,
+    getItemKey: (index) => {
+      if (isLoading && props.loadingMode === 'skeleton') {
+        return `skeleton-${index}`
+      }
+      return table.getRowModel().rows[index]?.id ?? index
+    },
+  })
+
+  const virtualRows = virtualizer.getVirtualItems()
+  const totalSize = virtualizer.getTotalSize()
+  const paddingTop = virtualRows.length > 0 ? virtualRows[0].start : 0
+  const paddingBottom =
+    virtualRows.length > 0 ? totalSize - virtualRows[virtualRows.length - 1].end : 0
+
+  return (
+    <ScrollArea
+      viewportRef={scrollElementRef}
+      className="flex-1"
+      viewportClassName="flex"
+      maskHeight={0}
+    >
+      <DataGridTableBase>
+        <DataGridTableHead>
+          {table.getHeaderGroups().map((headerGroup: HeaderGroup<TData>, index) => {
+            return (
+              <DataGridTableHeadRow headerGroup={headerGroup} key={index}>
+                {headerGroup.headers.map((header, index) => {
+                  const { column } = header
+
+                  return (
+                    <DataGridTableHeadRowCell header={header} key={index}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(header.column.columnDef.header, header.getContext())}
+                      {props.tableLayout?.columnsResizable && column.getCanResize() && (
+                        <DataGridTableHeadRowCellResize header={header} />
+                      )}
+                    </DataGridTableHeadRowCell>
+                  )
+                })}
+              </DataGridTableHeadRow>
+            )
+          })}
+        </DataGridTableHead>
+
+        {(props.tableLayout?.stripped || !props.tableLayout?.rowBorder) && (
+          <DataGridTableRowSpacer />
+        )}
+
+        <DataGridTableBody>
+          {paddingTop > 0 && (
+            <tr>
+              <td style={{ height: `${paddingTop}px` }} />
+            </tr>
+          )}
+
+          {isLoading && props.loadingMode === 'skeleton' ? (
+            virtualRows.map((virtualRow) => (
+              <DataGridTableBodyRowSkeleton key={virtualRow.key}>
                 {table.getVisibleFlatColumns().map((column, colIndex) => {
                   return (
                     <DataGridTableBodyRowSkeletonCell column={column} key={colIndex}>
@@ -481,35 +604,46 @@ function DataGridTable<TData>() {
                   )
                 })}
               </DataGridTableBodyRowSkeleton>
-            ),
-          )
-        ) : table.getRowModel().rows.length ? (
-          table.getRowModel().rows.map((row: Row<TData>, index) => {
-            return (
-              <Fragment key={row.id}>
-                <DataGridTableBodyRow row={row} key={index}>
-                  {row.getVisibleCells().map((cell: Cell<TData, unknown>, colIndex) => {
-                    return (
-                      <DataGridTableBodyRowCell cell={cell} key={colIndex}>
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </DataGridTableBodyRowCell>
-                    )
-                  })}
-                </DataGridTableBodyRow>
-                {row.getIsExpanded() && <DataGridTableBodyRowExpanded row={row} />}
-              </Fragment>
-            )
-          })
-        ) : (
-          <DataGridTableEmpty />
-        )}
-      </DataGridTableBody>
-    </DataGridTableBase>
+            ))
+          ) : virtualRows.length > 0 ? (
+            virtualRows.map((virtualRow) => {
+              const row = table.getRowModel().rows[virtualRow.index]
+              if (!row) return null
+
+              return (
+                <Fragment key={virtualRow.key}>
+                  <DataGridTableBodyRow row={row}>
+                    {row.getVisibleCells().map((cell: Cell<TData, unknown>, colIndex) => {
+                      return (
+                        <DataGridTableBodyRowCell cell={cell} key={colIndex}>
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </DataGridTableBodyRowCell>
+                      )
+                    })}
+                  </DataGridTableBodyRow>
+                  {row.getIsExpanded() && <DataGridTableBodyRowExpanded row={row} />}
+                </Fragment>
+              )
+            })
+          ) : (
+            <DataGridTableEmpty />
+          )}
+
+          {paddingBottom > 0 && (
+            <tr>
+              <td style={{ height: `${paddingBottom}px` }} />
+            </tr>
+          )}
+        </DataGridTableBody>
+      </DataGridTableBase>
+      <ScrollBar orientation="horizontal" />
+    </ScrollArea>
   )
 }
 
 export {
   DataGridTable,
+  DataGridTableVirtual,
   DataGridTableBase,
   DataGridTableBody,
   DataGridTableBodyRow,

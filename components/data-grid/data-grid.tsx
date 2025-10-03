@@ -75,6 +75,9 @@ export interface DataGridProps<TData extends object> {
     columnsMovable?: boolean
     columnsDraggable?: boolean
     rowsDraggable?: boolean
+    virtualized?: boolean
+    rowHeight?: number
+    overscan?: number
   }
   tableClassNames?: {
     base?: string
@@ -136,6 +139,9 @@ function DataGrid<TData extends object>({ children, table, ...props }: DataGridP
       columnsMovable: false,
       columnsDraggable: false,
       rowsDraggable: false,
+      virtualized: false,
+      rowHeight: 58.5,
+      overscan: 5,
     },
     tableClassNames: {
       base: '',

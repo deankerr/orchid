@@ -21,7 +21,7 @@ import {
   DataGridCardToolbar,
 } from '../data-grid/data-grid-card'
 import { fuzzyFilter } from '../data-grid/data-grid-fuzzy'
-import { DataGridTable } from '../data-grid/data-grid-table'
+import { DataGridTableVirtual } from '../data-grid/data-grid-table'
 import { columns } from './columns'
 import { Controls } from './controls'
 
@@ -40,7 +40,7 @@ export function EndpointsDataGridPage() {
           </DataGridCardToolbar>
 
           <DataGridCardContent>
-            <DataGridTable />
+            <DataGridTableVirtual />
           </DataGridCardContent>
 
           <DataGridCardFooter>
@@ -64,13 +64,14 @@ function EndpointsDataGrid({ children }: { children: React.ReactNode }) {
     columns,
     data: endpointsList ?? [],
     filterFns: {
-      fuzzy: fuzzyFilter, //define as a filter function that can be used in column definitions
+      fuzzy: fuzzyFilter,
     },
     globalFilterFn: 'fuzzy',
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getRowId: (row) => row._id,
+    manualPagination: true,
   })
 
   return (
@@ -85,6 +86,9 @@ function EndpointsDataGrid({ children }: { children: React.ReactNode }) {
         headerSticky: true,
         width: 'fixed',
         cellBorder: false,
+        virtualized: true,
+        rowHeight: 58.5,
+        overscan: 20,
       }}
       tableClassNames={{
         headerRow: 'uppercase font-mono text-[12px]',
