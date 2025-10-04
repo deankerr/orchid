@@ -114,7 +114,13 @@ export function useEndpointFilters() {
     }
   }
 
-  // Helper to clear all filters
+  const clearAttributeFilters = () => {
+    setFilters({
+      has: [],
+      not: [],
+    })
+  }
+
   const clearAllFilters = () => {
     setFilters({
       q: '',
@@ -141,6 +147,7 @@ export function useEndpointFilters() {
     attributeFilters,
     setModalityFilter,
     setAttributeFilter,
+    clearAttributeFilters,
     clearAllFilters,
     activeFilterCount,
     hasActiveFilters,

@@ -104,7 +104,7 @@ function DataGridColumnHeader<TData, TValue>({
       <Button
         variant="ghost"
         className={cn(
-          'w-full shrink justify-between rounded-md text-[12px] font-normal whitespace-normal text-secondary-foreground hover:bg-secondary hover:text-foreground has-[>svg]:px-2 data-[state=open]:bg-secondary data-[state=open]:text-foreground',
+          'w-full shrink text-[12px] font-normal whitespace-normal text-secondary-foreground hover:bg-secondary hover:text-foreground has-[>svg]:px-2 data-[state=open]:bg-secondary data-[state=open]:text-foreground',
           className,
         )}
         disabled={isLoading || recordCount === 0}

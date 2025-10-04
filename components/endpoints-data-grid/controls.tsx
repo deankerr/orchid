@@ -4,7 +4,7 @@ import { useDataGrid } from '../data-grid/data-grid'
 import { DataGridColumnVisibility } from '../data-grid/data-grid-column-visibility'
 import { SearchInput } from '../shared/search-input'
 import { Button } from '../ui/button'
-import { FilterControls } from './filter-controls'
+import { AttributeFilterControls } from './attribute-filter-controls'
 import { useEndpointFilters } from './use-endpoint-filters'
 
 function ColumnsButton(props: React.ComponentProps<typeof Button>) {
@@ -37,8 +37,7 @@ export function Controls() {
   return (
     <>
       <EndpointsSearchInput />
-
-      <FilterControls />
+      <AttributeFilterControls />
 
       {hasActiveFilters && (
         <Button variant="ghost" size="sm" onClick={clearAllFilters}>
@@ -46,6 +45,8 @@ export function Controls() {
           Clear
         </Button>
       )}
+
+      <div className="flex-1" />
 
       <DataGridColumnVisibility table={table} trigger={<ColumnsButton />} />
     </>

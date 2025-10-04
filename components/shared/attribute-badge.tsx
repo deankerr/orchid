@@ -64,7 +64,7 @@ export function AttributeBadgeSet({
   const pdata = processPairs(data)
 
   return (
-    <div className="flex gap-1">
+    <div className="flex items-center justify-center gap-1.5">
       {pdata.map((attr) =>
         attr.has ? (
           <AttributeBadge
@@ -78,7 +78,7 @@ export function AttributeBadgeSet({
             disabled={!attr.has}
           />
         ) : hideUnavailable ? null : (
-          <div key={attr.name} className="size-7" />
+          <div key={attr.name} className="size-7 shrink-0" />
         ),
       )}
     </div>

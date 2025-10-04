@@ -9,13 +9,13 @@ import { Separator } from '../ui/separator'
 import { SpriteIcon } from '../ui/sprite-icon'
 import { useEndpointFilters, type FilterMode } from './use-endpoint-filters'
 
-export function FilterControls() {
+export function AttributeFilterControls() {
   const {
     modalityFilters,
     attributeFilters,
     setModalityFilter,
     setAttributeFilter,
-    clearAllFilters,
+    clearAttributeFilters,
     activeFilterCount,
   } = useEndpointFilters()
 
@@ -151,8 +151,8 @@ export function FilterControls() {
 
           {/* Actions */}
           <div className="flex justify-end gap-2">
-            <Button variant="ghost" size="sm" onClick={clearAllFilters}>
-              Clear All
+            <Button variant="ghost" size="sm" onClick={clearAttributeFilters}>
+              Clear
             </Button>
           </div>
         </div>

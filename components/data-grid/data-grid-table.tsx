@@ -15,7 +15,7 @@ const headerCellSpacingVariants = cva('', {
   variants: {
     size: {
       dense: 'px-2.5 h-8',
-      default: 'px-4 has-[button]:px-1',
+      default: 'px-4 has-[button]:px-0',
     },
   },
   defaultVariants: {
