@@ -134,9 +134,8 @@ export function useEndpointFilters() {
   // Calculate active filter count (only for Filters button badge)
   const activeFilterCount = filters.has.length + filters.not.length
 
-  // Check if any filters are active (for Clear button)
-  const hasActiveFilters =
-    filters.has.length > 0 || filters.not.length > 0 || !!filters.q || !!filters.sort
+  const hasActiveSorting = filters.sort !== null
+  const hasActiveFilters = filters.has.length > 0 || filters.not.length > 0 || !!filters.q
 
   return {
     globalFilter: filters.q,
@@ -151,6 +150,7 @@ export function useEndpointFilters() {
     clearAllFilters,
     activeFilterCount,
     hasActiveFilters,
+    hasActiveSorting,
   }
 }
 

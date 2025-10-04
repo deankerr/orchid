@@ -6,8 +6,8 @@ import { SpriteIcon } from '../ui/sprite-icon'
 
 function ModalityBadge({ icon, title }: { icon: SpriteIconName; title: string }) {
   return (
-    <div className="flex size-7 items-center justify-center" title={title}>
-      <SpriteIcon name={icon} className="size-5 text-neutral-300" />
+    <div className="flex size-7 shrink-0 items-center justify-center px-1 py-1" title={title}>
+      <SpriteIcon name={icon} className="size-full text-neutral-300" />
     </div>
   )
 }

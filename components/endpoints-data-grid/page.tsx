@@ -148,24 +148,36 @@ function EndpointsDataGrid({ children }: { children: React.ReactNode }) {
 function Footer() {
   const { table } = useDataGrid()
   const endpointsList = useEndpointsListQuery()
+  const { hasActiveFilters } = useEndpointFilters()
 
   if (!endpointsList) return null
 
-  const rows = table.getFilteredRowModel().rows
-  const filteredEndpoints = rows.map((row) => row.original)
-
   const totalEndpoints = endpointsList
+  const totalModelsCount = new Set(totalEndpoints.map((endp) => endp.model.slug)).size
+
   const totalAvailableEndpoints = totalEndpoints.filter((endp) => !endp.unavailable_at)
   const totalAvailableModelsCount = new Set(totalAvailableEndpoints.map((endp) => endp.model.slug))
     .size
 
-  const filteredAvailableEndpoints = filteredEndpoints.filter((endp) => !endp.unavailable_at)
-  const filteredAvailableModelsCount = new Set(
-    filteredAvailableEndpoints.map((endp) => endp.model.slug),
-  ).size
+  const filteredEndpoints = table.getFilteredRowModel().rows.map((row) => row.original)
+  const filteredModelsCount = new Set(filteredEndpoints.map((endp) => endp.model.slug)).size
 
-  const isFiltered = filteredEndpoints.length !== totalEndpoints.length
-  const label = isFiltered ? 'filtered' : 'available'
-
-  return `Models: ${filteredAvailableModelsCount} ${label} (${totalAvailableModelsCount} total) ⋅ Endpoints: ${filteredAvailableEndpoints.length} ${label} (${totalAvailableEndpoints.length} total)`
+  return (
+    <div className="flex flex-wrap justify-center gap-x-4">
+      <div>
+        Models:{' '}
+        {hasActiveFilters
+          ? `${filteredModelsCount} filtered`
+          : `${totalAvailableModelsCount} available`}{' '}
+        ({totalModelsCount} total)
+      </div>
+      <div>
+        Endpoints:{' '}
+        {hasActiveFilters
+          ? `${filteredEndpoints.length} filtered`
+          : `${totalAvailableEndpoints.length} available`}{' '}
+        ({totalEndpoints.length} total)
+      </div>
+    </div>
+  )
 }
