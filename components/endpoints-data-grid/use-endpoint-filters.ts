@@ -1,4 +1,5 @@
-import { parseAsArrayOf, parseAsString, useQueryStates } from 'nuqs'
+import { SortingState } from '@tanstack/react-table'
+import { parseAsArrayOf, parseAsString, parseAsStringEnum, useQueryStates } from 'nuqs'
 
 import { AttributeName } from '@/lib/attributes'
 
@@ -24,6 +25,8 @@ export function useEndpointFilters() {
       q: parseAsString.withDefault(''),
       has: parseAsAttributeArray,
       not: parseAsAttributeArray,
+      sort: parseAsString,
+      order: parseAsStringEnum(['asc', 'desc']),
     },
     {
       history: 'push',
@@ -88,27 +91,59 @@ export function useEndpointFilters() {
     setFilters({ q: value })
   }
 
+  // Convert URL state to TanStack SortingState
+  const sorting: SortingState = filters.sort
+    ? [{ id: filters.sort, desc: filters.order === 'desc' }]
+    : []
+
+  // Helper to update sorting from TanStack's onSortingChange
+  const onSortingChange = (
+    updaterOrValue: SortingState | ((old: SortingState) => SortingState),
+  ) => {
+    const newSorting =
+      typeof updaterOrValue === 'function' ? updaterOrValue(sorting) : updaterOrValue
+
+    if (newSorting.length === 0) {
+      setFilters({ sort: null, order: null })
+    } else {
+      const sort = newSorting[0]
+      setFilters({
+        sort: sort.id,
+        order: sort.desc ? 'desc' : 'asc',
+      })
+    }
+  }
+
   // Helper to clear all filters
   const clearAllFilters = () => {
     setFilters({
       q: '',
       has: [],
       not: [],
+      sort: null,
+      order: null,
     })
   }
 
-  // Calculate active filter count
+  // Calculate active filter count (only for Filters button badge)
   const activeFilterCount = filters.has.length + filters.not.length
+
+  // Check if any filters are active (for Clear button)
+  const hasActiveFilters =
+    filters.has.length > 0 || filters.not.length > 0 || !!filters.q || !!filters.sort
 
   return {
     globalFilter: filters.q,
     setGlobalFilter,
+    sorting,
+    onSortingChange,
     modalityFilters,
     attributeFilters,
     setModalityFilter,
     setAttributeFilter,
     clearAllFilters,
     activeFilterCount,
+    hasActiveFilters,
   }
 }
 

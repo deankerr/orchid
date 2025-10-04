@@ -108,16 +108,7 @@ function DataGridColumnHeader<TData, TValue>({
           className,
         )}
         disabled={isLoading || recordCount === 0}
-        onClick={() => {
-          const isSorted = column.getIsSorted()
-          if (isSorted === 'asc') {
-            column.toggleSorting(true)
-          } else if (isSorted === 'desc') {
-            column.clearSorting()
-          } else {
-            column.toggleSorting(false)
-          }
-        }}
+        onClick={column.getToggleSortingHandler()}
         data-slot="data-grid-header-button"
       >
         {icon && icon}

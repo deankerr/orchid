@@ -1,4 +1,4 @@
-import { Settings2 } from 'lucide-react'
+import { Settings2, XIcon } from 'lucide-react'
 
 import { useDataGrid } from '../data-grid/data-grid'
 import { DataGridColumnVisibility } from '../data-grid/data-grid-column-visibility'
@@ -32,12 +32,20 @@ function EndpointsSearchInput() {
 
 export function Controls() {
   const { table } = useDataGrid()
+  const { hasActiveFilters, clearAllFilters } = useEndpointFilters()
 
   return (
     <>
       <EndpointsSearchInput />
 
       <FilterControls />
+
+      {hasActiveFilters && (
+        <Button variant="ghost" size="sm" onClick={clearAllFilters}>
+          <XIcon />
+          Clear
+        </Button>
+      )}
 
       <DataGridColumnVisibility table={table} trigger={<ColumnsButton />} />
     </>
