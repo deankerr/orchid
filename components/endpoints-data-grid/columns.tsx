@@ -21,7 +21,11 @@ export const columns: ColumnDef<EndpointRow>[] = [
     id: 'model',
     accessorFn: (row) => `${row.model.name} ${row.model.slug}`,
     header: ({ column }) => (
-      <DataGridColumnHeader column={column} title="MODEL" className="justify-start" />
+      <DataGridColumnHeader
+        column={column}
+        title="MODEL"
+        className="justify-start has-[>svg]:pl-4"
+      />
     ),
     cell: ({ row }) => {
       const endpoint = row.original
@@ -47,7 +51,11 @@ export const columns: ColumnDef<EndpointRow>[] = [
     id: 'provider',
     accessorFn: (row) => row.provider.name,
     header: ({ column }) => (
-      <DataGridColumnHeader column={column} title="PROVIDER" className="justify-start" />
+      <DataGridColumnHeader
+        column={column}
+        title="PROVIDER"
+        className="justify-start has-[>svg]:pl-4"
+      />
     ),
     cell: ({ row }) => {
       const endpoint = row.original

@@ -1,5 +1,7 @@
 import { cn } from '@/lib/utils'
 
+import { ScrollArea } from '../ui/scroll-area'
+
 export function DataGridCard({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
@@ -12,12 +14,15 @@ export function DataGridCard({ className, ...props }: React.ComponentProps<'div'
   )
 }
 
-export function DataGridCardToolbar({ className, ...props }: React.ComponentProps<'div'>) {
+export function DataGridCardToolbar({
+  className,
+  children,
+  ...props
+}: React.ComponentProps<typeof ScrollArea>) {
   return (
-    <div
-      className={cn('flex shrink-0 items-center gap-2 overflow-x-auto px-2 py-3', className)}
-      {...props}
-    />
+    <ScrollArea className="shrink-0" maskHeight={10} orientation="horizontal" {...props}>
+      <div className={cn('flex items-center gap-2 px-2 py-3', className)}>{children}</div>
+    </ScrollArea>
   )
 }
 

@@ -555,7 +555,7 @@ function DataGridTableVirtual<TData>() {
     <ScrollArea
       viewportRef={scrollElementRef}
       className="flex-1"
-      viewportClassName="flex"
+      viewportClassName="flex overscroll-none"
       maskHeight={0}
     >
       <DataGridTableBase>

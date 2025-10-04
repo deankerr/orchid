@@ -26,6 +26,7 @@ function ScrollArea({
   maskHeight = 30,
   ref,
   viewportRef: viewportRefProp,
+  orientation = 'vertical',
   ...props
 }: React.ComponentProps<typeof ScrollAreaPrimitive.Root> & {
   viewportClassName?: string
@@ -37,6 +38,7 @@ function ScrollArea({
   maskHeight?: number
   maskClassName?: string
   viewportRef?: React.RefObject<HTMLDivElement | null>
+  orientation?: 'vertical' | 'horizontal'
 }) {
   const [showMask, setShowMask] = React.useState<Mask>({
     top: false,
@@ -131,7 +133,7 @@ function ScrollArea({
           {maskHeight > 0 && (
             <ScrollMask showMask={showMask} className={maskClassName} maskHeight={maskHeight} />
           )}
-          <ScrollBar />
+          <ScrollBar orientation={orientation} />
           <ScrollAreaPrimitive.Corner />
         </ScrollAreaPrimitive.Root>
       )}
