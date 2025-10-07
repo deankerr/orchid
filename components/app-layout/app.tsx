@@ -21,6 +21,10 @@ export function App({ children }: { children: React.ReactNode }) {
 
             <FeatureFlag flag="dev">
               <div className="ml-auto flex gap-2 font-mono">
+                <NavButton href="/dev/archives" className="border border-dashed">
+                  Archives
+                </NavButton>
+
                 <NavButton href="/dev/resources" className="border border-dashed">
                   Resources
                 </NavButton>

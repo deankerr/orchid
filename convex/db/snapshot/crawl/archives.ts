@@ -4,7 +4,7 @@ import { v } from 'convex/values'
 
 import { internal } from '../../../_generated/api'
 import type { Id } from '../../../_generated/dataModel'
-import { internalMutation, internalQuery } from '../../../_generated/server'
+import { internalMutation, internalQuery, query } from '../../../_generated/server'
 import { createTableVHelper } from '../../../lib/vTable'
 
 export const table = defineTable({
@@ -83,5 +83,14 @@ export const deleteByCrawlId = internalMutation({
     await ctx.scheduler.runAfter(0, internal.storage.deleteFiles, {
       storageIds,
     })
+  },
+})
+
+export const feed = query({
+  args: {
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.query('snapshot_crawl_archives').order('desc').paginate(args.paginationOpts)
   },
 })

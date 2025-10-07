@@ -114,7 +114,6 @@ export function formatDateTime(timestamp: number): string {
  * Converts .convex.cloud to .convex.site and adds the path
  */
 export function getConvexHttpUrl(path: string): string {
-  // Access environment variable using globalThis to avoid TypeScript issues
   const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL
 
   if (!convexUrl) {
