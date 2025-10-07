@@ -30,7 +30,7 @@ export default function Page() {
   )
 
   return (
-    <PageContainer>
+    <PageContainer className="pb-4">
       <PageHeader>
         <PageTitle>Archives</PageTitle>
         <PageDescription>
@@ -43,13 +43,18 @@ export default function Page() {
           <ArchiveCard key={data._id} archive={data} />
         ))}
 
-        {archives.status === 'LoadingMore' && (
-          <div className="flex justify-center py-8">
-            <div className="animate-pulse text-sm text-muted-foreground">
-              Loading more archives...
-            </div>
-          </div>
-        )}
+        <Button
+          variant="secondary"
+          className="mx-auto block"
+          onClick={() => archives.loadMore(40)}
+          disabled={archives.status !== 'CanLoadMore'}
+        >
+          {archives.status === 'CanLoadMore'
+            ? 'Load More'
+            : archives.status === 'Exhausted'
+              ? 'Exhausted'
+              : 'Loading...'}
+        </Button>
       </div>
     </PageContainer>
   )
@@ -60,15 +65,15 @@ function ArchiveCard({ archive }: { archive: Doc<'snapshot_crawl_archives'> }) {
   const downloadUrl = getConvexHttpUrl(`/bundle?crawl_id=${archive.crawl_id}`)
 
   return (
-    <Card className="py-3">
-      <CardHeader className="border-b px-3">
+    <Card className="gap-3 py-3">
+      <CardHeader className="border-b px-3 pb-1">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="flex size-10 items-center justify-center rounded-md bg-muted">
               <Database className="size-4" />
             </div>
             <div className="space-y-1">
-              <CardTitle className="font-mono text-base">
+              <CardTitle className="font-mono">
                 {formatDateTime(Number(archive.crawl_id))}
               </CardTitle>
               <p className="text-sm text-muted-foreground">
