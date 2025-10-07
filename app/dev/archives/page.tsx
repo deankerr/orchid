@@ -17,6 +17,7 @@ import {
   PageHeader,
   PageTitle,
 } from '@/components/app-layout/pages'
+import { CopyToClipboardButton } from '@/components/shared/copy-to-clipboard-button'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -83,6 +84,14 @@ function ArchiveCard({ archive }: { archive: Doc<'snapshot_crawl_archives'> }) {
           </div>
 
           <div className="flex items-center gap-2">
+            <CopyToClipboardButton
+              size="sm"
+              variant="secondary"
+              className="font-mono"
+              value={archive.crawl_id}
+            >
+              crawl_id
+            </CopyToClipboardButton>
             <Button asChild variant="outline" size="sm">
               <Link href={downloadUrl} prefetch={false}>
                 <Download className="size-4" />
