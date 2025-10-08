@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 
-import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area'
+import { ScrollArea as ScrollAreaPrimitive } from 'radix-ui'
 
 import { useTouchPrimary } from '@/hooks/use-has-primary-touch'
 import { cn } from '@/lib/utils'
