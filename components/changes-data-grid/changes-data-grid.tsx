@@ -9,10 +9,12 @@ import { SearchCodeIcon } from 'lucide-react'
 
 import type { Doc } from '@/convex/_generated/dataModel'
 
+import { DataGrid } from '@/components/data-grid/data-grid'
+import { fuzzyFilter } from '@/components/data-grid/data-grid-fuzzy'
+import { DataGridTable } from '@/components/data-grid/data-grid-table'
+import { ModelCard, ProviderCard } from '@/components/shared/entity-card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { DataGrid } from '@/components/ui/data-grid'
-import { DataGridTable } from '@/components/ui/data-grid-table'
 import {
   Sheet,
   SheetContent,
@@ -24,8 +26,6 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { formatDateTime, formatRelativeTime } from '@/lib/formatters'
 import { calculatePercentageChange, cn } from '@/lib/utils'
 
-import { fuzzyFilter } from '../data-grid/data-grid-fuzzy'
-import { ModelCard, ProviderCard } from '../shared/entity-card'
 import {
   AddIndicator,
   CreateBadge,

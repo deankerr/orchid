@@ -8,6 +8,16 @@ import { Loader2Icon } from 'lucide-react'
 
 import { api } from '@/convex/_generated/api'
 
+import { PageDescription, PageHeader, PageTitle } from '@/components/app-layout/pages'
+import { DataGridContainer } from '@/components/data-grid/data-grid'
+import { FeatureFlag } from '@/components/dev-utils/feature-flag'
+import {
+  DataGridFrame,
+  DataGridFrameFooter,
+  DataGridFrameToolbar,
+} from '@/components/shared/data-grid-frame'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -17,12 +27,6 @@ import {
 } from '@/components/ui/select'
 import { useInfiniteScroll } from '@/hooks/use-infinite-scroll'
 
-import { PageDescription, PageHeader, PageTitle } from '../app-layout/pages'
-import { FeatureFlag } from '../dev-utils/feature-flag'
-import { DataGridFrame, DataGridFrameFooter, DataGridFrameToolbar } from '../shared/data-grid-frame'
-import { Checkbox } from '../ui/checkbox'
-import { DataGridContainer } from '../ui/data-grid'
-import { Label } from '../ui/label'
 import { ChangesDataGrid } from './changes-data-grid'
 
 const LOAD_MORE_THRESHOLD = 500
