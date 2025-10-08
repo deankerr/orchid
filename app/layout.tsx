@@ -3,7 +3,6 @@ import './globals.css'
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 
-import { SpeedInsights } from '@vercel/speed-insights/next'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
 
 import { App } from '@/components/app-layout/app'
@@ -54,7 +53,6 @@ export default function RootLayout({
             <App>{children}</App>
           </ConvexClientProvider>
         </NuqsAdapter>
-        <SpeedInsights />
       </body>
     </html>
   )
