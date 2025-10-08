@@ -21,7 +21,8 @@ import { CopyToClipboardButton } from '@/components/shared/copy-to-clipboard-but
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { formatDateTime, formatRelativeTime, getConvexHttpUrl } from '@/lib/utils'
+import { formatDateTimeUTC, formatRelativeTime } from '@/lib/formatters'
+import { getConvexHttpUrl } from '@/lib/utils'
 
 export default function Page() {
   const archives = usePaginatedQuery(
@@ -75,7 +76,7 @@ function ArchiveCard({ archive }: { archive: Doc<'snapshot_crawl_archives'> }) {
             </div>
             <div className="space-y-1">
               <CardTitle className="font-mono">
-                {formatDateTime(Number(archive.crawl_id))}
+                {formatDateTimeUTC(Number(archive.crawl_id))}
               </CardTitle>
               <p className="text-sm text-muted-foreground">
                 {formatRelativeTime(Number(archive.crawl_id))}
@@ -90,7 +91,7 @@ function ArchiveCard({ archive }: { archive: Doc<'snapshot_crawl_archives'> }) {
               className="font-mono"
               value={archive.crawl_id}
             >
-              crawl_id
+              {archive.crawl_id}
             </CopyToClipboardButton>
             <Button asChild variant="outline" size="sm">
               <Link href={downloadUrl} prefetch={false}>
