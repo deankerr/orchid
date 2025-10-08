@@ -114,7 +114,7 @@ export default function Page() {
 }
 
 function DayStatsView({ timestamp, onClose }: { timestamp: number; onClose: () => void }) {
-  const [sortColumn, setSortColumn] = useState<string>('count')
+  const [sortColumn, setSortColumn] = useState<string>('total_input_tokens')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
 
   const dayStats = useCachedQuery(
@@ -335,7 +335,7 @@ function DayStatsView({ timestamp, onClose }: { timestamp: number; onClose: () =
                   <TableRow key={stat._id}>
                     <TableCell className="font-mono">
                       <div className="flex items-center gap-2 font-medium">
-                        {stat.version_slug}
+                        {stat.base_slug}
                         {stat.variant !== 'standard' && (
                           <Badge variant="outline" className="text-xs">
                             {stat.variant}

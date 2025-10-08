@@ -19,10 +19,10 @@ import { createTableVHelper } from '../../lib/vTable'
 // -> charts/visualisations
 
 export const table = defineTable({
-  // timestamp + version_slug + variant = unique key
+  // timestamp + slug = unique key
   timestamp: v.number(), // 0:00 UTC, daily
-
   slug: v.string(),
+
   base_slug: v.string(),
   version_slug: v.string(),
   variant: v.string(),
@@ -39,12 +39,11 @@ export const table = defineTable({
   date: v.string(), // ? unreliable, repeated across many days
 })
   .index('by_timestamp', ['timestamp'])
-  .index('by_timestamp__version_slug', ['timestamp', 'version_slug'])
-  .index('by_version_slug__variant__timestamp', ['version_slug', 'variant', 'timestamp'])
+  .index('by_slug__timestamp', ['slug', 'timestamp'])
 
 export const vTable = createTableVHelper('or_stats', table.validator)
 
-export const statsByTime = new TableAggregate<{
+const statsByTime = new TableAggregate<{
   Key: number
   DataModel: DataModel
   TableName: 'or_stats'
@@ -52,19 +51,19 @@ export const statsByTime = new TableAggregate<{
   sortKey: (doc) => doc.timestamp,
 })
 
-async function insertOne(ctx: MutationCtx, { fields }: { fields: typeof vTable.validator.type }) {
+async function insertDoc(ctx: MutationCtx, { fields }: { fields: typeof vTable.validator.type }) {
   const id = await ctx.db.insert('or_stats', fields)
   const doc = await ctx.db.get(id)
   await statsByTime.insert(ctx, doc!)
 }
 
-async function replaceOne(
+async function replaceDoc(
   ctx: MutationCtx,
   { oldDoc, fields }: { oldDoc: Doc<'or_stats'>; fields: typeof vTable.validator.type },
 ) {
   await ctx.db.replace(oldDoc._id, fields)
   const newDoc = await ctx.db.get(oldDoc._id)
-  await statsByTime.replaceOrInsert(ctx, oldDoc, newDoc!)
+  await statsByTime.replace(ctx, oldDoc, newDoc!)
 }
 
 export const upsert = internalMutation({
@@ -75,22 +74,19 @@ export const upsert = internalMutation({
     const results = await asyncMap(args.stats, async (fields) => {
       const oldDoc = await ctx.db
         .query(vTable.name)
-        .withIndex('by_version_slug__variant__timestamp', (q) =>
-          q
-            .eq('version_slug', fields.version_slug)
-            .eq('variant', fields.variant)
-            .eq('timestamp', fields.timestamp),
+        .withIndex('by_slug__timestamp', (q) =>
+          q.eq('slug', fields.slug).eq('timestamp', fields.timestamp),
         )
         .first()
 
       if (!oldDoc) {
-        await insertOne(ctx, { fields })
+        await insertDoc(ctx, { fields })
         return 'insert'
       } else {
         const diffResults = diff(oldDoc, fields, { keysToSkip: ['_id', '_creationTime'] })
         if (!diffResults.length) return 'stable'
 
-        await replaceOne(ctx, { oldDoc, fields })
+        await replaceDoc(ctx, { oldDoc, fields })
         return 'replace'
       }
     })

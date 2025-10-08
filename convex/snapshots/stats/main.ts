@@ -52,6 +52,7 @@ export function processStats(bundle: CrawlArchiveBundle) {
   crawlDate.setUTCHours(0, 0, 0, 0)
   const timestamp = crawlDate.getTime()
 
+  // find matching model record for slug/base_slug
   const stats = parsed.data.analytics.map((data) => {
     const model = parsed.data.models.find(
       (m) => m.version_slug === data.model_permaslug && m.variant === data.variant,

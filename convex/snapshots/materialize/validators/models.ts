@@ -35,11 +35,17 @@ export const ModelTransformSchema = z
       .nullish(),
   })
   .transform((raw) => {
+    // add variant suffix if available
+    let slug = raw.slug
+    if (raw.endpoint?.variant && raw.endpoint.variant !== 'standard') {
+      slug += `:${raw.endpoint.variant}`
+    }
+
     // Extract author name from model name if it contains a colon, otherwise use author slug
     const author_name = raw.name.includes(':') ? raw.name.split(':')[0].trim() : raw.author
 
     return {
-      slug: raw.slug,
+      slug,
       base_slug: raw.slug,
       version_slug: raw.permaslug,
       variant: raw.endpoint?.variant ?? 'standard',
