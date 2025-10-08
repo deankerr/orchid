@@ -1,5 +1,4 @@
 import { pruneNull } from 'convex-helpers'
-import { PaginationResult } from 'convex/server'
 import { v } from 'convex/values'
 import * as R from 'remeda'
 import z from 'zod'
@@ -7,6 +6,7 @@ import z from 'zod'
 import { internal } from '../../_generated/api'
 import { Doc } from '../../_generated/dataModel'
 import { internalAction } from '../../_generated/server'
+import { paginateAndProcess } from '../../shared'
 import { CrawlArchiveBundle } from '../crawl/main'
 import { ModelTransformSchema } from '../materialize/validators/models'
 import { getArchiveBundleOrThrow } from '../shared/bundle'
@@ -95,60 +95,42 @@ export const run = internalAction({
 
     const upsertCounts = await ctx.runMutation(internal.db.or.stats.upsert, { stats })
 
-    const sortedDateCounts = R.pipe(
-      stats,
-      R.countBy((stat) => new Date(stat.timestamp).toISOString()),
-      R.entries(),
-      R.sortBy(([key]) => key),
-      R.fromEntries(),
-    )
-
     console.log('[snapshots:stats:run]', {
       crawl_id: bundle.crawl_id,
       date: new Date(Number(bundle.crawl_id)).toISOString(),
       count: stats.length,
-      dateCounts: sortedDateCounts,
       upsertCounts,
     })
   },
 })
 
+async function processArchivePage(ctx: any, archives: Doc<'snapshot_crawl_archives'>[]) {
+  for (const archive of archives) {
+    const bundle = await getArchiveBundleOrThrow(ctx, archive.crawl_id)
+    if (!bundle.data.analytics) continue
+
+    const stats = processStats(bundle)
+    if (!stats) continue
+
+    const upsertCounts = await ctx.runMutation(internal.db.or.stats.upsert, { stats })
+
+    console.log('[snapshots:stats:backfill]', {
+      crawl_id: bundle.crawl_id,
+      date: new Date(Number(bundle.crawl_id)).toISOString(),
+      count: stats.length,
+      upsertCounts,
+    })
+  }
+}
+
 export const backfill = internalAction({
   handler: async (ctx) => {
-    const results: PaginationResult<Doc<'snapshot_crawl_archives'>> = await ctx.runQuery(
-      internal.db.snapshot.crawl.archives.list,
-      {
-        paginationOpts: {
-          numItems: 100,
-          cursor: null,
-        },
-      },
-    )
-
-    for (const archive of results.page) {
-      const bundle = await getArchiveBundleOrThrow(ctx, archive.crawl_id)
-      if (!bundle.data.analytics) continue
-
-      const stats = processStats(bundle)
-      if (!stats) continue
-
-      const upsertCounts = await ctx.runMutation(internal.db.or.stats.upsert, { stats })
-
-      const sortedDateCounts = R.pipe(
-        stats,
-        R.countBy((stat) => new Date(stat.timestamp).toISOString()),
-        R.entries(),
-        R.sortBy(([key]) => key),
-        R.fromEntries(),
-      )
-
-      console.log('[snapshots:stats:backfill]', {
-        crawl_id: bundle.crawl_id,
-        date: new Date(Number(bundle.crawl_id)).toISOString(),
-        count: stats.length,
-        dateCounts: sortedDateCounts,
-        upsertCounts,
-      })
-    }
+    await paginateAndProcess(ctx, {
+      queryFnArgs: {},
+      queryFn: async (ctx, args) =>
+        await ctx.runQuery(internal.db.snapshot.crawl.archives.list, args),
+      processFn: async (archives) => await processArchivePage(ctx, archives),
+      batchSize: 100,
+    })
   },
 })
