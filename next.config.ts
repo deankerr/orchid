@@ -1,6 +1,7 @@
 import type { NextConfig } from 'next'
 
 import bundleAnalyzer from '@next/bundle-analyzer'
+import { withPostHogConfig } from '@posthog/nextjs-config'
 
 const nextConfig: NextConfig = {
   images: {
@@ -51,4 +52,9 @@ const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
 })
 
-export default withBundleAnalyzer(nextConfig)
+export default withBundleAnalyzer(
+  withPostHogConfig(nextConfig, {
+    personalApiKey: process.env.POSTHOG_API_KEY!,
+    envId: process.env.POSTHOG_ENV_ID!,
+  }),
+)

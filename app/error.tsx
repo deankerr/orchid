@@ -1,6 +1,9 @@
 'use client'
 
+import { useEffect } from 'react'
+
 import { XCircle } from 'lucide-react'
+import posthog from 'posthog-js'
 
 import { PageContainer } from '@/components/app-layout/pages'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -8,6 +11,10 @@ import { Button } from '@/components/ui/button'
 
 export default function ErrorPage({ error }: { error: Error & { digest?: string } }) {
   const isDev = process.env.NODE_ENV === 'development'
+
+  useEffect(() => {
+    posthog.captureException(error)
+  }, [error])
 
   return (
     <PageContainer className="flex flex-col items-center justify-center">
