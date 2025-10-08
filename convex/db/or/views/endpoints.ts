@@ -155,13 +155,7 @@ export async function replace(
 }
 
 export const all = query({
-  args: { limit: v.optional(v.number()) },
-  handler: async (ctx, { limit }) => {
-    const q = ctx.db.query(vTable.name).withIndex('by_model_or_added_at').order('desc')
-
-    if (limit !== undefined) {
-      return await q.take(limit)
-    }
-    return await q.collect()
+  handler: async (ctx) => {
+    return await ctx.db.query(vTable.name).order('desc').collect()
   },
 })

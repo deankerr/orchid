@@ -94,7 +94,7 @@ export function useEndpointFilters() {
   // Convert URL state to TanStack SortingState
   const sorting: SortingState = filters.sort
     ? [{ id: filters.sort, desc: filters.order === 'desc' }]
-    : []
+    : [{ id: 'model', desc: false }]
 
   // Helper to update sorting from TanStack's onSortingChange
   const onSortingChange = (
