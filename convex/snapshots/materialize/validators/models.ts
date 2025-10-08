@@ -27,6 +27,12 @@ export const ModelTransformSchema = z
         end_token: z.string(),
       })
       .nullable(),
+    // only available in some contexts
+    endpoint: z
+      .object({
+        variant: z.string(),
+      })
+      .nullish(),
   })
   .transform((raw) => {
     // Extract author name from model name if it contains a colon, otherwise use author slug
@@ -36,7 +42,7 @@ export const ModelTransformSchema = z
       slug: raw.slug,
       base_slug: raw.slug,
       version_slug: raw.permaslug,
-      variant: 'standard',
+      variant: raw.endpoint?.variant ?? 'standard',
 
       name: raw.short_name,
       icon_url: getIconUrl(raw.slug) ?? '',
