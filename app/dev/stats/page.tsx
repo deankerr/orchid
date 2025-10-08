@@ -25,7 +25,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useCachedQuery } from '@/hooks/use-cached-query'
-import { formatDateTimeUTC, formatRelativeTimeUTC } from '@/lib/utils'
+import { formatDateTimeUTC, formatRelativeTime } from '@/lib/formatters'
 
 function SortableTableHeader({
   column,
@@ -183,7 +183,7 @@ function DayStatsView({ timestamp, onClose }: { timestamp: number; onClose: () =
           <div>
             <CardTitle className="flex items-center gap-2">
               {formatDateTimeUTC(timestamp)}
-              <Badge variant="secondary">{formatRelativeTimeUTC(timestamp)}</Badge>
+              <Badge variant="secondary">{formatRelativeTime(timestamp)}</Badge>
               <CopyToClipboardButton value={timestamp.toString()} size="sm" />
             </CardTitle>
             <p className="text-sm text-muted-foreground">

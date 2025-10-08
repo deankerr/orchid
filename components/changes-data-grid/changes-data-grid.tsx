@@ -21,7 +21,8 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
-import { calculatePercentageChange, cn, formatDateTime, formatRelativeTime } from '@/lib/utils'
+import { formatDateTime, formatRelativeTime } from '@/lib/formatters'
+import { calculatePercentageChange, cn } from '@/lib/utils'
 
 import { fuzzyFilter } from '../data-grid/data-grid-fuzzy'
 import { ModelCard, ProviderCard } from '../shared/entity-card'
