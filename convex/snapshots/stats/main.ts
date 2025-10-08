@@ -5,7 +5,7 @@ import z from 'zod'
 
 import { internal } from '../../_generated/api'
 import { Doc } from '../../_generated/dataModel'
-import { internalAction } from '../../_generated/server'
+import { ActionCtx, internalAction } from '../../_generated/server'
 import { paginateAndProcess } from '../../shared'
 import { CrawlArchiveBundle } from '../crawl/main'
 import { ModelTransformSchema } from '../materialize/validators/models'
@@ -104,7 +104,7 @@ export const run = internalAction({
   },
 })
 
-async function processArchivePage(ctx: any, archives: Doc<'snapshot_crawl_archives'>[]) {
+async function processArchivePage(ctx: ActionCtx, archives: Doc<'snapshot_crawl_archives'>[]) {
   for (const archive of archives) {
     const bundle = await getArchiveBundleOrThrow(ctx, archive.crawl_id)
     if (!bundle.data.analytics) continue
