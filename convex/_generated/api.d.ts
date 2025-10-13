@@ -14,6 +14,7 @@ import type * as crons from "../crons.js";
 import type * as db_index from "../db/index.js";
 import type * as db_or_changes from "../db/or/changes.js";
 import type * as db_or_stats from "../db/or/stats.js";
+import type * as db_or_views_changes from "../db/or/views/changes.js";
 import type * as db_or_views_endpoints from "../db/or/views/endpoints.js";
 import type * as db_or_views_models from "../db/or/views/models.js";
 import type * as db_or_views_providers from "../db/or/views/providers.js";
@@ -34,6 +35,8 @@ import type * as snapshots_materialize_output from "../snapshots/materialize/out
 import type * as snapshots_materialize_validators_endpoints from "../snapshots/materialize/validators/endpoints.js";
 import type * as snapshots_materialize_validators_models from "../snapshots/materialize/validators/models.js";
 import type * as snapshots_materialize_validators_providers from "../snapshots/materialize/validators/providers.js";
+import type * as snapshots_materializedChanges_main from "../snapshots/materializedChanges/main.js";
+import type * as snapshots_materializedChanges_process from "../snapshots/materializedChanges/process.js";
 import type * as snapshots_shared_bundle from "../snapshots/shared/bundle.js";
 import type * as snapshots_shared_icons from "../snapshots/shared/icons.js";
 import type * as snapshots_stats_main from "../snapshots/stats/main.js";
@@ -60,6 +63,7 @@ declare const fullApi: ApiFromModules<{
   "db/index": typeof db_index;
   "db/or/changes": typeof db_or_changes;
   "db/or/stats": typeof db_or_stats;
+  "db/or/views/changes": typeof db_or_views_changes;
   "db/or/views/endpoints": typeof db_or_views_endpoints;
   "db/or/views/models": typeof db_or_views_models;
   "db/or/views/providers": typeof db_or_views_providers;
@@ -80,6 +84,8 @@ declare const fullApi: ApiFromModules<{
   "snapshots/materialize/validators/endpoints": typeof snapshots_materialize_validators_endpoints;
   "snapshots/materialize/validators/models": typeof snapshots_materialize_validators_models;
   "snapshots/materialize/validators/providers": typeof snapshots_materialize_validators_providers;
+  "snapshots/materializedChanges/main": typeof snapshots_materializedChanges_main;
+  "snapshots/materializedChanges/process": typeof snapshots_materializedChanges_process;
   "snapshots/shared/bundle": typeof snapshots_shared_bundle;
   "snapshots/shared/icons": typeof snapshots_shared_icons;
   "snapshots/stats/main": typeof snapshots_stats_main;

@@ -111,6 +111,7 @@ export const run = internalAction({
     onComplete: v.object({
       materialize: v.boolean(),
       changes: v.boolean(),
+      materializedChanges: v.boolean(),
     }),
   },
   returns: v.null(),
@@ -185,6 +186,9 @@ export const run = internalAction({
 
       if (args.onComplete.changes)
         await ctx.scheduler.runAfter(0, internal.snapshots.changes.main.run, {})
+
+      if (args.onComplete.materializedChanges)
+        await ctx.scheduler.runAfter(0, internal.snapshots.materializedChanges.main.run, {})
     } catch (err) {
       console.error('[crawl] failed', { crawl_id, args, error: getErrorMessage(err) })
     }

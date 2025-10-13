@@ -21,6 +21,7 @@ const init = internalMutation({
       onComplete: {
         materialize: true,
         changes: false,
+        materializedChanges: false,
       },
     })
 

@@ -68,5 +68,6 @@ export function materializeModelEndpoints(bundle: CrawlArchiveBundle) {
     models: Array.from(modelsMap.values()),
     endpoints: Array.from(endpointsMap.values()),
     providers: Array.from(providersMap.values()),
+    issues,
   }
 }

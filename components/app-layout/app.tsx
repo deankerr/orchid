@@ -40,6 +40,14 @@ export function App({ children }: { children: React.ReactNode }) {
                 <NavButton href="/dev/changes" className="border border-dashed" size="sm">
                   Changes
                 </NavButton>
+
+                <NavButton
+                  href="/dev/changes/materialized"
+                  className="border border-dashed"
+                  size="sm"
+                >
+                  Changes M
+                </NavButton>
               </div>
             </FeatureFlag>
           </nav>
