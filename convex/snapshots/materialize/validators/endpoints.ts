@@ -36,9 +36,9 @@ export const EndpointTransformSchema = z
     supported_parameters: z.array(z.string()),
 
     data_policy: z.object({
-      training: z.boolean(),
-      retainsPrompts: z.boolean(),
-      canPublish: z.boolean(),
+      training: z.boolean().optional(),
+      retainsPrompts: z.boolean().optional(),
+      canPublish: z.boolean().optional(),
       retentionDays: z.number().optional(),
       requiresUserIDs: z.boolean().optional(),
     }),

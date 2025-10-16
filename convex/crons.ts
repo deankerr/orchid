@@ -34,6 +34,7 @@ export const snapshotCron = internalAction({
       onComplete: {
         materialize: true,
         changes: true,
+        materializedChanges: true,
       },
     })
 

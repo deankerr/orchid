@@ -13,7 +13,7 @@ export function NavButton({
   ...props
 }: { href: string } & React.ComponentProps<typeof Button>) {
   const pathname = usePathname()
-  const isActive = pathname.startsWith(href)
+  const isActive = pathname === href
   return (
     <Button
       variant="ghost"

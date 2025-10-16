@@ -7,6 +7,7 @@ export default defineSchema(
     or_changes: db.or.changes.table,
     or_stats: db.or.stats.table,
 
+    or_views_changes: db.or.views.changes.table,
     or_views_endpoints: db.or.views.endpoints.table,
     or_views_models: db.or.views.models.table,
     or_views_providers: db.or.views.providers.table,
