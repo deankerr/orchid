@@ -86,15 +86,15 @@ export default function Page() {
           <CardContent>
             {availableDays ? (
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-                {availableDays.map((timestamp) => (
+                {availableDays.map((day_timestamp) => (
                   <Button
-                    key={timestamp}
-                    variant={selectedDay === timestamp ? 'default' : 'outline'}
+                    key={day_timestamp}
+                    variant={selectedDay === day_timestamp ? 'default' : 'outline'}
                     size="sm"
-                    onClick={() => setSelectedDay(timestamp)}
+                    onClick={() => setSelectedDay(day_timestamp)}
                     className="text-xs"
                   >
-                    {formatDateTimeUTC(timestamp)}
+                    {formatDateTimeUTC(day_timestamp)}
                   </Button>
                 ))}
               </div>
@@ -106,26 +106,26 @@ export default function Page() {
 
         {/* Selected Day Stats */}
         {selectedDay && (
-          <DayStatsView timestamp={selectedDay} onClose={() => setSelectedDay(null)} />
+          <DayStatsView day_timestamp={selectedDay} onClose={() => setSelectedDay(null)} />
         )}
       </div>
     </PageContainer>
   )
 }
 
-function DayStatsView({ timestamp, onClose }: { timestamp: number; onClose: () => void }) {
+function DayStatsView({ day_timestamp, onClose }: { day_timestamp: number; onClose: () => void }) {
   const [sortColumn, setSortColumn] = useState<string>('total_input_tokens')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
 
   const dayStats = useCachedQuery(
     api.db.or.stats.getStatsForDay,
-    { timestamp },
-    `stats-day-${timestamp}`,
+    { day_timestamp },
+    `stats-day-${day_timestamp}`,
   )
   const aggregatedStats = useCachedQuery(
     api.db.or.stats.getAggregatedStatsForDay,
-    { timestamp },
-    `aggregated-stats-day-${timestamp}`,
+    { day_timestamp },
+    `aggregated-stats-day-${day_timestamp}`,
   )
 
   const handleSort = (column: string) => {
@@ -163,7 +163,7 @@ function DayStatsView({ timestamp, onClose }: { timestamp: number; onClose: () =
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>{formatDateTimeUTC(timestamp)}</CardTitle>
+            <CardTitle>{formatDateTimeUTC(day_timestamp)}</CardTitle>
             <Button variant="ghost" size="sm" onClick={onClose}>
               Close
             </Button>
@@ -182,9 +182,9 @@ function DayStatsView({ timestamp, onClose }: { timestamp: number; onClose: () =
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              {formatDateTimeUTC(timestamp)}
-              <Badge variant="secondary">{formatRelativeTime(timestamp)}</Badge>
-              <CopyToClipboardButton value={timestamp.toString()} size="sm" />
+              {formatDateTimeUTC(day_timestamp)}
+              <Badge variant="secondary">{formatRelativeTime(day_timestamp)}</Badge>
+              <CopyToClipboardButton value={day_timestamp.toString()} size="sm" />
             </CardTitle>
             <p className="text-sm text-muted-foreground">
               {aggregatedStats.modelCount} models • {aggregatedStats.totalRequests.toLocaleString()}{' '}

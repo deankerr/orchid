@@ -44,4 +44,6 @@ export const snapshotCron = internalAction({
 
 crons.hourly('snapshot', { minuteUTC: 0 }, internal.crons.snapshotCron)
 
+crons.daily('process stats', { hourUTC: 0, minuteUTC: 5 }, internal.snapshots.stats.main.backfill)
+
 export default crons

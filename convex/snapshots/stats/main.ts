@@ -1,5 +1,4 @@
 import { pruneNull } from 'convex-helpers'
-import { v } from 'convex/values'
 import * as R from 'remeda'
 import z from 'zod'
 
@@ -35,6 +34,43 @@ const Analytics = z.object({
   analytics: AnalyticsStats,
 })
 
+function getDayTimestamp(crawlId: string) {
+  const date = new Date(Number(crawlId))
+  date.setUTCHours(0, 0, 0, 0)
+  return date.getTime()
+}
+
+async function processArchiveDay(ctx: ActionCtx, archiveDay: Doc<'snapshot_crawl_archives'>[]) {
+  // * sort archives latest first
+  const sortedArchives = archiveDay.sort((a, b) => b.crawl_id.localeCompare(a.crawl_id))
+
+  for (const archive of sortedArchives) {
+    // * skip bundles without analytics
+    if (!archive.data.totals?.analytics) continue
+
+    const bundle = await getArchiveBundleOrThrow(ctx, archive.crawl_id)
+    const stats = processStats(bundle)
+
+    if (stats) {
+      // * upsert stats
+      const upsertCounts = await ctx.runMutation(internal.db.or.stats.upsert, { stats })
+      const day_timestamp = getDayTimestamp(bundle.crawl_id)
+      console.log('[snapshots:stats:processArchiveDay]', {
+        crawl_id: bundle.crawl_id,
+        day_timestamp,
+        day: new Date(day_timestamp),
+        count: stats.length,
+        results: upsertCounts,
+      })
+
+      // * successfully processed day, return success
+      return true
+    }
+  }
+
+  return false
+}
+
 export function processStats(bundle: CrawlArchiveBundle) {
   const rawData = bundle.data.analytics
   if (!rawData) {
@@ -48,9 +84,7 @@ export function processStats(bundle: CrawlArchiveBundle) {
     return
   }
 
-  const crawlDate = new Date(Number(bundle.crawl_id))
-  crawlDate.setUTCHours(0, 0, 0, 0)
-  const timestamp = crawlDate.getTime()
+  const day_timestamp = getDayTimestamp(bundle.crawl_id)
 
   // find matching model record for slug/base_slug
   const stats = parsed.data.analytics.map((data) => {
@@ -62,7 +96,7 @@ export function processStats(bundle: CrawlArchiveBundle) {
     if (!model) return null
 
     return {
-      timestamp,
+      day_timestamp,
       slug: model.slug,
       base_slug: model.base_slug,
       version_slug: data.model_permaslug,
@@ -71,12 +105,13 @@ export function processStats(bundle: CrawlArchiveBundle) {
       total_output_tokens: data.total_completion_tokens,
       num_media_input: data.num_media_prompt,
       num_media_output: data.num_media_completion,
+      or_date: data.date,
+      crawl_id: bundle.crawl_id,
       ...R.pick(data, [
         'count',
         'total_native_tokens_cached',
         'total_native_tokens_reasoning',
         'total_tool_calls',
-        'date',
       ]),
     }
   })
@@ -84,53 +119,36 @@ export function processStats(bundle: CrawlArchiveBundle) {
   return pruneNull(stats)
 }
 
-export const run = internalAction({
-  args: {
-    crawl_id: v.optional(v.string()),
-  },
-  handler: async (ctx, args) => {
-    const bundle = await getArchiveBundleOrThrow(ctx, args.crawl_id)
-    const stats = processStats(bundle)
-    if (!stats) return
-
-    const upsertCounts = await ctx.runMutation(internal.db.or.stats.upsert, { stats })
-
-    console.log('[snapshots:stats:run]', {
-      crawl_id: bundle.crawl_id,
-      date: new Date(Number(bundle.crawl_id)).toISOString(),
-      count: stats.length,
-      upsertCounts,
-    })
-  },
-})
-
-async function processArchivePage(ctx: ActionCtx, archives: Doc<'snapshot_crawl_archives'>[]) {
-  for (const archive of archives) {
-    const bundle = await getArchiveBundleOrThrow(ctx, archive.crawl_id)
-    if (!bundle.data.analytics) continue
-
-    const stats = processStats(bundle)
-    if (!stats) continue
-
-    const upsertCounts = await ctx.runMutation(internal.db.or.stats.upsert, { stats })
-
-    console.log('[snapshots:stats:backfill]', {
-      crawl_id: bundle.crawl_id,
-      date: new Date(Number(bundle.crawl_id)).toISOString(),
-      count: stats.length,
-      upsertCounts,
-    })
-  }
-}
-
 export const backfill = internalAction({
   handler: async (ctx) => {
+    const latestCrawlId = await ctx.runQuery(internal.db.snapshot.crawl.archives.getLatestCrawlId)
+
+    let pending: Doc<'snapshot_crawl_archives'>[] = []
+
     await paginateAndProcess(ctx, {
-      queryFnArgs: {},
+      queryFnArgs: { fromCrawlId: latestCrawlId ?? undefined },
       queryFn: async (ctx, args) =>
         await ctx.runQuery(internal.db.snapshot.crawl.archives.list, args),
-      processFn: async (archives) => await processArchivePage(ctx, archives),
+      processFn: async (archives) => {
+        // * group bundles by day, earliest to latest including any from previous iteration
+        const sorted = [...pending, ...archives].sort((a, b) =>
+          a.crawl_id.localeCompare(b.crawl_id),
+        )
+        const byDay = [...Map.groupBy(sorted, (a) => getDayTimestamp(a.crawl_id)).values()]
+
+        // * store latest day for next iteration
+        pending = byDay.pop() ?? []
+
+        for (const archiveDay of byDay) {
+          await processArchiveDay(ctx, archiveDay)
+        }
+      },
       batchSize: 100,
     })
+
+    // * process any remaining pending archives after pagination completes
+    if (pending.length > 0) {
+      await processArchiveDay(ctx, pending)
+    }
   },
 })
