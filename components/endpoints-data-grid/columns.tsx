@@ -11,7 +11,6 @@ import { formatPrice } from '@/lib/formatters'
 import { fuzzySort } from '../data-grid/data-grid-fuzzy'
 import { AttributeBadge, AttributeBadgeName, AttributeBadgeSet } from '../shared/attribute-badge'
 import { EntityCard } from '../shared/entity-card'
-import { ModalityBadgeSet } from '../shared/modality-badge'
 import { PricingBadgeSet } from '../shared/pricing-badges'
 
 export type EndpointRow = Doc<'or_views_endpoints'>
@@ -97,11 +96,62 @@ export const columns: ColumnDef<EndpointRow>[] = [
   },
 
   {
+    id: 'inputPrice',
+    accessorFn: (row) => row.pricing.text_input,
+    header: ({ column }) => <DataGridColumnHeader column={column} title="INPUT $ PER MTOK" />,
+    cell: ({ getValue }) => {
+      const inputPrice = getValue<number>()
+      if (inputPrice) {
+        return formatPrice({
+          priceKey: 'text_input',
+          priceValue: inputPrice,
+          unitSuffix: false,
+        })
+      }
+    },
+    size: 110,
+    sortUndefined: -1,
+    meta: {
+      skeleton: <Skeleton className="h-5 w-full" />,
+      cellClassName: 'text-right',
+      headerTitle: 'Input $',
+    },
+  },
+
+  {
+    id: 'outputPrice',
+    accessorFn: (row) => row.pricing.text_output,
+    header: ({ column }) => <DataGridColumnHeader column={column} title="OUTPUT $ PER MTOK" />,
+    cell: ({ getValue }) => {
+      const outputPrice = getValue<number>()
+      if (outputPrice) {
+        return formatPrice({
+          priceKey: 'text_output',
+          priceValue: outputPrice,
+          unitSuffix: false,
+        })
+      }
+    },
+    size: 110,
+    sortUndefined: -1,
+    meta: {
+      skeleton: <Skeleton className="h-5 w-full" />,
+      cellClassName: 'text-right',
+      headerTitle: 'Output $',
+    },
+  },
+
+  {
     id: 'modalities',
     header: 'Modalities',
     cell: ({ row }) => {
       const endpoint = row.original
-      return <ModalityBadgeSet endpoint={endpoint} />
+      return (
+        <AttributeBadgeSet
+          endpoint={endpoint}
+          attributes={['image_input', 'file_input', 'audio_input', 'image_output']}
+        />
+      )
     },
     size: 160,
     meta: {
@@ -186,116 +236,6 @@ export const columns: ColumnDef<EndpointRow>[] = [
   },
 
   {
-    id: 'contextLength',
-    accessorFn: (row) => row.context_length,
-    header: ({ column }) => <DataGridColumnHeader column={column} title="CONTEXT" />,
-    cell: ({ getValue }) => getValue<number>().toLocaleString(),
-    size: 120,
-    meta: {
-      skeleton: <Skeleton className="h-5 w-full" />,
-      cellClassName: 'text-right',
-      headerTitle: 'Context',
-    },
-  },
-
-  {
-    id: 'maxOutput',
-    accessorFn: (row) => row.limits.text_output_tokens,
-    header: ({ column }) => <DataGridColumnHeader column={column} title="MAX OUTPUT" />,
-    cell: ({ getValue }) => getValue<number | undefined>()?.toLocaleString(),
-    size: 120,
-    sortUndefined: -1,
-    meta: {
-      skeleton: <Skeleton className="h-5 w-full" />,
-      cellClassName: 'text-right',
-      headerTitle: 'Max Output',
-    },
-  },
-
-  {
-    id: 'quantization',
-    accessorFn: ({ quantization = '?' }) => (quantization === 'unknown' ? '?' : quantization),
-    header: ({ column }) => <DataGridColumnHeader column={column} title="QUANT" />,
-    cell: ({ getValue }) => {
-      return (
-        <Badge variant="outline" className="font-mono text-sm uppercase">
-          {getValue<string>()}
-        </Badge>
-      )
-    },
-    size: 96,
-    meta: {
-      skeleton: <Skeleton className="h-6 w-full" />,
-      headerClassName: 'text-center',
-      cellClassName: 'text-center',
-      headerTitle: 'Quantization',
-    },
-  },
-
-  {
-    id: 'inputPrice',
-    accessorFn: (row) => row.pricing.text_input,
-    header: ({ column }) => <DataGridColumnHeader column={column} title="INPUT $ PER MTOK" />,
-    cell: ({ getValue }) => {
-      const inputPrice = getValue<number>()
-      if (inputPrice) {
-        return formatPrice({
-          priceKey: 'text_input',
-          priceValue: inputPrice,
-          unitSuffix: false,
-        })
-      }
-    },
-    size: 110,
-    sortUndefined: -1,
-    meta: {
-      skeleton: <Skeleton className="h-5 w-full" />,
-      cellClassName: 'text-right',
-      headerTitle: 'Input $',
-    },
-  },
-
-  {
-    id: 'outputPrice',
-    accessorFn: (row) => row.pricing.text_output,
-    header: ({ column }) => <DataGridColumnHeader column={column} title="OUTPUT $ PER MTOK" />,
-    cell: ({ getValue }) => {
-      const outputPrice = getValue<number>()
-      if (outputPrice) {
-        return formatPrice({
-          priceKey: 'text_output',
-          priceValue: outputPrice,
-          unitSuffix: false,
-        })
-      }
-    },
-    size: 110,
-    sortUndefined: -1,
-    meta: {
-      skeleton: <Skeleton className="h-5 w-full" />,
-      cellClassName: 'text-right',
-      headerTitle: 'Output $',
-    },
-  },
-
-  {
-    id: 'otherPricing',
-    header: 'Other $',
-    cell: ({ row }) => {
-      const endpoint = row.original
-      const pricingBadges = <PricingBadgeSet endpoint={endpoint} />
-
-      return pricingBadges
-    },
-    size: 135,
-    meta: {
-      headerClassName: 'text-center',
-      skeleton: <Skeleton className="h-8 w-full" />,
-      headerTitle: 'Other $',
-    },
-  },
-
-  {
     id: 'limits',
     header: 'LIMITS',
     cell: ({ row }) => {
@@ -323,6 +263,50 @@ export const columns: ColumnDef<EndpointRow>[] = [
   },
 
   {
+    id: 'contextLength',
+    accessorFn: (row) => row.context_length,
+    header: ({ column }) => <DataGridColumnHeader column={column} title="CONTEXT" />,
+    cell: ({ getValue }) => getValue<number>().toLocaleString(),
+    size: 120,
+    meta: {
+      skeleton: <Skeleton className="h-5 w-full" />,
+      cellClassName: 'text-right',
+      headerTitle: 'Context',
+    },
+  },
+
+  {
+    id: 'maxOutput',
+    accessorFn: (row) => row.limits.text_output_tokens,
+    header: ({ column }) => <DataGridColumnHeader column={column} title="MAX OUTPUT" />,
+    cell: ({ getValue }) => getValue<number | undefined>()?.toLocaleString(),
+    size: 120,
+    sortUndefined: -1,
+    meta: {
+      skeleton: <Skeleton className="h-5 w-full" />,
+      cellClassName: 'text-right',
+      headerTitle: 'Max Output',
+    },
+  },
+
+  {
+    id: 'otherPricing',
+    header: 'Other $',
+    cell: ({ row }) => {
+      const endpoint = row.original
+      const pricingBadges = <PricingBadgeSet endpoint={endpoint} />
+
+      return pricingBadges
+    },
+    size: 135,
+    meta: {
+      headerClassName: 'text-center',
+      skeleton: <Skeleton className="h-8 w-full" />,
+      headerTitle: 'Other $',
+    },
+  },
+
+  {
     id: 'dataPolicy',
     header: 'Data Policy',
     cell: ({ row }) => {
@@ -341,6 +325,26 @@ export const columns: ColumnDef<EndpointRow>[] = [
       headerClassName: 'text-center',
       skeleton: <Skeleton className="h-8 w-full" />,
       headerTitle: 'Data Policy',
+    },
+  },
+
+  {
+    id: 'quantization',
+    accessorFn: ({ quantization = '?' }) => (quantization === 'unknown' ? '?' : quantization),
+    header: ({ column }) => <DataGridColumnHeader column={column} title="QUANT" />,
+    cell: ({ getValue }) => {
+      return (
+        <Badge variant="outline" className="font-mono text-sm uppercase">
+          {getValue<string>()}
+        </Badge>
+      )
+    },
+    size: 96,
+    meta: {
+      skeleton: <Skeleton className="h-6 w-full" />,
+      headerClassName: 'text-center',
+      cellClassName: 'text-center',
+      headerTitle: 'Quantization',
     },
   },
 ]

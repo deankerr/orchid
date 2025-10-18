@@ -219,6 +219,38 @@ export const attributes = {
     has: (endpoint: EndpointPartial) => endpoint.limits?.requests_per_day != null,
     getValue: (endpoint: EndpointPartial) => endpoint.limits?.requests_per_day?.toLocaleString(),
   },
+
+  // Modalities
+  image_input: {
+    icon: 'image-up',
+    details: 'Supports image input',
+    color: 'violet',
+    has: (endpoint: EndpointPartial) =>
+      endpoint.model?.input_modalities?.includes('image') ?? false,
+  },
+
+  image_output: {
+    icon: 'image-down',
+    details: 'Supports image output',
+    color: 'violet',
+    has: (endpoint: EndpointPartial) =>
+      endpoint.model?.output_modalities?.includes('image') ?? false,
+  },
+
+  file_input: {
+    icon: 'file-spreadsheet',
+    details: 'Supports file input',
+    color: 'sky',
+    has: (endpoint: EndpointPartial) => endpoint.model?.input_modalities?.includes('file') ?? false,
+  },
+
+  audio_input: {
+    icon: 'audio-lines',
+    details: 'Supports audio input',
+    color: 'fuchsia',
+    has: (endpoint: EndpointPartial) =>
+      endpoint.model?.input_modalities?.includes('audio') ?? false,
+  },
 } as const
 
 export type AttributeName = keyof typeof attributes

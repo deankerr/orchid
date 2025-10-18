@@ -6,6 +6,7 @@ import { AttributeName, attributes, getEndpointAttributeData } from '@/lib/attri
 import type { SpriteIconName } from '@/lib/sprite-icons'
 
 import { SpriteIcon } from '../ui/sprite-icon'
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { RadBadge, RadIconBadge } from './rad-badge'
 
 export function AttributeBadge({
@@ -26,15 +27,20 @@ export function AttributeBadge({
   disabled?: boolean
 }) {
   return (
-    <RadIconBadge
-      variant={variant}
-      color={color}
-      aria-label={name}
-      aria-disabled={disabled}
-      title={`${name}\n${details}${detailsValue ? ` - ${detailsValue}` : ''}`} // TODO
-    >
-      <SpriteIcon name={sprite} className="size-full" />
-    </RadIconBadge>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <RadIconBadge variant={variant} color={color} aria-label={name} aria-disabled={disabled}>
+          <SpriteIcon name={sprite} className="size-full" />
+        </RadIconBadge>
+      </TooltipTrigger>
+      <TooltipContent className="max-w-60 font-mono">
+        <div className="space-y-1">
+          <p className="font-medium uppercase">{name}</p>
+          <p className="font-sans">{details}</p>
+          {detailsValue && <p className="">{detailsValue}</p>}
+        </div>
+      </TooltipContent>
+    </Tooltip>
   )
 }
 

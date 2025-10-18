@@ -129,7 +129,7 @@ function EndpointsDataGrid({ children }: { children: React.ReactNode }) {
       tableLayout={{
         headerSticky: true,
         width: 'fixed',
-        cellBorder: false,
+        cellBorder: true,
         virtualized: true,
         rowHeight: 58.5,
         overscan: 20,
