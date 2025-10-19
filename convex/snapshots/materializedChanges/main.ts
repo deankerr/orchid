@@ -17,9 +17,9 @@ export const run = internalAction({
     let processedPairs = 0
 
     const fromCrawlId =
-      args.fromCrawlId ?? (await ctx.runQuery(internal.db.or.views.changes.getLatestCrawlId))
-
-    if (!fromCrawlId) throw new Error('no crawl id found')
+      args.fromCrawlId ??
+      (await ctx.runQuery(internal.db.or.views.changes.getLatestCrawlId)) ??
+      undefined
 
     await paginateAndProcess(ctx, {
       queryFnArgs: { fromCrawlId },

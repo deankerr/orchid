@@ -15,10 +15,7 @@ export type FeedItem = {
   provider_tag_slug: string
   endpoint_uuid: string
   model_slugs: string[]
-  total_count: number
-  preview_changes: EndpointChange[]
-  all_changes: EndpointChange[]
-  has_more: boolean
+  changes: EndpointChange[]
 }
 
 export const changes = query({
@@ -81,10 +78,7 @@ export const changes = query({
             provider_tag_slug: changes[0].provider_tag_slug,
             endpoint_uuid: changes[0].endpoint_uuid,
             model_slugs: Array.from(new Set(changes.map((c) => c.model_slug))),
-            total_count: changes.length,
-            preview_changes: changes.slice(0, 5),
-            all_changes: changes,
-            has_more: changes.length > 5,
+            changes: changes.toSorted((a, b) => a.model_slug.localeCompare(b.model_slug)),
           })
         }
       }

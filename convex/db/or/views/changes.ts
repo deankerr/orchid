@@ -110,6 +110,8 @@ export const replacePairChanges = internalMutation({
       existingByKey.set(key, doc)
     }
 
+    const processedKeys = new Set<string>()
+
     for (const change of args.changes) {
       if (
         change.previous_crawl_id !== args.previous_crawl_id ||
@@ -119,6 +121,13 @@ export const replacePairChanges = internalMutation({
       }
 
       const key = changeKey(change)
+
+      // Skip duplicate changes in the same batch
+      if (processedKeys.has(key)) {
+        continue
+      }
+      processedKeys.add(key)
+
       const current = existingByKey.get(key)
 
       if (!current) {
