@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as analysis_changes from "../analysis/changes.js";
 import type * as analysis_endpoints from "../analysis/endpoints.js";
 import type * as analysis_stats from "../analysis/stats.js";
 import type * as crons from "../crons.js";
@@ -57,6 +58,7 @@ import type {
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  "analysis/changes": typeof analysis_changes;
   "analysis/endpoints": typeof analysis_endpoints;
   "analysis/stats": typeof analysis_stats;
   crons: typeof crons;
