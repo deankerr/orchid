@@ -90,7 +90,7 @@ export function MaterializedChangesDevPage() {
         },
       },
       {
-        accessorFn: (row) => row.endpoint_uuid?.slice(0, 4),
+        accessorFn: (row: any) => row.endpoint_uuid?.slice(0, 4),
         header: 'Endpoint',
         size: 100,
         meta: {
@@ -98,7 +98,7 @@ export function MaterializedChangesDevPage() {
         },
       },
       {
-        accessorFn: (row) => row.provider_tag_slug ?? row.provider_slug,
+        accessorFn: (row: any) => row.provider_tag_slug ?? row.provider_slug,
         header: 'Provider',
         size: 180,
         meta: {

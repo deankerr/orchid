@@ -18,6 +18,89 @@ import type { Doc, Id, TableNames } from './_generated/dataModel'
 import type { ActionCtx, MutationCtx, QueryCtx } from './_generated/server'
 ```
 
+## Production Data Analysis
+
+### `or_views_changes`
+
+```js
+{
+  changeKindDistribution: {
+    create: [417, "9.5%"],
+    delete: [292, "6.6%"],
+    update: [3693, "83.9%"],
+  },
+  changesPerCrawl: {
+    avg: 9.569565217391304,
+    max: 976,
+    median: 3,
+    min: 1,
+  },
+  changesPerDay: {
+    avg: 65.70149253731343,
+    max: 1018,
+    median: 31,
+    min: 2,
+  },
+  crawlCount: 460,
+  dateRange: {
+    earliest: "2025-08-13",
+    latest: "2025-10-19",
+  },
+  dayCount: 67,
+  entityChangeDistribution: [
+    ["endpoint update", [3621, "82.3%"]],
+    ["endpoint create", [318, "7.2%"]],
+    ["endpoint delete", [221, "5.0%"]],
+    ["model create", [87, "2.0%"]],
+    ["model update", [61, "1.4%"]],
+    ["model delete", [61, "1.4%"]],
+    ["provider create", [12, "0.3%"]],
+    ["provider update", [11, "0.2%"]],
+    ["provider delete", [10, "0.2%"]],
+  ],
+  entityDistribution: {
+    endpoint: [4160, "94.5%"],
+    model: [209, "4.7%"],
+    provider: [33, "0.7%"],
+  },
+  topPaths: [
+    ["supported_parameters", 1019, "23.1%"],
+    ["data_policy", 1013, "23.0%"],
+    ["pricing", 668, "15.2%"],
+    ["context_length", 300, "6.8%"],
+    ["limits", 189, "4.3%"],
+    ["provider", 151, "3.4%"],
+    ["quantization", 104, "2.4%"],
+    ["model", 77, "1.7%"],
+    ["status", 33, "0.7%"],
+    ["deranked", 27, "0.6%"],
+    ["description", 19, "0.4%"],
+    ["native_web_search", 17, "0.4%"],
+    ["file_urls", 16, "0.4%"],
+    ["input_modalities", 10, "0.2%"],
+    ["name", 9, "0.2%"],
+  ],
+  topProviders: [
+    ["chutes", 1062, "24.1%"],
+    ["novita", 432, "9.8%"],
+    ["deepinfra", 280, "6.4%"],
+    ["mistral", 256, "5.8%"],
+    ["google-vertex", 214, "4.9%"],
+    ["parasail", 177, "4.0%"],
+    ["mancer", 138, "3.1%"],
+    ["siliconflow", 135, "3.1%"],
+    ["groq", 95, "2.2%"],
+    ["openai", 89, "2.0%"],
+    ["gmicloud", 89, "2.0%"],
+    ["together", 88, "2.0%"],
+    ["google-ai-studio", 70, "1.6%"],
+    ["nebius", 67, "1.5%"],
+    ["hyperbolic", 67, "1.5%"],
+  ],
+  total: 4402,
+}
+```
+
 ## Common Issues
 
 Working around the TypeScript error: some action implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.

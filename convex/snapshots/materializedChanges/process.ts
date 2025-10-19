@@ -25,105 +25,85 @@ const DIFF_OPTIONS: DiffOptions = {
   treatTypeChangeAsReplace: true,
 }
 
-type ChangeIdentifiers = Partial<
-  Pick<OrViewsChangeFields, 'model_slug' | 'provider_slug' | 'provider_tag_slug' | 'endpoint_uuid'>
->
-
-type EntityAdapter<T> = {
-  entityType: OrViewsChangeFields['entity_type']
-  getKey(entity: T): string
-  identifiers(before?: T, after?: T): ChangeIdentifiers
-}
-
-const modelAdapter: EntityAdapter<MaterializedSnapshot['models'][number]> = {
-  entityType: 'model',
-  getKey: (model) => model.slug,
-  identifiers: (_before, after) => ({ model_slug: (after ?? _before)?.slug }),
-}
-
-const providerAdapter: EntityAdapter<MaterializedSnapshot['providers'][number]> = {
-  entityType: 'provider',
-  getKey: (provider) => provider.slug,
-  identifiers: (_before, after) => ({ provider_slug: (after ?? _before)?.slug }),
-}
-
-const endpointAdapter: EntityAdapter<MaterializedSnapshot['endpoints'][number]> = {
-  entityType: 'endpoint',
-  getKey: (endpoint) => endpoint.uuid,
-  identifiers: (before, after) => {
-    const current = after ?? before
-    return {
-      model_slug: current?.model.slug,
-      provider_slug: current?.provider.slug,
-      provider_tag_slug: current?.provider.tag_slug,
-      endpoint_uuid: current?.uuid,
-    }
-  },
-}
-
 export function computeMaterializedChanges(args: {
   previous: MaterializedSnapshot
   current: MaterializedSnapshot
   previous_crawl_id: string
   crawl_id: string
 }): OrViewsChangeFields[] {
+  const previousModels = new Map(args.previous.models.map((m) => [m.slug, m]))
+  const currentModels = new Map(args.current.models.map((m) => [m.slug, m]))
+
+  const previousEndpoints = new Map(args.previous.endpoints.map((e) => [e.uuid, e]))
+  const currentEndpoints = new Map(args.current.endpoints.map((e) => [e.uuid, e]))
+
+  const previousProviders = new Map(args.previous.providers.map((p) => [p.slug, p]))
+  const currentProviders = new Map(args.current.providers.map((p) => [p.slug, p]))
+
   const drafts: ChangeDraft[] = [
-    ...computeEntityChanges(modelAdapter, args.previous.models, args.current.models),
-    ...computeEntityChanges(endpointAdapter, args.previous.endpoints, args.current.endpoints),
-    ...computeEntityChanges(providerAdapter, args.previous.providers, args.current.providers),
+    ...computeEntityChanges('model', previousModels, currentModels, (m) => ({
+      model_slug: m.slug,
+    })),
+    ...computeEntityChanges('endpoint', previousEndpoints, currentEndpoints, (e) => ({
+      model_slug: e.model.slug,
+      provider_slug: e.provider.slug,
+      provider_tag_slug: e.provider.tag_slug,
+      endpoint_uuid: e.uuid,
+    })),
+    ...computeEntityChanges('provider', previousProviders, currentProviders, (p) => ({
+      provider_slug: p.slug,
+    })),
   ]
 
   return drafts.map((change) => ({
     ...change,
     crawl_id: args.crawl_id,
     previous_crawl_id: args.previous_crawl_id,
-  }))
+  })) as OrViewsChangeFields[]
 }
 
 function computeEntityChanges<T>(
-  adapter: EntityAdapter<T>,
-  previous: T[],
-  current: T[],
+  entityType: 'model' | 'endpoint' | 'provider',
+  previousMap: Map<string, T>,
+  currentMap: Map<string, T>,
+  getIdentifiers: (entity: T) => Record<string, string>,
 ): ChangeDraft[] {
   const changes: ChangeDraft[] = []
 
-  const previousMap = new Map(previous.map((entity) => [adapter.getKey(entity), entity]))
-  const currentMap = new Map(current.map((entity) => [adapter.getKey(entity), entity]))
+  const keys = new Set([...previousMap.keys(), ...currentMap.keys()].sort())
 
-  const slugs = new Set([...previousMap.keys(), ...currentMap.keys()].sort())
-
-  for (const slug of slugs) {
-    const before = previousMap.get(slug)
-    const after = currentMap.get(slug)
+  for (const key of keys) {
+    const before = previousMap.get(key)
+    const after = currentMap.get(key)
 
     if (!after) {
       changes.push({
-        entity_type: adapter.entityType,
+        entity_type: entityType,
         change_kind: 'delete',
-        ...adapter.identifiers(before, undefined),
-      })
+        ...getIdentifiers(before!),
+      } as ChangeDraft)
       continue
     }
 
     if (!before) {
       changes.push({
-        entity_type: adapter.entityType,
+        entity_type: entityType,
         change_kind: 'create',
-        ...adapter.identifiers(undefined, after),
-      })
+        ...getIdentifiers(after),
+      } as ChangeDraft)
       continue
     }
 
-    const identifiers = adapter.identifiers(before, after)
-    const diffItems = processDiff(before, after)
+    const identifiers = getIdentifiers(before)
+    const diffItems = processDiff(before as any, after as any)
 
     for (const item of diffItems) {
       changes.push({
         ...identifiers,
         ...item,
-        entity_type: adapter.entityType,
+        entity_type: entityType,
         change_kind: 'update',
-      })
+      } as ChangeDraft)
     }
   }
 

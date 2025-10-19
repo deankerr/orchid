@@ -1,8 +1,8 @@
 import Link from 'next/link'
 
-import { FeatureFlag } from '../dev-utils/feature-flag'
 import { Button } from '../ui/button'
 import { TooltipProvider } from '../ui/tooltip'
+import { AdminMenu } from './admin-menu'
 import { NavButton } from './nav-button'
 
 export function App({ children }: { children: React.ReactNode }) {
@@ -19,37 +19,9 @@ export function App({ children }: { children: React.ReactNode }) {
             <NavButton href="/endpoints">Endpoints</NavButton>
             <NavButton href="/changes">Changes</NavButton>
 
-            <FeatureFlag flag="dev">
-              <div className="ml-auto flex gap-2 font-mono">
-                <NavButton href="/dev/stats" className="border border-dashed" size="sm">
-                  Stats
-                </NavButton>
-
-                <NavButton href="/dev/archives" className="border border-dashed" size="sm">
-                  Archives
-                </NavButton>
-
-                <NavButton href="/dev/resources" className="border border-dashed" size="sm">
-                  Resources
-                </NavButton>
-
-                <NavButton href="/dev/components" className="border border-dashed" size="sm">
-                  Components
-                </NavButton>
-
-                <NavButton href="/dev/changes" className="border border-dashed" size="sm">
-                  Changes
-                </NavButton>
-
-                <NavButton
-                  href="/dev/changes/materialized"
-                  className="border border-dashed"
-                  size="sm"
-                >
-                  Changes M
-                </NavButton>
-              </div>
-            </FeatureFlag>
+            <div className="ml-auto">
+              <AdminMenu />
+            </div>
           </nav>
         </header>
 
