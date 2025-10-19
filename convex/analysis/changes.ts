@@ -58,7 +58,7 @@ export const run = internalMutation({
         }
 
         // Provider activity
-        if (change.provider_slug) {
+        if (change.entity_type === 'provider') {
           stats.byProvider[change.provider_slug] = (stats.byProvider[change.provider_slug] || 0) + 1
         }
 

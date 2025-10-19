@@ -1,30 +1,19 @@
+import { withSystemFields } from 'convex-helpers/validators'
 import { defineTable } from 'convex/server'
-import { v } from 'convex/values'
+import { Infer, v } from 'convex/values'
 
 import { diff } from 'json-diff-ts'
 
+import { Doc } from '../../../_generated/dataModel'
 import { internalMutation, internalQuery, query } from '../../../_generated/server'
-import { createTableVHelper } from '../../../lib/vTable'
-
-const entityTypeValidator = v.union(
-  v.literal('model'),
-  v.literal('endpoint'),
-  v.literal('provider'),
-)
 
 const changeKindValidator = v.union(v.literal('create'), v.literal('update'), v.literal('delete'))
 
-export const table = defineTable({
+const baseFields = {
   crawl_id: v.string(),
   previous_crawl_id: v.string(),
 
-  entity_type: entityTypeValidator,
   change_kind: changeKindValidator,
-
-  model_slug: v.optional(v.string()), // model, endpoint
-  provider_slug: v.optional(v.string()), // provider, endpoint
-  provider_tag_slug: v.optional(v.string()), // endpoint
-  endpoint_uuid: v.optional(v.string()), // endpoint
 
   path: v.optional(v.string()),
   path_level_1: v.optional(v.string()),
@@ -32,20 +21,53 @@ export const table = defineTable({
 
   before: v.optional(v.any()),
   after: v.optional(v.any()),
+}
+
+const modelChangesValidator = v.object({
+  entity_type: v.literal('model'),
+  model_slug: v.string(),
+  ...baseFields,
 })
+
+const endpointChangesValidator = v.object({
+  entity_type: v.literal('endpoint'),
+  model_slug: v.string(), // model, endpoint
+  provider_slug: v.string(), // provider, endpoint
+  provider_tag_slug: v.string(), // endpoint
+  endpoint_uuid: v.string(), // endpoint
+  ...baseFields,
+})
+
+const providerChangesValidator = v.object({
+  entity_type: v.literal('provider'),
+  provider_slug: v.string(),
+  ...baseFields,
+})
+
+export const table = defineTable(
+  v.union(modelChangesValidator, providerChangesValidator, endpointChangesValidator),
+)
   .index('by_previous_crawl_id__crawl_id', ['previous_crawl_id', 'crawl_id'])
   .index('by_crawl_id', ['crawl_id'])
 
-export const vTable = createTableVHelper('or_views_changes', table.validator)
+// NOTE: we can't create this with a union validator
+// export const vTable = createTableVHelper('or_views_changes', table.validator)
 
-export type OrViewsChangeDoc = typeof vTable.doc.type
-export type OrViewsChangeFields = typeof vTable.validator.type
+export type OrViewsChangeDoc = Doc<'or_views_changes'>
+export type OrViewsChangeFields = Infer<typeof table.validator>
+
+const tableName = 'or_views_changes'
+const unionDocValidator = v.union(
+  v.object(withSystemFields(tableName, modelChangesValidator.fields)),
+  v.object(withSystemFields(tableName, providerChangesValidator.fields)),
+  v.object(withSystemFields(tableName, endpointChangesValidator.fields)),
+)
 
 export const replacePairChanges = internalMutation({
   args: {
     previous_crawl_id: v.string(),
     crawl_id: v.string(),
-    changes: v.array(vTable.validator),
+    changes: v.array(table.validator),
   },
   returns: v.object({
     insert: v.number(),
@@ -59,16 +81,16 @@ export const replacePairChanges = internalMutation({
       return [
         change.entity_type,
         change.change_kind,
-        change.model_slug ?? '',
-        change.provider_slug ?? '',
-        change.provider_tag_slug ?? '',
-        change.endpoint_uuid ?? '',
+        (change as any).model_slug ?? '',
+        (change as any).provider_slug ?? '',
+        (change as any).provider_tag_slug ?? '',
+        (change as any).endpoint_uuid ?? '',
         change.path ?? '',
       ].join('|')
     }
 
     const existing = await ctx.db
-      .query(vTable.name)
+      .query(tableName)
       .withIndex('by_previous_crawl_id__crawl_id', (q) =>
         q.eq('previous_crawl_id', args.previous_crawl_id).eq('crawl_id', args.crawl_id),
       )
@@ -100,7 +122,7 @@ export const replacePairChanges = internalMutation({
       const current = existingByKey.get(key)
 
       if (!current) {
-        await ctx.db.insert(vTable.name, change)
+        await ctx.db.insert(tableName, change)
         counters.insert++
         continue
       }
@@ -139,10 +161,10 @@ export const listPairChanges = query({
     previous_crawl_id: v.string(),
     crawl_id: v.string(),
   },
-  returns: v.array(vTable.doc),
+  returns: v.array(unionDocValidator),
   handler: async (ctx, args) => {
     return await ctx.db
-      .query(vTable.name)
+      .query(tableName)
       .withIndex('by_previous_crawl_id__crawl_id', (q) =>
         q.eq('previous_crawl_id', args.previous_crawl_id).eq('crawl_id', args.crawl_id),
       )
@@ -154,13 +176,13 @@ export const getLatestCrawlId = internalQuery({
   args: {},
   returns: v.union(v.null(), v.string()),
   handler: async (ctx) => {
-    const doc = await ctx.db.query(vTable.name).withIndex('by_crawl_id').order('desc').first()
+    const doc = await ctx.db.query(tableName).withIndex('by_crawl_id').order('desc').first()
     return doc?.crawl_id ?? null
   },
 })
 
 export const dev_collect = query({
   handler: async (ctx) => {
-    return await ctx.db.query(vTable.name).withIndex('by_crawl_id').order('desc').collect()
+    return await ctx.db.query(tableName).withIndex('by_crawl_id').order('desc').collect()
   },
 })
