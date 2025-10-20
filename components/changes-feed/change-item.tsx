@@ -2,54 +2,21 @@ import type { EndpointChange } from '@/convex/feed'
 
 import { Badge } from '@/components/ui/badge'
 import { formatPrice } from '@/lib/formatters'
+import { cn } from '@/lib/utils'
 
 export function ChangeItem({ change }: { change: EndpointChange }) {
-  const { change_kind, model_slug, path, before, after } = change
+  const { path, before, after } = change
 
   return (
-    <div className="flex items-start gap-3 font-mono text-xs">
-      <div className="flex-shrink-0">
-        <StatusBadge kind={change_kind} />
-      </div>
+    <div className="flex flex-col gap-1.5 font-mono text-xs">
+      <div className="">{path}</div>
 
-      <div className="flex min-w-0 flex-1 flex-col gap-2">
-        <Badge variant="outline" className="border-transparent px-0">
-          {model_slug}
-        </Badge>
-
-        <div className="empty:hidden">{path}</div>
-
-        {Array.isArray(before) && Array.isArray(after) ? (
-          <ArrayDiff before={before} after={after} />
-        ) : change.change_kind === 'update' ? (
-          <UpdateValue change={change} />
-        ) : null}
-      </div>
+      {Array.isArray(before) && Array.isArray(after) ? (
+        <ArrayDiff before={before} after={after} />
+      ) : change.change_kind === 'update' ? (
+        <UpdateValue change={change} />
+      ) : null}
     </div>
-  )
-}
-
-function StatusBadge({ kind }: { kind: 'create' | 'delete' | 'update' }) {
-  if (kind === 'create') {
-    return (
-      <Badge className="border-positive-surface-border bg-positive-surface text-positive-surface-foreground">
-        CREATED
-      </Badge>
-    )
-  }
-
-  if (kind === 'delete') {
-    return (
-      <Badge className="border-negative-surface-border bg-negative-surface text-negative-surface-foreground">
-        DELETED
-      </Badge>
-    )
-  }
-
-  return (
-    <Badge variant="outline" className="border-transparent text-muted-foreground">
-      CHANGED
-    </Badge>
   )
 }
 
@@ -69,7 +36,7 @@ function ArrayDiff(args: { before: unknown[]; after: unknown[] }) {
         // Unchanged
         if (inBefore && inAfter) {
           return (
-            <Badge key={item} variant="outline" className="text-xs">
+            <Badge key={item} variant="outline" className="text-xs text-muted-foreground">
               {item}
             </Badge>
           )
@@ -102,12 +69,22 @@ function ArrayDiff(args: { before: unknown[]; after: unknown[] }) {
 }
 
 function UpdateValue({ change }: { change: EndpointChange }) {
-  // Non-arrays show before → after
+  const showPercentage =
+    typeof change.before === 'number' && typeof change.after === 'number' && change.before !== 0
+
+  const percentageChange = showPercentage
+    ? ((change.after - change.before) / change.before) * 100
+    : null
+
+  // Pricing fields: higher = worse (more expensive)
+  const shouldInvert = change.path_level_1 === 'pricing'
+
   return (
     <div className="flex items-center gap-2">
       <Value value={change.before} change={change} />
       <span className="flex-shrink-0 text-muted-foreground">→</span>
       <Value value={change.after} change={change} />
+      {showPercentage && <PercentageBadge value={percentageChange} invert={shouldInvert} />}
     </div>
   )
 }
@@ -170,4 +147,41 @@ function formatPriceValue(value: number, change?: EndpointChange) {
   } catch {
     return null
   }
+}
+
+export function PercentageBadge({
+  value,
+  invert,
+  className,
+  ...props
+}: { value: number | null; invert?: boolean } & React.ComponentProps<typeof Badge>) {
+  if (value === null || !isFinite(value)) {
+    return <span />
+  }
+
+  const valueType = value > 0 ? 'positive' : value < 0 ? 'negative' : 'neutral'
+  const type = invert
+    ? valueType === 'positive'
+      ? 'negative'
+      : valueType === 'negative'
+        ? 'positive'
+        : 'neutral'
+    : valueType
+
+  return (
+    <Badge
+      className={cn(
+        type === 'positive' && 'bg-positive-soft text-positive-soft-foreground',
+        type === 'negative' && 'bg-negative-soft text-negative-soft-foreground',
+        'gap-0.5 px-1.5',
+        className,
+      )}
+      variant={type === 'neutral' ? 'outline' : 'default'}
+      {...props}
+    >
+      {value > 0 && <span className="-mt-px scale-120">+</span>}
+      {value < 0 && <span className="-mt-px scale-120">-</span>}
+      {Math.abs(value).toFixed(1)}%
+    </Badge>
+  )
 }
