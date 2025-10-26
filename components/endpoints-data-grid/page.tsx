@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 import {
   getCoreRowModel,
@@ -29,6 +29,8 @@ import { Controls } from './controls'
 import { useEndpointFilters } from './use-endpoint-filters'
 
 export function EndpointsDataGridPage() {
+  const [cellBorder, setCellBorder] = useState(false)
+
   return (
     <>
       <PageHeader>
@@ -36,10 +38,10 @@ export function EndpointsDataGridPage() {
         <PageDescription>Browse models and providers available on OpenRouter</PageDescription>
       </PageHeader>
 
-      <EndpointsDataGrid>
+      <EndpointsDataGrid cellBorder={cellBorder}>
         <DataGridCard>
           <DataGridCardToolbar>
-            <Controls />
+            <Controls cellBorder={cellBorder} setCellBorder={setCellBorder} />
           </DataGridCardToolbar>
 
           <DataGridCardContent>
@@ -59,7 +61,13 @@ function useEndpointsListQuery() {
   return useCachedQuery(api.db.or.views.endpoints.all, {}, 'endpoints-all')
 }
 
-function EndpointsDataGrid({ children }: { children: React.ReactNode }) {
+function EndpointsDataGrid({
+  children,
+  cellBorder,
+}: {
+  children: React.ReactNode
+  cellBorder: boolean
+}) {
   const endpointsList = useEndpointsListQuery()
   const { globalFilter, sorting, onSortingChange, attributeFilters } = useEndpointFilters()
 
@@ -129,7 +137,7 @@ function EndpointsDataGrid({ children }: { children: React.ReactNode }) {
       tableLayout={{
         headerSticky: true,
         width: 'fixed',
-        cellBorder: false,
+        cellBorder,
         virtualized: true,
         rowHeight: 58.5,
         overscan: 20,
