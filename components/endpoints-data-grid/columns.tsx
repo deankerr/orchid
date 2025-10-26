@@ -43,6 +43,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
     meta: {
       skeleton: <Skeleton className="h-8 w-full" />,
       headerTitle: 'Model',
+      cellClassName: 'px-3',
     },
   },
 
@@ -92,6 +93,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
     meta: {
       skeleton: <Skeleton className="h-8 w-full" />,
       headerTitle: 'Provider',
+      cellClassName: 'px-3',
     },
   },
 
@@ -153,11 +155,12 @@ export const columns: ColumnDef<EndpointRow>[] = [
         />
       )
     },
-    size: 160,
+    size: 144,
     meta: {
       headerClassName: 'text-center',
       skeleton: <Skeleton className="h-6 w-full" />,
       headerTitle: 'Modalities',
+      cellClassName: 'px-2',
     },
   },
 
@@ -184,11 +187,11 @@ export const columns: ColumnDef<EndpointRow>[] = [
         />
       )
     },
-    size: 270,
+    size: 244,
     meta: {
       headerClassName: 'text-center',
       headerTitle: 'Features',
-      cellClassName: 'text-center',
+      cellClassName: 'text-center px-2',
       skeleton: <Skeleton className="h-6 w-full" />,
     },
   },
@@ -259,6 +262,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
       headerClassName: 'text-center',
       skeleton: <Skeleton className="h-8 w-full" />,
       headerTitle: 'Limits',
+      cellClassName: 'px-2',
     },
   },
 
@@ -303,6 +307,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
       headerClassName: 'text-center',
       skeleton: <Skeleton className="h-8 w-full" />,
       headerTitle: 'Other $',
+      cellClassName: 'px-2',
     },
   },
 
@@ -325,6 +330,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
       headerClassName: 'text-center',
       skeleton: <Skeleton className="h-8 w-full" />,
       headerTitle: 'Data Policy',
+      cellClassName: 'px-2',
     },
   },
 
@@ -343,7 +349,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
     meta: {
       skeleton: <Skeleton className="h-6 w-full" />,
       headerClassName: 'text-center',
-      cellClassName: 'text-center',
+      cellClassName: 'text-center px-2',
       headerTitle: 'Quantization',
     },
   },

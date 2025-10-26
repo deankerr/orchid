@@ -70,7 +70,7 @@ export function AttributeBadgeSet({
   const pdata = processPairs(data)
 
   return (
-    <div className="flex items-center justify-center gap-1.5">
+    <div className="flex items-center justify-center gap-1">
       {pdata.map((attr) =>
         attr.has ? (
           <AttributeBadge

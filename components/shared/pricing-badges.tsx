@@ -148,5 +148,5 @@ export function PricingBadgeSet({ endpoint }: PricingBadgeProps) {
     return null
   }
 
-  return <div className="flex flex-wrap gap-1">{pricingItems}</div>
+  return <div className="flex items-center justify-center gap-1">{pricingItems}</div>
 }
