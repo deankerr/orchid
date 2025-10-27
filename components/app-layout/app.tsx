@@ -18,6 +18,7 @@ export function App({ children }: { children: React.ReactNode }) {
           <nav className="flex grow items-center gap-2 text-sm font-medium">
             <NavButton href="/endpoints">Endpoints</NavButton>
             <NavButton href="/changes">Changes</NavButton>
+            <NavButton href="/changes/feed">Feed</NavButton>
 
             <div className="ml-auto">
               <AdminMenu />
