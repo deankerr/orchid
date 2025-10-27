@@ -25,7 +25,9 @@ export const changesByCrawlId = query({
           .order('desc')
           .collect()
 
-        return batch.filter((b) => b.entity_type === 'endpoint')
+        return batch
+          .filter((b) => b.entity_type === 'endpoint')
+          .filter((b) => b.path !== 'provider.icon_url')
       })
       .paginate(args.paginationOpts)
   },

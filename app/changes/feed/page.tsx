@@ -1,32 +1,101 @@
 'use client'
 
-import React from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 
 import { usePaginatedQuery } from 'convex/react'
 import * as R from 'remeda'
 
 import { api } from '@/convex/_generated/api'
-import type { EndpointChange } from '@/convex/feed'
+import type { Doc } from '@/convex/_generated/dataModel'
 
 import { PageHeader, PageTitle } from '@/components/app-layout/pages'
 import { ModelCard, ProviderCard } from '@/components/shared/entity-card'
+import { PaginatedLoadButton } from '@/components/shared/paginated-load-button'
 import { PercentageBadge } from '@/components/shared/percentage-badge'
 import { RadBadge } from '@/components/shared/rad-badge'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { formatDateTime, formatPrice, formatRelativeTime } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 
-export default function Page() {
+function usePaginatedQueryWithMinItems() {
+  const MIN_ITEMS_PER_LOAD = 20
+  const MAX_ATTEMPTS = 10
+
   const { results, status, loadMore } = usePaginatedQuery(
     api.feed.changesByCrawlId,
     {},
     { initialNumItems: 1 },
   )
+  const currentResultCount = results.flat().length
 
-  const endpointChanges = results
-    .flat() // TODO use stream grouping
-    .filter((item) => item.path !== 'provider.icon_url')
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [targetCount, setTargetCount] = useState<number | null>(null)
+  const [attempts, setAttempts] = useState(0)
+
+  const loadMoreWithMinItems = useCallback(() => {
+    if (status !== 'CanLoadMore' || isLoadingMore) return
+
+    const target = currentResultCount + MIN_ITEMS_PER_LOAD
+
+    console.log('[PaginatedQuery] START_LOAD_CYCLE', {
+      currentCount: currentResultCount,
+      target,
+      minItems: MIN_ITEMS_PER_LOAD,
+    })
+
+    setIsLoadingMore(true)
+    setTargetCount(target)
+    setAttempts(0)
+    loadMore(1)
+  }, [status, isLoadingMore, currentResultCount, loadMore])
+
+  useEffect(() => {
+    if (!isLoadingMore || targetCount === null) return
+
+    console.log('[PaginatedQuery] CHECK_RESULTS', {
+      currentCount: currentResultCount,
+      targetCount,
+      attempts,
+      status,
+      remaining: targetCount - currentResultCount,
+    })
+
+    if (currentResultCount >= targetCount) {
+      console.log('[PaginatedQuery] TARGET_MET', {
+        currentCount: currentResultCount,
+        targetCount,
+        attempts,
+      })
+      setIsLoadingMore(false)
+      return
+    }
+
+    if (attempts >= MAX_ATTEMPTS || status === 'Exhausted') {
+      console.log('[PaginatedQuery] EXHAUSTED', {
+        attempt: attempts + 1,
+        maxAttempts: MAX_ATTEMPTS,
+      })
+      setIsLoadingMore(false)
+      return
+    }
+
+    setAttempts((prev) => prev + 1)
+    console.log('[PaginatedQuery] RETRYING', { attempt: attempts + 1, maxAttempts: MAX_ATTEMPTS })
+    loadMore(1)
+  }, [currentResultCount, targetCount, isLoadingMore, status, attempts, loadMore])
+
+  return {
+    results,
+    status: isLoadingMore ? ('LoadingMore' as const) : status,
+    loadMore: loadMoreWithMinItems,
+    isLoadingMore,
+  }
+}
+
+export default function Page() {
+  const { results, status, loadMore } = usePaginatedQueryWithMinItems()
+
+  const endpointChanges = results.flat() // TODO use stream grouping
 
   const grouped = Map.groupBy(endpointChanges, (c) => c.crawl_id)
     .entries()
@@ -86,13 +155,9 @@ export default function Page() {
           </div>
         ))}
 
-        {status === 'CanLoadMore' && (
-          <div className="flex justify-center">
-            <Button onClick={() => loadMore(1)} variant="outline">
-              Load More
-            </Button>
-          </div>
-        )}
+        <div className="flex items-center justify-center py-4">
+          <PaginatedLoadButton status={status} onClick={() => loadMore()} />
+        </div>
       </div>
     </>
   )
@@ -126,7 +191,7 @@ function EntityChangesetCard({
   className,
   ...props
 }: {
-  changes: EndpointChange[]
+  changes: Doc<'or_views_changes'>[]
   entity: React.ReactNode
   className?: string
 }) {
@@ -174,7 +239,7 @@ function EntityChangesetCard({
   )
 }
 
-function ChangePair({ change }: { change: EndpointChange }) {
+function ChangePair({ change }: { change: Doc<'or_views_changes'> }) {
   const { before, after, path_level_1, path_level_2 } = change
 
   // Handle array diffs

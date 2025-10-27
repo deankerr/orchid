@@ -9,9 +9,9 @@ import type { Doc } from '@/convex/_generated/dataModel'
 
 import { PageContainer, PageHeader, PageTitle } from '@/components/app-layout/pages'
 import { CopyToClipboardButton } from '@/components/shared/copy-to-clipboard-button'
+import { PaginatedLoadButton } from '@/components/shared/paginated-load-button'
 import { Pill } from '@/components/shared/pill'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import {
@@ -128,15 +128,11 @@ function ChangesResults({
         ))}
       </div>
 
-      {status === 'CanLoadMore' && (
-        <Button onClick={() => loadMore(ITEMS_PER_PAGE)} variant="outline" className="w-full">
-          Load More
-        </Button>
-      )}
-
-      {status === 'LoadingMore' && (
-        <div className="p-4 text-center text-muted-foreground">Loading more changes...</div>
-      )}
+      <PaginatedLoadButton
+        className="mx-auto block"
+        status={status}
+        onClick={() => loadMore(ITEMS_PER_PAGE)}
+      />
     </div>
   )
 }
