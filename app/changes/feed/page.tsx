@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useEffect, useState } from 'react'
+import React from 'react'
 
 import { usePaginatedQuery } from 'convex/react'
 import * as R from 'remeda'
@@ -17,87 +17,11 @@ import { Badge } from '@/components/ui/badge'
 import { formatDateTime, formatPrice, formatRelativeTime } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 
-function usePaginatedQueryWithMinItems() {
-  const MIN_ITEMS_PER_LOAD = 20
-  const MAX_ATTEMPTS = 10
-
-  const { results, status, loadMore } = usePaginatedQuery(
-    api.feed.changesByCrawlId,
-    {},
-    { initialNumItems: 1 },
-  )
-  const currentResultCount = results.flat().length
-
-  const [isLoadingMore, setIsLoadingMore] = useState(false)
-  const [targetCount, setTargetCount] = useState<number | null>(null)
-  const [attempts, setAttempts] = useState(0)
-
-  const loadMoreWithMinItems = useCallback(() => {
-    if (status !== 'CanLoadMore' || isLoadingMore) return
-
-    const target = currentResultCount + MIN_ITEMS_PER_LOAD
-
-    console.log('[PaginatedQuery] START_LOAD_CYCLE', {
-      currentCount: currentResultCount,
-      target,
-      minItems: MIN_ITEMS_PER_LOAD,
-    })
-
-    setIsLoadingMore(true)
-    setTargetCount(target)
-    setAttempts(0)
-    loadMore(1)
-  }, [status, isLoadingMore, currentResultCount, loadMore])
-
-  useEffect(() => {
-    if (!isLoadingMore || targetCount === null) return
-    if (status === 'LoadingFirstPage' || status === 'LoadingMore') return
-
-    console.log('[PaginatedQuery] CHECK_RESULTS', {
-      currentCount: currentResultCount,
-      targetCount,
-      attempts,
-      status,
-      remaining: targetCount - currentResultCount,
-    })
-
-    if (currentResultCount >= targetCount) {
-      console.log('[PaginatedQuery] TARGET_MET', {
-        currentCount: currentResultCount,
-        targetCount,
-        attempts,
-      })
-      setIsLoadingMore(false)
-      return
-    }
-
-    if (attempts >= MAX_ATTEMPTS || status === 'Exhausted') {
-      console.log('[PaginatedQuery] EXHAUSTED', {
-        attempt: attempts + 1,
-        maxAttempts: MAX_ATTEMPTS,
-      })
-      setIsLoadingMore(false)
-      return
-    }
-
-    setAttempts((prev) => prev + 1)
-    console.log('[PaginatedQuery] RETRYING', { attempt: attempts + 1, maxAttempts: MAX_ATTEMPTS })
-    loadMore(1)
-  }, [currentResultCount, targetCount, isLoadingMore, status, attempts, loadMore])
-
-  return {
-    results,
-    status: isLoadingMore ? ('LoadingMore' as const) : status,
-    loadMore: loadMoreWithMinItems,
-    isLoadingMore,
-  }
-}
-
 export default function Page() {
   const { results, status, loadMore } = usePaginatedQuery(
     api.feed.changesByCrawlId,
     {},
-    { initialNumItems: 1 },
+    { initialNumItems: 9999 },
   )
 
   const endpointChanges = results.flat() // TODO use stream grouping

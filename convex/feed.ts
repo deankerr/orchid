@@ -14,12 +14,15 @@ export const changesByCrawlId = query({
   args: {
     paginationOpts: paginationOptsValidator,
   },
-  handler: async (ctx, args) => {
-    // * Get distinct crawl_id values with pagination
-
+  handler: async (ctx, { paginationOpts }) => {
     const batchStream = stream(ctx.db, schema)
       .query('or_views_changes')
-      .withIndex('by_entity_type__crawl_id', (q) => q.eq('entity_type', 'endpoint'))
+      .withIndex('by_entity_type__crawl_id', (q) => {
+        if (paginationOpts.cursor) {
+          return q.eq('entity_type', 'endpoint').lt('crawl_id', paginationOpts.cursor)
+        }
+        return q.eq('entity_type', 'endpoint')
+      })
       .order('desc')
       .distinct(['crawl_id'])
       .map(async (p) => {
@@ -37,26 +40,24 @@ export const changesByCrawlId = query({
       })
 
     const batchResults: EndpointChange[][] = []
+    let continueCursor = ''
     let cycles = 0
 
     for await (const batch of batchStream) {
       cycles++
       const totalResults = batchResults.flat().length
-      console.log({
-        cycles,
-        newBatchResults: batch.length,
-        totalBatches: batchResults.length,
-        totalResults,
-      })
+      continueCursor = batch?.[0].crawl_id ?? ''
       batchResults.push(batch)
+
       if (cycles >= MAX_CYCLES) break
       if (totalResults >= GOAL_COUNT) break
     }
 
     return {
       page: batchResults,
-      continueCursor: '',
-      isDone: true,
+      continueCursor,
+      isDone: continueCursor === '',
+      pageStatus: null,
     }
   },
 })
