@@ -5,7 +5,7 @@ import type { Doc } from './_generated/dataModel'
 import { query } from './_generated/server'
 import schema from './schema'
 
-export type EndpointChange = Extract<Doc<'or_views_changes'>, { entity_type: 'endpoint' }>
+export type EndpointChangeDoc = Extract<Doc<'or_views_changes'>, { entity_type: 'endpoint' }>
 
 const GOAL_COUNT = 50
 const MAX_CYCLES = 50
@@ -39,15 +39,16 @@ export const changesByCrawlId = query({
           .filter((b) => b.path !== 'provider.icon_url')
       })
 
-    const batchResults: EndpointChange[][] = []
+    const batchResults: { crawl_id: string; data: EndpointChangeDoc[] }[] = []
     let continueCursor = ''
     let cycles = 0
 
     for await (const batch of batchStream) {
       cycles++
       const totalResults = batchResults.flat().length
-      continueCursor = batch?.[0].crawl_id ?? ''
-      batchResults.push(batch)
+      const crawl_id = batch?.[0].crawl_id
+      if (crawl_id) batchResults.push({ crawl_id, data: batch })
+      continueCursor = crawl_id ?? ''
 
       if (cycles >= MAX_CYCLES) break
       if (totalResults >= GOAL_COUNT) break
