@@ -51,6 +51,7 @@ function usePaginatedQueryWithMinItems() {
 
   useEffect(() => {
     if (!isLoadingMore || targetCount === null) return
+    if (status === 'LoadingFirstPage' || status === 'LoadingMore') return
 
     console.log('[PaginatedQuery] CHECK_RESULTS', {
       currentCount: currentResultCount,
@@ -93,7 +94,11 @@ function usePaginatedQueryWithMinItems() {
 }
 
 export default function Page() {
-  const { results, status, loadMore } = usePaginatedQueryWithMinItems()
+  const { results, status, loadMore } = usePaginatedQuery(
+    api.feed.changesByCrawlId,
+    {},
+    { initialNumItems: 1 },
+  )
 
   const endpointChanges = results.flat() // TODO use stream grouping
 
@@ -121,7 +126,9 @@ export default function Page() {
   return (
     <>
       <PageHeader>
-        <PageTitle>Endpoint Changes Feed (preview)</PageTitle>
+        <PageTitle>
+          Endpoint Changes Feed (preview) [{results.length}/{results.flat().length}]
+        </PageTitle>
       </PageHeader>
 
       <div className="space-y-8 px-4 py-6">
@@ -156,7 +163,7 @@ export default function Page() {
         ))}
 
         <div className="flex items-center justify-center py-4">
-          <PaginatedLoadButton status={status} onClick={() => loadMore()} />
+          <PaginatedLoadButton status={status} onClick={() => loadMore(1)} />
         </div>
       </div>
     </>
