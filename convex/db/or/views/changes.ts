@@ -49,8 +49,9 @@ export const table = defineTable(
 )
   .index('by_previous_crawl_id__crawl_id', ['previous_crawl_id', 'crawl_id'])
   .index('by_crawl_id', ['crawl_id'])
+  .index('by_entity_type__crawl_id', ['entity_type', 'crawl_id'])
 
-// NOTE: we can't create this with a union validator
+// NOTE: we can't create the vTable helper with a union validator
 // export const vTable = createTableVHelper('or_views_changes', table.validator)
 
 export type OrViewsChangeDoc = Doc<'or_views_changes'>

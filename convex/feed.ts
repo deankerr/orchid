@@ -15,18 +15,20 @@ export const changesByCrawlId = query({
     // * Get distinct crawl_id values with pagination
     return stream(ctx.db, schema)
       .query('or_views_changes')
-      .withIndex('by_crawl_id')
+      .withIndex('by_entity_type__crawl_id', (q) => q.eq('entity_type', 'endpoint'))
       .order('desc')
       .distinct(['crawl_id'])
       .map(async (p) => {
         const batch = await ctx.db
           .query('or_views_changes')
-          .withIndex('by_crawl_id', (q) => q.eq('crawl_id', p.crawl_id))
+          .withIndex('by_entity_type__crawl_id', (q) =>
+            q.eq('entity_type', 'endpoint').eq('crawl_id', p.crawl_id),
+          )
           .order('desc')
           .collect()
 
         return batch
-          .filter((b) => b.entity_type === 'endpoint')
+          .filter((b) => b.entity_type === 'endpoint') // redundant but sets type
           .filter((b) => b.path !== 'provider.icon_url')
       })
       .paginate(args.paginationOpts)
