@@ -47,7 +47,7 @@ EntityCard.displayName = 'EntityCard'
 export function ProviderCard({ slug }: { slug: string }) {
   const [baseSlug] = slug.split('/')
 
-  const providersList = useCachedQuery(api.db.or.views.providers.list, {}, 'providers-list')
+  const providersList = useCachedQuery(api.db.or.views.providers.list, {})
   const provider = providersList?.find((p) => p.slug === baseSlug)
 
   return (
@@ -60,7 +60,7 @@ export function ProviderCard({ slug }: { slug: string }) {
 }
 
 export function ModelCard({ slug }: { slug: string }) {
-  const modelsList = useCachedQuery(api.db.or.views.models.list, {}, 'models-list')
+  const modelsList = useCachedQuery(api.db.or.views.models.list, {})
   const model = modelsList?.find((m) => m.slug === slug)
 
   return (

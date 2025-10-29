@@ -8,7 +8,15 @@ type MaterializedSnapshot = ReturnType<typeof materializeModelEndpoints>
 type ChangeDraft = Omit<OrViewsChangeFields, 'crawl_id' | 'previous_crawl_id'>
 
 const DIFF_OPTIONS: DiffOptions = {
-  keysToSkip: ['updated_at', 'unavailable_at', 'stats', 'or_added_at', 'model.or_added_at'],
+  keysToSkip: [
+    'updated_at',
+    'unavailable_at',
+    'stats',
+    'status',
+    'or_added_at',
+    'model.or_added_at',
+    'provider.icon_url',
+  ],
   embeddedObjKeys: {
     // models
     input_modalities: '$value',
