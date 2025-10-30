@@ -13,7 +13,7 @@ const init = internalMutation({
       return
     }
 
-    await ctx.scheduler.runAfter(0, internal.snapshots.crawl.main.run, {
+    await ctx.scheduler.runAfter(1000 * 60, internal.snapshots.crawl.main.run, {
       apps: false,
       uptimes: false,
       modelAuthors: false,
