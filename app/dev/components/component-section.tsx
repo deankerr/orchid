@@ -20,7 +20,7 @@ export function ComponentSection({
         {description && <p className="text-sm text-muted-foreground">{description}</p>}
       </div>
 
-      <div className={cn('flex flex-wrap gap-6 md:grid md:grid-cols-4', className)}>{children}</div>
+      <div className={cn('flex flex-wrap gap-6', className)}>{children}</div>
     </div>
   )
 }
