@@ -12,13 +12,17 @@ export function EntityAvatar({
 } & React.ComponentProps<'div'>) {
   return (
     <div
-      className={cn('grid size-6 shrink-0 place-content-stretch rounded-sm', className)}
+      className={cn(
+        'grid aspect-square shrink-0 place-content-stretch rounded-sm font-mono uppercase',
+        !src && 'bg-muted',
+        className,
+      )}
       {...props}
     >
       {src ? (
         <img src={src} className="size-full object-cover" alt="" />
       ) : (
-        <span className="content-center bg-muted text-center font-mono text-sm uppercase">
+        <span className="content-center text-center text-[70%]">
           {fallback.replace(/[^a-zA-Z0-9]/g, '').slice(0, 2)}
         </span>
       )}
