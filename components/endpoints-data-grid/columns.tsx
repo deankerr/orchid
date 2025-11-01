@@ -37,13 +37,13 @@ export const columns: ColumnDef<EndpointRow>[] = [
         />
       )
     },
-    size: 310,
+    size: 260,
     sortingFn: fuzzySort,
     enableHiding: false,
     meta: {
       skeleton: <Skeleton className="h-8 w-full" />,
       headerTitle: 'Model',
-      cellClassName: 'px-3',
+      cellClassName: 'pl-3 pr-0',
     },
   },
 
@@ -54,7 +54,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
       <DataGridColumnHeader
         column={column}
         title="PROVIDER"
-        className="justify-start has-[>svg]:pl-4"
+        className="justify-start has-[>svg]:pl-3"
       />
     ),
     cell: ({ row }) => {
@@ -87,13 +87,13 @@ export const columns: ColumnDef<EndpointRow>[] = [
         </div>
       )
     },
-    size: 260,
+    size: 220,
     sortingFn: fuzzySort,
     enableHiding: false,
     meta: {
       skeleton: <Skeleton className="h-8 w-full" />,
       headerTitle: 'Provider',
-      cellClassName: 'px-3',
+      cellClassName: 'pl-3 pr-0',
     },
   },
 
