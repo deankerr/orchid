@@ -33,7 +33,7 @@ export const EndpointTransformSchema = z
 
     variant: z.string(),
     quantization: z.string().nullable(),
-    supported_parameters: z.array(z.string()),
+    supported_parameters: z.array(z.string()).transform((arr) => arr.sort()),
 
     data_policy: z.object({
       training: z.boolean().optional(),

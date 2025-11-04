@@ -12,7 +12,11 @@ export const ProviderTransformSchema = z
     }),
 
     headquarters: z.string().optional(),
-    datacenters: z.string().array().optional(),
+    datacenters: z
+      .string()
+      .array()
+      .transform((arr) => arr.sort())
+      .optional(),
     statusPageUrl: z.url().nullable(),
 
     dataPolicy: z.object({
