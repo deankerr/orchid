@@ -3,6 +3,8 @@ import type { NextConfig } from 'next'
 import bundleAnalyzer from '@next/bundle-analyzer'
 import { withPostHogConfig } from '@posthog/nextjs-config'
 
+import { getConvexHttpUrl } from './lib/utils'
+
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
@@ -41,6 +43,10 @@ const nextConfig: NextConfig = {
       {
         source: '/snarf/:path*',
         destination: 'https://us.i.posthog.com/:path*',
+      },
+      {
+        source: '/api/preview/endpoints',
+        destination: getConvexHttpUrl('/listmeps'),
       },
     ]
   },
