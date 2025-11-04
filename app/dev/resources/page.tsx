@@ -5,6 +5,7 @@ import { api } from '@/convex/_generated/api'
 import { PageContainer, PageHeader, PageTitle } from '@/components/app-layout/pages'
 import { EntityCard } from '@/components/shared/entity-card'
 import { useCachedQuery } from '@/hooks/use-cached-query'
+import { getConvexHttpUrl } from '@/lib/utils'
 
 function ExtLink({
   href,
@@ -44,6 +45,10 @@ export default function Page() {
         <div className="space-x-1">
           Analytics:
           <ExtLink href="https://openrouter.ai/api/frontend/models/find?">(Find)</ExtLink>
+        </div>
+        <div className="space-x-1">
+          HTTP API:
+          <ExtLink href={getConvexHttpUrl('/listmeps')}>listmeps</ExtLink>
         </div>
       </div>
 
