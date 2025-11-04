@@ -203,8 +203,8 @@ const ScrollMask = ({
           'before:h-(--top-fade-height) after:h-(--bottom-fade-height)',
           showMask.top ? 'before:opacity-100' : 'before:opacity-0',
           showMask.bottom ? 'after:opacity-100' : 'after:opacity-0',
-          'before:bg-gradient-to-b before:from-background before:to-transparent',
-          'after:bg-gradient-to-t after:from-background after:to-transparent',
+          'before:bg-linear-to-b before:from-background before:to-transparent',
+          'after:bg-linear-to-t after:from-background after:to-transparent',
           className,
         )}
       />
@@ -224,8 +224,8 @@ const ScrollMask = ({
           'before:w-(--left-fade-width) after:w-(--right-fade-width)',
           showMask.left ? 'before:opacity-100' : 'before:opacity-0',
           showMask.right ? 'after:opacity-100' : 'after:opacity-0',
-          'before:bg-gradient-to-r before:from-background before:to-transparent',
-          'after:bg-gradient-to-l after:from-background after:to-transparent',
+          'before:bg-linear-to-r before:from-background before:to-transparent',
+          'after:bg-linear-to-l after:from-background after:to-transparent',
           className,
         )}
       />

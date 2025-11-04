@@ -95,7 +95,7 @@ function DataGridTableHeadRow<TData>({
       className={cn(
         'bg-muted/40',
         props.tableLayout?.headerBorder && '[&>th]:border-b',
-        props.tableLayout?.cellBorder && '[&_>:last-child]:border-e-0',
+        props.tableLayout?.cellBorder && '*:last:border-e-0',
         props.tableLayout?.stripped && 'bg-transparent',
         props.tableLayout?.headerBackground === false && 'bg-transparent',
         props.tableClassNames?.headerRow,
@@ -207,9 +207,9 @@ function DataGridTableBodyRowSkeleton({ children }: { children: ReactNode }) {
         !props.tableLayout?.stripped &&
           props.tableLayout?.rowBorder &&
           'border-b border-border [&:not(:last-child)>td]:border-b',
-        props.tableLayout?.cellBorder && '[&_>:last-child]:border-e-0',
+        props.tableLayout?.cellBorder && '*:last:border-e-0',
         props.tableLayout?.stripped && 'odd:bg-muted/90 hover:bg-transparent odd:hover:bg-muted',
-        table.options.enableRowSelection && '[&_>:first-child]:relative',
+        table.options.enableRowSelection && '*:first:relative',
         props.tableClassNames?.bodyRow,
       )}
     >
@@ -286,9 +286,9 @@ function DataGridTableBodyRow<TData>({
         !props.tableLayout?.stripped &&
           props.tableLayout?.rowBorder &&
           'border-b border-border [&:not(:last-child)>td]:border-b',
-        props.tableLayout?.cellBorder && '[&_>:last-child]:border-e-0',
+        props.tableLayout?.cellBorder && '*:last:border-e-0',
         props.tableLayout?.stripped && 'odd:bg-muted/90 hover:bg-transparent odd:hover:bg-muted',
-        table.options.enableRowSelection && '[&_>:first-child]:relative',
+        table.options.enableRowSelection && '*:first:relative',
         props.tableClassNames?.bodyRow,
       )}
     >
@@ -532,6 +532,7 @@ function DataGridTableVirtual<TData>() {
       ? props.skeletonRows || pagination?.pageSize || 10
       : table.getRowModel().rows.length
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const virtualizer = useVirtualizer({
     count: rowCount,
     getScrollElement: () => scrollElementRef.current,

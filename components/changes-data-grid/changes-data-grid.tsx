@@ -183,6 +183,7 @@ export function ChangesDataGrid({
     [],
   )
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     columns,
     data: changes,
@@ -217,7 +218,7 @@ export function ChangesDataGrid({
             <SheetDescription>Raw change entry data</SheetDescription>
           </SheetHeader>
           <div className="overflow-auto">
-            <pre className="p-4 pt-0 text-xs leading-relaxed break-words whitespace-pre-wrap">
+            <pre className="p-4 pt-0 text-xs leading-relaxed wrap-break-word whitespace-pre-wrap">
               {selectedChange ? JSON.stringify(selectedChange, null, 2) : 'No data selected'}
             </pre>
           </div>
@@ -316,7 +317,7 @@ function BlockValue({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       className={cn(
-        'max-w-64 rounded-sm border border-border/50 bg-card/50 p-2 text-[95%] break-words text-card-foreground has-data-[slot=badge]:border-transparent has-data-[slot=badge]:bg-transparent has-data-[slot=badge]:p-0.5',
+        'max-w-64 rounded-sm border border-border/50 bg-card/50 p-2 text-[95%] wrap-break-word text-card-foreground has-data-[slot=badge]:border-transparent has-data-[slot=badge]:bg-transparent has-data-[slot=badge]:p-0.5',
         className,
       )}
       {...props}

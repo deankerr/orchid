@@ -48,8 +48,8 @@ import { SpriteIcon } from '@/components/ui/sprite-icon'
 ```tsx
 import { AttributeBadge } from '@/components/shared/attribute-badge'
 
-<AttributeBadge
-  icon="wrench"  // sprite icon name - fully type-safe
+;<AttributeBadge
+  icon="wrench" // sprite icon name - fully type-safe
   name="tools"
   details="Supports tool parameters"
   color="blue"
@@ -62,7 +62,7 @@ import { AttributeBadge } from '@/components/shared/attribute-badge'
 // In lib/attributes.ts - no casting needed
 export const attributes = {
   tools: {
-    icon: 'wrench',  // TypeScript enforces valid icon names
+    icon: 'wrench', // TypeScript enforces valid icon names
     details: 'Supports tool parameters',
     color: 'blue',
   },
@@ -74,6 +74,7 @@ export const attributes = {
 The sprite currently includes 26 icons used in the endpoints data grid:
 
 **Core Icons:**
+
 - `audio-lines` - Audio capabilities
 - `brain-cog` - AI reasoning features
 - `database` - Caching functionality
@@ -82,6 +83,7 @@ The sprite currently includes 26 icons used in the endpoints data grid:
 - `image` - Image processing
 
 **Attribute Icons:**
+
 - `alarm-clock` - Rate limits
 - `braces` - JSON formatting
 - `cake-slice` - Free tier
@@ -101,6 +103,7 @@ The sprite currently includes 26 icons used in the endpoints data grid:
 - `wrench` - Tools support
 
 **Modality Icons:**
+
 - `file-chart-column-increasing` - File input
 - `image-down` - Image output
 - `image-up` - Image input
@@ -123,23 +126,26 @@ The sprite generation is integrated into the development workflow:
 
 1. **Development**: Run `bun run sprite` when adding new icons
 2. **Build**: Sprite is generated as part of the build process
-3. **Output**: 
+3. **Output**:
    - `public/sprites/lucide-sprite.svg` - The sprite file
    - `lib/sprite-icons.ts` - TypeScript definitions
 
 ## Performance Benefits
 
 ### Bundle Size Reduction
+
 - **Before**: Individual React components (~2-5KB each)
 - **After**: Single sprite file (~8KB total for 26 icons)
 - **Savings**: ~60-80% reduction in icon-related bundle size
 
 ### Runtime Performance
+
 - **Before**: React component overhead per icon
 - **After**: Native SVG symbol referencing
 - **Result**: Faster rendering, especially with many icons
 
 ### Caching Benefits
+
 - Single sprite file cached across all pages
 - No individual icon requests
 - Better browser caching efficiency
@@ -149,28 +155,31 @@ The sprite generation is integrated into the development workflow:
 ### From Lucide React Components
 
 1. **Update imports:**
+
    ```tsx
    // Before
    import { BrainCogIcon } from 'lucide-react'
-   
+
    // After
    import { SpriteIcon } from '@/components/ui/sprite-icon'
    ```
 
 2. **Update usage:**
+
    ```tsx
    // Before
    <BrainCogIcon size={24} className="text-blue-500" />
-   
+
    // After
    <SpriteIcon name="brain-cog" size={24} className="text-blue-500" />
    ```
 
 3. **Update attribute definitions:**
+
    ```tsx
    // Before
    icon: BrainCogIcon,
-   
+
    // After
    icon: 'brain-cog' as SpriteIconName,
    ```

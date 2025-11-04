@@ -8,6 +8,7 @@ export function FeatureFlag({ flag, children }: { flag: string; children: React.
   const [hasMounted, setHasMounted] = useState(false)
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHasMounted(true)
     if (typeof window !== 'undefined' && window.localStorage) {
       const enabled = localStorage.getItem(`feature-${flag}`) === 'true'

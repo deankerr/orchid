@@ -15,7 +15,7 @@
 
 ## OR entity changes tracking
 
-- [X] generate diffs of archive data
+- [x] generate diffs of archive data
 - refine diffs to show e.g. pricing changes
 
 # frontend
@@ -42,7 +42,7 @@
 - model.reasoning_config CAN be empty for a reasoning model
 - model.context_length is always included in endpoint.context_length[]
 
-- [X] add 'audio' input modality
+- [x] add 'audio' input modality
 
 ## endpoints
 

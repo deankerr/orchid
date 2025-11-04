@@ -2,7 +2,7 @@
 title: Merging Streams of Convex data
 source: https://stack.convex.dev/merging-streams-of-convex-data#merge-the-streams
 author:
-  - "[[Lee Danilek]]"
+  - '[[Lee Danilek]]'
 published:
 created: 2025-10-19
 description: New convex-helpers are available now for fetching streams of documents, merging them together, filtering them them out, and paginating the results. Wi...
@@ -10,6 +10,7 @@ tags:
   - clippings
   - convex
 ---
+
 7 months ago
 
 ![Merging Streams of Convex data](https://stack.convex.dev/_next/image?url=https%3A%2F%2Fcdn.sanity.io%2Fimages%2Fts10onj4%2Fproduction%2Fc4d107b71fb621f093ddc845d315ca750666442d-1452x956.png&w=3840&q=75)
@@ -19,47 +20,41 @@ tags:
 New convex-helpers are available now for fetching streams of documents, merging them together, filtering them them out, and paginating the results. With these helpers, you can replicate patterns you may know from SQL: , , , [`GROUP BY`](https://stack.convex.dev/translate-sql-into-convex-queries/#group-by), and clauses where index fields are skipped.
 
 ```ts
-import { stream, mergedStream } from "convex-helpers/server/stream";
+import { mergedStream, stream } from 'convex-helpers/server/stream'
 
-import schema from "./schema";
+import schema from './schema'
 
 export const conversation = query({
-
-  args: { u1: v.id("users"), u2: v.id("users"), paginationOpts: paginationOptsValidator },
+  args: { u1: v.id('users'), u2: v.id('users'), paginationOpts: paginationOptsValidator },
 
   handler: async (ctx, { u1, u2, paginationOpts }) => {
-
     // Stream of messages from u1 -> u2, oldest to newest
 
     const messages1 = stream(ctx.db, schema)
+      .query('messages')
 
-      .query("messages")
-
-      .withIndex("from_to", (q) => q.eq("from", u1).eq("to", u2));
+      .withIndex('from_to', (q) => q.eq('from', u1).eq('to', u2))
 
     // Stream of messages from u2 -> u1, oldest to newest
 
     const messages2 = stream(ctx.db, schema)
+      .query('messages')
 
-      .query("messages")
-
-      .withIndex("from_to", (q) => q.eq("from", u2).eq("to", u1));
+      .withIndex('from_to', (q) => q.eq('from', u2).eq('to', u1))
 
     // Merged stream of messages between u1 <-> u2, oldest to newest
 
-    const messages = mergedStream([messages1, messages2], ["_creationTime"]);
+    const messages = mergedStream([messages1, messages2], ['_creationTime'])
 
     // Filter out archived messages, with arbitrary TypeScript predicates
 
-    const activeMessages = messages.filterWith(async (m) => !m.archived);
+    const activeMessages = messages.filterWith(async (m) => !m.archived)
 
     // Paginate the result
 
-    return activeMessages.paginate(paginationOpts);
-
+    return activeMessages.paginate(paginationOpts)
   },
-
-});
+})
 ```
 
 Check out the [companion article](https://stack.convex.dev/translate-sql-into-convex-queries) for more examples of patterns with vanilla Convex and query streams.
@@ -68,7 +63,7 @@ Check out the [companion article](https://stack.convex.dev/translate-sql-into-co
 
 ## Writing Queries as Code
 
-Convex lets you query your database with plain TypeScript, so you can run many npm libraries *within* a database call. Your query is automatically reactive, cached, and with no race conditions.
+Convex lets you query your database with plain TypeScript, so you can run many npm libraries _within_ a database call. Your query is automatically reactive, cached, and with no race conditions.
 
 When fetching database records, you might find the interface a bit limited. The core interface is designed to be a [good abstraction over your data](https://www.youtube.com/watch?v=dS9jtih4dI4&t=1802s), but with only the ability to read index ranges, advanced patterns may feel out of your grasp.
 
@@ -122,9 +117,9 @@ With data streaming in from multiple index ranges, we can merge them to generate
 
 In code, you can do this with a `mergedStream`. If `messages1` and `messages2` are the two streams, you merge them like so:
 
-The second argument (`["_creationTime"]` in the example) determines the order used for merging. Under the hood, mergedStream looks at all of the potential next documents from each stream, and yields the one that comes next in this order. In order to work, *each stream must already be ordered in that way*. So `messages1` and `messages2` must be ordered by `["_creationTime"]`.
+The second argument (`["_creationTime"]` in the example) determines the order used for merging. Under the hood, mergedStream looks at all of the potential next documents from each stream, and yields the one that comes next in this order. In order to work, _each stream must already be ordered in that way_. So `messages1` and `messages2` must be ordered by `["_creationTime"]`.
 
-So does that mean the second argument *must* be `["_creationTime"]`? Nope, it still gives you extra flexibility. Imagine that `messages1` is composed of messages from user Egon to user Peter, and `messages2` is messages from Peter to Egon. Since “from” and “to” fields are constant within each stream, each stream is *also* ordered by `["from", "to", "_creationTime"]`. So what happens if you merge in that order instead? Then all of Egon’s messages will be before Peter’s in the mergedStream.
+So does that mean the second argument _must_ be `["_creationTime"]`? Nope, it still gives you extra flexibility. Imagine that `messages1` is composed of messages from user Egon to user Peter, and `messages2` is messages from Peter to Egon. Since “from” and “to” fields are constant within each stream, each stream is _also_ ordered by `["from", "to", "_creationTime"]`. So what happens if you merge in that order instead? Then all of Egon’s messages will be before Peter’s in the mergedStream.
 
 Concretely, you’re allowed to merge with documents using a prefix of index fields, which are then ordered based on the rest of the index’s fields, similar to using `.withIndex` with `q.eq(field, value)`.
 
@@ -145,50 +140,43 @@ If we start with a stream of friends, and do `flatMap` so each friend expands in
 In this example, we have a friends table which has all of the friends for a user, and we want to paginate through all messages sent to this user by friends.
 
 ```tsx
-import { stream } from "convex-helpers/server/stream";
+import { stream } from 'convex-helpers/server/stream'
 
-import schema from "./schema";
+import schema from './schema'
 
 export const messagesFromFriends = query({
-
-  args: { user: v.id("users"), paginationOpts: paginationOptsValidator },
+  args: { user: v.id('users'), paginationOpts: paginationOptsValidator },
 
   handler: async (ctx, { user, paginationOpts }) => {
-
     // Stream of the friends for args.user
 
     const friends = stream(ctx.db, schema)
+      .query('friends')
 
-      .query("friends")
-
-      .withIndex("user", q => q.eq("userId", args.user));
+      .withIndex('user', (q) => q.eq('userId', args.user))
 
     // For each friend, get a stream of the messages they sent to args.user.
 
     // The flatMap makes this a stream of messages, ordered by [friendId, _creationTime]
 
-    const messagesFromFriends = friends
+    const messagesFromFriends = friends.flatMap(
+      (friend) =>
+        stream(ctx.db, schema)
+          .query('messages')
 
-        .flatMap((friend) => stream(ctx.db, schema)
+          .withIndex('from_to', (q) => q.eq('from', friend.friendId).eq('to', args.user)),
 
-              .query("messages")
+      ['from', 'to'],
+    )
 
-          .withIndex("from_to", q => q.eq("from", friend.friendId).eq("to", args.user)),
+    // Paginate the result
 
-                ["from", "to"],
-
-        );
-
-        // Paginate the result
-
-        return messagesFromFriends.paginate(args.paginationOpts);
-
-    },
-
-});
+    return messagesFromFriends.paginate(args.paginationOpts)
+  },
+})
 ```
 
-Note the second argument of `flatMap` is the indexed fields of the inner stream. In this example, `flatMap` turns each friend into a stream of messages with the "from\_to" index, so the second argument to `flatMap` is the fields of that index: `["from", "to"]`.
+Note the second argument of `flatMap` is the indexed fields of the inner stream. In this example, `flatMap` turns each friend into a stream of messages with the "from_to" index, so the second argument to `flatMap` is the fields of that index: `["from", "to"]`.
 
 Now we have flat-mapped a stream into a larger stream, but we’ve lost information from the original stream. What if there’s some information on the “friend” document and we want every one of their messages to be tagged with that information. Let’s build some true JOIN-like behavior, with fields from both tables coming together so the result has the fields of both.
 
@@ -246,8 +234,8 @@ Streams are built to work well with `stream(...).<query>.paginate(opts)`, but th
 
 1. Indexed fields, including those from filtered-out documents, are encoded into pagination cursors without encryption. If you use filtering to exclude documents that the client should not know about, their index keys may be leaked to the client. For example,
 2. Pagination cursors only work when passed back into the same stream, constructed in the same way. If your query is data-dependent, paginated queries might get confused. For example,
-	This query looks at a different index range depending on data in the “users” table. If a new user is created, pages will try to reload using cursors that correspond to the original user.
-	When using `.paginate` on a native `ctx.db.query`, we detect this case and throw an error which causes the client to discard all pages and start over. But with `stream` pagination, you would have to identify this issue yourself.
+   This query looks at a different index range depending on data in the “users” table. If a new user is created, pages will try to reload using cursors that correspond to the original user.
+   When using `.paginate` on a native `ctx.db.query`, we detect this case and throw an error which causes the client to discard all pages and start over. But with `stream` pagination, you would have to identify this issue yourself.
 3. Reactive pagination allows the native `ctx.db.query().paginate` to keep pages contiguous even as documents are added and removed. See the [Fully Reactive Pagination](https://stack.convex.dev/fully-reactive-pagination) post. But streaming pagination doesn’t have this guarantee automatically. If you’re using reactive pagination, like the React `usePaginatedQuery` hook, holes or overlaps may develop between pages. To avoid such problems, you can pass the `continueCursor` back in as `endCursor` to pagination opts, which will ensure that a page ends at the same place where the next page starts. This requires calling each query twice, since you don't know the continueCursor until after the first execution. If you’re calling your paginated query in a non-reactive context like an action, this won’t be an issue.
 
 To get all the pagination features you know and love from vanilla Convex, make sure to (1) not use `.filterWith` for access control, (2) keep query definitions stable even if data changes, and (3) use non-reactive pagination or pass `endCursor` through.
