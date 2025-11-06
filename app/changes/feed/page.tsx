@@ -5,24 +5,22 @@ import { useState } from 'react'
 import { usePaginatedQuery } from 'convex/react'
 
 import { api } from '@/convex/_generated/api'
+import { EndpointChangeDoc } from '@/convex/feed'
 
 import { PageHeader, PageTitle } from '@/components/app-layout/pages'
+import { FeedList, FeedTimeline } from '@/components/changes-feed/feed-groups'
 import {
   FeedItem,
   FeedItemContent,
   FeedItemPath,
   FeedItemSentence,
-  FeedList,
-  FeedTimeline,
-  InlineValueChange,
-  ModelInline,
-  ProviderInline,
-  type EndpointChangeDoc,
-} from '@/components/changes-feed'
-import { ProviderBadge } from '@/components/shared/entity-badge'
+} from '@/components/changes-feed/feed-item'
+import { InlineValueChange } from '@/components/changes-feed/feed-values'
+import { ModelBadge, ProviderBadge } from '@/components/shared/entity-badge'
 import { PaginatedLoadButton } from '@/components/shared/paginated-load-button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
+import { useCachedQuery } from '@/hooks/use-cached-query'
 import { groupBy } from '@/lib/grouping'
 import { cn } from '@/lib/utils'
 
@@ -33,6 +31,10 @@ export default function Page() {
     {},
     { initialNumItems: 50 },
   )
+
+  // preload badge data
+  useCachedQuery(api.db.or.views.providers.list, {})
+  useCachedQuery(api.db.or.views.models.list, {})
 
   return (
     <>
@@ -107,17 +109,15 @@ function ChangeFeedItem({
     ) : change.change_kind === 'delete' ? (
       <span className="text-rose-400">deleted</span>
     ) : (
-      'updated:'
+      'changed:'
     )
 
   return (
     <FeedItem className="py-1.5 text-xs">
       <FeedItemContent>
         <FeedItemSentence>
-          {showProvider && (
-            <ProviderInline slug={change.provider_tag_slug} showName={false} showSlug />
-          )}
-          endpoint for <ModelInline slug={change.model_slug} />
+          {showProvider && <ProviderBadge slug={change.provider_tag_slug} inline />}
+          endpoint for <ModelBadge slug={change.model_slug} inline />
           {actionText}
           {change.change_kind === 'update' && (
             <>
