@@ -33,7 +33,6 @@ export const columns: ColumnDef<EndpointRow>[] = [
           icon_url={endpoint.model.icon_url}
           name={endpoint.model.name}
           slug={endpoint.model.slug}
-          className="grow"
         />
       )
     },
@@ -64,12 +63,13 @@ export const columns: ColumnDef<EndpointRow>[] = [
 
       return (
         <div className="flex items-center gap-1">
-          <EntityBadge
-            icon_url={endpoint.provider.icon_url}
-            name={endpoint.provider.name}
-            slug={endpoint.provider.tag_slug}
-            className="grow"
-          />
+          <div className="grow">
+            <EntityBadge
+              icon_url={endpoint.provider.icon_url}
+              name={endpoint.provider.name}
+              slug={endpoint.provider.tag_slug}
+            />
+          </div>
 
           {endpointGone.has ? (
             <AttributeBadge
