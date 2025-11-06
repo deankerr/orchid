@@ -14,9 +14,7 @@ const adminLinks = [
   { href: '/dev/archives', label: 'Archives' },
   { href: '/dev/resources', label: 'Resources' },
   { href: '/dev/components', label: 'Components' },
-  { href: '/dev/changes', label: 'Changes' },
-  { href: '/dev/changes/materialized', label: 'Changes M' },
-  { href: '/changes/feed', label: 'Changes Feed' },
+  { href: '/dev/changes', label: 'Changes (Raw)' },
 ]
 
 export function AdminMenu() {
@@ -25,7 +23,7 @@ export function AdminMenu() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="sm" className="border-dashed font-mono">
-            Admin
+            A
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
