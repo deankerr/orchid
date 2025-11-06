@@ -77,6 +77,12 @@ export function AttributeFilterControls() {
                 onChange={(mode) => setAttributeFilter('reasoning', mode)}
               />
               <AttributeFilter
+                name="mandatory_reasoning"
+                label="Mandatory Reasoning"
+                mode={attributeFilters.mandatory_reasoning ?? 'any'}
+                onChange={(mode) => setAttributeFilter('mandatory_reasoning', mode)}
+              />
+              <AttributeFilter
                 name="tools"
                 label="Tools"
                 mode={attributeFilters.tools ?? 'any'}
