@@ -15,7 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useCachedQuery } from '@/hooks/use-cached-query'
 import { cn } from '@/lib/utils'
 
-import { EntityCard } from '../shared/entity-card'
+import { EntityBadge } from '../shared/entity-badge'
 
 export function OREntityCombobox({
   value,
@@ -60,11 +60,10 @@ export function OREntityCombobox({
           className={cn('w-[300px] justify-between font-normal', className)}
         >
           {selected ? (
-            <EntityCard
+            <EntityBadge
               icon_url={selected.icon_url}
               name={selected.name}
               slug={selected.slug}
-              hoverSlugReveal={false}
               className="flex-1"
             />
           ) : (
@@ -98,12 +97,11 @@ export function OREntityCombobox({
                       setOpen(false)
                     }}
                   >
-                    <EntityCard
+                    <EntityBadge
                       icon_url={m.icon_url}
                       name={m.name}
                       slug={m.slug}
                       className="flex-1"
-                      hoverSlugReveal={false}
                     />
                   </CommandItem>
                 ))}
@@ -121,12 +119,11 @@ export function OREntityCombobox({
                       setOpen(false)
                     }}
                   >
-                    <EntityCard
+                    <EntityBadge
                       icon_url={p.icon_url}
                       name={p.name}
                       slug={p.slug}
                       className="flex-1"
-                      hoverSlugReveal={false}
                     />
                   </CommandItem>
                 ))}

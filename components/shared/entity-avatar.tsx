@@ -22,7 +22,7 @@ export function EntityAvatar({
       {src ? (
         <img src={src} className="size-full object-cover" alt="" />
       ) : (
-        <span className="content-center text-center text-[70%]">
+        <span className="content-center text-center text-[90%]">
           {fallback.replace(/[^a-zA-Z0-9]/g, '').slice(0, 2)}
         </span>
       )}

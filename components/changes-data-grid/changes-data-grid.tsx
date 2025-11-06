@@ -12,7 +12,6 @@ import type { Doc } from '@/convex/_generated/dataModel'
 import { DataGrid } from '@/components/data-grid/data-grid'
 import { fuzzyFilter } from '@/components/data-grid/data-grid-fuzzy'
 import { DataGridTable } from '@/components/data-grid/data-grid-table'
-import { ModelCard, ProviderCard } from '@/components/shared/entity-card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -26,6 +25,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { formatDateTime, formatRelativeTime } from '@/lib/formatters'
 import { calculatePercentageChange, cn } from '@/lib/utils'
 
+import { ModelBadge, ProviderBadge } from '../shared/entity-badge'
 import {
   AddIndicator,
   CreateBadge,
@@ -96,7 +96,7 @@ export function ChangesDataGrid({
         cell: ({ row }) => {
           const change = row.original
           if (change.entity_type === 'model' || change.entity_type === 'endpoint') {
-            return <ModelCard slug={change.model_variant_slug ?? 'unknown'} />
+            return <ModelBadge slug={change.model_variant_slug ?? 'unknown'} />
           }
           return <EmptyCell />
         },
@@ -112,7 +112,7 @@ export function ChangesDataGrid({
         cell: ({ row }) => {
           const change = row.original
           if (change.entity_type === 'endpoint' || change.entity_type === 'provider') {
-            return <ProviderCard slug={change.provider_slug ?? 'unknown'} />
+            return <ProviderBadge slug={change.provider_slug ?? 'unknown'} />
           }
           return <EmptyCell />
         },

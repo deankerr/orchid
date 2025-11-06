@@ -3,7 +3,7 @@
 import { api } from '@/convex/_generated/api'
 
 import { PageContainer, PageHeader, PageTitle } from '@/components/app-layout/pages'
-import { EntityCard } from '@/components/shared/entity-card'
+import { EntityBadge } from '@/components/shared/entity-badge'
 import { useCachedQuery } from '@/hooks/use-cached-query'
 import { getConvexHttpUrl } from '@/lib/utils'
 
@@ -57,7 +57,7 @@ export default function Page() {
           ?.sort((a, b) => a.name.localeCompare(b.name))
           .map((m) => (
             <div key={m._id} className="flex justify-between gap-2">
-              <EntityCard icon_url={m.icon_url} name={m.name} slug={m.slug} />
+              <EntityBadge icon_url={m.icon_url} name={m.name} slug={m.slug} />
               <div className="grid shrink-0 font-mono text-xs">
                 <ExtLink href={`https://openrouter.ai/api/v1/models/${m.slug}/endpoints`}>
                   endp/V1
