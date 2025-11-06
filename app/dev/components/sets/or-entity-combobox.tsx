@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 
-import { OREntityCombobox } from '@/components/endpoints-data-grid/or-entity-combobox'
+import { OREntityCombobox } from '@/components/shared/or-entity-combobox'
 
 import { ComponentSection } from '../component-section'
 
