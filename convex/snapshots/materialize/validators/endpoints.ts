@@ -93,7 +93,6 @@ export const EndpointTransformSchema = z
       slug: raw.model_variant_slug,
       variant: raw.variant,
       reasoning: raw.supports_reasoning,
-      mandatory_reasoning: raw.features.is_mandatory_reasoning || false,
       // add variant suffix to name
       name:
         raw.variant === 'beta'
@@ -119,7 +118,6 @@ export const EndpointTransformSchema = z
         'base_slug',
         'icon_url',
         'input_modalities',
-        'mandatory_reasoning',
         'name',
         'or_added_at',
         'output_modalities',
@@ -189,6 +187,7 @@ export const EndpointTransformSchema = z
       file_urls: raw.features.supports_file_urls,
       native_web_search: raw.features.supports_native_web_search,
       multipart: raw.supports_multipart,
+      mandatory_reasoning: raw.features.is_mandatory_reasoning,
 
       // * openrouter
       moderated: raw.moderation_required,
