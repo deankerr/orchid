@@ -42,12 +42,17 @@ export const changesByCrawlId = query({
     const batchResults: { crawl_id: string; data: EndpointChangeDoc[] }[] = []
     let continueCursor = ''
     let cycles = 0
+    let totalResults = 0
 
     for await (const batch of batchStream) {
       cycles++
-      const totalResults = batchResults.flat().length
+
       const crawl_id = batch?.[0].crawl_id
-      if (crawl_id) batchResults.push({ crawl_id, data: batch })
+      if (crawl_id) {
+        batch.sort((a, b) => a.provider_tag_slug.localeCompare(b.provider_tag_slug))
+        batchResults.push({ crawl_id, data: batch })
+        totalResults += batch.length
+      }
       continueCursor = crawl_id ?? ''
 
       if (cycles >= MAX_CYCLES) break

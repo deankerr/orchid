@@ -6,6 +6,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
 
 import { App } from '@/components/app-layout/app'
+import { Toaster } from '@/components/ui/sonner'
 
 import { ConvexClientProvider } from './convex-client-provider'
 
@@ -53,6 +54,7 @@ export default function RootLayout({
             <App>{children}</App>
           </ConvexClientProvider>
         </NuqsAdapter>
+        <Toaster position="top-center" />
       </body>
     </html>
   )
