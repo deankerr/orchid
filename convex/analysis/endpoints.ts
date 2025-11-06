@@ -43,7 +43,6 @@ export const run = internalMutation({
     }
     endpoints.forEach((ep) => {
       if (ep.model.reasoning) modelBooleans.reasoning.count++
-      if (ep.model.mandatory_reasoning) modelBooleans.mandatory_reasoning.count++
     })
     Object.keys(modelBooleans).forEach((key) => {
       modelBooleans[key as keyof typeof modelBooleans].percentage = pct(
@@ -133,6 +132,7 @@ export const run = internalMutation({
       native_web_search: { count: 0, percentage: 0 },
       multipart: { count: 0, percentage: 0 },
       moderated: { count: 0, percentage: 0 },
+      mandatory_reasoning: { count: 0, percentage: 0 },
       deranked: { count: 0, percentage: 0 },
       disabled: { count: 0, percentage: 0 },
     }

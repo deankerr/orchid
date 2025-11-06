@@ -89,6 +89,7 @@ http.route({
             data_policy,
             limits: endpoint.limits,
             moderated: endpoint.moderated,
+            mandatory_reasoning: endpoint.mandatory_reasoning,
             native_web_search: endpoint.native_web_search,
             tools: endpoint.supported_parameters.includes('tools'),
             response_format: endpoint.supported_parameters.includes('response_format'),
@@ -106,7 +107,6 @@ http.route({
           input_modalities: model.input_modalities,
           output_modalities: model.output_modalities,
           reasoning: model.reasoning,
-          mandatory_reasoning: model.mandatory_reasoning,
           // more user-friendly name for these
           providers: endpoints,
         }

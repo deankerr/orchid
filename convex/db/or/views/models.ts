@@ -22,7 +22,6 @@ export const table = defineTable({
   output_modalities: v.array(v.string()),
 
   reasoning: v.boolean(),
-  mandatory_reasoning: v.optional(v.boolean()), // TODO migration: move to endpoint level
 
   // details, informational only
   hugging_face_id: v.optional(v.string()),

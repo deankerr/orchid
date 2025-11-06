@@ -27,7 +27,6 @@ export const table = defineTable({
     output_modalities: v.array(v.string()), // filter
 
     reasoning: v.boolean(), // filter
-    mandatory_reasoning: v.optional(v.boolean()), // TODO migration: move to endpoint level
   }),
 
   // * provider identity
@@ -103,8 +102,7 @@ export const table = defineTable({
   file_urls: v.boolean(),
   native_web_search: v.boolean(),
   multipart: v.boolean(),
-  // ? inconsistently available upstream
-  mandatory_reasoning: v.optional(v.boolean()), // TODO migration
+  mandatory_reasoning: v.optional(v.boolean()), // inconsistently available upstream
 
   // * openrouter
   moderated: v.boolean(),
