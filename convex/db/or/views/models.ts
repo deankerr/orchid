@@ -25,7 +25,6 @@ export const table = defineTable({
 
   // details, informational only
   hugging_face_id: v.optional(v.string()),
-  description: v.optional(v.string()), // TODO: remove
   tokenizer: v.optional(v.string()),
   instruct_type: v.optional(v.string()),
   promotion_message: v.optional(v.string()),

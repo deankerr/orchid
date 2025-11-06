@@ -26,7 +26,6 @@ import type * as http from "../http.js";
 import type * as init from "../init.js";
 import type * as lib_vTable from "../lib/vTable.js";
 import type * as lib_validator from "../lib/validator.js";
-import type * as migrate from "../migrate.js";
 import type * as shared from "../shared.js";
 import type * as snapshots_changes_display from "../snapshots/changes/display.js";
 import type * as snapshots_changes_main from "../snapshots/changes/main.js";
@@ -78,7 +77,6 @@ declare const fullApi: ApiFromModules<{
   init: typeof init;
   "lib/vTable": typeof lib_vTable;
   "lib/validator": typeof lib_validator;
-  migrate: typeof migrate;
   shared: typeof shared;
   "snapshots/changes/display": typeof snapshots_changes_display;
   "snapshots/changes/main": typeof snapshots_changes_main;
