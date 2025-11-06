@@ -13,14 +13,6 @@ export const attributes = {
     has: (endpoint: EndpointPartial) => endpoint.model?.reasoning ?? false,
   },
 
-  mandatory_reasoning: {
-    icon: 'brain-cog',
-    details: 'Model always uses reasoning',
-    color: 'indigo',
-    variant: 'soft',
-    has: (endpoint: EndpointPartial) => endpoint.model?.mandatory_reasoning ?? false,
-  },
-
   // Features (endpoint)
   tools: {
     icon: 'wrench',
@@ -59,6 +51,14 @@ export const attributes = {
     color: 'cyan',
     variant: 'soft',
     has: (endpoint: EndpointPartial) => endpoint.implicit_caching ?? false,
+  },
+
+  mandatory_reasoning: {
+    icon: 'brain-cog',
+    details: 'Reasoning cannot be disabled.',
+    color: 'indigo',
+    variant: 'soft',
+    has: (endpoint: EndpointPartial) => endpoint.mandatory_reasoning ?? false,
   },
 
   // Features (OpenRouter)

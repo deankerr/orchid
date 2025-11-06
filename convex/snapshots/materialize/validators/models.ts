@@ -62,7 +62,6 @@ export const ModelTransformSchema = z
       output_modalities: raw.output_modalities,
 
       reasoning: raw.reasoning_config !== null,
-      mandatory_reasoning: false, // Can only be determined from endpoint data
 
       // details
       description: raw.description,
