@@ -13,12 +13,12 @@ export const ModelTransformSchema = z
     name: z.string(),
     short_name: z.string(),
     author: z.string(),
-    description: z.string(),
     context_length: z.number(),
     input_modalities: z.array(z.string()).transform((arr) => arr.sort()),
     output_modalities: z.array(z.string()).transform((arr) => arr.sort()),
-    group: z.string(),
+    group: z.string().nullable(),
     instruct_type: z.string().nullable(),
+    promotion_message: z.string().nullable(),
     warning_message: z.string().nullable(),
     permaslug: z.string(),
     reasoning_config: z
@@ -64,10 +64,10 @@ export const ModelTransformSchema = z
       reasoning: raw.reasoning_config !== null,
 
       // details
-      description: raw.description,
-      tokenizer: raw.group,
+      tokenizer: raw.group || undefined,
       hugging_face_id: raw.hf_slug || undefined,
       instruct_type: raw.instruct_type || undefined,
+      promotion_message: raw.promotion_message || undefined,
       warning_message: raw.warning_message || undefined,
     }
   })
