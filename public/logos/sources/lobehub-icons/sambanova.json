@@ -1,0 +1,13 @@
+{
+  "slug": "sambanova",
+  "componentName": "SambaNova",
+  "title": "SambaNova",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.6",
+  "colorPrimary": "#EE7624",
+  "colorGradient": null,
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:30.749Z",
+  "needsInvert": false
+}

@@ -1,0 +1,13 @@
+{
+  "slug": "upstage",
+  "componentName": "Upstage",
+  "title": "Upsate",
+  "avatarBackgroundRaw": "COLOR_GRADIENT",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.6",
+  "colorPrimary": "#908AF9",
+  "colorGradient": "linear-gradient(to bottom, #AEBCFE,  #805DFA)",
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:31.365Z",
+  "needsInvert": false
+}

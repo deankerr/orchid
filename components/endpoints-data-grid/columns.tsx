@@ -28,13 +28,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
     ),
     cell: ({ row }) => {
       const endpoint = row.original
-      return (
-        <EntityBadge
-          icon_url={endpoint.model.icon_url}
-          name={endpoint.model.name}
-          slug={endpoint.model.slug}
-        />
-      )
+      return <EntityBadge name={endpoint.model.name} slug={endpoint.model.slug} />
     },
     size: 260,
     sortingFn: fuzzySort,
@@ -64,11 +58,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
       return (
         <div className="flex items-center gap-1">
           <div className="grow">
-            <EntityBadge
-              icon_url={endpoint.provider.icon_url}
-              name={endpoint.provider.name}
-              slug={endpoint.provider.tag_slug}
-            />
+            <EntityBadge name={endpoint.provider.name} slug={endpoint.provider.tag_slug} />
           </div>
 
           {endpointGone.has ? (

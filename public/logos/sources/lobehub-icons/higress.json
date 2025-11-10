@@ -1,0 +1,13 @@
+{
+  "slug": "higress",
+  "componentName": "Higress",
+  "title": "Higress",
+  "avatarBackgroundRaw": "COLOR_GRADIENT",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.6",
+  "colorPrimary": "#3E5CF4",
+  "colorGradient": "linear-gradient(to bottom, #0418FF,  #1E8CFE)",
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:30.714Z",
+  "needsInvert": false
+}

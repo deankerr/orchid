@@ -1,0 +1,13 @@
+{
+  "slug": "vectorizerai",
+  "componentName": "VectorizerAI",
+  "title": "Vectorizer.AI",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.6",
+  "colorPrimary": "#3659FF",
+  "colorGradient": null,
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:31.236Z",
+  "needsInvert": false
+}

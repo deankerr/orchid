@@ -57,7 +57,7 @@ export default function Page() {
           ?.sort((a, b) => a.name.localeCompare(b.name))
           .map((m) => (
             <div key={m._id} className="flex justify-between gap-2">
-              <EntityBadge icon_url={m.icon_url} name={m.name} slug={m.slug} />
+              <EntityBadge name={m.name} slug={m.slug} />
               <div className="grid shrink-0 font-mono text-xs">
                 <ExtLink href={`https://openrouter.ai/api/v1/models/${m.slug}/endpoints`}>
                   endp/V1

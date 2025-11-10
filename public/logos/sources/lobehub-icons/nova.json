@@ -1,0 +1,13 @@
+{
+  "slug": "nova",
+  "componentName": "Nova",
+  "title": "Nova",
+  "avatarBackgroundRaw": "COLOR_GRADIENT",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.7",
+  "colorPrimary": "#222F3E",
+  "colorGradient": "linear-gradient(135deg, #43E3E4, #4A9FFF, #AA4BFB, #FC5978, #FF6D32)",
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:30.958Z",
+  "needsInvert": false
+}

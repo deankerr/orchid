@@ -1,0 +1,13 @@
+{
+  "slug": "glama",
+  "componentName": "Glama",
+  "title": "Glama",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.9",
+  "colorPrimary": "#000",
+  "colorGradient": null,
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:30.783Z",
+  "needsInvert": false
+}

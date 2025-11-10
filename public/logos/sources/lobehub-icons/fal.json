@@ -1,0 +1,13 @@
+{
+  "slug": "fal",
+  "componentName": "Fal",
+  "title": "Fal",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.75",
+  "colorPrimary": "#EC0648",
+  "colorGradient": null,
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:30.950Z",
+  "needsInvert": false
+}

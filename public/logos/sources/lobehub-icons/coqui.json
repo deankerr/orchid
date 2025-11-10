@@ -1,0 +1,13 @@
+{
+  "slug": "coqui",
+  "componentName": "Coqui",
+  "title": "Coqui",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#5EAE91",
+  "avatarIconScale": "0.75",
+  "colorPrimary": "#03363D",
+  "colorGradient": null,
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:31.059Z",
+  "needsInvert": false
+}

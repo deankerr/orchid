@@ -1,0 +1,13 @@
+{
+  "slug": "windsurf",
+  "componentName": "Windsurf",
+  "title": "Windsurf",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#000",
+  "avatarIconScale": "0.75",
+  "colorPrimary": "#fff",
+  "colorGradient": null,
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:31.259Z",
+  "needsInvert": true
+}

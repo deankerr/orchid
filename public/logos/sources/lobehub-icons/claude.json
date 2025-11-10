@@ -1,0 +1,13 @@
+{
+  "slug": "claude",
+  "componentName": "Claude",
+  "title": "Claude",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.75",
+  "colorPrimary": "#D97757",
+  "colorGradient": null,
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:30.891Z",
+  "needsInvert": false
+}

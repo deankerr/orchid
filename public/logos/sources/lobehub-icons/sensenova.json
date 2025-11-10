@@ -1,0 +1,13 @@
+{
+  "slug": "sensenova",
+  "componentName": "SenseNova",
+  "title": "SenseNova",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.7",
+  "colorPrimary": "#5B2AD8",
+  "colorGradient": null,
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:31.200Z",
+  "needsInvert": false
+}

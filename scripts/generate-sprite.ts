@@ -1,4 +1,3 @@
-#!/usr/bin/env bun
 import { createHash } from 'node:crypto'
 import { mkdir, readdir, readFile, unlink, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'

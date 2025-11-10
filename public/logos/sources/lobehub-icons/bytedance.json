@@ -1,0 +1,13 @@
+{
+  "slug": "bytedance",
+  "componentName": "ByteDance",
+  "title": "ByteDance",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.6",
+  "colorPrimary": "#325AB4",
+  "colorGradient": null,
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:31.386Z",
+  "needsInvert": false
+}

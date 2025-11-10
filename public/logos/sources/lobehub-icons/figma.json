@@ -1,0 +1,13 @@
+{
+  "slug": "figma",
+  "componentName": "Figma",
+  "title": "Figma",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.7",
+  "colorPrimary": "#000",
+  "colorGradient": null,
+  "useColor": true,
+  "extractedAt": "2025-11-10T05:15:31.197Z",
+  "needsInvert": false
+}

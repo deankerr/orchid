@@ -1,0 +1,13 @@
+{
+  "slug": "azureai",
+  "componentName": "AzureAI",
+  "title": "AzureAI",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.6",
+  "colorPrimary": "#000",
+  "colorGradient": null,
+  "useColor": true,
+  "extractedAt": "2025-11-10T05:15:31.381Z",
+  "needsInvert": false
+}

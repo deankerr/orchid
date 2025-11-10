@@ -1,0 +1,13 @@
+{
+  "slug": "akashchat",
+  "componentName": "AkashChat",
+  "title": "AkashChat",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.75",
+  "colorPrimary": "#000",
+  "colorGradient": null,
+  "useColor": true,
+  "extractedAt": "2025-11-10T05:15:30.821Z",
+  "needsInvert": false
+}

@@ -1,0 +1,13 @@
+{
+  "slug": "mistral",
+  "componentName": "Mistral",
+  "title": "Mistral",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.75",
+  "colorPrimary": "#FA520F",
+  "colorGradient": null,
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:31.393Z",
+  "needsInvert": false
+}

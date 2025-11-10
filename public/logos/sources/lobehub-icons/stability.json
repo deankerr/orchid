@@ -1,0 +1,13 @@
+{
+  "slug": "stability",
+  "componentName": "Stability",
+  "title": "Stability",
+  "avatarBackgroundRaw": "COLOR_GRADIENT",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.7",
+  "colorPrimary": "#330066",
+  "colorGradient": "linear-gradient(to bottom, #9D39FF,  #A380FF)",
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:31.193Z",
+  "needsInvert": false
+}

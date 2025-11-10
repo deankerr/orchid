@@ -60,12 +60,7 @@ export function OREntityCombobox({
           className={cn('w-[300px] justify-between font-normal', className)}
         >
           {selected ? (
-            <EntityBadge
-              icon_url={selected.icon_url}
-              name={selected.name}
-              slug={selected.slug}
-              className="flex-1"
-            />
+            <EntityBadge name={selected.name} slug={selected.slug} className="flex-1" />
           ) : (
             <span className="text-muted-foreground">{placeholder}</span>
           )}
@@ -97,12 +92,7 @@ export function OREntityCombobox({
                       setOpen(false)
                     }}
                   >
-                    <EntityBadge
-                      icon_url={m.icon_url}
-                      name={m.name}
-                      slug={m.slug}
-                      className="flex-1"
-                    />
+                    <EntityBadge name={m.name} slug={m.slug} className="flex-1" />
                   </CommandItem>
                 ))}
               </CommandGroup>
@@ -119,12 +109,7 @@ export function OREntityCombobox({
                       setOpen(false)
                     }}
                   >
-                    <EntityBadge
-                      icon_url={p.icon_url}
-                      name={p.name}
-                      slug={p.slug}
-                      className="flex-1"
-                    />
+                    <EntityBadge name={p.name} slug={p.slug} className="flex-1" />
                   </CommandItem>
                 ))}
               </CommandGroup>

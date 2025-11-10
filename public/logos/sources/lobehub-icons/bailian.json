@@ -1,0 +1,13 @@
+{
+  "slug": "bailian",
+  "componentName": "Bailian",
+  "title": "BaiLian",
+  "avatarBackgroundRaw": "'#fff'",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.75",
+  "colorPrimary": "#615ced",
+  "colorGradient": null,
+  "useColor": true,
+  "extractedAt": "2025-11-10T05:15:31.279Z",
+  "needsInvert": false
+}

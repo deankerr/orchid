@@ -1,0 +1,13 @@
+{
+  "slug": "poe",
+  "componentName": "Poe",
+  "title": "Poe",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.75",
+  "colorPrimary": "#000",
+  "colorGradient": null,
+  "useColor": true,
+  "extractedAt": "2025-11-10T05:15:30.742Z",
+  "needsInvert": false
+}

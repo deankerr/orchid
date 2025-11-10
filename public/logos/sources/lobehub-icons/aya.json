@@ -1,0 +1,13 @@
+{
+  "slug": "aya",
+  "componentName": "Aya",
+  "title": "Aya",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.6",
+  "colorPrimary": "#416FDC",
+  "colorGradient": null,
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:31.270Z",
+  "needsInvert": false
+}

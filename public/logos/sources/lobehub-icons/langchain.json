@@ -1,0 +1,13 @@
+{
+  "slug": "langchain",
+  "componentName": "LangChain",
+  "title": "LangChain",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.75",
+  "colorPrimary": "#1C3C3C",
+  "colorGradient": null,
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:30.863Z",
+  "needsInvert": false
+}

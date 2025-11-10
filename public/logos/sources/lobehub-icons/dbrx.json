@@ -1,0 +1,13 @@
+{
+  "slug": "dbrx",
+  "componentName": "Dbrx",
+  "title": "DBRX",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.6",
+  "colorPrimary": "#EE3D2C",
+  "colorGradient": null,
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:31.193Z",
+  "needsInvert": false
+}

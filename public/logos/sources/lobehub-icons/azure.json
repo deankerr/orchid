@@ -1,0 +1,13 @@
+{
+  "slug": "azure",
+  "componentName": "Azure",
+  "title": "Azure",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.7",
+  "colorPrimary": "#fff",
+  "colorGradient": null,
+  "useColor": true,
+  "extractedAt": "2025-11-10T05:15:30.866Z",
+  "needsInvert": false
+}

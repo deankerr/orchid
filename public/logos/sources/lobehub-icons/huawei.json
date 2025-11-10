@@ -1,0 +1,13 @@
+{
+  "slug": "huawei",
+  "componentName": "Huawei",
+  "title": "Huawei",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.75",
+  "colorPrimary": "#C7000B",
+  "colorGradient": null,
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:30.785Z",
+  "needsInvert": false
+}

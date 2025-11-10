@@ -9,15 +9,12 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "check": "bun typecheck && bun lint --max-warnings 0",
-    "icons": "bun scripts/process-icons.ts all",
-    "icons:import": "bun scripts/process-icons.ts import",
-    "icons:resize": "bun scripts/process-icons.ts resize",
-    "icons:manifest": "bun scripts/process-icons.ts manifest",
-    "sprite": "bun scripts/generate-sprite.ts",
-    "sprite:dev": "bun scripts/generate-sprite.ts --watch"
+    "logos": "bun run scripts/process-logos.ts",
+    "sprite": "bun scripts/generate-sprite.ts"
   },
   "dependencies": {
     "@convex-dev/aggregate": "^0.1.25",
+    "@lobehub/icons": "^2.43.1",
     "@posthog/nextjs-config": "^1.3.9",
     "@tanstack/match-sorter-utils": "^8.19.4",
     "@tanstack/react-table": "^8.21.3",

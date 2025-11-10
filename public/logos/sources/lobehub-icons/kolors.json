@@ -1,0 +1,13 @@
+{
+  "slug": "kolors",
+  "componentName": "Kolors",
+  "title": "Kolors",
+  "avatarBackgroundRaw": "COLOR_GRADIENT",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.75",
+  "colorPrimary": "#83FF63",
+  "colorGradient": "radial-gradient(#CBFF00,#7EF426)",
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:30.743Z",
+  "needsInvert": false
+}

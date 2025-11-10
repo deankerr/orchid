@@ -1,0 +1,13 @@
+{
+  "slug": "lg",
+  "componentName": "LG",
+  "title": "LG AI",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#FFF",
+  "avatarIconScale": "1",
+  "colorPrimary": "#C00C3F",
+  "colorGradient": null,
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:31.318Z",
+  "needsInvert": false
+}

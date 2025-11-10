@@ -1,0 +1,13 @@
+{
+  "slug": "xinference",
+  "componentName": "Xinference",
+  "title": "Xinference",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.7",
+  "colorPrimary": "#781ff5",
+  "colorGradient": null,
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:31.012Z",
+  "needsInvert": false
+}

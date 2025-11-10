@@ -1,0 +1,13 @@
+{
+  "slug": "palm",
+  "componentName": "PaLM",
+  "title": "PaLM",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.75",
+  "colorPrimary": "#FFF",
+  "colorGradient": null,
+  "useColor": true,
+  "extractedAt": "2025-11-10T05:15:31.408Z",
+  "needsInvert": false
+}

@@ -1,0 +1,13 @@
+{
+  "slug": "replicate",
+  "componentName": "Replicate",
+  "title": "Replicate",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.6",
+  "colorPrimary": "#EA2805",
+  "colorGradient": null,
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:31.273Z",
+  "needsInvert": false
+}

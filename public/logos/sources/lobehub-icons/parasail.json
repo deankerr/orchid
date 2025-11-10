@@ -1,0 +1,13 @@
+{
+  "slug": "parasail",
+  "componentName": "Parasail",
+  "title": "Parasail",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.6",
+  "colorPrimary": "#000",
+  "colorGradient": null,
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:30.823Z",
+  "needsInvert": false
+}

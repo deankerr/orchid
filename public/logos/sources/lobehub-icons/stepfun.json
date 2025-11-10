@@ -1,0 +1,13 @@
+{
+  "slug": "stepfun",
+  "componentName": "Stepfun",
+  "title": "Stepfun",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.6",
+  "colorPrimary": "#005AFF",
+  "colorGradient": "linear-gradient(-45deg, #0160FF, #01A9FF)",
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:31.139Z",
+  "needsInvert": false
+}

@@ -1,0 +1,13 @@
+{
+  "slug": "anthropic",
+  "componentName": "Anthropic",
+  "title": "Anthropic",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#141413",
+  "avatarIconScale": "0.75",
+  "colorPrimary": "#F1F0E8",
+  "colorGradient": null,
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:31.294Z",
+  "needsInvert": false
+}

@@ -1,0 +1,13 @@
+{
+  "slug": "crewai",
+  "componentName": "CrewAI",
+  "title": "CrewAI",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.75",
+  "colorPrimary": "#fff",
+  "colorGradient": null,
+  "useColor": true,
+  "extractedAt": "2025-11-10T05:15:30.745Z",
+  "needsInvert": false
+}

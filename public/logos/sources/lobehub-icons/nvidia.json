@@ -1,0 +1,13 @@
+{
+  "slug": "nvidia",
+  "componentName": "Nvidia",
+  "title": "Nvidia",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.75",
+  "colorPrimary": "#74B71B",
+  "colorGradient": null,
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:31.194Z",
+  "needsInvert": false
+}

@@ -1,0 +1,13 @@
+{
+  "slug": "deepmind",
+  "componentName": "DeepMind",
+  "title": "DeepMind",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.75",
+  "colorPrimary": "#4285F4",
+  "colorGradient": null,
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:31.332Z",
+  "needsInvert": false
+}

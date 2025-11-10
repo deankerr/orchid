@@ -1,0 +1,13 @@
+{
+  "slug": "lmstudio",
+  "componentName": "LmStudio",
+  "title": "LM Studio",
+  "avatarBackgroundRaw": "COLOR_GRADIENT",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.7",
+  "colorPrimary": "#4338CA",
+  "colorGradient": "linear-gradient(135deg, #6C78EF, #4F14BE)",
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:30.710Z",
+  "needsInvert": false
+}

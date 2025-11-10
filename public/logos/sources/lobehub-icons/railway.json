@@ -1,0 +1,13 @@
+{
+  "slug": "railway",
+  "componentName": "Railway",
+  "title": "Railway",
+  "avatarBackgroundRaw": "COLOR_GRADIENT",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.75",
+  "colorPrimary": "#853bce",
+  "colorGradient": "linear-gradient(to bottom, #A204B4, #6213B9)",
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:30.955Z",
+  "needsInvert": false
+}

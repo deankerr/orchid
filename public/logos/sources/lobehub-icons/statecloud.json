@@ -1,0 +1,13 @@
+{
+  "slug": "statecloud",
+  "componentName": "StateCloud",
+  "title": "StateCloud",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.75",
+  "colorPrimary": "#DF0428",
+  "colorGradient": null,
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:31.107Z",
+  "needsInvert": false
+}

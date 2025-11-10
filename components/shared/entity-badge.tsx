@@ -5,16 +5,14 @@ import { api } from '@/convex/_generated/api'
 import { useCachedQuery } from '@/hooks/use-cached-query'
 import { cn } from '@/lib/utils'
 
-import { EntityAvatar } from './entity-avatar'
+import { BrandAvatar } from './brand-avatar'
 
 export function EntityBadge({
-  icon_url,
   name,
   slug,
   className,
   ...props
 }: {
-  icon_url: string
   name: string
   slug: string
 } & React.ComponentProps<'div'>) {
@@ -32,7 +30,7 @@ export function EntityBadge({
   return (
     <div className={cn('flex overflow-hidden p-0.5', className)} {...props}>
       {/* avatar */}
-      <EntityAvatar icon_url={icon_url} fallbackText={fallbackText} />
+      <BrandAvatar slug={slug} fallbackText={fallbackText} />
 
       {/* text */}
       <div className="grid gap-0.5 overflow-hidden px-2">
@@ -50,13 +48,11 @@ export function EntityBadge({
 }
 
 function EntityBadgeInline({
-  icon_url,
   name,
   slug,
   className,
   ...props
 }: {
-  icon_url: string
   name: string
   slug: string
 } & React.ComponentProps<'div'>) {
@@ -73,7 +69,7 @@ function EntityBadgeInline({
 
   return (
     <div className={cn('flex items-center gap-1.5 px-0.5 text-sm', className)} {...props}>
-      <EntityAvatar icon_url={icon_url} fallbackText={fallbackText} className="w-3.5" />
+      <BrandAvatar slug={slug} fallbackText={fallbackText} className="size-3.5" />
       <div
         className="-mx-1 cursor-pointer rounded px-1 font-mono text-[95%] leading-none text-foreground/85"
         onClick={handleCopySlug}
@@ -96,22 +92,12 @@ export function ProviderBadge({
 
   if (inline) {
     return (
-      <EntityBadgeInline
-        name={provider?.name ?? ''}
-        slug={slug}
-        icon_url={provider?.icon_url ?? ''}
-        {...props}
-      />
+      <EntityBadgeInline name={provider?.name ?? ''} slug={slug} {...props} />
     )
   }
 
   return (
-    <EntityBadge
-      name={provider?.name ?? ''}
-      slug={slug}
-      icon_url={provider?.icon_url ?? ''}
-      {...props}
-    />
+    <EntityBadge name={provider?.name ?? ''} slug={slug} {...props} />
   )
 }
 
@@ -125,16 +111,11 @@ export function ModelBadge({
 
   if (inline) {
     return (
-      <EntityBadgeInline
-        name={model?.name ?? ''}
-        slug={slug}
-        icon_url={model?.icon_url ?? ''}
-        {...props}
-      />
+      <EntityBadgeInline name={model?.name ?? ''} slug={slug} {...props} />
     )
   }
 
   return (
-    <EntityBadge name={model?.name ?? ''} slug={slug} icon_url={model?.icon_url ?? ''} {...props} />
+    <EntityBadge name={model?.name ?? ''} slug={slug} {...props} />
   )
 }

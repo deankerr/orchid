@@ -1,0 +1,13 @@
+{
+  "slug": "bedrock",
+  "componentName": "Bedrock",
+  "title": "Bedrock",
+  "avatarBackgroundRaw": "COLOR_GRADIENT",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.75",
+  "colorPrimary": "#222F3E",
+  "colorGradient": "linear-gradient(45deg, #9AD8F8, #3D8FFF, #6350FB)",
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:31.133Z",
+  "needsInvert": false
+}

@@ -1,0 +1,13 @@
+{
+  "slug": "zai",
+  "componentName": "ZAI",
+  "title": "Z.ai",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.6",
+  "colorPrimary": "#000",
+  "colorGradient": null,
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:31.394Z",
+  "needsInvert": false
+}

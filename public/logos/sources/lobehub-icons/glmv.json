@@ -1,0 +1,13 @@
+{
+  "slug": "glmv",
+  "componentName": "GLMV",
+  "title": "GLM-V",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.7",
+  "colorPrimary": "#0039C6",
+  "colorGradient": null,
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:30.848Z",
+  "needsInvert": false
+}

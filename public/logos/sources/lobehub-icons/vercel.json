@@ -1,0 +1,13 @@
+{
+  "slug": "vercel",
+  "componentName": "Vercel",
+  "title": "Vercel",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.6",
+  "colorPrimary": "#000",
+  "colorGradient": null,
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:30.784Z",
+  "needsInvert": false
+}

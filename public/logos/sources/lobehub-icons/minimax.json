@@ -1,0 +1,13 @@
+{
+  "slug": "minimax",
+  "componentName": "Minimax",
+  "title": "Minimax",
+  "avatarBackgroundRaw": "COLOR_GRADIENT",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.75",
+  "colorPrimary": "#F23F5D",
+  "colorGradient": "linear-gradient(to right, #E2167E,  #FE603C)",
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:31.033Z",
+  "needsInvert": false
+}

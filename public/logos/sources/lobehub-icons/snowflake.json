@@ -1,0 +1,13 @@
+{
+  "slug": "snowflake",
+  "componentName": "Snowflake",
+  "title": "Snowflake",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#fff",
+  "avatarIconScale": "0.75",
+  "colorPrimary": "#249EDC",
+  "colorGradient": null,
+  "useColor": false,
+  "extractedAt": "2025-11-10T05:15:31.034Z",
+  "needsInvert": false
+}

@@ -1,0 +1,13 @@
+{
+  "slug": "longcat",
+  "componentName": "LongCat",
+  "title": "LongCat",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#000",
+  "avatarIconScale": "0.7",
+  "colorPrimary": "#fff",
+  "colorGradient": null,
+  "useColor": true,
+  "extractedAt": "2025-11-10T05:15:31.278Z",
+  "needsInvert": false
+}

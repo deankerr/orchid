@@ -1,0 +1,13 @@
+{
+  "slug": "docsearch",
+  "componentName": "DocSearch",
+  "title": "DocSearch",
+  "avatarBackgroundRaw": "COLOR_PRIMARY",
+  "avatarColor": "#000",
+  "avatarIconScale": "0.6",
+  "colorPrimary": "#fff",
+  "colorGradient": null,
+  "useColor": true,
+  "extractedAt": "2025-11-10T05:15:31.310Z",
+  "needsInvert": false
+}
