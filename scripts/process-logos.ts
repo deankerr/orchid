@@ -7,6 +7,7 @@ const LOBEHUB_STATIC_PNG = 'node_modules/@lobehub/icons-static-png/dark'
 const LOBEHUB_ICONS = 'node_modules/@lobehub/icons/es'
 const SOURCES_DIR = 'public/logos/sources/lobehub-icons'
 const SOURCES_OTHER_DIR = 'public/logos/sources/other'
+const SOURCES_OPENROUTER_DIR = 'public/logos/sources/openrouter'
 const OUTPUT_DIR = 'public/logos/web'
 const MANIFEST_FILE = 'lib/logos-manifest.json'
 
@@ -123,6 +124,98 @@ async function processOtherIcons(existingSlugs: Set<string>): Promise<Record<str
     if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
       console.warn(`  ⚠️  Could not process other icons:`, err instanceof Error ? err.message : err)
     }
+  }
+
+  return styles
+}
+
+/**
+ * Process icons from OpenRouter API
+ */
+async function processOpenRouterIcons(
+  existingSlugs: Set<string>,
+): Promise<Record<string, LogoStyle>> {
+  const styles: Record<string, LogoStyle> = {}
+
+  try {
+    console.log(`\n🌐 Fetching providers from OpenRouter API...\n`)
+
+    const response = await fetch('https://openrouter.ai/api/frontend/all-providers')
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    const data = await response.json()
+    const providers = data.data || []
+
+    if (providers.length === 0) {
+      return styles
+    }
+
+    await mkdir(SOURCES_OPENROUTER_DIR, { recursive: true })
+
+    let downloadedCount = 0
+    let skippedCount = 0
+
+    for (const provider of providers) {
+      const rawSlug = provider.slug
+      const slug = rawSlug.replace(/-/g, '') // Remove dashes like lobehub icons
+      const iconUrl = provider.icon?.url
+
+      // * Skip if slug already exists
+      if (existingSlugs.has(slug)) {
+        continue
+      }
+
+      // * Skip if icon URL doesn't start with http
+      if (!iconUrl || !iconUrl.startsWith('http')) {
+        skippedCount++
+        continue
+      }
+
+      try {
+        // * Download icon image
+        const iconResponse = await fetch(iconUrl)
+        if (!iconResponse.ok) {
+          throw new Error(`HTTP error! status: ${iconResponse.status}`)
+        }
+
+        const imageBuffer = await iconResponse.arrayBuffer()
+        const destPath = join(SOURCES_OPENROUTER_DIR, `${slug}.png`)
+        await writeFile(destPath, Buffer.from(imageBuffer))
+
+        // * Copy to web directory
+        const webDestPath = join(OUTPUT_DIR, `${slug}.png`)
+        await copyFile(destPath, webDestPath)
+
+        const title = slugToTitle(slug)
+        styles[slug] = {
+          slug,
+          title,
+          background: '', // Empty - will use fallback color in frontend
+          scale: 1,
+        }
+
+        console.log(`  ✓ Downloaded ${slug}.png (${title})`)
+        downloadedCount++
+      } catch (err) {
+        skippedCount++
+        console.warn(`  ⚠️  Skipped ${slug}:`, err instanceof Error ? err.message : err)
+      }
+    }
+
+    if (downloadedCount > 0) {
+      console.log(`\n  📥 Downloaded ${downloadedCount} icons from OpenRouter`)
+    }
+    if (skippedCount > 0) {
+      console.log(`  ⏭️  Skipped ${skippedCount} providers`)
+    }
+  } catch (err) {
+    // * API might be unavailable, that's okay
+    console.warn(
+      `  ⚠️  Could not fetch OpenRouter icons:`,
+      err instanceof Error ? err.message : err,
+    )
   }
 
   return styles
@@ -277,7 +370,11 @@ async function processLogos() {
 
   // * Process other icons and merge with lobehub styles
   const otherStyles = await processOtherIcons(new Set(Object.keys(styles)))
-  const allStyles = { ...styles, ...otherStyles }
+  const allStylesSoFar = { ...styles, ...otherStyles }
+
+  // * Process OpenRouter icons and merge with all styles
+  const openRouterStyles = await processOpenRouterIcons(new Set(Object.keys(allStylesSoFar)))
+  const allStyles = { ...allStylesSoFar, ...openRouterStyles }
 
   // * Build and save unified manifest
   const manifest = {
@@ -293,6 +390,7 @@ async function processLogos() {
   console.log(`   - Tinted: ${tintedCount} logos`)
   console.log(`   - Skipped: ${skippedCount} logos`)
   console.log(`   - Other icons: ${Object.keys(otherStyles).length}`)
+  console.log(`   - OpenRouter icons: ${Object.keys(openRouterStyles).length}`)
   console.log(`   - Total: ${manifest.count} logos`)
   console.log(`   📄 Manifest saved to: ${MANIFEST_FILE}`)
 }
@@ -308,6 +406,7 @@ Usage: bun scripts/process-logos.ts
 Processes all logos:
 - Processes logos from @lobehub/icons (extracts metadata, tints, inverts)
 - Processes other icons from public/logos/sources/other
+- Fetches and processes icons from OpenRouter API (fallback for missing providers)
 - Generates unified manifest with all logos
 
 Examples:

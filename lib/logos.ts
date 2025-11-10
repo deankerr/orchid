@@ -10,11 +10,14 @@ export interface LogoStyle {
 const LOGOS_DIR = '/logos/web' as const
 
 // Hardcoded transforms for special cases and vendor-specific naming
-const TRANSFORMS: Record<string, string> = {
-  'google-ai-studio': 'aistudio',
-  'google-vertex': 'vertexai',
-  'amazon-bedrock': 'bedrock',
-}
+const TRANSFORMS: Array<[string, string]> = [
+  ['google-ai-studio', 'aistudio'],
+  ['google-vertex', 'vertexai'],
+  ['amazon-bedrock', 'bedrock'],
+]
+
+const logos = new Map<string, LogoStyle>(Object.entries(manifest.logos))
+const logoKeys = Array.from(logos.keys())
 
 /**
  * Try to find the best matching logo from our manifest for a given input slug.
@@ -22,38 +25,21 @@ const TRANSFORMS: Record<string, string> = {
 function resolveLogo(slug: string): LogoStyle | undefined {
   if (!slug) return undefined
 
-  const logos = new Map<string, LogoStyle>(Object.entries(manifest.logos))
-  const logoKeys = Array.from(logos.keys())
+  // Apply transforms, remove dashes
+  let normalized = slug.toLowerCase()
+  for (const [from, to] of TRANSFORMS) {
+    normalized = normalized.replaceAll(from, to)
+  }
+  normalized = normalized.replace(/-/g, '')
 
   // Split namespaces (e.g., "openai/gpt-4o") and try most specific first
-  const parts = slug.toLowerCase().split('/').reverse()
+  const parts = normalized.split('/').reverse()
 
-  for (const raw of parts) {
-    const transformed = TRANSFORMS[raw] ?? raw
-
-    // 1) Exact
-    if (logos.has(transformed)) {
-      return logos.get(transformed)
-    }
-
-    // 2) Prefix: transformed starts with a logo key
-    const prefixMatch = logoKeys.find((key) => transformed.startsWith(key))
+  for (const part of parts) {
+    // Prefix match: part starts with a logo key
+    const prefixMatch = logoKeys.find((key) => part.startsWith(key))
     if (prefixMatch) {
       return logos.get(prefixMatch)
-    }
-
-    // 3) Remove dashes and try prefix again
-    const noDash = transformed.replace(/-/g, '')
-    const noDashMatch = logoKeys.find((key) => noDash.startsWith(key))
-    if (noDashMatch) {
-      return logos.get(noDashMatch)
-    }
-
-    // 4) Truncate at first dash and try prefix again
-    const base = transformed.replace(/-.*/, '')
-    const baseMatch = logoKeys.find((key) => base.startsWith(key))
-    if (baseMatch) {
-      return logos.get(baseMatch)
     }
   }
 

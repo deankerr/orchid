@@ -25,6 +25,7 @@ function ExtLink({
 
 export default function Page() {
   const models = useCachedQuery(api.db.or.views.models.list, {}, 'models-list')
+  const providers = useCachedQuery(api.db.or.views.providers.list, {}, 'providers-list')
 
   return (
     <PageContainer className="gap-3">
@@ -68,6 +69,16 @@ export default function Page() {
                   endp/FE
                 </ExtLink>
               </div>
+            </div>
+          ))}
+      </div>
+
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-x-8 gap-y-6 rounded-sm border border-dashed p-4">
+        {providers
+          ?.sort((a, b) => a.name.localeCompare(b.name))
+          .map((p) => (
+            <div key={p._id} className="flex justify-between gap-2">
+              <EntityBadge name={p.name} slug={p.slug} />
             </div>
           ))}
       </div>
