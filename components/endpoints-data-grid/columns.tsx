@@ -83,7 +83,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
     meta: {
       skeleton: <Skeleton className="h-8 w-full" />,
       headerTitle: 'Provider',
-      cellClassName: 'pl-3 pr-0',
+      cellClassName: 'pl-3 pr-3',
     },
   },
 
@@ -99,6 +99,8 @@ export const columns: ColumnDef<EndpointRow>[] = [
           priceValue: inputPrice,
           unitSuffix: false,
         })
+      } else {
+        return <span className="text-muted-foreground">&ndash;</span>
       }
     },
     size: 110,
@@ -122,6 +124,8 @@ export const columns: ColumnDef<EndpointRow>[] = [
           priceValue: outputPrice,
           unitSuffix: false,
         })
+      } else {
+        return <span className="text-muted-foreground">&ndash;</span>
       }
     },
     size: 110,
@@ -145,7 +149,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
         />
       )
     },
-    size: 144,
+    size: 150,
     meta: {
       headerClassName: 'text-center',
       skeleton: <Skeleton className="h-6 w-full" />,
@@ -187,6 +191,53 @@ export const columns: ColumnDef<EndpointRow>[] = [
   },
 
   {
+    id: 'contextLength',
+    accessorFn: (row) => row.context_length,
+    header: ({ column }) => <DataGridColumnHeader column={column} title="CONTEXT" />,
+    cell: ({ getValue }) => getValue<number>().toLocaleString(),
+    size: 120,
+    meta: {
+      skeleton: <Skeleton className="h-5 w-full" />,
+      cellClassName: 'text-right',
+      headerTitle: 'Context',
+    },
+  },
+
+  {
+    id: 'maxOutput',
+    accessorFn: (row) => row.limits.text_output_tokens ?? row.context_length,
+    header: ({ column }) => <DataGridColumnHeader column={column} title="MAX OUTPUT" />,
+    cell: ({ getValue }) => getValue<number | undefined>()?.toLocaleString(),
+    size: 120,
+    sortUndefined: -1,
+    meta: {
+      skeleton: <Skeleton className="h-5 w-full" />,
+      cellClassName: 'text-right',
+      headerTitle: 'Max Output',
+    },
+  },
+
+  {
+    id: 'quantization',
+    accessorFn: ({ quantization = '?' }) => (quantization === 'unknown' ? '?' : quantization),
+    header: ({ column }) => <DataGridColumnHeader column={column} title="QUANT" />,
+    cell: ({ getValue }) => {
+      return (
+        <Badge variant="outline" className="font-mono text-sm uppercase">
+          {getValue<string>()}
+        </Badge>
+      )
+    },
+    size: 96,
+    meta: {
+      skeleton: <Skeleton className="h-6 w-full" />,
+      headerClassName: 'text-center',
+      cellClassName: 'text-center px-2',
+      headerTitle: 'Quantization',
+    },
+  },
+
+  {
     id: 'throughput',
     accessorFn: (row) => row.stats?.p50_throughput,
     header: ({ column }) => <DataGridColumnHeader column={column} title="TOKENS PER SEC" />,
@@ -196,6 +247,8 @@ export const columns: ColumnDef<EndpointRow>[] = [
         return `${throughput.toLocaleString('en-US', {
           maximumFractionDigits: 0,
         })}`
+      } else {
+        return <span className="text-muted-foreground">&ndash;</span>
       }
     },
     size: 100,
@@ -217,6 +270,8 @@ export const columns: ColumnDef<EndpointRow>[] = [
         return `${latency.toLocaleString('en-US', {
           maximumFractionDigits: 0,
         })}`
+      } else {
+        return <span className="text-muted-foreground">&ndash;</span>
       }
     },
     size: 100,
@@ -225,61 +280,6 @@ export const columns: ColumnDef<EndpointRow>[] = [
       skeleton: <Skeleton className="h-5 w-full" />,
       cellClassName: 'text-right',
       headerTitle: 'Latency',
-    },
-  },
-
-  {
-    id: 'limits',
-    header: 'LIMITS',
-    cell: ({ row }) => {
-      const endpoint = row.original
-      return (
-        <AttributeBadgeSet
-          endpoint={endpoint}
-          attributes={[
-            'max_text_input_tokens',
-            'max_image_input_tokens',
-            'max_images_per_input',
-            'max_requests_per_minute',
-            'max_requests_per_day',
-          ]}
-          hideUnavailable
-        />
-      )
-    },
-    size: 135,
-    meta: {
-      headerClassName: 'text-center',
-      skeleton: <Skeleton className="h-8 w-full" />,
-      headerTitle: 'Limits',
-      cellClassName: 'px-2',
-    },
-  },
-
-  {
-    id: 'contextLength',
-    accessorFn: (row) => row.context_length,
-    header: ({ column }) => <DataGridColumnHeader column={column} title="CONTEXT" />,
-    cell: ({ getValue }) => getValue<number>().toLocaleString(),
-    size: 120,
-    meta: {
-      skeleton: <Skeleton className="h-5 w-full" />,
-      cellClassName: 'text-right',
-      headerTitle: 'Context',
-    },
-  },
-
-  {
-    id: 'maxOutput',
-    accessorFn: (row) => row.limits.text_output_tokens,
-    header: ({ column }) => <DataGridColumnHeader column={column} title="MAX OUTPUT" />,
-    cell: ({ getValue }) => getValue<number | undefined>()?.toLocaleString(),
-    size: 120,
-    sortUndefined: -1,
-    meta: {
-      skeleton: <Skeleton className="h-5 w-full" />,
-      cellClassName: 'text-right',
-      headerTitle: 'Max Output',
     },
   },
 
@@ -325,22 +325,30 @@ export const columns: ColumnDef<EndpointRow>[] = [
   },
 
   {
-    id: 'quantization',
-    accessorFn: ({ quantization = '?' }) => (quantization === 'unknown' ? '?' : quantization),
-    header: ({ column }) => <DataGridColumnHeader column={column} title="QUANT" />,
-    cell: ({ getValue }) => {
+    id: 'limits',
+    header: 'LIMITS',
+    cell: ({ row }) => {
+      const endpoint = row.original
       return (
-        <Badge variant="outline" className="font-mono text-sm uppercase">
-          {getValue<string>()}
-        </Badge>
+        <AttributeBadgeSet
+          endpoint={endpoint}
+          attributes={[
+            'max_text_input_tokens',
+            'max_image_input_tokens',
+            'max_images_per_input',
+            'max_requests_per_minute',
+            'max_requests_per_day',
+          ]}
+          hideUnavailable
+        />
       )
     },
-    size: 96,
+    size: 135,
     meta: {
-      skeleton: <Skeleton className="h-6 w-full" />,
       headerClassName: 'text-center',
-      cellClassName: 'text-center px-2',
-      headerTitle: 'Quantization',
+      skeleton: <Skeleton className="h-8 w-full" />,
+      headerTitle: 'Limits',
+      cellClassName: 'px-2',
     },
   },
 ]
