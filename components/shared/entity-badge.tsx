@@ -5,7 +5,7 @@ import { api } from '@/convex/_generated/api'
 import { useCachedQuery } from '@/hooks/use-cached-query'
 import { cn } from '@/lib/utils'
 
-import { BrandAvatar } from './brand-avatar'
+import { EntityAvatar } from './entity-avatar'
 
 export function EntityBadge({
   name,
@@ -30,7 +30,7 @@ export function EntityBadge({
   return (
     <div className={cn('flex overflow-hidden p-0.5', className)} {...props}>
       {/* avatar */}
-      <BrandAvatar slug={slug} fallbackText={fallbackText} />
+      <EntityAvatar slug={slug} fallbackText={fallbackText} />
 
       {/* text */}
       <div className="grid gap-0.5 overflow-hidden px-2">
@@ -69,7 +69,7 @@ function EntityBadgeInline({
 
   return (
     <div className={cn('flex items-center gap-1.5 px-0.5 text-sm', className)} {...props}>
-      <BrandAvatar slug={slug} fallbackText={fallbackText} className="size-3.5" />
+      <EntityAvatar slug={slug} fallbackText={fallbackText} className="size-3.5" />
       <div
         className="-mx-1 cursor-pointer rounded px-1 font-mono text-[95%] leading-none text-foreground/85"
         onClick={handleCopySlug}
@@ -91,14 +91,10 @@ export function ProviderBadge({
   const provider = providersList?.find((p) => p.slug === baseSlug)
 
   if (inline) {
-    return (
-      <EntityBadgeInline name={provider?.name ?? ''} slug={slug} {...props} />
-    )
+    return <EntityBadgeInline name={provider?.name ?? ''} slug={slug} {...props} />
   }
 
-  return (
-    <EntityBadge name={provider?.name ?? ''} slug={slug} {...props} />
-  )
+  return <EntityBadge name={provider?.name ?? ''} slug={slug} {...props} />
 }
 
 export function ModelBadge({
@@ -110,12 +106,8 @@ export function ModelBadge({
   const model = modelsList?.find((m) => m.slug === slug)
 
   if (inline) {
-    return (
-      <EntityBadgeInline name={model?.name ?? ''} slug={slug} {...props} />
-    )
+    return <EntityBadgeInline name={model?.name ?? ''} slug={slug} {...props} />
   }
 
-  return (
-    <EntityBadge name={model?.name ?? ''} slug={slug} {...props} />
-  )
+  return <EntityBadge name={model?.name ?? ''} slug={slug} {...props} />
 }

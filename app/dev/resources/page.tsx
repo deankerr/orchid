@@ -53,6 +53,7 @@ export default function Page() {
         </div>
       </div>
 
+      <div className="mt-1 -mb-1 font-mono text-sm">Models</div>
       <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-x-8 gap-y-6 rounded-sm border border-dashed p-4">
         {models
           ?.sort((a, b) => a.name.localeCompare(b.name))
@@ -73,6 +74,7 @@ export default function Page() {
           ))}
       </div>
 
+      <div className="mt-1 -mb-2 font-mono text-sm">Providers</div>
       <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-x-8 gap-y-6 rounded-sm border border-dashed p-4">
         {providers
           ?.sort((a, b) => a.name.localeCompare(b.name))

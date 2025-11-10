@@ -3,7 +3,7 @@ import Image from 'next/image'
 import { getLogo } from '@/lib/logos'
 import { cn } from '@/lib/utils'
 
-export function BrandAvatar({
+export function EntityAvatar({
   slug,
   fallbackText,
   className,
@@ -18,10 +18,9 @@ export function BrandAvatar({
     <div
       className={cn(
         'flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-muted',
-        'font-mono text-[90%]',
         className,
       )}
-      style={style?.background ? { background: style.background } : undefined}
+      style={{ background: style?.background }}
       {...props}
     >
       {url ? (
@@ -30,11 +29,12 @@ export function BrandAvatar({
           alt={style?.title || slug}
           width={32}
           height={32}
-          unoptimized
           style={{ scale: style?.scale ?? 0.75 }}
         />
       ) : (
-        (fallbackText || slug).replace(/[^a-zA-Z0-9]/g, '').slice(0, 2)
+        <span className="font-mono text-[80%]">
+          {(fallbackText || slug).replace(/[^a-zA-Z0-9]/g, '').slice(0, 2)}
+        </span>
       )}
     </div>
   )
