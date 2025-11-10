@@ -12,6 +12,12 @@
       "background": "#EB1000",
       "scale": 0.6
     },
+    "agenticaorg": {
+      "slug": "agenticaorg",
+      "title": "Agenticaorg",
+      "background": "",
+      "scale": 1
+    },
     "agui": {
       "slug": "agui",
       "title": "AG-UI",
@@ -105,6 +111,12 @@
     "arcee": {
       "slug": "arcee",
       "title": "Arcee",
+      "background": "",
+      "scale": 1
+    },
+    "arliai": {
+      "slug": "arliai",
+      "title": "Arliai",
       "background": "",
       "scale": 1
     },
@@ -273,7 +285,7 @@
     "cirrascale": {
       "slug": "cirrascale",
       "title": "Cirrascale",
-      "background": "",
+      "background": "#000",
       "scale": 1
     },
     "civitai": {
@@ -413,6 +425,12 @@
       "title": "DeepAI",
       "background": "#fff",
       "scale": 0.75
+    },
+    "deepcognito": {
+      "slug": "deepcognito",
+      "title": "Deepcognito",
+      "background": "",
+      "scale": 1
     },
     "deepinfra": {
       "slug": "deepinfra",
@@ -1656,7 +1674,5 @@
       "background": "#3859FF",
       "scale": 0.75
     }
-  },
-  "count": 276,
-  "generated": "2025-11-10T07:45:44.526Z"
+  }
 }
