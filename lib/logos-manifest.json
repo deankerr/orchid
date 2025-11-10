@@ -1356,6 +1356,12 @@
       "background": "#6E29F6",
       "scale": 0.7
     },
+    "siliconflow": {
+      "slug": "siliconflow",
+      "title": "Siliconflow",
+      "background": "",
+      "scale": 1
+    },
     "skywork": {
       "slug": "skywork",
       "title": "Skywork",
