@@ -15,7 +15,7 @@ const headerCellSpacingVariants = cva('', {
   variants: {
     size: {
       dense: 'px-2.5 h-8',
-      default: 'px-4 has-[button]:px-0',
+      default: 'px-4',
     },
   },
   defaultVariants: {
@@ -92,9 +92,9 @@ function DataGridTableHeadRow<TData>({
   return (
     <tr
       key={headerGroup.id}
+      data-slot="data-grid-table-head-row"
       className={cn(
         'bg-muted/40',
-        props.tableLayout?.headerBorder && '[&>th]:border-b',
         props.tableLayout?.cellBorder && '*:last:border-e-0',
         props.tableLayout?.stripped && 'bg-transparent',
         props.tableLayout?.headerBackground === false && 'bg-transparent',
@@ -140,8 +140,9 @@ function DataGridTableHeadRowCell<TData>({
       }}
       data-pinned={isPinned || undefined}
       data-last-col={isLastLeftPinned ? 'left' : isFirstRightPinned ? 'right' : undefined}
+      data-slot="data-grid-table-head-row-cell"
       className={cn(
-        'relative h-11 text-left align-middle font-normal text-accent-foreground rtl:text-right [&:has([role=checkbox])]:pe-0',
+        'relative h-12 align-middle text-xs font-normal text-accent-foreground rtl:text-right [&:has([role=checkbox])]:pe-0',
         headerCellSpacing,
         props.tableLayout?.cellBorder && 'border-e',
         props.tableLayout?.columnsResizable && column.getCanResize() && 'truncate',
@@ -155,6 +156,10 @@ function DataGridTableHeadRowCell<TData>({
       )}
     >
       {children}
+      {/* NOTE: header border-b replacement that remains in place with sticky headers */}
+      {props.tableLayout?.headerBorder && (
+        <div className="absolute bottom-0 left-0 h-px w-full bg-border" />
+      )}
     </th>
   )
 }
@@ -169,7 +174,7 @@ function DataGridTableHeadRowCellResize<TData>({ header }: { header: Header<TDat
         onMouseDown: header.getResizeHandler(),
         onTouchStart: header.getResizeHandler(),
         className:
-          'absolute top-0 h-full w-4 cursor-col-resize user-select-none touch-none -end-2 z-10 flex justify-center before:absolute before:w-px before:inset-y-0 before:bg-border before:-translate-x-px',
+          'absolute top-0 h-full w-4 cursor-col-resize user-select-none touch-none -end-2 z-10 flex justify-center before:absolute before:w-px before:inset-y-0 before:bg-border translate-x-px',
       }}
     />
   )

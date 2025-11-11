@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from 'react'
 
+import { DragEndEvent } from '@dnd-kit/core'
+import { arrayMove } from '@dnd-kit/sortable'
 import {
   getCoreRowModel,
   getFilteredRowModel,
@@ -23,14 +25,12 @@ import {
   DataGridCardToolbar,
 } from '../data-grid/data-grid-card'
 import { fuzzyFilter } from '../data-grid/data-grid-fuzzy'
-import { DataGridTableVirtual } from '../data-grid/data-grid-table'
+import { DataGridTableDndVirtual } from '../data-grid/data-grid-table-dnd'
 import { columns } from './columns'
 import { Controls } from './controls'
 import { useEndpointFilters } from './use-endpoint-filters'
 
 export function EndpointsDataGridPage() {
-  const [cellBorder, setCellBorder] = useState(false)
-
   return (
     <>
       <PageHeader>
@@ -38,21 +38,7 @@ export function EndpointsDataGridPage() {
         <PageDescription>Browse models and providers available on OpenRouter</PageDescription>
       </PageHeader>
 
-      <EndpointsDataGrid cellBorder={cellBorder}>
-        <DataGridCard>
-          <DataGridCardToolbar>
-            <Controls cellBorder={cellBorder} setCellBorder={setCellBorder} />
-          </DataGridCardToolbar>
-
-          <DataGridCardContent>
-            <DataGridTableVirtual />
-          </DataGridCardContent>
-
-          <DataGridCardFooter>
-            <Footer />
-          </DataGridCardFooter>
-        </DataGridCard>
-      </EndpointsDataGrid>
+      <EndpointsDataGrid />
     </>
   )
 }
@@ -61,13 +47,7 @@ function useEndpointsListQuery() {
   return useCachedQuery(api.db.or.views.endpoints.all, {}, 'endpoints-all')
 }
 
-function EndpointsDataGrid({
-  children,
-  cellBorder,
-}: {
-  children: React.ReactNode
-  cellBorder: boolean
-}) {
+function EndpointsDataGrid() {
   const endpointsList = useEndpointsListQuery()
   const { globalFilter, sorting, onSortingChange, attributeFilters } = useEndpointFilters()
 
@@ -107,6 +87,21 @@ function EndpointsDataGrid({
     })
   }, [endpointsList, attributeFilters])
 
+  const [columnOrder, setColumnOrder] = useState<string[]>(
+    columns.map((column) => column.id as string),
+  )
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+    if (active && over && active.id !== over.id) {
+      setColumnOrder((columnOrder) => {
+        const oldIndex = columnOrder.indexOf(active.id as string)
+        const newIndex = columnOrder.indexOf(over.id as string)
+        return arrayMove(columnOrder, oldIndex, newIndex)
+      })
+    }
+  }
+
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     columns,
@@ -118,8 +113,11 @@ function EndpointsDataGrid({
     state: {
       globalFilter,
       sorting,
+      columnOrder,
     },
+    columnResizeMode: 'onChange',
     onSortingChange,
+    onColumnOrderChange: setColumnOrder,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -137,20 +135,35 @@ function EndpointsDataGrid({
       skeletonRows={30}
       tableLayout={{
         headerSticky: true,
+        headerBorder: true,
         width: 'fixed',
-        cellBorder,
+        cellBorder: true,
         virtualized: true,
         rowHeight: 58.5,
         overscan: 20,
+        columnsDraggable: true,
+        columnsResizable: true,
       }}
       tableClassNames={{
-        headerRow: 'uppercase font-mono text-[12px]',
+        headerRow: 'uppercase font-mono',
         bodyRow:
           'has-aria-[label=disabled]:[&_td_>_*]:opacity-50 has-aria-[label=disabled]:[&_td]:text-foreground/50 has-aria-[label=gone]:[&_td_>_*]:opacity-50 has-aria-[label=gone]:[&_td]:text-foreground/50',
         body: 'font-mono',
       }}
     >
-      {children}
+      <DataGridCard>
+        <DataGridCardToolbar>
+          <Controls />
+        </DataGridCardToolbar>
+
+        <DataGridCardContent>
+          <DataGridTableDndVirtual handleDragEnd={handleDragEnd} />
+        </DataGridCardContent>
+
+        <DataGridCardFooter>
+          <Footer />
+        </DataGridCardFooter>
+      </DataGridCard>
     </DataGrid>
   )
 }

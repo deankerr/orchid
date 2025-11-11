@@ -6,7 +6,7 @@ import { DataGridColumnHeader } from '@/components/data-grid/data-grid-column-he
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getEndpointAttributeData } from '@/lib/attributes'
-import { formatPrice } from '@/lib/formatters'
+import { formatDateTime, formatPrice } from '@/lib/formatters'
 
 import { fuzzySort } from '../data-grid/data-grid-fuzzy'
 import { AttributeBadge, AttributeBadgeName, AttributeBadgeSet } from '../shared/attribute-badge'
@@ -20,11 +20,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
     id: 'model',
     accessorFn: (row) => `${row.model.name} ${row.model.slug}`,
     header: ({ column }) => (
-      <DataGridColumnHeader
-        column={column}
-        title="MODEL"
-        className="justify-start has-[>svg]:pl-4"
-      />
+      <DataGridColumnHeader column={column} title="MODEL" className="justify-start" />
     ),
     cell: ({ row }) => {
       const endpoint = row.original
@@ -33,10 +29,10 @@ export const columns: ColumnDef<EndpointRow>[] = [
     size: 260,
     sortingFn: fuzzySort,
     enableHiding: false,
+
     meta: {
       skeleton: <Skeleton className="h-8 w-full" />,
       headerTitle: 'Model',
-      cellClassName: 'pl-3 pr-0',
     },
   },
 
@@ -44,11 +40,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
     id: 'provider',
     accessorFn: (row) => row.provider.name,
     header: ({ column }) => (
-      <DataGridColumnHeader
-        column={column}
-        title="PROVIDER"
-        className="justify-start has-[>svg]:pl-3"
-      />
+      <DataGridColumnHeader column={column} title="PROVIDER" className="justify-start" />
     ),
     cell: ({ row }) => {
       const endpoint = row.original
@@ -77,20 +69,23 @@ export const columns: ColumnDef<EndpointRow>[] = [
         </div>
       )
     },
-    size: 220,
+    size: 260,
     sortingFn: fuzzySort,
     enableHiding: false,
     meta: {
       skeleton: <Skeleton className="h-8 w-full" />,
       headerTitle: 'Provider',
-      cellClassName: 'pl-3 pr-0',
     },
   },
 
   {
     id: 'inputPrice',
     accessorFn: (row) => row.pricing.text_input,
-    header: ({ column }) => <DataGridColumnHeader column={column} title="INPUT $ PER MTOK" />,
+    header: ({ column }) => (
+      <div className="grow text-center">
+        <DataGridColumnHeader column={column} title="INPUT" subtitle="$/MTOK" />
+      </div>
+    ),
     cell: ({ getValue }) => {
       const inputPrice = getValue<number>()
       if (inputPrice) {
@@ -99,21 +94,27 @@ export const columns: ColumnDef<EndpointRow>[] = [
           priceValue: inputPrice,
           unitSuffix: false,
         })
+      } else {
+        return <span className="text-muted-foreground">&ndash;</span>
       }
     },
-    size: 110,
+    size: 120,
     sortUndefined: -1,
     meta: {
       skeleton: <Skeleton className="h-5 w-full" />,
       cellClassName: 'text-right',
-      headerTitle: 'Input $',
+      headerTitle: 'Input ($/MTOK)',
     },
   },
 
   {
     id: 'outputPrice',
     accessorFn: (row) => row.pricing.text_output,
-    header: ({ column }) => <DataGridColumnHeader column={column} title="OUTPUT $ PER MTOK" />,
+    header: ({ column }) => (
+      <div className="grow text-center">
+        <DataGridColumnHeader column={column} title="OUTPUT" subtitle="$/MTOK" />
+      </div>
+    ),
     cell: ({ getValue }) => {
       const outputPrice = getValue<number>()
       if (outputPrice) {
@@ -122,20 +123,22 @@ export const columns: ColumnDef<EndpointRow>[] = [
           priceValue: outputPrice,
           unitSuffix: false,
         })
+      } else {
+        return <span className="text-muted-foreground">&ndash;</span>
       }
     },
-    size: 110,
+    size: 120,
     sortUndefined: -1,
     meta: {
       skeleton: <Skeleton className="h-5 w-full" />,
       cellClassName: 'text-right',
-      headerTitle: 'Output $',
+      headerTitle: 'Output ($/MTOK)',
     },
   },
 
   {
     id: 'modalities',
-    header: 'Modalities',
+    header: ({ column }) => <DataGridColumnHeader column={column} title="MODALITIES" />,
     cell: ({ row }) => {
       const endpoint = row.original
       return (
@@ -145,7 +148,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
         />
       )
     },
-    size: 144,
+    size: 160,
     meta: {
       headerClassName: 'text-center',
       skeleton: <Skeleton className="h-6 w-full" />,
@@ -156,7 +159,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
 
   {
     id: 'features',
-    header: 'Features',
+    header: ({ column }) => <DataGridColumnHeader column={column} title="FEATURES" />,
     cell: ({ row }) => {
       const endpoint = row.original
       return (
@@ -177,7 +180,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
         />
       )
     },
-    size: 244,
+    size: 255,
     meta: {
       headerClassName: 'text-center',
       headerTitle: 'Features',
@@ -187,105 +190,121 @@ export const columns: ColumnDef<EndpointRow>[] = [
   },
 
   {
+    id: 'contextLength',
+    accessorFn: (row) => row.context_length,
+    header: ({ column }) => (
+      <div className="grow text-center">
+        <DataGridColumnHeader column={column} title="CONTEXT" subtitle="TOK" />
+      </div>
+    ),
+    cell: ({ getValue }) => getValue<number>().toLocaleString(),
+    size: 135,
+    meta: {
+      skeleton: <Skeleton className="h-5 w-full" />,
+      cellClassName: 'text-right',
+      headerTitle: 'Context (TOK)',
+    },
+  },
+
+  {
+    id: 'maxOutput',
+    accessorFn: (row) => row.limits.text_output_tokens ?? row.context_length,
+    header: ({ column }) => (
+      <div className="grow text-center">
+        <DataGridColumnHeader column={column} title="MAX OUT." subtitle="TOK" />
+      </div>
+    ),
+    cell: ({ getValue }) => getValue<number | undefined>()?.toLocaleString(),
+    size: 135,
+    sortUndefined: -1,
+    meta: {
+      skeleton: <Skeleton className="h-5 w-full" />,
+      cellClassName: 'text-right',
+      headerTitle: 'Max Output (TOK)',
+    },
+  },
+
+  {
+    id: 'quantization',
+    accessorFn: ({ quantization = '?' }) => (quantization === 'unknown' ? '?' : quantization),
+    header: ({ column }) => (
+      <div className="grow text-center">
+        <DataGridColumnHeader column={column} title="QUANT." />
+      </div>
+    ),
+    cell: ({ getValue }) => {
+      return (
+        <Badge variant="outline" className="font-mono text-sm uppercase">
+          {getValue<string>()}
+        </Badge>
+      )
+    },
+    size: 120,
+    meta: {
+      skeleton: <Skeleton className="h-6 w-full" />,
+      headerClassName: 'text-center',
+      cellClassName: 'text-center px-2',
+      headerTitle: 'Quant.',
+    },
+  },
+
+  {
     id: 'throughput',
     accessorFn: (row) => row.stats?.p50_throughput,
-    header: ({ column }) => <DataGridColumnHeader column={column} title="TOKENS PER SEC" />,
+    header: ({ column }) => (
+      <div className="grow text-center">
+        <DataGridColumnHeader column={column} title="TOK/SEC" />
+      </div>
+    ),
     cell: ({ getValue }) => {
       const throughput = getValue<number | undefined>()
       if (throughput) {
         return `${throughput.toLocaleString('en-US', {
           maximumFractionDigits: 0,
         })}`
+      } else {
+        return <span className="text-muted-foreground">&ndash;</span>
       }
     },
-    size: 100,
+    size: 125,
     sortUndefined: -1,
     meta: {
       skeleton: <Skeleton className="h-5 w-full" />,
       cellClassName: 'text-right',
-      headerTitle: 'Throughput',
+      headerTitle: 'Speed (TOK/S)',
     },
   },
 
   {
     id: 'latency',
     accessorFn: (row) => row.stats?.p50_latency,
-    header: ({ column }) => <DataGridColumnHeader column={column} title="LATENCY MS" />,
+    header: ({ column }) => (
+      <div className="grow text-center">
+        <DataGridColumnHeader column={column} title="TTFT" subtitle="MS" />
+      </div>
+    ),
     cell: ({ getValue }) => {
       const latency = getValue<number | undefined>()
       if (latency) {
         return `${latency.toLocaleString('en-US', {
           maximumFractionDigits: 0,
         })}`
+      } else {
+        return <span className="text-muted-foreground">&ndash;</span>
       }
     },
-    size: 100,
+    size: 115,
     sortUndefined: -1,
     meta: {
       skeleton: <Skeleton className="h-5 w-full" />,
       cellClassName: 'text-right',
-      headerTitle: 'Latency',
-    },
-  },
-
-  {
-    id: 'limits',
-    header: 'LIMITS',
-    cell: ({ row }) => {
-      const endpoint = row.original
-      return (
-        <AttributeBadgeSet
-          endpoint={endpoint}
-          attributes={[
-            'max_text_input_tokens',
-            'max_image_input_tokens',
-            'max_images_per_input',
-            'max_requests_per_minute',
-            'max_requests_per_day',
-          ]}
-          hideUnavailable
-        />
-      )
-    },
-    size: 135,
-    meta: {
-      headerClassName: 'text-center',
-      skeleton: <Skeleton className="h-8 w-full" />,
-      headerTitle: 'Limits',
-      cellClassName: 'px-2',
-    },
-  },
-
-  {
-    id: 'contextLength',
-    accessorFn: (row) => row.context_length,
-    header: ({ column }) => <DataGridColumnHeader column={column} title="CONTEXT" />,
-    cell: ({ getValue }) => getValue<number>().toLocaleString(),
-    size: 120,
-    meta: {
-      skeleton: <Skeleton className="h-5 w-full" />,
-      cellClassName: 'text-right',
-      headerTitle: 'Context',
-    },
-  },
-
-  {
-    id: 'maxOutput',
-    accessorFn: (row) => row.limits.text_output_tokens,
-    header: ({ column }) => <DataGridColumnHeader column={column} title="MAX OUTPUT" />,
-    cell: ({ getValue }) => getValue<number | undefined>()?.toLocaleString(),
-    size: 120,
-    sortUndefined: -1,
-    meta: {
-      skeleton: <Skeleton className="h-5 w-full" />,
-      cellClassName: 'text-right',
-      headerTitle: 'Max Output',
+      headerTitle: 'TTFT (MS)',
     },
   },
 
   {
     id: 'otherPricing',
-    header: 'Other $',
+    header: ({ column }) => <DataGridColumnHeader column={column} title="OTHER $" />,
     cell: ({ row }) => {
       const endpoint = row.original
       const pricingBadges = <PricingBadgeSet endpoint={endpoint} />
@@ -303,7 +322,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
 
   {
     id: 'dataPolicy',
-    header: 'Data Policy',
+    header: ({ column }) => <DataGridColumnHeader column={column} title="DATA POLICY" />,
     cell: ({ row }) => {
       const endpoint = row.original
 
@@ -315,7 +334,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
         />
       )
     },
-    size: 135,
+    size: 150,
     meta: {
       headerClassName: 'text-center',
       skeleton: <Skeleton className="h-8 w-full" />,
@@ -325,22 +344,55 @@ export const columns: ColumnDef<EndpointRow>[] = [
   },
 
   {
-    id: 'quantization',
-    accessorFn: ({ quantization = '?' }) => (quantization === 'unknown' ? '?' : quantization),
-    header: ({ column }) => <DataGridColumnHeader column={column} title="QUANT" />,
-    cell: ({ getValue }) => {
+    id: 'limits',
+    header: ({ column }) => <DataGridColumnHeader column={column} title="LIMITS" />,
+    cell: ({ row }) => {
+      const endpoint = row.original
       return (
-        <Badge variant="outline" className="font-mono text-sm uppercase">
-          {getValue<string>()}
-        </Badge>
+        <AttributeBadgeSet
+          endpoint={endpoint}
+          attributes={[
+            'max_text_input_tokens',
+            'max_image_input_tokens',
+            'max_images_per_input',
+            'max_requests_per_minute',
+            'max_requests_per_day',
+          ]}
+          hideUnavailable
+        />
       )
     },
-    size: 96,
+    size: 150,
     meta: {
-      skeleton: <Skeleton className="h-6 w-full" />,
       headerClassName: 'text-center',
-      cellClassName: 'text-center px-2',
-      headerTitle: 'Quantization',
+      skeleton: <Skeleton className="h-8 w-full" />,
+      headerTitle: 'Limits',
+      cellClassName: 'px-2',
+    },
+  },
+
+  {
+    id: 'modelAddedAt',
+    accessorFn: (row) => row.model.or_added_at,
+    header: ({ column }) => (
+      <div className="grow text-center">
+        <DataGridColumnHeader column={column} title="CREATED" subtitle="(MODEL)" />
+      </div>
+    ),
+    cell: ({ getValue }) => {
+      const timestamp = getValue<number>()
+      if (timestamp) {
+        return formatDateTime(timestamp).split(' ')[0]
+      } else {
+        return <span className="text-muted-foreground">&ndash;</span>
+      }
+    },
+    size: 120,
+    sortUndefined: -1,
+    meta: {
+      skeleton: <Skeleton className="h-5 w-full" />,
+      cellClassName: 'text-center',
+      headerTitle: 'Model Added (Date)',
     },
   },
 ]
