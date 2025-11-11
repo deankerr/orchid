@@ -37,6 +37,7 @@ import { useDataGrid } from './data-grid'
 interface DataGridColumnHeaderProps<TData, TValue> extends HTMLAttributes<HTMLDivElement> {
   column: Column<TData, TValue>
   title?: string
+  subtitle?: string
   icon?: ReactNode
   pinnable?: boolean
   filter?: ReactNode
@@ -46,12 +47,15 @@ interface DataGridColumnHeaderProps<TData, TValue> extends HTMLAttributes<HTMLDi
 function DataGridColumnHeader<TData, TValue>({
   column,
   title = '',
+  subtitle = '',
   icon,
   className,
   filter,
   visibility = false,
 }: DataGridColumnHeaderProps<TData, TValue>) {
   const { isLoading, table, props, recordCount } = useDataGrid()
+
+  const isResizable = props.tableLayout?.columnsResizable && column.getCanResize()
 
   const moveColumn = (direction: 'left' | 'right') => {
     const currentOrder = [...table.getState().columnOrder] // Get current column order
@@ -88,7 +92,8 @@ function DataGridColumnHeader<TData, TValue>({
     return (
       <div
         className={cn(
-          'inline-flex h-full items-center gap-1.5 text-[0.8125rem] leading-[calc(1.125/0.8125)] font-normal text-accent-foreground [&_svg]:size-3.5 [&_svg]:opacity-60',
+          'inline-flex h-full grow items-center justify-center gap-1.5 font-normal text-accent-foreground [&_svg]:size-3.5 [&_svg]:opacity-60',
+          isResizable && 'pr-2.5', // offset resize handle
           className,
         )}
         data-slot="data-grid-header-label"
@@ -104,7 +109,7 @@ function DataGridColumnHeader<TData, TValue>({
       <Button
         variant="ghost"
         className={cn(
-          'w-full shrink text-[12px] font-normal whitespace-normal text-secondary-foreground hover:bg-secondary hover:text-foreground has-[>svg]:px-3 data-[state=open]:bg-secondary data-[state=open]:text-foreground',
+          '-ms-2 h-full w-full justify-center rounded-none px-2 py-0.5 text-xs font-normal text-secondary-foreground hover:bg-secondary hover:text-foreground data-[state=open]:bg-secondary data-[state=open]:text-foreground',
           className,
         )}
         disabled={isLoading || recordCount === 0}
@@ -112,15 +117,18 @@ function DataGridColumnHeader<TData, TValue>({
         data-slot="data-grid-header-button"
       >
         {icon && icon}
-        {title}
+        <div className="">
+          <div>{title}</div>
+          {subtitle && <div className="text-muted-foreground">{subtitle}</div>}
+        </div>
 
         {column.getCanSort() &&
           (column.getIsSorted() === 'desc' ? (
-            <ChevronDown className="mt-px -mr-1 size-[0.7rem]!" />
+            <ChevronDown className="size-[0.7rem]!" />
           ) : column.getIsSorted() === 'asc' ? (
-            <ChevronUp className="mt-px -mr-1 size-[0.7rem]!" />
+            <ChevronUp className="size-[0.7rem]!" />
           ) : (
-            <ChevronsUpDown className="mt-px -mr-1 size-[0.7rem]!" />
+            <ChevronsUpDown className="size-[0.7rem]!" />
           ))}
       </Button>
     )
@@ -290,7 +298,8 @@ function DataGridColumnHeader<TData, TValue>({
     return headerControls()
   }
 
-  if (column.getCanSort() || (props.tableLayout?.columnsResizable && column.getCanResize())) {
+  // NOTE: removed isResizable check which prevented headerLabel from ever being used
+  if (column.getCanSort()) {
     return headerButton()
   }
 

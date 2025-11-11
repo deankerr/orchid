@@ -33,6 +33,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
     size: 260,
     sortingFn: fuzzySort,
     enableHiding: false,
+
     meta: {
       skeleton: <Skeleton className="h-8 w-full" />,
       headerTitle: 'Model',
@@ -90,7 +91,9 @@ export const columns: ColumnDef<EndpointRow>[] = [
   {
     id: 'inputPrice',
     accessorFn: (row) => row.pricing.text_input,
-    header: ({ column }) => <DataGridColumnHeader column={column} title="INPUT $ PER MTOK" />,
+    header: ({ column }) => (
+      <DataGridColumnHeader column={column} title="INPUT" subtitle="$/MTOK" />
+    ),
     cell: ({ getValue }) => {
       const inputPrice = getValue<number>()
       if (inputPrice) {
@@ -103,7 +106,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
         return <span className="text-muted-foreground">&ndash;</span>
       }
     },
-    size: 110,
+    size: 165,
     sortUndefined: -1,
     meta: {
       skeleton: <Skeleton className="h-5 w-full" />,
@@ -115,7 +118,9 @@ export const columns: ColumnDef<EndpointRow>[] = [
   {
     id: 'outputPrice',
     accessorFn: (row) => row.pricing.text_output,
-    header: ({ column }) => <DataGridColumnHeader column={column} title="OUTPUT $ PER MTOK" />,
+    header: ({ column }) => (
+      <DataGridColumnHeader column={column} title="OUTPUT" subtitle="$/MTOK" />
+    ),
     cell: ({ getValue }) => {
       const outputPrice = getValue<number>()
       if (outputPrice) {
@@ -128,7 +133,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
         return <span className="text-muted-foreground">&ndash;</span>
       }
     },
-    size: 110,
+    size: 165,
     sortUndefined: -1,
     meta: {
       skeleton: <Skeleton className="h-5 w-full" />,
@@ -139,7 +144,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
 
   {
     id: 'modalities',
-    header: 'Modalities',
+    header: ({ column }) => <DataGridColumnHeader column={column} title="MODALITIES" />,
     cell: ({ row }) => {
       const endpoint = row.original
       return (
@@ -160,7 +165,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
 
   {
     id: 'features',
-    header: 'Features',
+    header: ({ column }) => <DataGridColumnHeader column={column} title="FEATURES" />,
     cell: ({ row }) => {
       const endpoint = row.original
       return (
@@ -193,9 +198,9 @@ export const columns: ColumnDef<EndpointRow>[] = [
   {
     id: 'contextLength',
     accessorFn: (row) => row.context_length,
-    header: ({ column }) => <DataGridColumnHeader column={column} title="CONTEXT" />,
+    header: ({ column }) => <DataGridColumnHeader column={column} title="CONTEXT" subtitle="TOK" />,
     cell: ({ getValue }) => getValue<number>().toLocaleString(),
-    size: 120,
+    size: 150,
     meta: {
       skeleton: <Skeleton className="h-5 w-full" />,
       cellClassName: 'text-right',
@@ -206,9 +211,11 @@ export const columns: ColumnDef<EndpointRow>[] = [
   {
     id: 'maxOutput',
     accessorFn: (row) => row.limits.text_output_tokens ?? row.context_length,
-    header: ({ column }) => <DataGridColumnHeader column={column} title="MAX OUTPUT" />,
+    header: ({ column }) => (
+      <DataGridColumnHeader column={column} title="MAX OUTPUT" subtitle="TOK" />
+    ),
     cell: ({ getValue }) => getValue<number | undefined>()?.toLocaleString(),
-    size: 120,
+    size: 150,
     sortUndefined: -1,
     meta: {
       skeleton: <Skeleton className="h-5 w-full" />,
@@ -228,7 +235,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
         </Badge>
       )
     },
-    size: 96,
+    size: 150,
     meta: {
       skeleton: <Skeleton className="h-6 w-full" />,
       headerClassName: 'text-center',
@@ -240,7 +247,9 @@ export const columns: ColumnDef<EndpointRow>[] = [
   {
     id: 'throughput',
     accessorFn: (row) => row.stats?.p50_throughput,
-    header: ({ column }) => <DataGridColumnHeader column={column} title="TOKENS PER SEC" />,
+    header: ({ column }) => (
+      <DataGridColumnHeader column={column} title="THROUGHPUT" subtitle="TOK/SEC" />
+    ),
     cell: ({ getValue }) => {
       const throughput = getValue<number | undefined>()
       if (throughput) {
@@ -251,7 +260,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
         return <span className="text-muted-foreground">&ndash;</span>
       }
     },
-    size: 100,
+    size: 150,
     sortUndefined: -1,
     meta: {
       skeleton: <Skeleton className="h-5 w-full" />,
@@ -263,7 +272,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
   {
     id: 'latency',
     accessorFn: (row) => row.stats?.p50_latency,
-    header: ({ column }) => <DataGridColumnHeader column={column} title="LATENCY MS" />,
+    header: ({ column }) => <DataGridColumnHeader column={column} title="LATENCY" subtitle="MS" />,
     cell: ({ getValue }) => {
       const latency = getValue<number | undefined>()
       if (latency) {
@@ -274,7 +283,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
         return <span className="text-muted-foreground">&ndash;</span>
       }
     },
-    size: 100,
+    size: 150,
     sortUndefined: -1,
     meta: {
       skeleton: <Skeleton className="h-5 w-full" />,
@@ -285,14 +294,14 @@ export const columns: ColumnDef<EndpointRow>[] = [
 
   {
     id: 'otherPricing',
-    header: 'Other $',
+    header: ({ column }) => <DataGridColumnHeader column={column} title="OTHER $" />,
     cell: ({ row }) => {
       const endpoint = row.original
       const pricingBadges = <PricingBadgeSet endpoint={endpoint} />
 
       return pricingBadges
     },
-    size: 135,
+    size: 150,
     meta: {
       headerClassName: 'text-center',
       skeleton: <Skeleton className="h-8 w-full" />,
@@ -303,7 +312,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
 
   {
     id: 'dataPolicy',
-    header: 'Data Policy',
+    header: ({ column }) => <DataGridColumnHeader column={column} title="DATA POLICY" />,
     cell: ({ row }) => {
       const endpoint = row.original
 
@@ -315,7 +324,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
         />
       )
     },
-    size: 135,
+    size: 150,
     meta: {
       headerClassName: 'text-center',
       skeleton: <Skeleton className="h-8 w-full" />,
@@ -326,7 +335,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
 
   {
     id: 'limits',
-    header: 'LIMITS',
+    header: ({ column }) => <DataGridColumnHeader column={column} title="LIMITS" />,
     cell: ({ row }) => {
       const endpoint = row.original
       return (
@@ -343,7 +352,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
         />
       )
     },
-    size: 135,
+    size: 150,
     meta: {
       headerClassName: 'text-center',
       skeleton: <Skeleton className="h-8 w-full" />,

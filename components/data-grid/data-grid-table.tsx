@@ -15,7 +15,7 @@ const headerCellSpacingVariants = cva('', {
   variants: {
     size: {
       dense: 'px-2.5 h-8',
-      default: 'px-4 has-[button]:px-0',
+      default: 'px-4',
     },
   },
   defaultVariants: {
@@ -92,6 +92,7 @@ function DataGridTableHeadRow<TData>({
   return (
     <tr
       key={headerGroup.id}
+      data-slot="data-grid-table-head-row"
       className={cn(
         'bg-muted/40',
         props.tableLayout?.headerBorder && '[&>th]:border-b',
@@ -140,8 +141,9 @@ function DataGridTableHeadRowCell<TData>({
       }}
       data-pinned={isPinned || undefined}
       data-last-col={isLastLeftPinned ? 'left' : isFirstRightPinned ? 'right' : undefined}
+      data-slot="data-grid-table-head-row-cell"
       className={cn(
-        'relative h-11 text-left align-middle font-normal text-accent-foreground rtl:text-right [&:has([role=checkbox])]:pe-0',
+        'relative h-12 align-middle text-xs font-normal text-accent-foreground rtl:text-right [&:has([role=checkbox])]:pe-0',
         headerCellSpacing,
         props.tableLayout?.cellBorder && 'border-e',
         props.tableLayout?.columnsResizable && column.getCanResize() && 'truncate',
