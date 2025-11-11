@@ -25,7 +25,6 @@ import {
   DataGridCardToolbar,
 } from '../data-grid/data-grid-card'
 import { fuzzyFilter } from '../data-grid/data-grid-fuzzy'
-import { DataGridTable, DataGridTableVirtual } from '../data-grid/data-grid-table'
 import { DataGridTableDndVirtual } from '../data-grid/data-grid-table-dnd'
 import { columns } from './columns'
 import { Controls } from './controls'
@@ -161,8 +160,6 @@ function EndpointsDataGrid() {
 
         <DataGridCardContent>
           <DataGridTableDndVirtual handleDragEnd={handleDragEnd} />
-          {/* <DataGridTableVirtual /> */}
-          {/* <DataGridTable /> */}
         </DataGridCardContent>
 
         <DataGridCardFooter>

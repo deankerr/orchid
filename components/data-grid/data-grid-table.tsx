@@ -95,7 +95,6 @@ function DataGridTableHeadRow<TData>({
       data-slot="data-grid-table-head-row"
       className={cn(
         'bg-muted/40',
-        props.tableLayout?.headerBorder && '[&>th]:border-b',
         props.tableLayout?.cellBorder && '*:last:border-e-0',
         props.tableLayout?.stripped && 'bg-transparent',
         props.tableLayout?.headerBackground === false && 'bg-transparent',
@@ -157,6 +156,10 @@ function DataGridTableHeadRowCell<TData>({
       )}
     >
       {children}
+      {/* NOTE: header border-b replacement that remains in place with sticky headers */}
+      {props.tableLayout?.headerBorder && (
+        <div className="absolute bottom-0 left-0 h-px w-full bg-border" />
+      )}
     </th>
   )
 }
