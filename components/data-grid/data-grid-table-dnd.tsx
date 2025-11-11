@@ -57,7 +57,10 @@ function DataGridTableDndHeader<TData>({ header }: { header: Header<TData, unkno
 
   return (
     <DataGridTableHeadRowCell header={header} dndStyle={style} dndRef={setNodeRef}>
-      <div className="flex items-center gap-0.5">
+      <div
+        data-slot="data-grid-table-dnd-handle-container"
+        className="flex h-full items-center gap-0.5"
+      >
         <Button
           size="icon"
           variant="ghost"

@@ -1,35 +1,9 @@
 import { HTMLAttributes, ReactNode } from 'react'
 
 import { Column } from '@tanstack/react-table'
-import {
-  ArrowDown,
-  ArrowLeft,
-  ArrowLeftToLine,
-  ArrowRight,
-  ArrowRightToLine,
-  ArrowUp,
-  Check,
-  ChevronDown,
-  ChevronsUpDown,
-  ChevronUp,
-  PinOff,
-  Settings2,
-} from 'lucide-react'
+import { ChevronDown, ChevronsUpDown, ChevronUp } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuPortal,
-  DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 
 import { useDataGrid } from './data-grid'
@@ -50,43 +24,10 @@ function DataGridColumnHeader<TData, TValue>({
   subtitle = '',
   icon,
   className,
-  filter,
-  visibility = false,
 }: DataGridColumnHeaderProps<TData, TValue>) {
-  const { isLoading, table, props, recordCount } = useDataGrid()
+  const { isLoading, props, recordCount } = useDataGrid()
 
   const isResizable = props.tableLayout?.columnsResizable && column.getCanResize()
-
-  const moveColumn = (direction: 'left' | 'right') => {
-    const currentOrder = [...table.getState().columnOrder] // Get current column order
-    const currentIndex = currentOrder.indexOf(column.id) // Get current index of the column
-
-    if (direction === 'left' && currentIndex > 0) {
-      // Move column left
-      const newOrder = [...currentOrder]
-      const [movedColumn] = newOrder.splice(currentIndex, 1)
-      newOrder.splice(currentIndex - 1, 0, movedColumn)
-      table.setColumnOrder(newOrder) // Update column order
-    }
-
-    if (direction === 'right' && currentIndex < currentOrder.length - 1) {
-      // Move column right
-      const newOrder = [...currentOrder]
-      const [movedColumn] = newOrder.splice(currentIndex, 1)
-      newOrder.splice(currentIndex + 1, 0, movedColumn)
-      table.setColumnOrder(newOrder) // Update column order
-    }
-  }
-
-  const canMove = (direction: 'left' | 'right'): boolean => {
-    const currentOrder = table.getState().columnOrder
-    const currentIndex = currentOrder.indexOf(column.id)
-    if (direction === 'left') {
-      return currentIndex > 0
-    } else {
-      return currentIndex < currentOrder.length - 1
-    }
-  }
 
   const headerLabel = () => {
     return (
@@ -109,7 +50,7 @@ function DataGridColumnHeader<TData, TValue>({
       <Button
         variant="ghost"
         className={cn(
-          '-ms-2 h-full w-full justify-center rounded-none px-2 py-0.5 text-xs font-normal text-secondary-foreground hover:bg-secondary hover:text-foreground data-[state=open]:bg-secondary data-[state=open]:text-foreground',
+          '-ms-2 justify-center px-2 py-0.5 text-xs font-normal text-secondary-foreground hover:bg-secondary hover:text-foreground data-[state=open]:bg-secondary data-[state=open]:text-foreground',
           className,
         )}
         disabled={isLoading || recordCount === 0}
@@ -124,179 +65,17 @@ function DataGridColumnHeader<TData, TValue>({
 
         {column.getCanSort() &&
           (column.getIsSorted() === 'desc' ? (
-            <ChevronDown className="size-[0.7rem]!" />
+            <ChevronDown className="-ml-1 size-[0.7rem]!" />
           ) : column.getIsSorted() === 'asc' ? (
-            <ChevronUp className="size-[0.7rem]!" />
+            <ChevronUp className="-ml-1 size-[0.7rem]!" />
           ) : (
-            <ChevronsUpDown className="size-[0.7rem]!" />
+            <ChevronsUpDown className="-ml-1 size-[0.7rem]!" />
           ))}
       </Button>
     )
   }
 
-  const headerPin = () => {
-    return (
-      <Button
-        size="icon"
-        variant="ghost"
-        className="-me-1 size-7 rounded-md"
-        onClick={() => column.pin(false)}
-        aria-label={`Unpin ${title} column`}
-        title={`Unpin ${title} column`}
-        data-slot="data-grid-header-pin-button"
-      >
-        <PinOff className="size-3.5! opacity-50!" aria-hidden="true" />
-      </Button>
-    )
-  }
-
-  const headerControls = () => {
-    return (
-      <div className="flex h-full items-center justify-between gap-1.5">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>{headerButton()}</DropdownMenuTrigger>
-          <DropdownMenuContent className="w-40" align="start">
-            {filter && <DropdownMenuLabel>{filter}</DropdownMenuLabel>}
-
-            {filter && (column.getCanSort() || column.getCanPin() || visibility) && (
-              <DropdownMenuSeparator />
-            )}
-
-            {column.getCanSort() && (
-              <>
-                <DropdownMenuItem
-                  onClick={() => {
-                    if (column.getIsSorted() === 'asc') {
-                      column.clearSorting()
-                    } else {
-                      column.toggleSorting(false)
-                    }
-                  }}
-                  disabled={!column.getCanSort()}
-                >
-                  <ArrowUp className="size-3.5!" />
-                  <span className="grow">Asc</span>
-                  {column.getIsSorted() === 'asc' && (
-                    <Check className="size-4 text-primary opacity-100!" />
-                  )}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => {
-                    if (column.getIsSorted() === 'desc') {
-                      column.clearSorting()
-                    } else {
-                      column.toggleSorting(true)
-                    }
-                  }}
-                  disabled={!column.getCanSort()}
-                >
-                  <ArrowDown className="size-3.5!" />
-                  <span className="grow">Desc</span>
-                  {column.getIsSorted() === 'desc' && (
-                    <Check className="size-4 text-primary opacity-100!" />
-                  )}
-                </DropdownMenuItem>
-              </>
-            )}
-
-            {(filter || column.getCanSort()) &&
-              (column.getCanSort() || column.getCanPin() || visibility) && (
-                <DropdownMenuSeparator />
-              )}
-
-            {props.tableLayout?.columnsPinnable && column.getCanPin() && (
-              <>
-                <DropdownMenuItem
-                  onClick={() => column.pin(column.getIsPinned() === 'left' ? false : 'left')}
-                >
-                  <ArrowLeftToLine className="size-3.5!" aria-hidden="true" />
-                  <span className="grow">Pin to left</span>
-                  {column.getIsPinned() === 'left' && (
-                    <Check className="size-4 text-primary opacity-100!" />
-                  )}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => column.pin(column.getIsPinned() === 'right' ? false : 'right')}
-                >
-                  <ArrowRightToLine className="size-3.5!" aria-hidden="true" />
-                  <span className="grow">Pin to right</span>
-                  {column.getIsPinned() === 'right' && (
-                    <Check className="size-4 text-primary opacity-100!" />
-                  )}
-                </DropdownMenuItem>
-              </>
-            )}
-
-            {props.tableLayout?.columnsMovable && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() => moveColumn('left')}
-                  disabled={!canMove('left') || column.getIsPinned() !== false}
-                >
-                  <ArrowLeft className="size-3.5!" aria-hidden="true" />
-                  <span>Move to Left</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => moveColumn('right')}
-                  disabled={!canMove('right') || column.getIsPinned() !== false}
-                >
-                  <ArrowRight className="size-3.5!" aria-hidden="true" />
-                  <span>Move to Right</span>
-                </DropdownMenuItem>
-              </>
-            )}
-
-            {props.tableLayout?.columnsVisibility &&
-              visibility &&
-              (column.getCanSort() || column.getCanPin() || filter) && <DropdownMenuSeparator />}
-
-            {props.tableLayout?.columnsVisibility && visibility && (
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>
-                  <Settings2 className="size-3.5!" />
-                  <span>Columns</span>
-                </DropdownMenuSubTrigger>
-                <DropdownMenuPortal>
-                  <DropdownMenuSubContent>
-                    {table
-                      .getAllColumns()
-                      .filter((col) => typeof col.accessorFn !== 'undefined' && col.getCanHide())
-                      .map((col) => {
-                        return (
-                          <DropdownMenuCheckboxItem
-                            key={col.id}
-                            checked={col.getIsVisible()}
-                            onSelect={(event) => event.preventDefault()}
-                            onCheckedChange={(value) => col.toggleVisibility(!!value)}
-                            className="capitalize"
-                          >
-                            {col.columnDef.meta?.headerTitle || col.id}
-                          </DropdownMenuCheckboxItem>
-                        )
-                      })}
-                  </DropdownMenuSubContent>
-                </DropdownMenuPortal>
-              </DropdownMenuSub>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
-        {props.tableLayout?.columnsPinnable &&
-          column.getCanPin() &&
-          column.getIsPinned() &&
-          headerPin()}
-      </div>
-    )
-  }
-
-  if (
-    props.tableLayout?.columnsMovable ||
-    (props.tableLayout?.columnsVisibility && visibility) ||
-    (props.tableLayout?.columnsPinnable && column.getCanPin()) ||
-    filter
-  ) {
-    return headerControls()
-  }
+  // NOTE: removed unused: headerControls(), headerPin(), etc.
 
   // NOTE: removed isResizable check which prevented headerLabel from ever being used
   if (column.getCanSort()) {
