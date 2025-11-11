@@ -32,15 +32,15 @@ function EndpointsSearchInput() {
 
 export function Controls() {
   const { table } = useDataGrid()
-  const { hasActiveFilters, hasActiveSorting, clearAllFilters } = useEndpointFilters()
+  const { hasActiveAttributeFilters, clearAttributeFilters } = useEndpointFilters()
 
   return (
     <>
       <EndpointsSearchInput />
       <AttributeFilterControls />
 
-      {(hasActiveFilters || hasActiveSorting) && (
-        <Button variant="ghost" size="sm" onClick={clearAllFilters}>
+      {hasActiveAttributeFilters && (
+        <Button variant="ghost" size="sm" onClick={clearAttributeFilters}>
           <XIcon />
           Clear
         </Button>

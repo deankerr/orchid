@@ -135,7 +135,8 @@ export function useEndpointFilters() {
   const activeFilterCount = filters.has.length + filters.not.length
 
   const hasActiveSorting = filters.sort !== null
-  const hasActiveFilters = filters.has.length > 0 || filters.not.length > 0 || !!filters.q
+  const hasActiveAttributeFilters = filters.has.length > 0 || filters.not.length > 0
+  const hasActiveFilters = hasActiveAttributeFilters || !!filters.q
 
   return {
     globalFilter: filters.q,
@@ -150,6 +151,7 @@ export function useEndpointFilters() {
     clearAllFilters,
     activeFilterCount,
     hasActiveFilters,
+    hasActiveAttributeFilters,
     hasActiveSorting,
   }
 }
