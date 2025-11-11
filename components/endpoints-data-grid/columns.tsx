@@ -6,7 +6,7 @@ import { DataGridColumnHeader } from '@/components/data-grid/data-grid-column-he
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getEndpointAttributeData } from '@/lib/attributes'
-import { formatPrice } from '@/lib/formatters'
+import { formatDateTime, formatPrice } from '@/lib/formatters'
 
 import { fuzzySort } from '../data-grid/data-grid-fuzzy'
 import { AttributeBadge, AttributeBadgeName, AttributeBadgeSet } from '../shared/attribute-badge'
@@ -33,7 +33,6 @@ export const columns: ColumnDef<EndpointRow>[] = [
     meta: {
       skeleton: <Skeleton className="h-8 w-full" />,
       headerTitle: 'Model',
-      cellClassName: 'pl-3 pr-0',
     },
   },
 
@@ -76,7 +75,6 @@ export const columns: ColumnDef<EndpointRow>[] = [
     meta: {
       skeleton: <Skeleton className="h-8 w-full" />,
       headerTitle: 'Provider',
-      cellClassName: 'pl-3 pr-3',
     },
   },
 
@@ -370,6 +368,31 @@ export const columns: ColumnDef<EndpointRow>[] = [
       skeleton: <Skeleton className="h-8 w-full" />,
       headerTitle: 'Limits',
       cellClassName: 'px-2',
+    },
+  },
+
+  {
+    id: 'modelAddedAt',
+    accessorFn: (row) => row.model.or_added_at,
+    header: ({ column }) => (
+      <div className="grow text-center">
+        <DataGridColumnHeader column={column} title="CREATED" subtitle="(MODEL)" />
+      </div>
+    ),
+    cell: ({ getValue }) => {
+      const timestamp = getValue<number>()
+      if (timestamp) {
+        return formatDateTime(timestamp).split(' ')[0]
+      } else {
+        return <span className="text-muted-foreground">&ndash;</span>
+      }
+    },
+    size: 120,
+    sortUndefined: -1,
+    meta: {
+      skeleton: <Skeleton className="h-5 w-full" />,
+      cellClassName: 'text-center',
+      headerTitle: 'Model Added (Date)',
     },
   },
 ]
