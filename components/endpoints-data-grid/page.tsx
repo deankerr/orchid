@@ -102,8 +102,6 @@ function EndpointsDataGrid() {
     }
   }
 
-  const [cellBorder, setCellBorder] = useState(false)
-
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     columns,
@@ -139,7 +137,7 @@ function EndpointsDataGrid() {
         headerSticky: true,
         headerBorder: true,
         width: 'fixed',
-        cellBorder,
+        cellBorder: true,
         virtualized: true,
         rowHeight: 58.5,
         overscan: 20,
@@ -155,7 +153,7 @@ function EndpointsDataGrid() {
     >
       <DataGridCard>
         <DataGridCardToolbar>
-          <Controls cellBorder={cellBorder} setCellBorder={setCellBorder} />
+          <Controls />
         </DataGridCardToolbar>
 
         <DataGridCardContent>
