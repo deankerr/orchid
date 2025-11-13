@@ -6,35 +6,6 @@ import { Badge } from '@/components/ui/badge'
 import { formatPrice } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 
-// * Array diff styled percentage badge with lucide arrows
-export function PercentageBadge({
-  value,
-  isIncrease,
-  isGood,
-  className,
-  ...props
-}: {
-  value: number
-  isIncrease: boolean
-  isGood: boolean
-} & React.ComponentProps<typeof Badge>) {
-  return (
-    <Badge
-      className={cn(
-        '',
-        isGood
-          ? 'border-positive-surface-border bg-positive-surface text-positive-surface-foreground'
-          : 'border-negative-surface-border bg-negative-surface text-negative-surface-foreground',
-        className,
-      )}
-      {...props}
-    >
-      {isIncrease ? <TrendingUpIcon /> : <TrendingDownIcon />}
-      {Math.abs(value).toFixed(1)}%
-    </Badge>
-  )
-}
-
 // * Inline value change display - always shows before → after
 export function InlineValueChange({
   before,
@@ -187,6 +158,33 @@ function InlineJSONValue({ value, className }: { value: unknown; className?: str
   return (
     <Badge variant="secondary" className={cn('', className)}>
       {stringified}
+    </Badge>
+  )
+}
+
+function PercentageBadge({
+  value,
+  isIncrease,
+  isGood,
+  className,
+  ...props
+}: {
+  value: number
+  isIncrease: boolean
+  isGood: boolean
+} & React.ComponentProps<typeof Badge>) {
+  return (
+    <Badge
+      className={cn(
+        isGood
+          ? 'border-positive-surface-border bg-positive-surface text-positive-surface-foreground'
+          : 'border-negative-surface-border bg-negative-surface text-negative-surface-foreground',
+        className,
+      )}
+      {...props}
+    >
+      {isIncrease ? <TrendingUpIcon /> : <TrendingDownIcon />}
+      {Math.abs(value).toFixed(1)}%
     </Badge>
   )
 }

@@ -5,14 +5,14 @@ import { usePaginatedQuery } from 'convex/react'
 import { api } from '@/convex/_generated/api'
 import { EndpointChangeDoc } from '@/convex/feed'
 
-import { PageHeader, PageTitle } from '@/components/app-layout/pages'
-import { FeedTimelineMarker } from '@/components/changes-feed/feed-groups'
-import { InlineValueChange } from '@/components/changes-feed/feed-values'
+import { InlineValueChange } from '@/components/monitor-feed/monitor-feed-values'
 import { EntityAvatar } from '@/components/shared/entity-avatar'
 import { PaginatedLoadButton } from '@/components/shared/paginated-load-button'
 import { Badge } from '@/components/ui/badge'
+import { formatDateTime, formatRelativeTime } from '@/lib/formatters'
+import { cn } from '@/lib/utils'
 
-export function ChangesFeedPage() {
+export function MonitorFeed() {
   const { results, status, loadMore } = usePaginatedQuery(
     api.feed.changesByCrawlId,
     {},
@@ -20,35 +20,41 @@ export function ChangesFeedPage() {
   )
 
   return (
-    <>
-      <PageHeader>
-        <PageTitle>Changes</PageTitle>
-      </PageHeader>
+    <div className="px-4 py-6">
+      <div className="space-y-8">
+        {results.map(({ crawl_id, data: changes }) => (
+          <div key={crawl_id} className="space-y-4 text-sm">
+            <TimelineMarker crawl_id={crawl_id} />
 
-      <div className="px-4 py-6">
-        <div className="space-y-8">
-          {results.map(({ crawl_id, data: changes }) => (
-            <div key={crawl_id} className="space-y-4 text-sm">
-              <FeedTimelineMarker crawl_id={crawl_id} />
-
-              <div className="space-y-3 pl-2">
-                {changes.map((change: EndpointChangeDoc) => (
-                  <ChangeFeedItem key={change._id} change={change} />
-                ))}
-              </div>
+            <div className="space-y-3 pl-2">
+              {changes.map((change: EndpointChangeDoc) => (
+                <FeedItem key={change._id} change={change} />
+              ))}
             </div>
-          ))}
-
-          <div className="flex items-center justify-center py-4">
-            <PaginatedLoadButton status={status} onClick={() => loadMore(1)} />
           </div>
+        ))}
+
+        <div className="flex items-center justify-center py-4">
+          <PaginatedLoadButton status={status} onClick={() => loadMore(1)} />
         </div>
       </div>
-    </>
+    </div>
   )
 }
 
-function ChangeFeedItem({ change }: { change: EndpointChangeDoc }) {
+function TimelineMarker({ crawl_id, className }: { crawl_id: string; className?: string }) {
+  return (
+    <div className={cn('flex items-center gap-2', className)}>
+      <Badge className="font-mono">{formatRelativeTime(Number(crawl_id))}</Badge>
+      <Badge variant="secondary" className="font-mono">
+        {formatDateTime(Number(crawl_id))}
+      </Badge>
+      <div className="h-px flex-1 border-b border-dashed" />
+    </div>
+  )
+}
+
+function FeedItem({ change }: { change: EndpointChangeDoc }) {
   const actionText =
     change.change_kind === 'create' ? (
       <span className="text-green-400">created</span>
