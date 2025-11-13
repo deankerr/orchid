@@ -34,6 +34,7 @@ import type * as snapshots_materialize_validators_endpoints from "../snapshots/m
 import type * as snapshots_materialize_validators_models from "../snapshots/materialize/validators/models.js";
 import type * as snapshots_materialize_validators_providers from "../snapshots/materialize/validators/providers.js";
 import type * as snapshots_materializedChanges_main from "../snapshots/materializedChanges/main.js";
+import type * as snapshots_materializedChanges_output from "../snapshots/materializedChanges/output.js";
 import type * as snapshots_materializedChanges_process from "../snapshots/materializedChanges/process.js";
 import type * as snapshots_shared_bundle from "../snapshots/shared/bundle.js";
 import type * as snapshots_shared_icons from "../snapshots/shared/icons.js";
@@ -81,6 +82,7 @@ declare const fullApi: ApiFromModules<{
   "snapshots/materialize/validators/models": typeof snapshots_materialize_validators_models;
   "snapshots/materialize/validators/providers": typeof snapshots_materialize_validators_providers;
   "snapshots/materializedChanges/main": typeof snapshots_materializedChanges_main;
+  "snapshots/materializedChanges/output": typeof snapshots_materializedChanges_output;
   "snapshots/materializedChanges/process": typeof snapshots_materializedChanges_process;
   "snapshots/shared/bundle": typeof snapshots_shared_bundle;
   "snapshots/shared/icons": typeof snapshots_shared_icons;

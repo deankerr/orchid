@@ -1,11 +1,14 @@
+import { WithoutSystemFields } from 'convex/server'
+
 import { atomizeChangeset, diff, type Options as DiffOptions } from 'json-diff-ts'
 
-import type { OrViewsChangeFields } from '../../db/or/views/changes'
+import { Doc } from '../../_generated/dataModel'
 import { materializeModelEndpoints } from '../materialize/main'
 
 type MaterializedSnapshot = ReturnType<typeof materializeModelEndpoints>
 
-type ChangeDraft = Omit<OrViewsChangeFields, 'crawl_id' | 'previous_crawl_id'>
+type ChangeFields = WithoutSystemFields<Doc<'or_views_changes'>>
+type ChangeDraft = Omit<ChangeFields, 'crawl_id' | 'previous_crawl_id'>
 
 const DIFF_OPTIONS: DiffOptions = {
   keysToSkip: [
@@ -38,7 +41,7 @@ export function computeMaterializedChanges(args: {
   current: MaterializedSnapshot
   previous_crawl_id: string
   crawl_id: string
-}): OrViewsChangeFields[] {
+}): ChangeFields[] {
   const previousModels = new Map(args.previous.models.map((m) => [m.slug, m]))
   const currentModels = new Map(args.current.models.map((m) => [m.slug, m]))
 
@@ -67,7 +70,7 @@ export function computeMaterializedChanges(args: {
     ...change,
     crawl_id: args.crawl_id,
     previous_crawl_id: args.previous_crawl_id,
-  })) as OrViewsChangeFields[]
+  })) as ChangeFields[]
 }
 
 function computeEntityChanges<T>(

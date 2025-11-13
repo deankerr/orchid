@@ -41,11 +41,14 @@ export const run = internalAction({
             crawl_id: current.crawl_id,
           })
 
-          const counters = await ctx.runMutation(internal.db.or.views.changes.replacePairChanges, {
-            previous_crawl_id: previous.crawl_id,
-            crawl_id: current.crawl_id,
-            changes,
-          })
+          const counters = await ctx.runMutation(
+            internal.snapshots.materializedChanges.output.upsert,
+            {
+              previous_crawl_id: previous.crawl_id,
+              crawl_id: current.crawl_id,
+              changes,
+            },
+          )
 
           console.log('[materializedChanges] pair processed', {
             previous_crawl_id: previous.crawl_id,
