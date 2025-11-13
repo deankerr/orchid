@@ -11,31 +11,25 @@ export function EntityAvatar({
 }: {
   slug: string
   fallbackText?: string
-} & React.ComponentProps<'div'>) {
+} & React.ComponentProps<'span'>) {
   const { url, style } = getLogo(slug)
 
   return (
-    <div
+    <span
       className={cn(
-        'flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-muted',
+        'inline-flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-sm border border-neutral-700/50 bg-muted select-none',
         className,
       )}
       style={{ background: style?.background }}
       {...props}
     >
       {url ? (
-        <Image
-          src={url}
-          alt={style?.title || slug}
-          width={28}
-          height={28}
-          style={{ scale: style?.scale ?? 0.75 }}
-        />
+        <Image src={url} alt="" width={28} height={28} style={{ scale: style?.scale ?? 0.75 }} />
       ) : (
-        <span className="font-mono text-[80%]">
+        <span className="font-mono text-[80%] text-muted-foreground">
           {(fallbackText || slug).replace(/[^a-zA-Z0-9]/g, '').slice(0, 2)}
         </span>
       )}
-    </div>
+    </span>
   )
 }
