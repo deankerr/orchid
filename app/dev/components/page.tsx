@@ -1,17 +1,23 @@
-import { Suspense } from 'react'
 import type { Metadata } from 'next'
 
-import { ComponentLibrary } from './component-library'
+import { PageContainer, PageHeader, PageTitle } from '@/components/app-layout/pages'
+
+import { DemoRadBadgeComponents } from './demo-rad-badge'
 
 export const metadata: Metadata = {
-  title: 'Components',
-  description: 'Development component library and design system showcase',
+  title: 'Component Demos',
 }
 
-export default function ComponentLibraryPage() {
+export default function Page() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <ComponentLibrary />
-    </Suspense>
+    <PageContainer>
+      <PageHeader>
+        <PageTitle>Component Library</PageTitle>
+      </PageHeader>
+
+      <div className="grid divide-y px-3">
+        <DemoRadBadgeComponents />
+      </div>
+    </PageContainer>
   )
 }
