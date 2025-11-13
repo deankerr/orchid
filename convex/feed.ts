@@ -49,7 +49,14 @@ export const changesByCrawlId = query({
 
       const crawl_id = batch?.[0].crawl_id
       if (crawl_id) {
-        batch.sort((a, b) => a.provider_tag_slug.localeCompare(b.provider_tag_slug))
+        batch.sort((a, b) => {
+          const providerCompare = a.provider_tag_slug.localeCompare(b.provider_tag_slug)
+          if (providerCompare !== 0) return providerCompare
+          const modelCompare = a.model_slug.localeCompare(b.model_slug)
+          if (modelCompare !== 0) return modelCompare
+          if (a.path && b.path) return a.path.localeCompare(b.path)
+          return 0
+        })
         batchResults.push({ crawl_id, data: batch })
         totalResults += batch.length
       }

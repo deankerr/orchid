@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import Image from 'next/image'
 
 import { usePaginatedQuery } from 'convex/react'
 
@@ -8,24 +8,14 @@ import { api } from '@/convex/_generated/api'
 import { EndpointChangeDoc } from '@/convex/feed'
 
 import { PageHeader, PageTitle } from '@/components/app-layout/pages'
-import { FeedList, FeedTimeline } from '@/components/changes-feed/feed-groups'
-import {
-  FeedItem,
-  FeedItemContent,
-  FeedItemPath,
-  FeedItemSentence,
-} from '@/components/changes-feed/feed-item'
+import { FeedTimelineMarker } from '@/components/changes-feed/feed-groups'
 import { InlineValueChange } from '@/components/changes-feed/feed-values'
-import { ModelBadge, ProviderBadge } from '@/components/shared/entity-badge'
 import { PaginatedLoadButton } from '@/components/shared/paginated-load-button'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Label } from '@/components/ui/label'
+import { Badge } from '@/components/ui/badge'
 import { useCachedQuery } from '@/hooks/use-cached-query'
-import { groupBy } from '@/lib/grouping'
-import { cn } from '@/lib/utils'
+import { getLogo } from '@/lib/logos'
 
 export function ChangesFeedPage() {
-  const [groupByProvider, setGroupByProvider] = useState(true)
   const { results, status, loadMore } = usePaginatedQuery(
     api.feed.changesByCrawlId,
     {},
@@ -43,47 +33,16 @@ export function ChangesFeedPage() {
       </PageHeader>
 
       <div className="px-4 py-6">
-        <div className="mx-auto max-w-5xl space-y-8">
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="group-by-provider"
-              checked={groupByProvider}
-              onCheckedChange={(checked) => setGroupByProvider(checked === true)}
-            />
-            <Label htmlFor="group-by-provider" className="cursor-pointer">
-              By Provider
-            </Label>
-          </div>
-
+        <div className="space-y-8">
           {results.map(({ crawl_id, data: changes }) => (
-            <div key={crawl_id} className={cn('max-w-4xl space-y-4')}>
-              <FeedTimeline crawl_id={crawl_id} count={changes.length} />
-              {groupByProvider ? (
-                <div className="space-y-4">
-                  {groupBy(changes, (change) => change.provider_tag_slug).map(
-                    ({ key: provider_tag_slug, items }) => (
-                      <div key={provider_tag_slug} className="space-y-2">
-                        <div className="flex items-center gap-2 text-sm">
-                          <ProviderBadge slug={provider_tag_slug} />
-                          <div className="h-px flex-1 bg-border/30" />
-                        </div>
+            <div key={crawl_id} className="space-y-4 text-sm">
+              <FeedTimelineMarker crawl_id={crawl_id} />
 
-                        <FeedList>
-                          {items.map((change: EndpointChangeDoc) => (
-                            <ChangeFeedItem key={change._id} change={change} showProvider={false} />
-                          ))}
-                        </FeedList>
-                      </div>
-                    ),
-                  )}
-                </div>
-              ) : (
-                <FeedList>
-                  {changes.map((change: EndpointChangeDoc) => (
-                    <ChangeFeedItem key={change._id} change={change} showProvider={true} />
-                  ))}
-                </FeedList>
-              )}
+              <div className="space-y-3 pl-3">
+                {changes.map((change: EndpointChangeDoc) => (
+                  <ChangeFeedItem key={change._id} change={change} />
+                ))}
+              </div>
             </div>
           ))}
 
@@ -96,42 +55,61 @@ export function ChangesFeedPage() {
   )
 }
 
-function ChangeFeedItem({
-  change,
-  showProvider,
-}: {
-  change: EndpointChangeDoc
-  showProvider: boolean
-}) {
+function ChangeFeedItem({ change }: { change: EndpointChangeDoc }) {
   const actionText =
     change.change_kind === 'create' ? (
       <span className="text-green-400">created</span>
     ) : change.change_kind === 'delete' ? (
-      <span className="text-rose-400">deleted</span>
+      <span className="text-rose-400">removed</span>
     ) : (
-      'changed:'
+      'updated: '
     )
 
   return (
-    <FeedItem className="py-1.5 text-xs">
-      <FeedItemContent>
-        <FeedItemSentence>
-          {showProvider && <ProviderBadge slug={change.provider_tag_slug} inline />}
-          endpoint for <ModelBadge slug={change.model_slug} inline />
-          {actionText}
-          {change.change_kind === 'update' && (
-            <>
-              <FeedItemPath path={change.path ?? ''} />
-              <InlineValueChange
-                before={change.before}
-                after={change.after}
-                path_level_1={change.path_level_1}
-                path_level_2={change.path_level_2}
-              />
-            </>
-          )}
-        </FeedItemSentence>
-      </FeedItemContent>
-    </FeedItem>
+    <div className="font-mono text-muted-foreground">
+      <EntityBadgeInline slug={change.provider_tag_slug.split('/')[0]} /> endpoint for{' '}
+      <EntityBadgeInline slug={change.model_slug} /> was {actionText}
+      {change.change_kind === 'update' && (
+        <>
+          <Badge variant="outline" className="rounded-sm">
+            {change.path}
+          </Badge>{' '}
+          <InlineValueChange
+            before={change.before}
+            after={change.after}
+            path_level_1={change.path_level_1}
+            path_level_2={change.path_level_2}
+          />
+        </>
+      )}
+      .
+    </div>
+  )
+}
+
+function EntityAvatarInline({ slug }: { slug: string }) {
+  const { url, style } = getLogo(slug)
+  return (
+    <span
+      className="mr-1 inline-flex size-5 items-center justify-center overflow-hidden rounded-sm border border-neutral-700 bg-muted align-text-bottom select-none"
+      style={{ background: style?.background }}
+    >
+      {url ? (
+        <Image src={url} alt="" width={18} height={18} style={{ scale: style?.scale ?? 0.75 }} />
+      ) : (
+        <span className="font-mono text-[80%] text-muted-foreground">
+          {slug.replace(/[^a-zA-Z0-9]/g, '').slice(0, 2)}
+        </span>
+      )}
+    </span>
+  )
+}
+
+function EntityBadgeInline({ slug }: { slug: string }) {
+  return (
+    <span className="text-foreground">
+      <EntityAvatarInline slug={slug} />
+      {slug}
+    </span>
   )
 }

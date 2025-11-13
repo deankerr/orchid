@@ -1,9 +1,39 @@
 import * as R from 'remeda'
 
-import { PercentageBadge } from '@/components/shared/percentage-badge'
+import { TrendingDownIcon, TrendingUpIcon } from 'lucide-react'
+
 import { Badge } from '@/components/ui/badge'
 import { formatPrice } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
+
+// * Array diff styled percentage badge with lucide arrows
+export function PercentageBadge({
+  value,
+  isIncrease,
+  isGood,
+  className,
+  ...props
+}: {
+  value: number
+  isIncrease: boolean
+  isGood: boolean
+} & React.ComponentProps<typeof Badge>) {
+  return (
+    <Badge
+      className={cn(
+        '',
+        isGood
+          ? 'border-positive-surface-border bg-positive-surface text-positive-surface-foreground'
+          : 'border-negative-surface-border bg-negative-surface text-negative-surface-foreground',
+        className,
+      )}
+      {...props}
+    >
+      {isIncrease ? <TrendingUpIcon /> : <TrendingDownIcon />}
+      {Math.abs(value).toFixed(1)}%
+    </Badge>
+  )
+}
 
 // * Inline value change display - always shows before → after
 export function InlineValueChange({
@@ -25,20 +55,26 @@ export function InlineValueChange({
   }
 
   const showPercentage = R.isNumber(before) && R.isNumber(after) && before !== 0
-  const percentageChange = showPercentage ? ((after - before) / before) * 100 : null
-  const shouldInvert = path_level_1 === 'pricing'
+  const percentageChange = showPercentage ? ((after - before) / before) * 100 : 0
+  const isIncrease = showPercentage && after > before
+  const isGood = path_level_1 === 'pricing' ? !isIncrease : isIncrease
 
   return (
-    <span className={cn('inline-flex items-center gap-1.5', className)}>
+    <span className={cn('', className)}>
+      <span className="text-muted-foreground/80"> from </span>
       <InlineValue value={before} path_level_1={path_level_1} path_level_2={path_level_2} />
-      <span className="text-muted-foreground/80">{'-->'}</span>
+      <span className="text-muted-foreground/80"> to </span>
       <InlineValue value={after} path_level_1={path_level_1} path_level_2={path_level_2} />
       {showPercentage && (
-        <PercentageBadge
-          className="font-mono text-xs"
-          value={percentageChange}
-          invert={shouldInvert}
-        />
+        <>
+          {' '}
+          <PercentageBadge
+            className="align-middle"
+            value={percentageChange}
+            isIncrease={isIncrease}
+            isGood={isGood}
+          />
+        </>
       )}
     </span>
   )
@@ -87,7 +123,7 @@ function InlineNumericValue({
       })
     : value.toLocaleString()
   return (
-    <Badge className={cn('font-mono text-xs', className)} variant="secondary" title={String(value)}>
+    <Badge className={cn('', className)} variant="secondary" title={String(value)}>
       {formatted}
     </Badge>
   )
@@ -97,7 +133,7 @@ function InlineNumericValue({
 function InlineStringValue({ value, className }: { value: string; className?: string }) {
   if (value === '') {
     return (
-      <Badge variant="outline" className={cn('font-mono text-xs opacity-80', className)}>
+      <Badge variant="outline" className={cn('opacity-80', className)}>
         empty
       </Badge>
     )
@@ -120,7 +156,7 @@ function InlineStringValue({ value, className }: { value: string; className?: st
 // * Inline boolean value
 function InlineBooleanValue({ value, className }: { value: boolean; className?: string }) {
   return (
-    <Badge variant="outline" className={cn('font-mono text-xs', className)}>
+    <Badge variant="outline" className={cn('', className)}>
       {value ? 'true' : 'false'}
     </Badge>
   )
@@ -129,7 +165,7 @@ function InlineBooleanValue({ value, className }: { value: boolean; className?: 
 // * Inline null value
 function InlineNullValue({ className }: { className?: string }) {
   return (
-    <Badge variant="outline" className={cn('font-mono text-xs', className)}>
+    <Badge variant="outline" className={cn('', className)}>
       null
     </Badge>
   )
@@ -138,10 +174,7 @@ function InlineNullValue({ className }: { className?: string }) {
 // * Inline undefined value
 function InlineUndefinedValue({ className }: { className?: string }) {
   return (
-    <Badge
-      variant="outline"
-      className={cn('border-dashed font-mono text-xs text-muted-foreground/50', className)}
-    >
+    <Badge variant="outline" className={cn('border-dashed text-muted-foreground/50', className)}>
       null
     </Badge>
   )
@@ -152,7 +185,7 @@ function InlineJSONValue({ value, className }: { value: unknown; className?: str
   const stringified = JSON.stringify(value, null, 2)
 
   return (
-    <Badge variant="secondary" className={cn('font-mono text-xs', className)}>
+    <Badge variant="secondary" className={cn('', className)}>
       {stringified}
     </Badge>
   )
@@ -184,11 +217,7 @@ export function InlineArrayDiff({
         if (inBefore && inAfter) {
           if (showUnchanged) {
             return (
-              <Badge
-                key={item}
-                variant="outline"
-                className="font-mono text-xs text-muted-foreground"
-              >
+              <Badge key={item} variant="outline" className="text-muted-foreground">
                 <span className="text-[95%]">{item}</span>
               </Badge>
             )
@@ -200,7 +229,7 @@ export function InlineArrayDiff({
           return (
             <Badge
               key={item}
-              className="border-negative-surface-border bg-negative-surface font-mono text-xs text-negative-surface-foreground line-through"
+              className="border-negative-surface-border bg-negative-surface text-negative-surface-foreground line-through"
             >
               <span className="text-[95%]">{item}</span>
             </Badge>
@@ -211,7 +240,7 @@ export function InlineArrayDiff({
         return (
           <Badge
             key={item}
-            className="border-positive-surface-border bg-positive-surface font-mono text-xs text-positive-surface-foreground"
+            className="border-positive-surface-border bg-positive-surface text-positive-surface-foreground"
           >
             + <span className="text-[95%]">{item}</span>
           </Badge>

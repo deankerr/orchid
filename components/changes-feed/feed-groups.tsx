@@ -3,13 +3,11 @@ import { formatDateTime, formatRelativeTime } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 
 // * Timeline marker for crawl_id groups
-export function FeedTimeline({
+export function FeedTimelineMarker({
   crawl_id,
-  count,
   className,
 }: {
   crawl_id: string
-  count?: number
   className?: string
 }) {
   return (
@@ -18,19 +16,7 @@ export function FeedTimeline({
       <Badge variant="secondary" className="font-mono">
         {formatDateTime(Number(crawl_id))}
       </Badge>
-      <div className="h-px flex-1 bg-border" />
-      {count !== undefined && (
-        <div className="font-mono text-xs text-muted-foreground">{count}</div>
-      )}
-    </div>
-  )
-}
-
-// * Compact list container (for feed items)
-export function FeedList({ children, className, ...props }: React.ComponentProps<'div'>) {
-  return (
-    <div className={cn('space-y-0.5', className)} {...props}>
-      {children}
+      <div className="h-px flex-1 border-b border-dashed" />
     </div>
   )
 }

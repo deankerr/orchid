@@ -386,10 +386,6 @@ export function BadgeComponents() {
         <ComponentFrame title="Outline" description="Original outline variant">
           <Badge variant="outline">Outline</Badge>
         </ComponentFrame>
-
-        <ComponentFrame title="Alert" description="Original alert variant">
-          <Badge variant="alert">Alert</Badge>
-        </ComponentFrame>
       </ComponentSection>
 
       {colors.map((color, colorIndex) => (
@@ -414,7 +410,7 @@ export function BadgeComponents() {
 
       <ComponentSection title="Misc" description="Experimental and special effect variants">
         <ComponentFrame title="Gradient" description="Gradient background effect">
-          <TechBadge className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+          <TechBadge className="bg-linear-to-r from-blue-500 to-purple-600 text-white">
             {valueTokens[0]}
           </TechBadge>
         </ComponentFrame>
