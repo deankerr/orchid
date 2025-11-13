@@ -20,12 +20,7 @@ export function PageHeader({ className, ...props }: React.ComponentProps<'div'>)
 
 // Page title and description components
 export function PageTitle({ className, ...props }: React.ComponentProps<'h1'>) {
-  return (
-    <h1
-      className={cn('flex items-center gap-3 font-mono tracking-tight md:text-lg', className)}
-      {...props}
-    />
-  )
+  return <h1 className={cn('flex items-center gap-3 md:text-lg', className)} {...props} />
 }
 
 export function PageDescription({ className, ...props }: React.ComponentProps<'p'>) {

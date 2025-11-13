@@ -1,7 +1,8 @@
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
 
-import { EndpointsDataGridPage } from '@/components/endpoints-data-grid/page'
+import { PageDescription, PageHeader, PageTitle } from '@/components/app-layout/pages'
+import { EndpointsDataGrid } from '@/components/endpoints-data-grid/page'
 
 export const metadata: Metadata = {
   title: 'Endpoints',
@@ -10,8 +11,15 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <Suspense>
-      <EndpointsDataGridPage />
-    </Suspense>
+    <>
+      <PageHeader>
+        <PageTitle>Endpoints</PageTitle>
+        <PageDescription>Browse models and providers available on OpenRouter</PageDescription>
+      </PageHeader>
+
+      <Suspense>
+        <EndpointsDataGrid />
+      </Suspense>
+    </>
   )
 }

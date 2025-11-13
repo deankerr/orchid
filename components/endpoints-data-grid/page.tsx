@@ -16,7 +16,6 @@ import { api } from '@/convex/_generated/api'
 import { useCachedQuery } from '@/hooks/use-cached-query'
 import { attributes } from '@/lib/attributes'
 
-import { PageDescription, PageHeader, PageTitle } from '../app-layout/pages'
 import { DataGrid, useDataGrid } from '../data-grid/data-grid'
 import {
   DataGridCard,
@@ -30,24 +29,11 @@ import { columns } from './columns'
 import { Controls } from './controls'
 import { useEndpointFilters } from './use-endpoint-filters'
 
-export function EndpointsDataGridPage() {
-  return (
-    <>
-      <PageHeader>
-        <PageTitle>Endpoints</PageTitle>
-        <PageDescription>Browse models and providers available on OpenRouter</PageDescription>
-      </PageHeader>
-
-      <EndpointsDataGrid />
-    </>
-  )
-}
-
 function useEndpointsListQuery() {
   return useCachedQuery(api.db.or.views.endpoints.all, {}, 'endpoints-all')
 }
 
-function EndpointsDataGrid() {
+export function EndpointsDataGrid() {
   const endpointsList = useEndpointsListQuery()
   const { globalFilter, sorting, onSortingChange, attributeFilters } = useEndpointFilters()
 

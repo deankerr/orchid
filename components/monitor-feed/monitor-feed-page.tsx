@@ -20,23 +20,21 @@ export function MonitorFeed() {
   )
 
   return (
-    <div className="px-4 py-6">
-      <div className="space-y-8">
-        {results.map(({ crawl_id, data: changes }) => (
-          <div key={crawl_id} className="space-y-4 text-sm">
-            <TimelineMarker crawl_id={crawl_id} />
+    <div className="space-y-8">
+      {results.map(({ crawl_id, data: changes }) => (
+        <div key={crawl_id} className="space-y-4 text-sm">
+          <TimelineMarker crawl_id={crawl_id} />
 
-            <div className="space-y-3 pl-2">
-              {changes.map((change: EndpointChangeDoc) => (
-                <FeedItem key={change._id} change={change} />
-              ))}
-            </div>
+          <div className="space-y-3 pl-3">
+            {changes.map((change: EndpointChangeDoc) => (
+              <FeedItem key={change._id} change={change} />
+            ))}
           </div>
-        ))}
-
-        <div className="flex items-center justify-center py-4">
-          <PaginatedLoadButton status={status} onClick={() => loadMore(1)} />
         </div>
+      ))}
+
+      <div className="flex items-center justify-center py-4">
+        <PaginatedLoadButton status={status} onClick={() => loadMore(1)} />
       </div>
     </div>
   )
