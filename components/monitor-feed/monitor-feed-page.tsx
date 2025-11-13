@@ -5,7 +5,7 @@ import { usePaginatedQuery } from 'convex/react'
 import { api } from '@/convex/_generated/api'
 import { EndpointChangeDoc } from '@/convex/feed'
 
-import { InlineValueChange } from '@/components/monitor-feed/monitor-feed-values'
+import { ChangeValuePair } from '@/components/monitor-feed/monitor-feed-values'
 import { EntityAvatar } from '@/components/shared/entity-avatar'
 import { PaginatedLoadButton } from '@/components/shared/paginated-load-button'
 import { Badge } from '@/components/ui/badge'
@@ -20,7 +20,7 @@ export function MonitorFeed() {
   )
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       {results.map(({ crawl_id, data: changes }) => (
         <div key={crawl_id} className="space-y-4 text-sm">
           <TimelineMarker crawl_id={crawl_id} />
@@ -44,7 +44,7 @@ function TimelineMarker({ crawl_id, className }: { crawl_id: string; className?:
   return (
     <div className={cn('flex items-center gap-2', className)}>
       <Badge className="font-mono">{formatRelativeTime(Number(crawl_id))}</Badge>
-      <Badge variant="secondary" className="font-mono">
+      <Badge variant="secondary" className="rounded-md font-mono">
         {formatDateTime(Number(crawl_id))}
       </Badge>
       <div className="h-px flex-1 border-b border-dashed" />
@@ -71,7 +71,7 @@ function FeedItem({ change }: { change: EndpointChangeDoc }) {
           <Badge variant="outline" className="rounded-sm">
             {change.path}
           </Badge>{' '}
-          <InlineValueChange
+          <ChangeValuePair
             before={change.before}
             after={change.after}
             path_level_1={change.path_level_1}

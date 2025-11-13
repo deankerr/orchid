@@ -234,7 +234,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
     ),
     cell: ({ getValue }) => {
       return (
-        <Badge variant="outline" className="font-mono text-sm uppercase">
+        <Badge variant="outline" className="rounded-sm font-mono text-sm uppercase">
           {getValue<string>()}
         </Badge>
       )

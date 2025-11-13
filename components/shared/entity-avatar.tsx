@@ -26,7 +26,7 @@ export function EntityAvatar({
       {url ? (
         <Image src={url} alt="" width={28} height={28} style={{ scale: style?.scale ?? 0.75 }} />
       ) : (
-        <span className="font-mono text-[80%] text-muted-foreground">
+        <span className="font-mono text-[80%] text-muted-foreground uppercase">
           {(fallbackText || slug).replace(/[^a-zA-Z0-9]/g, '').slice(0, 2)}
         </span>
       )}
