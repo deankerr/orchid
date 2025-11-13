@@ -27,6 +27,7 @@ export const run = internalAction({
       models,
       endpoints,
       providers,
+      crawl_id: bundle.crawl_id,
     })
   },
 })

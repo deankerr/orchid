@@ -1,3 +1,5 @@
+import { v } from 'convex/values'
+
 import { diff } from 'json-diff-ts'
 
 import { db } from '@/convex/db'
@@ -20,6 +22,7 @@ export const upsert = internalMutation({
     models: vUpsertModel.array(),
     endpoints: vUpsertEndpoint.array(),
     providers: vUpsertProvider.array(),
+    crawl_id: v.string(),
   },
   handler: async (ctx, args) => {
     // * initialize counters
@@ -56,8 +59,13 @@ export const upsert = internalMutation({
 
     // update unavailable_at for models that are no longer advertised
     for (const currentModel of currentModelsMap.values()) {
-      await db.or.views.models.patch(ctx, currentModel._id, { unavailable_at: Date.now() })
-      counters.models.unavailable++
+      // * only set unavailable_at once when entity first becomes unavailable
+      if (currentModel.unavailable_at === undefined) {
+        await db.or.views.models.patch(ctx, currentModel._id, {
+          unavailable_at: parseInt(args.crawl_id),
+        })
+        counters.models.unavailable++
+      }
     }
 
     // * endpoints
@@ -87,8 +95,13 @@ export const upsert = internalMutation({
 
     // update unavailable_at for endpoints that are no longer advertised
     for (const currentEndpoint of currentEndpointsMap.values()) {
-      await db.or.views.endpoints.patch(ctx, currentEndpoint._id, { unavailable_at: Date.now() })
-      counters.endpoints.unavailable++
+      // * only set unavailable_at once when entity first becomes unavailable
+      if (currentEndpoint.unavailable_at === undefined) {
+        await db.or.views.endpoints.patch(ctx, currentEndpoint._id, {
+          unavailable_at: parseInt(args.crawl_id),
+        })
+        counters.endpoints.unavailable++
+      }
     }
 
     // * providers
@@ -118,8 +131,13 @@ export const upsert = internalMutation({
 
     // update unavailable_at for providers that are no longer advertised
     for (const currentProvider of currentProvidersMap.values()) {
-      await db.or.views.providers.patch(ctx, currentProvider._id, { unavailable_at: Date.now() })
-      counters.providers.unavailable++
+      // * only set unavailable_at once when entity first becomes unavailable
+      if (currentProvider.unavailable_at === undefined) {
+        await db.or.views.providers.patch(ctx, currentProvider._id, {
+          unavailable_at: parseInt(args.crawl_id),
+        })
+        counters.providers.unavailable++
+      }
     }
 
     // * log final counts
