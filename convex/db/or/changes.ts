@@ -4,6 +4,10 @@ import { v } from 'convex/values'
 import { internalMutation, query } from '../../_generated/server'
 import { createTableVHelper } from '../../lib/vTable'
 
+/*
+  NOTE: Deprecated. Use or_views_changes instead.
+*/
+
 export type ChangeBody = {
   type: 'ADD' | 'UPDATE' | 'REMOVE'
   key: string

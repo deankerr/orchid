@@ -15,6 +15,7 @@ const adminLinks = [
   { href: '/dev/resources', label: 'Resources' },
   { href: '/dev/components', label: 'Components' },
   { href: '/dev/changes', label: 'Changes (Raw)' },
+  { href: '/dev/feed-tree', label: 'Feed Tree' },
 ]
 
 export function AdminMenu() {

@@ -17,7 +17,7 @@ export function EntityAvatar({
   return (
     <div
       className={cn(
-        'flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-muted',
+        'flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-muted',
         className,
       )}
       style={{ background: style?.background }}
@@ -27,8 +27,8 @@ export function EntityAvatar({
         <Image
           src={url}
           alt={style?.title || slug}
-          width={32}
-          height={32}
+          width={28}
+          height={28}
           style={{ scale: style?.scale ?? 0.75 }}
         />
       ) : (

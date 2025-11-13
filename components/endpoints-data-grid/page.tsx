@@ -139,7 +139,7 @@ function EndpointsDataGrid() {
         width: 'fixed',
         cellBorder: true,
         virtualized: true,
-        rowHeight: 58.5,
+        rowHeight: 57,
         overscan: 20,
         columnsDraggable: true,
         columnsResizable: true,

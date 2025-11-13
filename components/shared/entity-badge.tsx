@@ -28,7 +28,7 @@ export function EntityBadge({
   }
 
   return (
-    <div className={cn('flex overflow-hidden p-0.5', className)} {...props}>
+    <div className={cn('flex overflow-hidden p-0.5 text-left', className)} {...props}>
       {/* avatar */}
       <EntityAvatar slug={slug} fallbackText={fallbackText} />
 
