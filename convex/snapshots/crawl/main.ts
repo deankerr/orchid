@@ -110,7 +110,6 @@ export const run = internalAction({
     analytics: v.boolean(),
     onComplete: v.object({
       materialize: v.boolean(),
-      changes: v.boolean(),
       materializedChanges: v.boolean(),
     }),
   },
@@ -183,9 +182,6 @@ export const run = internalAction({
 
       if (args.onComplete.materialize)
         await ctx.scheduler.runAfter(0, internal.snapshots.materialize.main.run, {})
-
-      if (args.onComplete.changes)
-        await ctx.scheduler.runAfter(0, internal.snapshots.changes.main.run, {})
 
       if (args.onComplete.materializedChanges)
         await ctx.scheduler.runAfter(0, internal.snapshots.materializedChanges.main.run, {})

@@ -20,13 +20,11 @@ const init = internalMutation({
       analytics: false,
       onComplete: {
         materialize: true,
-        changes: false,
         materializedChanges: false,
       },
     })
 
     await ctx.scheduler.runAfter(5 * 60_000, internal.snapshots.materialize.main.run, {})
-    await ctx.scheduler.runAfter(5 * 60_000, internal.snapshots.changes.main.run, {})
   },
 })
 

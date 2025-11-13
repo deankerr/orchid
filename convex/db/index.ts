@@ -1,4 +1,3 @@
-import * as or_changes from './or/changes'
 import * as or_stats from './or/stats'
 import * as or_views_changes from './or/views/changes'
 import * as or_views_endpoints from './or/views/endpoints'
@@ -9,7 +8,6 @@ import * as snapshot_crawl_config from './snapshot/crawl/config'
 
 export const db = {
   or: {
-    changes: or_changes,
     stats: or_stats,
     views: {
       changes: or_views_changes,

@@ -33,7 +33,6 @@ export const snapshotCron = internalAction({
       analytics: on(cfg.analytics_every_hours ?? 0),
       onComplete: {
         materialize: true,
-        changes: true,
         materializedChanges: true,
       },
     })
