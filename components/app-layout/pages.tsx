@@ -4,7 +4,11 @@ import { LoaderSquare } from '../shared/loader'
 
 export function PageContainer({ className, ...props }: React.ComponentProps<'main'>) {
   return (
-    <main data-slot="page-container" className={cn('flex flex-col px-3', className)} {...props} />
+    <main
+      data-slot="page-container"
+      className={cn('flex flex-1 flex-col gap-1.5 px-px pb-px sm:px-2 sm:pb-2', className)}
+      {...props}
+    />
   )
 }
 
@@ -12,7 +16,7 @@ export function PageHeader({ className, ...props }: React.ComponentProps<'div'>)
   return (
     <div
       data-slot="page-header"
-      className={cn('flex flex-col gap-2 bg-background px-3 py-2 md:py-3', className)}
+      className={cn('flex shrink-0 flex-col gap-1 bg-background px-2 sm:py-2', className)}
       {...props}
     />
   )
@@ -20,7 +24,7 @@ export function PageHeader({ className, ...props }: React.ComponentProps<'div'>)
 
 // Page title and description components
 export function PageTitle({ className, ...props }: React.ComponentProps<'h1'>) {
-  return <h1 className={cn('flex items-center gap-3 md:text-lg', className)} {...props} />
+  return <h1 className={cn('flex items-center gap-3 sm:text-lg', className)} {...props} />
 }
 
 export function PageDescription({ className, ...props }: React.ComponentProps<'p'>) {

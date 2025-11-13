@@ -1,6 +1,11 @@
 import type { Metadata } from 'next'
 
-import { PageDescription, PageHeader, PageTitle } from '@/components/app-layout/pages'
+import {
+  PageContainer,
+  PageDescription,
+  PageHeader,
+  PageTitle,
+} from '@/components/app-layout/pages'
 import { MonitorFeed } from '@/components/monitor-feed/monitor-feed-page'
 
 export const metadata: Metadata = {
@@ -10,13 +15,13 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <>
+    <PageContainer className="overflow-hidden">
       <PageHeader>
         <PageTitle>Monitor</PageTitle>
         <PageDescription>Monitor changes detected between OpenRouter snapshots.</PageDescription>
       </PageHeader>
 
       <MonitorFeed />
-    </>
+    </PageContainer>
   )
 }

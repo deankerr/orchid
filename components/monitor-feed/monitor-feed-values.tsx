@@ -138,11 +138,12 @@ function PercentageBadge({
 }) {
   return (
     <Badge
-      className={
+      className={cn(
+        'align-middle',
         isGood
           ? 'rounded-md border-positive-surface-border bg-positive-surface text-positive-surface-foreground'
-          : 'rounded-md border-negative-surface-border bg-negative-surface text-negative-surface-foreground'
-      }
+          : 'rounded-md border-negative-surface-border bg-negative-surface text-negative-surface-foreground',
+      )}
     >
       {isIncrease ? <TrendingUpIcon /> : <TrendingDownIcon />}
       {Math.abs(value).toFixed(1)}%

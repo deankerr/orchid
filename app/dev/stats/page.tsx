@@ -71,7 +71,7 @@ export default function Page() {
   const [selectedDay, setSelectedDay] = useState<number | null>(null)
 
   return (
-    <PageContainer className="pb-4">
+    <PageContainer>
       <PageHeader>
         <PageTitle>Daily Model Stats</PageTitle>
         <PageDescription>Historical analytics and usage statistics for AI models</PageDescription>

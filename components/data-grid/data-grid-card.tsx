@@ -5,10 +5,7 @@ import { ScrollArea } from '../ui/scroll-area'
 export function DataGridCard({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
-      className={cn(
-        'm-0.5 flex flex-1 flex-col overflow-hidden rounded-md border sm:m-1',
-        className,
-      )}
+      className={cn('flex flex-1 flex-col overflow-hidden border sm:rounded-md', className)}
       {...props}
     />
   )

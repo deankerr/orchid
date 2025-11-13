@@ -1,7 +1,12 @@
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
 
-import { PageDescription, PageHeader, PageTitle } from '@/components/app-layout/pages'
+import {
+  PageContainer,
+  PageDescription,
+  PageHeader,
+  PageTitle,
+} from '@/components/app-layout/pages'
 import { EndpointsDataGrid } from '@/components/endpoints-data-grid/page'
 
 export const metadata: Metadata = {
@@ -11,7 +16,7 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <>
+    <PageContainer className="overflow-hidden">
       <PageHeader>
         <PageTitle>Endpoints</PageTitle>
         <PageDescription>Browse models and providers available on OpenRouter</PageDescription>
@@ -20,6 +25,6 @@ export default function Page() {
       <Suspense>
         <EndpointsDataGrid />
       </Suspense>
-    </>
+    </PageContainer>
   )
 }

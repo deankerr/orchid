@@ -27,13 +27,13 @@ export function MonitorFeed() {
   })
 
   return (
-    <ScrollArea className="flex-1" viewportRef={viewportRef} maskHeight={10}>
-      <div className="space-y-4 p-4">
+    <ScrollArea className="flex-1 border sm:rounded-md" viewportRef={viewportRef} maskHeight={10}>
+      <div className="space-y-4 px-2 py-4 sm:px-3">
         {results.map(({ crawl_id, data: changes }) => (
           <div key={crawl_id} className="space-y-4 text-sm">
             <TimelineMarker crawl_id={crawl_id} />
 
-            <div className="space-y-3 pl-3">
+            <div className="space-y-3 pl-1 font-mono leading-relaxed text-muted-foreground sm:pl-2">
               {changes.map((change: EndpointChangeDoc) => (
                 <FeedItem key={change._id} change={change} />
               ))}
@@ -72,7 +72,7 @@ function FeedItem({ change }: { change: EndpointChangeDoc }) {
     )
 
   return (
-    <div className="font-mono text-muted-foreground">
+    <div>
       <EntityBadgeInline slug={change.provider_tag_slug.split('/')[0]} /> endpoint for{' '}
       <EntityBadgeInline slug={change.model_slug} /> was {actionText}
       {change.change_kind === 'update' && (
@@ -88,7 +88,6 @@ function FeedItem({ change }: { change: EndpointChangeDoc }) {
           />
         </>
       )}
-      .
     </div>
   )
 }
