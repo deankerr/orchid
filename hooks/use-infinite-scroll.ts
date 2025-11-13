@@ -1,18 +1,41 @@
 import { useCallback, useEffect, useRef } from 'react'
 
 interface UseInfiniteScrollOptions {
+  /** Distance from bottom (in pixels) to trigger load more. @default 400 */
   threshold?: number
-  hasMore?: boolean
-  isLoading?: boolean
+  /** Whether more content is available to load */
+  hasMore: boolean
 }
 
-export function useInfiniteScroll(onLoadMore: () => void, options: UseInfiniteScrollOptions = {}) {
-  const { threshold = 400, hasMore = true, isLoading = false } = options
+/**
+ * Hook for implementing infinite scrolling in a scrollable container.
+ *
+ * Automatically loads more content when user scrolls near the bottom,
+ * and ensures there's enough content to enable scrolling in the first place.
+ *
+ * @param onLoadMore - Function to call when more content should be loaded
+ * @param options - Configuration options
+ * @returns Ref to attach to the scrollable viewport element
+ *
+ * @example
+ * ```tsx
+ * const viewportRef = useInfiniteScroll(() => loadMore(1), {
+ *   hasMore: status === 'CanLoadMore',
+ *   threshold: 400,
+ * })
+ *
+ * <ScrollArea viewportRef={viewportRef}>
+ *   <div>Content here...</div>
+ * </ScrollArea>
+ * ```
+ */
+export function useInfiniteScroll(onLoadMore: () => void, options: UseInfiniteScrollOptions) {
+  const { threshold = 400, hasMore } = options
   const scrollElementRef = useRef<HTMLDivElement | null>(null)
 
-  const handleScroll = useCallback(() => {
+  const checkAndLoadMore = useCallback(() => {
     const scrollElement = scrollElementRef.current
-    if (!scrollElement || isLoading || !hasMore) return
+    if (!scrollElement || !hasMore) return
 
     const { scrollTop, scrollHeight, clientHeight } = scrollElement
     const distanceFromBottom = scrollHeight - scrollTop - clientHeight
@@ -20,7 +43,15 @@ export function useInfiniteScroll(onLoadMore: () => void, options: UseInfiniteSc
     if (distanceFromBottom <= threshold) {
       onLoadMore()
     }
-  }, [onLoadMore, threshold, isLoading, hasMore])
+  }, [onLoadMore, threshold, hasMore])
+
+  // Note: We don't add local protection against rapid repeated calls to onLoadMore
+  // because the data fetching hooks we use (like usePaginatedQuery) already have
+  // this protection built-in. Adding it here would be redundant.
+
+  const handleScroll = useCallback(() => {
+    checkAndLoadMore()
+  }, [checkAndLoadMore])
 
   useEffect(() => {
     const scrollElement = scrollElementRef.current
@@ -32,6 +63,17 @@ export function useInfiniteScroll(onLoadMore: () => void, options: UseInfiniteSc
       scrollElement.removeEventListener('scroll', handleScroll)
     }
   }, [handleScroll])
+
+  useEffect(() => {
+    const scrollElement = scrollElementRef.current
+    if (!scrollElement) return
+
+    const { scrollHeight, clientHeight } = scrollElement
+
+    if (scrollHeight <= clientHeight && hasMore) {
+      onLoadMore()
+    }
+  }, [hasMore, onLoadMore])
 
   return scrollElementRef
 }

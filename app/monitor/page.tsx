@@ -16,9 +16,7 @@ export default function Page() {
         <PageDescription>Monitor changes detected between OpenRouter snapshots.</PageDescription>
       </PageHeader>
 
-      <div className="px-6 py-4">
-        <MonitorFeed />
-      </div>
+      <MonitorFeed />
     </>
   )
 }
