@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as admin_bundleSync from "../admin/bundleSync.js";
 import type * as analysis_changes from "../analysis/changes.js";
 import type * as analysis_endpoints from "../analysis/endpoints.js";
 import type * as analysis_stats from "../analysis/stats.js";
@@ -24,6 +25,7 @@ import type * as dev_feedTree from "../dev/feedTree.js";
 import type * as feed from "../feed.js";
 import type * as http from "../http.js";
 import type * as init from "../init.js";
+import type * as lib_utils from "../lib/utils.js";
 import type * as lib_vTable from "../lib/vTable.js";
 import type * as lib_validator from "../lib/validator.js";
 import type * as shared from "../shared.js";
@@ -56,6 +58,7 @@ import type {
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  "admin/bundleSync": typeof admin_bundleSync;
   "analysis/changes": typeof analysis_changes;
   "analysis/endpoints": typeof analysis_endpoints;
   "analysis/stats": typeof analysis_stats;
@@ -72,6 +75,7 @@ declare const fullApi: ApiFromModules<{
   feed: typeof feed;
   http: typeof http;
   init: typeof init;
+  "lib/utils": typeof lib_utils;
   "lib/vTable": typeof lib_vTable;
   "lib/validator": typeof lib_validator;
   shared: typeof shared;
