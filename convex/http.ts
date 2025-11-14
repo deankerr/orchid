@@ -1,9 +1,9 @@
 import { httpRouter } from 'convex/server'
 import * as R from 'remeda'
 
-import { api, internal } from './_generated/api'
+import { api } from './_generated/api'
 import { httpAction } from './_generated/server'
-import { getEnv } from './lib/utils'
+import { bundleSyncHttpHandler } from './admin/bundleSync'
 
 const http = httpRouter()
 
@@ -95,71 +95,10 @@ http.route({
   }),
 })
 
-// Archive sync endpoints for dev/preview environments
-const SYNC_RECORDS_LIMIT = 20
-
-function validateSyncKey(req: Request): boolean {
-  const SYNC_KEY = getEnv('ARCHIVE_SYNC_KEY')
-  const key = req.headers.get('x-sync-key')
-  return key === SYNC_KEY
-}
-
 http.route({
-  path: '/sync/archives',
   method: 'GET',
-  handler: httpAction(async (ctx, req) => {
-    if (!validateSyncKey(req)) {
-      return new Response('Unauthorized', { status: 401 })
-    }
-
-    const archives = await ctx.runQuery(internal.db.snapshot.crawl.archives.list, {
-      paginationOpts: { cursor: null, numItems: SYNC_RECORDS_LIMIT },
-    })
-
-    return new Response(JSON.stringify(archives), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-  }),
-})
-
-http.route({
-  path: '/sync/archive',
-  method: 'GET',
-  handler: httpAction(async (ctx, req) => {
-    if (!validateSyncKey(req)) {
-      return new Response('Unauthorized', { status: 401 })
-    }
-
-    const url = new URL(req.url)
-    const crawlId = url.searchParams.get('crawl_id')
-
-    if (!crawlId) {
-      return new Response('Missing crawl_id parameter', { status: 400 })
-    }
-
-    const archive = await ctx.runQuery(internal.db.snapshot.crawl.archives.getByCrawlId, {
-      crawl_id: crawlId,
-    })
-
-    if (!archive) {
-      return new Response('Archive not found', { status: 404 })
-    }
-
-    const blob = await ctx.storage.get(archive.storage_id)
-    if (!blob) {
-      return new Response('Bundle not found', { status: 404 })
-    }
-
-    return new Response(blob, {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/octet-stream',
-      },
-    })
-  }),
+  pathPrefix: '/sync/',
+  handler: bundleSyncHttpHandler,
 })
 
 export default http

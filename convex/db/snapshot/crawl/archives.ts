@@ -1,4 +1,4 @@
-import { nullable } from 'convex-helpers/validators'
+import { literals, nullable } from 'convex-helpers/validators'
 import { defineTable, paginationOptsValidator } from 'convex/server'
 import { v } from 'convex/values'
 
@@ -53,11 +53,16 @@ export const getLatestCrawlId = internalQuery({
 })
 
 export const list = internalQuery({
-  args: { paginationOpts: paginationOptsValidator, fromCrawlId: v.optional(v.string()) },
+  args: {
+    paginationOpts: paginationOptsValidator,
+    fromCrawlId: v.optional(v.string()),
+    order: v.optional(literals('asc', 'desc')),
+  },
   handler: async (ctx, args) => {
     return await ctx.db
       .query('snapshot_crawl_archives')
       .withIndex('by_crawl_id', (q) => q.gte('crawl_id', args.fromCrawlId ?? ''))
+      .order(args.order ?? 'asc')
       .paginate(args.paginationOpts)
   },
 })
