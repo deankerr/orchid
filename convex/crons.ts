@@ -18,18 +18,19 @@ export const snapshotCron = internalAction({
 
     const shouldRunCore = on(cfg.core_every_hours)
     if (!shouldRunCore) {
-      console.log('[cron:snapshot] crawl skipped for this hour')
+      if (process.env.CONVEX_ENVIRONMENT !== 'DEVELOPMENT') {
+        console.log('[cron:snapshot] crawl skipped for this hour')
+      }
       return
     }
 
     const jitter = Math.floor(Math.random() * cfg.jitter_minutes * 60_000)
     const delayMs = cfg.delay_minutes * 60_000 + jitter
 
-    // Use the new single-bundle crawler
     await ctx.scheduler.runAfter(delayMs, internal.snapshots.crawl.main.run, {
       apps: on(cfg.apps_every_hours),
       uptimes: on(cfg.uptimes_every_hours),
-      modelAuthors: on(cfg.authors_every_hours),
+      modelAuthors: false, // no longer exists upstream
       analytics: on(cfg.analytics_every_hours ?? 0),
       onComplete: {
         materialize: true,
