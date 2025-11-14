@@ -110,7 +110,6 @@ export const run = internalAction({
     analytics: v.boolean(),
     onComplete: v.object({
       materialize: v.boolean(),
-      materializedChanges: v.boolean(),
     }),
   },
   returns: v.null(),
@@ -180,11 +179,9 @@ export const run = internalAction({
       await storeCrawlBundle(ctx, bundle)
       console.log(`[crawl] complete`, { crawl_id, args })
 
+      // * schedule materialize
       if (args.onComplete.materialize)
         await ctx.scheduler.runAfter(0, internal.snapshots.materialize.main.run, {})
-
-      if (args.onComplete.materializedChanges)
-        await ctx.scheduler.runAfter(0, internal.snapshots.materializedChanges.main.run, {})
     } catch (err) {
       console.error('[crawl] failed', { crawl_id, args, error: getErrorMessage(err) })
     }

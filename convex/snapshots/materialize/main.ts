@@ -29,6 +29,9 @@ export const run = internalAction({
       providers,
       crawl_id: bundle.crawl_id,
     })
+
+    // * schedule materializeChanges
+    await ctx.scheduler.runAfter(0, internal.snapshots.materializedChanges.main.run, {})
   },
 })
 
