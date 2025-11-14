@@ -6,9 +6,61 @@ import { query } from './_generated/server'
 import schema from './schema'
 
 export type EndpointChangeDoc = Extract<Doc<'or_views_changes'>, { entity_type: 'endpoint' }>
+export type ChangeDoc = Doc<'or_views_changes'>
 
 const GOAL_COUNT = 50
 const MAX_CYCLES = 50
+
+function sortChanges(changes: ChangeDoc[]): ChangeDoc[] {
+  // * Separate into groups
+  const modelDeletes: ChangeDoc[] = []
+  const endpoints: ChangeDoc[] = []
+  const modelUpdatesCreates: ChangeDoc[] = []
+
+  for (const change of changes) {
+    if (change.entity_type === 'model') {
+      if (change.change_kind === 'delete') {
+        modelDeletes.push(change)
+      } else {
+        modelUpdatesCreates.push(change)
+      }
+    } else if (change.entity_type === 'endpoint') {
+      endpoints.push(change)
+    }
+  }
+
+  // * Sort model deletes: by model_slug, then path
+  modelDeletes.sort((a, b) => {
+    if (a.entity_type !== 'model' || b.entity_type !== 'model') return 0
+    const modelCompare = a.model_slug.localeCompare(b.model_slug)
+    if (modelCompare !== 0) return modelCompare
+    if (a.path && b.path) return a.path.localeCompare(b.path)
+    return 0
+  })
+
+  // * Sort endpoints: by provider_tag_slug, then model_slug, then path
+  endpoints.sort((a, b) => {
+    if (a.entity_type !== 'endpoint' || b.entity_type !== 'endpoint') return 0
+    const providerCompare = a.provider_tag_slug.localeCompare(b.provider_tag_slug)
+    if (providerCompare !== 0) return providerCompare
+    const modelCompare = a.model_slug.localeCompare(b.model_slug)
+    if (modelCompare !== 0) return modelCompare
+    if (a.path && b.path) return a.path.localeCompare(b.path)
+    return 0
+  })
+
+  // * Sort model updates/creates: by model_slug, then path
+  modelUpdatesCreates.sort((a, b) => {
+    if (a.entity_type !== 'model' || b.entity_type !== 'model') return 0
+    const modelCompare = a.model_slug.localeCompare(b.model_slug)
+    if (modelCompare !== 0) return modelCompare
+    if (a.path && b.path) return a.path.localeCompare(b.path)
+    return 0
+  })
+
+  // * Concatenate in order: model deletes, endpoints, model updates/creates
+  return [...modelDeletes, ...endpoints, ...modelUpdatesCreates]
+}
 
 export const changesByCrawlId = query({
   args: {
@@ -17,29 +69,22 @@ export const changesByCrawlId = query({
   handler: async (ctx, { paginationOpts }) => {
     const batchStream = stream(ctx.db, schema)
       .query('or_views_changes')
-      .withIndex('by_entity_type__crawl_id', (q) => {
-        if (paginationOpts.cursor) {
-          return q.eq('entity_type', 'endpoint').lt('crawl_id', paginationOpts.cursor)
-        }
-        return q.eq('entity_type', 'endpoint')
-      })
+      .withIndex('by_crawl_id', (q) => q.lt('crawl_id', paginationOpts.cursor ?? 'a'))
       .order('desc')
       .distinct(['crawl_id'])
       .map(async (p) => {
         const batch = await ctx.db
           .query('or_views_changes')
-          .withIndex('by_entity_type__crawl_id', (q) =>
-            q.eq('entity_type', 'endpoint').eq('crawl_id', p.crawl_id),
-          )
+          .withIndex('by_crawl_id', (q) => q.eq('crawl_id', p.crawl_id))
           .order('desc')
           .collect()
 
         return batch
-          .filter((b) => b.entity_type === 'endpoint') // redundant but sets type
           .filter((b) => b.path !== 'provider.icon_url')
+          .filter((b) => b.entity_type !== 'provider') // very very few of these, it's fine
       })
 
-    const batchResults: { crawl_id: string; data: EndpointChangeDoc[] }[] = []
+    const batchResults: { crawl_id: string; data: ChangeDoc[] }[] = []
     let continueCursor = ''
     let cycles = 0
     let totalResults = 0
@@ -49,16 +94,9 @@ export const changesByCrawlId = query({
 
       const crawl_id = batch?.[0].crawl_id
       if (crawl_id) {
-        batch.sort((a, b) => {
-          const providerCompare = a.provider_tag_slug.localeCompare(b.provider_tag_slug)
-          if (providerCompare !== 0) return providerCompare
-          const modelCompare = a.model_slug.localeCompare(b.model_slug)
-          if (modelCompare !== 0) return modelCompare
-          if (a.path && b.path) return a.path.localeCompare(b.path)
-          return 0
-        })
-        batchResults.push({ crawl_id, data: batch })
-        totalResults += batch.length
+        const sortedBatch = sortChanges(batch)
+        batchResults.push({ crawl_id, data: sortedBatch })
+        totalResults += sortedBatch.length
       }
       continueCursor = crawl_id ?? ''
 

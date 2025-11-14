@@ -3,7 +3,7 @@
 import { usePaginatedQuery } from 'convex-helpers/react/cache/hooks'
 
 import { api } from '@/convex/_generated/api'
-import { EndpointChangeDoc } from '@/convex/feed'
+import { ChangeDoc } from '@/convex/feed'
 
 import { ChangeValuePair } from '@/components/monitor-feed/monitor-feed-values'
 import { EntityAvatar } from '@/components/shared/entity-avatar'
@@ -33,8 +33,8 @@ export function MonitorFeed() {
           <div key={crawl_id} className="space-y-4 text-sm">
             <TimelineMarker crawl_id={crawl_id} />
 
-            <div className="space-y-3 pl-1 font-mono leading-relaxed text-muted-foreground sm:pl-2">
-              {changes.map((change: EndpointChangeDoc) => (
+            <div className="space-y-3.5 pl-1 font-mono leading-relaxed text-muted-foreground sm:pl-2">
+              {changes.map((change: ChangeDoc) => (
                 <FeedItem key={change._id} change={change} />
               ))}
             </div>
@@ -61,7 +61,7 @@ function TimelineMarker({ crawl_id, className }: { crawl_id: string; className?:
   )
 }
 
-function FeedItem({ change }: { change: EndpointChangeDoc }) {
+function FeedItem({ change }: { change: ChangeDoc }) {
   const actionText =
     change.change_kind === 'create' ? (
       <span className="text-green-400">created</span>
@@ -73,8 +73,14 @@ function FeedItem({ change }: { change: EndpointChangeDoc }) {
 
   return (
     <div>
-      <EntityBadgeInline slug={change.provider_tag_slug.split('/')[0]} /> endpoint for{' '}
-      <EntityBadgeInline slug={change.model_slug} /> was {actionText}
+      {change.entity_type === 'model' && 'model '}
+      {'provider_tag_slug' in change && (
+        <>
+          <EntityBadgeInline slug={change.provider_tag_slug.split('/')[0]} />{' '}
+        </>
+      )}
+      {change.entity_type === 'endpoint' && 'endpoint for '}
+      {'model_slug' in change && <EntityBadgeInline slug={change.model_slug} />} was {actionText}
       {change.change_kind === 'update' && (
         <>
           <Badge variant="outline" className="rounded-sm">
@@ -95,7 +101,7 @@ function FeedItem({ change }: { change: EndpointChangeDoc }) {
 function EntityBadgeInline({ slug }: { slug: string }) {
   return (
     <span className="text-foreground">
-      <EntityAvatar className="mr-1 size-5 align-text-bottom" slug={slug} />
+      <EntityAvatar className="mr-1 size-4.5 align-text-bottom" slug={slug} />
       {slug}
     </span>
   )
