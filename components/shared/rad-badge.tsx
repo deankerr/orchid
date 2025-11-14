@@ -536,7 +536,7 @@ function RadBadge({
     <Comp
       data-slot="rad-badge"
       className={cn(
-        "gap-1 px-2 py-0.5 text-sm [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5",
+        "gap-2 px-2 py-0.5 text-sm [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5",
         radBadgeVariants({ variant, color }),
         className,
       )}

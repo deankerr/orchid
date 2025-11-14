@@ -130,7 +130,11 @@ function PercentageBadge({
   isGood: boolean
 }) {
   return (
-    <RadBadge variant="surface" color={isGood ? 'green' : 'red'} className="align-middle">
+    <RadBadge
+      variant="surface"
+      color={isGood ? 'green' : 'red'}
+      className="-translate-y-px align-middle"
+    >
       {isIncrease ? <TrendingUpIcon /> : <TrendingDownIcon />}
       {Math.abs(value).toFixed(1)}%
     </RadBadge>
