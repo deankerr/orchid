@@ -34,12 +34,7 @@ export function DemoRadBadgeComponents() {
       {colors.map((color) => (
         <div key={color} className="flex shrink-0 flex-col gap-3 py-4">
           {variants.map((variant) => (
-            <RadBadge
-              key={variant}
-              variant={variant}
-              color={color}
-              className="px-2 py-0.5 text-sm font-medium capitalize"
-            >
+            <RadBadge key={variant} variant={variant} color={color} className="capitalize">
               {variant}
             </RadBadge>
           ))}

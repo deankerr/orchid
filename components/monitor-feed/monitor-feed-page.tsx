@@ -1,5 +1,7 @@
 'use client'
 
+import Link from 'next/link'
+
 import { usePaginatedQuery } from 'convex-helpers/react/cache/hooks'
 
 import { api } from '@/convex/_generated/api'
@@ -28,16 +30,16 @@ export function MonitorFeed() {
 
   return (
     <ScrollArea className="flex-1 border sm:rounded-md" viewportRef={viewportRef} maskHeight={10}>
-      <div className="space-y-4 px-2 py-4 sm:px-3">
+      <div className="space-y-7 px-2 py-4 sm:px-3">
         {results.map(({ crawl_id, data: changes }) => (
-          <div key={crawl_id} className="space-y-4 text-sm">
+          <div key={crawl_id} className="space-y-5 text-sm">
             <TimelineMarker crawl_id={crawl_id} />
 
-            <div className="space-y-3.5 pl-1 font-mono leading-relaxed text-muted-foreground sm:pl-2">
+            <ul className="ml-2 list-disc space-y-4 font-mono leading-loose text-muted-foreground sm:pl-2">
               {changes.map((change: ChangeDoc) => (
                 <FeedItem key={change._id} change={change} />
               ))}
-            </div>
+            </ul>
           </div>
         ))}
 
@@ -72,18 +74,29 @@ function FeedItem({ change }: { change: ChangeDoc }) {
     )
 
   return (
-    <div>
+    <li className="[&>span]:font-normal">
       {change.entity_type === 'model' && 'model '}
       {'provider_tag_slug' in change && (
-        <>
-          <EntityBadgeInline slug={change.provider_tag_slug.split('/')[0]} />{' '}
-        </>
+        <Link
+          href={`https://openrouter.ai/provider/${change.provider_slug}`}
+          className="underline decoration-primary/40 decoration-dotted underline-offset-3 transition-colors duration-200 hover:decoration-primary/60"
+        >
+          <EntityBadgeInline slug={change.provider_tag_slug} />
+        </Link>
       )}
-      {change.entity_type === 'endpoint' && 'endpoint for '}
-      {'model_slug' in change && <EntityBadgeInline slug={change.model_slug} />} was {actionText}
+      {change.entity_type === 'endpoint' && ' endpoint for '}
+      {'model_slug' in change && (
+        <Link
+          href={`https://openrouter.ai/${change.model_slug}`}
+          className="underline decoration-primary/40 decoration-dotted underline-offset-3 transition-colors duration-200 hover:decoration-primary/60"
+        >
+          <EntityBadgeInline slug={change.model_slug} />
+        </Link>
+      )}{' '}
+      was {actionText}
       {change.change_kind === 'update' && (
         <>
-          <Badge variant="outline" className="rounded-sm">
+          <Badge variant="outline" className="rounded-sm border-dashed text-sm text-foreground/80">
             {change.path}
           </Badge>{' '}
           <ChangeValuePair
@@ -94,14 +107,14 @@ function FeedItem({ change }: { change: ChangeDoc }) {
           />
         </>
       )}
-    </div>
+    </li>
   )
 }
 
 function EntityBadgeInline({ slug }: { slug: string }) {
   return (
     <span className="text-foreground">
-      <EntityAvatar className="mr-1 size-4.5 align-text-bottom" slug={slug} />
+      <EntityAvatar className="mr-1.5 size-4.5 align-text-bottom" slug={slug} />
       {slug}
     </span>
   )

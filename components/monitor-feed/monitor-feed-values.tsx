@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/badge'
 import { formatPrice } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 
+import { RadBadge } from '../shared/rad-badge'
+
 export function ChangeValuePair({
   before,
   after,
@@ -29,9 +31,9 @@ export function ChangeValuePair({
 
   return (
     <>
-      <span className="text-muted-foreground/80"> from </span>
+      <span> from </span>
       <ChangeValue value={before} path_level_1={path_level_1} path_level_2={path_level_2} />
-      <span className="text-muted-foreground/80"> to </span>
+      <span> to </span>
       <ChangeValue value={after} path_level_1={path_level_1} path_level_2={path_level_2} />
       {showPercentage && (
         <>
@@ -65,6 +67,16 @@ function ChangeValue({
   return <JSONValue value={value} />
 }
 
+function ValueBadge({ className, ...props }: React.ComponentProps<'span'>) {
+  return (
+    <Badge
+      variant="outline"
+      className={cn('rounded-sm border-dotted text-sm text-foreground/80', className)}
+      {...props}
+    />
+  )
+}
+
 function NumericValue({ value, priceKey }: { value: number; priceKey?: string }) {
   const formatted = priceKey
     ? formatPrice({
@@ -73,11 +85,7 @@ function NumericValue({ value, priceKey }: { value: number; priceKey?: string })
         unitSuffix: priceKey === 'discount',
       })
     : value.toLocaleString()
-  return (
-    <Badge className="rounded-md" variant="secondary" title={String(value)}>
-      {formatted}
-    </Badge>
-  )
+  return <ValueBadge title={String(value)}>{formatted}</ValueBadge>
 }
 
 function StringValue({ value }: { value: string }) {
@@ -86,45 +94,30 @@ function StringValue({ value }: { value: string }) {
 
   const hasUppercase = value.match(/[A-Z]/)
   const hasSpace = value.match(/\s/)
+  const isSlug = !hasUppercase && !hasSpace
 
-  return (
-    <Badge variant="secondary" className={cn('text-xs', !hasUppercase && !hasSpace && 'font-mono')}>
-      {value}
-    </Badge>
-  )
+  return <ValueBadge className={isSlug ? 'font-mono' : undefined}>{value}</ValueBadge>
 }
 
 function EmptyValue() {
-  return (
-    <Badge variant="outline" className="opacity-80">
-      empty
-    </Badge>
-  )
+  return <ValueBadge className="opacity-80">empty</ValueBadge>
 }
 
 function BooleanValue({ value }: { value: boolean }) {
-  return <Badge variant="outline">{value ? 'true' : 'false'}</Badge>
+  return <ValueBadge>{value ? 'true' : 'false'}</ValueBadge>
 }
 
 function NullValue() {
-  return <Badge variant="outline">null</Badge>
+  return <ValueBadge>null</ValueBadge>
 }
 
 function UndefinedValue() {
-  return (
-    <Badge variant="outline" className="border-dashed text-muted-foreground/50">
-      null {/* intentional */}
-    </Badge>
-  )
+  return <ValueBadge className="text-foreground/50">null {/* intentional */}</ValueBadge>
 }
 
 function JSONValue({ value }: { value: unknown }) {
   const stringified = JSON.stringify(value, null, 2)
-  return (
-    <Badge variant="secondary" className="rounded-md">
-      {stringified}
-    </Badge>
-  )
+  return <ValueBadge className="whitespace-normal">{stringified}</ValueBadge>
 }
 
 function PercentageBadge({
@@ -137,17 +130,10 @@ function PercentageBadge({
   isGood: boolean
 }) {
   return (
-    <Badge
-      className={cn(
-        'align-middle',
-        isGood
-          ? 'rounded-md border-positive-surface-border bg-positive-surface text-positive-surface-foreground'
-          : 'rounded-md border-negative-surface-border bg-negative-surface text-negative-surface-foreground',
-      )}
-    >
+    <RadBadge variant="surface" color={isGood ? 'green' : 'red'} className="align-middle">
       {isIncrease ? <TrendingUpIcon /> : <TrendingDownIcon />}
       {Math.abs(value).toFixed(1)}%
-    </Badge>
+    </RadBadge>
   )
 }
 
@@ -174,7 +160,11 @@ export function ArrayDiff({
         if (inBefore && inAfter) {
           if (showUnchanged) {
             return (
-              <Badge key={item} variant="outline" className="rounded-md text-muted-foreground">
+              <Badge
+                key={item}
+                variant="outline"
+                className="rounded-md border-dotted text-sm text-foreground/80"
+              >
                 {item}
               </Badge>
             )
@@ -186,7 +176,7 @@ export function ArrayDiff({
           return (
             <Badge
               key={item}
-              className="rounded-md border-negative-surface-border bg-negative-surface text-negative-surface-foreground line-through"
+              className="rounded-md border-dotted border-negative-surface-border bg-negative-surface text-sm text-negative-surface-foreground line-through"
             >
               {item}
             </Badge>
@@ -197,7 +187,7 @@ export function ArrayDiff({
         return (
           <Badge
             key={item}
-            className="rounded-md border-positive-surface-border bg-positive-surface text-positive-surface-foreground"
+            className="rounded-md border-dotted border-positive-surface-border bg-positive-surface text-sm text-positive-surface-foreground"
           >
             + {item}
           </Badge>

@@ -17,7 +17,7 @@ export function EntityAvatar({
   return (
     <span
       className={cn(
-        'inline-flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-sm border border-neutral-700/50 bg-muted select-none',
+        'inline-flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-sm border border-neutral-700/70 bg-muted select-none',
         className,
       )}
       style={{ background: style?.background }}

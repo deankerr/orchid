@@ -7,7 +7,7 @@ import type { SpriteIconName } from '@/lib/sprite-icons'
 
 import { SpriteIcon } from '../ui/sprite-icon'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
-import { RadBadge, RadIconBadge } from './rad-badge'
+import { RadIconBadge } from './rad-badge'
 
 export function AttributeBadge({
   sprite,
@@ -22,8 +22,8 @@ export function AttributeBadge({
   name: string
   details: string
   detailsValue?: string
-  color: VariantProps<typeof RadBadge>['color']
-  variant?: VariantProps<typeof RadBadge>['variant']
+  color: VariantProps<typeof RadIconBadge>['color']
+  variant?: VariantProps<typeof RadIconBadge>['variant']
   disabled?: boolean
 }) {
   return (

@@ -6,7 +6,7 @@ import { Slot as SlotPrimitive } from 'radix-ui'
 import { cn } from '@/lib/utils'
 
 const radBadgeVariants = cva(
-  'inline-flex items-center justify-center rounded-sm aria-disabled:opacity-20 aria-disabled:saturate-[20%] shrink-0 [&>svg]:pointer-events-none overflow-hidden',
+  'inline-flex items-center justify-center rounded-md aria-disabled:opacity-20 aria-disabled:saturate-20 shrink-0 [&>svg]:pointer-events-none overflow-hidden',
   {
     variants: {
       variant: {
@@ -535,7 +535,11 @@ function RadBadge({
   return (
     <Comp
       data-slot="rad-badge"
-      className={cn(radBadgeVariants({ variant, color }), className)}
+      className={cn(
+        "gap-1 px-2 py-0.5 text-sm [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5",
+        radBadgeVariants({ variant, color }),
+        className,
+      )}
       {...props}
     />
   )
