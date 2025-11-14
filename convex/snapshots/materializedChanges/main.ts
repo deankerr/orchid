@@ -41,21 +41,28 @@ export const run = internalAction({
             crawl_id: current.crawl_id,
           })
 
-          const counters = await ctx.runMutation(
-            internal.snapshots.materializedChanges.output.upsert,
-            {
+          if (changes.length) {
+            const counters = await ctx.runMutation(
+              internal.snapshots.materializedChanges.output.upsert,
+              {
+                previous_crawl_id: previous.crawl_id,
+                crawl_id: current.crawl_id,
+                changes,
+              },
+            )
+
+            console.log('[materializedChanges] pair processed', {
               previous_crawl_id: previous.crawl_id,
               crawl_id: current.crawl_id,
-              changes,
-            },
-          )
-
-          console.log('[materializedChanges] pair processed', {
-            previous_crawl_id: previous.crawl_id,
-            crawl_id: current.crawl_id,
-            count: changes.length,
-            counters,
-          })
+              count: changes.length,
+              counters,
+            })
+          } else {
+            console.log('[materializedChanges] no changes', {
+              previous_crawl_id: previous.crawl_id,
+              crawl_id: current.crawl_id,
+            })
+          }
 
           previous = current
           processedPairs += 1

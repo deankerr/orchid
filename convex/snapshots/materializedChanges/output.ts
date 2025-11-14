@@ -54,8 +54,6 @@ export const upsert = internalMutation({
       existingByKey.set(key, doc)
     }
 
-    const processedKeys = new Set<string>()
-
     for (const change of args.changes) {
       if (
         change.previous_crawl_id !== args.previous_crawl_id ||
@@ -65,13 +63,6 @@ export const upsert = internalMutation({
       }
 
       const key = changeKey(change)
-
-      // Skip duplicate changes in the same batch
-      if (processedKeys.has(key)) {
-        continue
-      }
-      processedKeys.add(key)
-
       const current = existingByKey.get(key)
 
       if (!current) {
@@ -98,12 +89,6 @@ export const upsert = internalMutation({
       await ctx.db.delete(leftover._id)
       counters.delete++
     }
-
-    console.log('[or_views_changes:replacePair]', {
-      previous_crawl_id: args.previous_crawl_id,
-      crawl_id: args.crawl_id,
-      ...counters,
-    })
 
     return counters
   },

@@ -1,6 +1,6 @@
 import { WithoutSystemFields } from 'convex/server'
 
-import { atomizeChangeset, diff, type Options as DiffOptions } from 'json-diff-ts'
+import { atomizeChangeset, diff, IAtomicChange, type Options as DiffOptions } from 'json-diff-ts'
 
 import { Doc } from '../../_generated/dataModel'
 import { materializeModelEndpoints } from '../materialize/main'
@@ -33,7 +33,7 @@ const DIFF_OPTIONS: DiffOptions = {
     // providers
     datacenters: '$value',
   },
-  treatTypeChangeAsReplace: true,
+  treatTypeChangeAsReplace: false,
 }
 
 export function computeMaterializedChanges(args: {
@@ -121,26 +121,6 @@ function computeEntityChanges<T>(
   return changes
 }
 
-function extractSegments(path: string): string[] {
-  let trimmed = path.startsWith('$') ? path.slice(1) : path
-  if (trimmed.startsWith('.')) trimmed = trimmed.slice(1)
-  if (!trimmed) return []
-
-  return trimmed
-    .split('.')
-    .map((segment) => segment.replace(/\[.*?\]/g, '').replace(/^['"]|['"]$/g, ''))
-    .filter((segment) => segment.length > 0)
-}
-
-function getValueAtSegments(source: Record<string, any>, segments: string[]) {
-  let current: any = source
-  for (const segment of segments) {
-    if (current == null) return undefined
-    current = current[segment]
-  }
-  return current
-}
-
 type ProcessedDiffItem = {
   path?: string
   path_level_1?: string
@@ -149,31 +129,69 @@ type ProcessedDiffItem = {
   after: unknown
 }
 
-export function processDiff(
+function processDiff(
   before: Record<string, unknown>,
   after: Record<string, unknown>,
 ): ProcessedDiffItem[] {
   const changeset = diff(before, after, DIFF_OPTIONS)
+  const atomicChanges = atomizeChangeset(changeset)
+
+  // * group atomic changes by base path
+  const grouped = new Map<string, IAtomicChange[]>()
+
+  for (const change of atomicChanges) {
+    // "$.supported_parameters[?(@=='tools')]" -> "supported_parameters"
+    // "$.data_policy.retains_prompts" -> "data_policy.retains_prompts"
+    const basePath = change.path.replace(/^\$\./, '').replace(/\[.*/, '')
+
+    if (!grouped.has(basePath)) {
+      grouped.set(basePath, [])
+    }
+    grouped.get(basePath)!.push(change)
+  }
 
   const items: ProcessedDiffItem[] = []
 
-  for (const change of atomizeChangeset(changeset)) {
-    const segments = extractSegments(change.path)
-    if (!segments.length) continue
+  // * process grouped changes
+  for (const [basePath, changes] of grouped) {
+    const segments = basePath.split('.')
+    const isArrayChange = changes.some((c) => c.path.includes('['))
 
-    const path = segments.join('.')
-    const beforeValue = getValueAtSegments(before, segments)
-    const afterValue = getValueAtSegments(after, segments)
-    if (beforeValue === undefined && afterValue === undefined) continue
+    if (isArrayChange) {
+      // array: get full before/after arrays from source objects
+      const beforeValue = getValueByPath(before, segments)
+      const afterValue = getValueByPath(after, segments)
 
-    items.push({
-      path,
-      path_level_1: segments[0],
-      path_level_2: segments[1],
-      before: beforeValue,
-      after: afterValue,
-    })
+      items.push({
+        path: basePath,
+        path_level_1: segments[0],
+        path_level_2: segments[1],
+        before: beforeValue,
+        after: afterValue,
+      })
+    } else {
+      // non-array: use atomic change values directly
+      // note: ADD has oldValue=undefined, REMOVE has value=undefined
+      const change = changes[0]
+
+      items.push({
+        path: basePath,
+        path_level_1: segments[0],
+        path_level_2: segments[1],
+        before: change.oldValue,
+        after: change.value,
+      })
+    }
   }
 
   return items
+}
+
+function getValueByPath(obj: Record<string, any>, segments: string[]): unknown {
+  let current: any = obj
+  for (const segment of segments) {
+    if (current == null) return undefined
+    current = current[segment]
+  }
+  return current
 }

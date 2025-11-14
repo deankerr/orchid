@@ -18,8 +18,8 @@ export const ModelTransformSchema = z
     output_modalities: z.array(z.string()).transform((arr) => arr.sort()),
     group: z.string().nullable(),
     instruct_type: z.string().nullable(),
-    promotion_message: z.string().nullable(),
-    warning_message: z.string().nullable(),
+    promotion_message: z.string().nullish(),
+    warning_message: z.string().nullish(),
     permaslug: z.string(),
     reasoning_config: z
       .object({
