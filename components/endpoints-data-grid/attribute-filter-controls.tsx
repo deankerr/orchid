@@ -22,7 +22,7 @@ export function AttributeFilterControls() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline">
           <FilterIcon />
           Filters
           {activeFilterCount > 0 && (

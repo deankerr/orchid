@@ -27,7 +27,7 @@ import {
 import { fuzzyFilter } from '../data-grid/data-grid-fuzzy'
 import { DataGridTableDndVirtual } from '../data-grid/data-grid-table-dnd'
 import { columns } from './columns'
-import { Controls } from './controls'
+import { DataGridControls } from './controls'
 import { DataGridFooter } from './footer'
 import { useEndpointFilters } from './use-endpoint-filters'
 
@@ -137,11 +137,12 @@ export function EndpointsDataGrid() {
         bodyRow:
           'has-aria-[label=disabled]:[&_td_>_*]:opacity-50 has-aria-[label=disabled]:[&_td]:text-foreground/50 has-aria-[label=gone]:[&_td_>_*]:opacity-50 has-aria-[label=gone]:[&_td]:text-foreground/50',
         body: 'font-mono',
+        base: 'border-x',
       }}
     >
-      <DataGridCard>
+      <DataGridCard className="border-t">
         <DataGridCardToolbar>
-          <Controls />
+          <DataGridControls />
         </DataGridCardToolbar>
 
         <DataGridCardContent>

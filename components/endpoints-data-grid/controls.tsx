@@ -9,7 +9,7 @@ import { useEndpointFilters } from './use-endpoint-filters'
 
 function ColumnsButton(props: React.ComponentProps<typeof Button>) {
   return (
-    <Button variant="outline" size="sm" {...props}>
+    <Button variant="outline" {...props}>
       <Settings2 />
       Columns
     </Button>
@@ -30,7 +30,7 @@ function EndpointsSearchInput() {
   )
 }
 
-export function Controls() {
+export function DataGridControls() {
   const { table } = useDataGrid()
   const { hasActiveAttributeFilters, clearAttributeFilters } = useEndpointFilters()
 
@@ -40,7 +40,7 @@ export function Controls() {
       <AttributeFilterControls />
 
       {hasActiveAttributeFilters && (
-        <Button variant="ghost" size="sm" onClick={clearAttributeFilters}>
+        <Button variant="secondary" onClick={clearAttributeFilters}>
           <XIcon />
           Clear
         </Button>

@@ -3,12 +3,7 @@ import { cn } from '@/lib/utils'
 import { ScrollArea } from '../ui/scroll-area'
 
 export function DataGridCard({ className, ...props }: React.ComponentProps<'div'>) {
-  return (
-    <div
-      className={cn('flex flex-1 flex-col overflow-hidden border sm:rounded-md', className)}
-      {...props}
-    />
-  )
+  return <div className={cn('flex flex-1 flex-col overflow-hidden', className)} {...props} />
 }
 
 export function DataGridCardToolbar({
@@ -18,7 +13,7 @@ export function DataGridCardToolbar({
 }: React.ComponentProps<typeof ScrollArea>) {
   return (
     <ScrollArea className="shrink-0" maskHeight={10} orientation="horizontal" {...props}>
-      <div className={cn('flex items-center gap-2 px-2 py-3', className)}>{children}</div>
+      <div className={cn('flex items-center gap-2 px-2 py-4', className)}>{children}</div>
     </ScrollArea>
   )
 }
@@ -43,7 +38,7 @@ export function DataGridCardFooter({ className, ...props }: React.ComponentProps
   return (
     <div
       className={cn(
-        'flex h-6 shrink-0 items-center justify-center px-3 font-mono text-xs text-muted-foreground',
+        'flex h-7 shrink-0 items-center justify-center px-3 font-mono text-xs text-muted-foreground',
         className,
       )}
       {...props}

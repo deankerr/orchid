@@ -15,8 +15,8 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <PageContainer className="overflow-hidden">
-      <PageHeader>
+    <PageContainer className="overflow-hidden px-0 pb-0 sm:px-0 sm:pb-0">
+      <PageHeader className="px-6">
         <PageTitle>Monitor</PageTitle>
         <PageDescription>Monitor changes detected between OpenRouter snapshots.</PageDescription>
       </PageHeader>
