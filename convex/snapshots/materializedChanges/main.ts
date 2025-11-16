@@ -7,14 +7,17 @@ import { materializeModelEndpoints } from '../materialize/main'
 import { getArchiveBundle } from '../shared/bundle'
 import { computeMaterializedChanges } from './process'
 
+const MAX_PAIRS_PER_ACTION = 500
+const BATCH_SIZE_INNER = 100
+
 export const run = internalAction({
   args: {
     fromCrawlId: v.optional(v.string()),
-    batchSize: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     let previous: LoadedMaterializedSnapshot | null = null
     let processedPairs = 0
+    let lastProcessedCrawlId: string | null = null
 
     const fromCrawlId =
       args.fromCrawlId ??
@@ -31,6 +34,7 @@ export const run = internalAction({
 
           if (!previous) {
             previous = current
+            lastProcessedCrawlId = current.crawl_id
             continue
           }
 
@@ -65,13 +69,29 @@ export const run = internalAction({
           }
 
           previous = current
+          lastProcessedCrawlId = current.crawl_id
           processedPairs += 1
+
+          if (processedPairs >= MAX_PAIRS_PER_ACTION) {
+            return false
+          }
         }
       },
-      batchSize: args.batchSize ?? 25,
+      batchSize: BATCH_SIZE_INNER,
     })
 
-    console.log('[materializedChanges] complete', { processedPairs })
+    if (processedPairs >= MAX_PAIRS_PER_ACTION && lastProcessedCrawlId) {
+      console.log('[materializedChanges] reached limit, rescheduling', {
+        processedPairs,
+        nextFromCrawlId: lastProcessedCrawlId,
+      })
+
+      await ctx.scheduler.runAfter(0, internal.snapshots.materializedChanges.main.run, {
+        fromCrawlId: lastProcessedCrawlId,
+      })
+    } else {
+      console.log('[materializedChanges] complete', { processedPairs })
+    }
   },
 })
 

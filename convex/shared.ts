@@ -16,6 +16,9 @@ export function getErrorMessage(error: unknown) {
  *
  * @param ctx - The Convex context (ActionCtx, MutationCtx, or QueryCtx)
  * @param args - Configuration object containing queryFnArgs, queryFn, processFn, and optional batchSize
+ *
+ * The processFn can return false to signal early termination of pagination.
+ * Returning void, undefined, or true will continue pagination.
  */
 export async function paginateAndProcess<T extends Doc<TableNames>>(
   ctx: ActionCtx | MutationCtx,
@@ -25,7 +28,7 @@ export async function paginateAndProcess<T extends Doc<TableNames>>(
       ctx: ActionCtx | MutationCtx,
       args: { paginationOpts: typeof paginationOptsValidator.type } & Record<string, any>,
     ) => Promise<PaginationResult<T>>
-    processFn: (items: T[]) => Promise<void>
+    processFn: (items: T[]) => Promise<void | boolean>
     batchSize: number
   },
 ): Promise<void> {
@@ -46,7 +49,11 @@ export async function paginateAndProcess<T extends Doc<TableNames>>(
       break
     }
 
-    await processFn(results.page)
+    const shouldContinue = await processFn(results.page)
+
+    if (shouldContinue === false) {
+      break
+    }
 
     if (results.isDone) {
       break
