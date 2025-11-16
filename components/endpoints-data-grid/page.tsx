@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 
 import { DragEndEvent } from '@dnd-kit/core'
 import { arrayMove } from '@dnd-kit/sortable'
@@ -10,12 +10,6 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import ms from 'ms'
-
-import { api } from '@/convex/_generated/api'
-
-import { useCachedQuery } from '@/hooks/use-cached-query'
-import { attributes } from '@/lib/attributes'
 
 import { DataGrid } from '../data-grid/data-grid'
 import {
@@ -26,54 +20,15 @@ import {
 } from '../data-grid/data-grid-card'
 import { fuzzyFilter } from '../data-grid/data-grid-fuzzy'
 import { DataGridTableDndVirtual } from '../data-grid/data-grid-table-dnd'
+import { useEndpointsData } from './api'
 import { columns } from './columns'
 import { DataGridControls } from './controls'
 import { DataGridFooter } from './footer'
 import { useEndpointFilters } from './use-endpoint-filters'
 
 export function EndpointsDataGrid() {
-  const endpointsList = useCachedQuery(
-    api.endpoints.list,
-    { maxTimeUnavailable: ms('30d') },
-    'endpoints.list',
-  )
-  const { globalFilter, sorting, onSortingChange, attributeFilters } = useEndpointFilters()
-
-  const filteredEndpoints = useMemo(() => {
-    if (!endpointsList) return []
-
-    return endpointsList.filter((endpoint) => {
-      for (const [filterName, mode] of Object.entries(attributeFilters)) {
-        let hasAttribute = false
-
-        // Handle modality filters
-        if (filterName === 'image_input') {
-          hasAttribute = endpoint.model.input_modalities.includes('image')
-        } else if (filterName === 'file_input') {
-          hasAttribute = endpoint.model.input_modalities.includes('file')
-        } else if (filterName === 'audio_input') {
-          hasAttribute = endpoint.model.input_modalities.includes('audio')
-        } else if (filterName === 'image_output') {
-          hasAttribute = endpoint.model.output_modalities.includes('image')
-        } else {
-          // Handle regular attribute filters
-          const attr = attributes[filterName as keyof typeof attributes]
-          if (attr) {
-            hasAttribute = attr.has(endpoint)
-          }
-        }
-
-        if (mode === 'include' && !hasAttribute) {
-          return false
-        }
-        if (mode === 'exclude' && hasAttribute) {
-          return false
-        }
-      }
-
-      return true
-    })
-  }, [endpointsList, attributeFilters])
+  const { filteredEndpoints, isLoading } = useEndpointsData()
+  const { globalFilter, sorting, onSortingChange } = useEndpointFilters()
 
   const [columnOrder, setColumnOrder] = useState<string[]>(
     columns.map((column) => column.id as string),
@@ -117,7 +72,7 @@ export function EndpointsDataGrid() {
     <DataGrid
       table={table}
       recordCount={table.getFilteredRowModel().rows.length}
-      isLoading={!endpointsList}
+      isLoading={isLoading}
       loadingMessage="Loading endpoints..."
       emptyMessage="No endpoints found"
       skeletonRows={30}
@@ -137,7 +92,7 @@ export function EndpointsDataGrid() {
         bodyRow:
           'has-aria-[label=disabled]:[&_td_>_*]:opacity-50 has-aria-[label=disabled]:[&_td]:text-foreground/50 has-aria-[label=gone]:[&_td_>_*]:opacity-50 has-aria-[label=gone]:[&_td]:text-foreground/50',
         body: 'font-mono',
-        base: 'border-x',
+        base: 'border-x border-b',
       }}
     >
       <DataGridCard className="border-t">

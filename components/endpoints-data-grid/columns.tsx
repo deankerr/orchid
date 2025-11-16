@@ -180,11 +180,11 @@ export const columns: ColumnDef<EndpointRow>[] = [
         />
       )
     },
-    size: 255,
+    size: 260,
     meta: {
       headerClassName: 'text-center',
       headerTitle: 'Features',
-      cellClassName: 'text-center px-2',
+      cellClassName: 'px-2',
       skeleton: <Skeleton className="h-6 w-full" />,
     },
   },

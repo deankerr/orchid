@@ -136,16 +136,6 @@ function ThemedButton() {
 }
 ```
 
-## React Compiler - Stable
-
-### Current Status (2025)
-
-React Compiler is now generally available, production-ready and deployed at Meta across Instagram, Facebook, and Threads.
-
-### What It Does
-
-Automatically memoizes React components and hooks through build-time static analysis, eliminating manual `useMemo`, `useCallback`, and `React.memo` usage.
-
 ## Next.js 16 - Breaking Changes
 
 ### Async Request APIs (Breaking Change)
@@ -361,7 +351,9 @@ Enables smooth transitions for discrete properties like display.
 .modal {
   display: none;
   opacity: 0;
-  transition: opacity 0.3s ease, display 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    display 0.3s ease;
   transition-behavior: allow-discrete;
 }
 
