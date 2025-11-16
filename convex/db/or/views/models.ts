@@ -35,7 +35,7 @@ export const table = defineTable({
   updated_at: v.number(),
 })
   .index('by_or_added_at', ['or_added_at'])
-  .searchIndex('by_name_search', { searchField: 'name' })
+  .index('by_slug', ['slug'])
 
 export const vTable = createTableVHelper('or_views_models', table.validator)
 

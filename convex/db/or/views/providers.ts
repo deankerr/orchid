@@ -19,7 +19,9 @@ export const table = defineTable({
   // orchid
   unavailable_at: v.optional(v.number()),
   updated_at: v.number(),
-}).index('by_name', ['name'])
+})
+  .index('by_name', ['name'])
+  .index('by_slug', ['slug'])
 
 export const vTable = createTableVHelper('or_views_providers', table.validator)
 

@@ -194,7 +194,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
     accessorFn: (row) => row.context_length,
     header: ({ column }) => (
       <div className="grow text-center">
-        <DataGridColumnHeader column={column} title="CONTEXT" subtitle="TOK" />
+        <DataGridColumnHeader column={column} title="CONTEXT" subtitle="TOKENS" />
       </div>
     ),
     cell: ({ getValue }) => getValue<number>().toLocaleString(),
@@ -211,7 +211,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
     accessorFn: (row) => row.limits.text_output_tokens ?? row.context_length,
     header: ({ column }) => (
       <div className="grow text-center">
-        <DataGridColumnHeader column={column} title="MAX OUT." subtitle="TOK" />
+        <DataGridColumnHeader column={column} title="MAX OUT." subtitle="TOKENS" />
       </div>
     ),
     cell: ({ getValue }) => getValue<number | undefined>()?.toLocaleString(),
@@ -293,7 +293,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
         return <span className="text-muted-foreground">&ndash;</span>
       }
     },
-    size: 115,
+    size: 105,
     sortUndefined: -1,
     meta: {
       skeleton: <Skeleton className="h-5 w-full" />,
@@ -376,7 +376,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
     accessorFn: (row) => row.model.or_added_at,
     header: ({ column }) => (
       <div className="grow text-center">
-        <DataGridColumnHeader column={column} title="CREATED" subtitle="(MODEL)" />
+        <DataGridColumnHeader column={column} title="ADDED" subtitle="MODEL" />
       </div>
     ),
     cell: ({ getValue }) => {
@@ -393,6 +393,29 @@ export const columns: ColumnDef<EndpointRow>[] = [
       skeleton: <Skeleton className="h-5 w-full" />,
       cellClassName: 'text-center',
       headerTitle: 'Model Added (Date)',
+    },
+  },
+
+  {
+    id: 'unavailableAt',
+    accessorFn: (row) => row.unavailable_at,
+    header: ({ column }) => (
+      <div className="grow text-center">
+        <DataGridColumnHeader column={column} title="GONE" subtitle="ENDPOINT" />
+      </div>
+    ),
+    cell: ({ getValue }) => {
+      const timestamp = getValue<number>()
+      if (timestamp) {
+        return formatDateTime(timestamp).split(' ')[0]
+      }
+    },
+    size: 120,
+    sortUndefined: -1,
+    meta: {
+      skeleton: <Skeleton className="h-5 w-full" />,
+      cellClassName: 'text-center',
+      headerTitle: 'Unavailable (Date)',
     },
   },
 ]

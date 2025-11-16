@@ -124,6 +124,7 @@ export const table = defineTable({
   .index('by_model_or_added_at', ['model.or_added_at'])
   .index('by_model_slug', ['model.slug'])
   .index('by_provider_slug', ['provider.slug'])
+  .index('by_uuid', ['uuid'])
 
 export const vTable = createTableVHelper('or_views_endpoints', table.validator)
 
