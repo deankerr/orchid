@@ -1,8 +1,82 @@
----
-alwaysApply: true
----
+# Frontend Development Guide
 
-# Web Development Framework Updates for 2025 AI Coding Assistants
+## Example
+
+```tsx
+import { cn } from '@/lib/utils'
+
+export function LabeledBox({
+  label,
+  className,
+  children,
+  ...props
+}: { label?: string } & React.ComponentProps<'div'>) {
+  return (
+    <div className={cn('bg-card text-card-foreground space-y-2 rounded-sm border p-2', className)} {...props}>
+      {label && <div className="text-muted-foreground font-mono text-sm uppercase">{label}</div>}
+      {children}
+    </div>
+  )
+}
+```
+
+## Target Audience
+
+ORCHID serves highly technical users who work with OpenRouter and LLMs professionally:
+
+- Deep understanding of AI model concepts (variables, parameters, context lengths, quantization)
+- Interested in comprehensive pricing details (cache reads, reasoning tokens, structured outputs)
+- Value technical precision over "friendly" explanations
+- Will copy/paste values (model slugs, API parameters) directly into their code
+
+## Design Philosophy
+
+- Stylish technical aesthetic.
+- Directly inspired by Vercel, shadcn.com, and Radix Themes.
+- Dark, monochromatic, functional, and practical UI.
+- Dense, rich and data heavy, tabular elements. Minimal 'marketing' style elements.
+- Brand logos and badges add splashes of color.
+- Avoid excessive padding, border radius (most elements use `rounded-sm`), and shadows.
+- Heavy use of monospace font used for data display and aesthetic flourish.
+- Primarily intended for desktop usage. Mobile optimization is a low priority.
+
+## Component Guidelines
+
+### Default Styling
+
+```css
+/* globals.css */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+```
+
+- Intelligently apply classes like `font-mono` at a component root level, rather than specifying on all sub-elements.
+
+### Structure
+
+- Use a shadcn/ui-inspired structure for components, a single file which exports composable component parts, allowing for dynamic customization.
+- Use named exports only. NEVER use default exports.
+
+### Component File Structure/Locations
+
+- Route components (layouts, pages): `app/[relevant directory]`
+- Major single file/unique components: `components/`
+- Major multi-file components: `components/<component-name>`
+- Shared/custom UI components: `components/shared`
+- shadcn/ui components only: `components/ui`
+- Mixed/unclear: `components/`
+- No barrel files.
+
+## React 19 / Next.js 15
+
+- ONLY when a page is reading search params with nuqs, e.g. `useQueryState`, the client component page must be wrapped in `<Suspense>` in the server-side `page.tsx`. No fallback is required, as there is no actual wait for any external data.
+
+# Web Development Framework Updates for 2025
 
 ## React 19 - Major Changes
 
@@ -14,13 +88,7 @@ Function components can now accept `ref` as a regular prop, eliminating `forward
 
 ```tsx
 // NEW (React 19)
-function MyInput({
-  placeholder,
-  ref,
-}: {
-  placeholder?: string
-  ref?: React.Ref<HTMLInputElement>
-}) {
+function MyInput({ placeholder, ref }: { placeholder?: string; ref?: React.Ref<HTMLInputElement> }) {
   return <input placeholder={placeholder} ref={ref} />
 }
 ```
@@ -61,53 +129,24 @@ function App({ children }: { children: React.ReactNode }) {
   return <ThemeContext value="dark">{children}</ThemeContext>
 }
 
-// Consuming with use hook (preferred over useContext)
+// Consuming context directly with use hook
 function ThemedButton() {
   const theme = use(ThemeContext)
   return <button className={`btn-${theme}`}>Click me</button>
 }
 ```
 
-## React Compiler - Production Ready
+## React Compiler - Stable
 
 ### Current Status (2025)
 
-React Compiler is in Release Candidate phase, production-ready and deployed at Meta across Instagram, Facebook, and Threads.
+React Compiler is now generally available, production-ready and deployed at Meta across Instagram, Facebook, and Threads.
 
 ### What It Does
 
-Automatically memoizes React components and hooks through build-time static analysis, eliminating manual `useMemo`, `useCallback`, and `React.memo` usage. Requires strict adherence to the Rules of React.
+Automatically memoizes React components and hooks through build-time static analysis, eliminating manual `useMemo`, `useCallback`, and `React.memo` usage.
 
-**TODO: Incompatible with Tanstack Table. This project will require a partial approach.**
-
-### Enabling React Compiler
-
-```javascript
-// Next.js (Recommended)
-const nextConfig = {
-  experimental: {
-    reactCompiler: true, // Enable for all components
-  },
-}
-```
-
-### Compiler Directives
-
-```javascript
-// Opt out specific components
-function MyComponent() {
-  'use no memo' // Compiler will skip this component
-  return <div>Not optimized</div>
-}
-
-// Opt in specific components (annotation mode)
-function MyComponent() {
-  'use memo' // Explicitly opt into compilation
-  return <div>Optimized</div>
-}
-```
-
-## Next.js 15 - Breaking Changes
+## Next.js 16 - Breaking Changes
 
 ### Async Request APIs (Breaking Change)
 
@@ -117,14 +156,14 @@ All request-specific APIs now return Promises and must be awaited.
 // NEW (Next.js 15)
 export default async function Page({
   params,
-  searchParams
+  searchParams,
 }: {
-  params: Promise<{ slug: string }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+  params: Promise<{ slug: string }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
-  const { slug } = await params;
-  const { query } = await searchParams;
-  return <h1>{slug}</h1>;
+  const { slug } = await params
+  const { query } = await searchParams
+  return <h1>{slug}</h1>
 }
 ```
 
@@ -145,32 +184,31 @@ const data = await fetch('https://api.example.com/data', {
 export const fetchCache = 'default-cache'
 ```
 
-### Partial Prerendering (PPR) Experimental
-
-Combines static and dynamic rendering in the same route.
-
-```typescript
-export const experimental_ppr = true;
-
-export default function Page() {
-  return (
-    <>
-      <StaticHeader /> {/* Prerendered */}
-      <Suspense fallback={<Loading />}>
-        <DynamicContent /> {/* Streamed */}
-      </Suspense>
-    </>
-  );
-}
-```
-
 ### Enhanced TypeScript Support
 
 ```typescript
 // Auto-generated type helpers
 export default async function Page(props: PageProps<'/blog/[slug]'>) {
-  const { slug } = await props.params;
-  return <h1>Blog post: {slug}</h1>;
+  const { slug } = await props.params
+  return <h1>Blog post: {slug}</h1>
+}
+```
+
+### Document Metadata Support
+
+HTML metadata elements can now be rendered directly in components without external libraries.
+
+```tsx
+function BlogPost({ post }) {
+  return (
+    <article>
+      <title>{post.title}</title>
+      <meta name="author" content={post.author} />
+      <meta name="keywords" content={post.keywords} />
+      <h1>{post.title}</h1>
+      <p>{post.content}</p>
+    </article>
+  )
 }
 ```
 
@@ -233,45 +271,8 @@ Several utility classes renamed for consistency:
 
 **Note: Safe and recommended for backend use, discouraged for frontend.**
 
-### Object.groupBy() and Map.groupBy()
-
-Groups array elements into objects or Maps based on callback results.
-
-```javascript
-const inventory = [
-  { name: 'apple', type: 'fruit', quantity: 5 },
-  { name: 'carrot', type: 'vegetable', quantity: 3 },
-]
-
-// Object.groupBy - returns plain object
-const byType = Object.groupBy(inventory, (item) => item.type)
-// Result: { fruit: [{...apple}], vegetable: [{...carrot}] }
-
-// Map.groupBy - returns Map, supports any key types
-const byQuantity = Map.groupBy(inventory, (item) => (item.quantity > 3 ? 'high' : 'low'))
-```
-
-### Promise.withResolvers()
-
-Returns promise with external resolve/reject functions for complex control flow.
-
-```javascript
-const { promise, resolve, reject } = Promise.withResolvers()
-
-setTimeout(() => resolve('Done!'), 1000)
-const result = await promise // "Done!"
-
-// Event-based promise resolution
-function waitForButtonClick(buttonId) {
-  const { promise, resolve, reject } = Promise.withResolvers()
-  const button = document.getElementById(buttonId)
-
-  button.addEventListener('click', () => resolve('clicked'))
-  setTimeout(() => reject('timeout'), 5000)
-
-  return promise
-}
-```
+- Object.groupBy() and Map.groupBy()
+- Promise.withResolvers()
 
 ### RegExp /v Flag (unicodeSets)
 
@@ -295,34 +296,10 @@ Checks and ensures strings contain only well-formed Unicode sequences.
 ```javascript
 'hello'.isWellFormed() // true
 '\uD800test'.isWellFormed() // false (lone surrogate)
-
 '\uD800test'.toWellFormed() // "�test" (replaces with replacement char)
 ```
 
 ## CSS Baseline Newly Available (2023-2025)
-
-### Container Queries
-
-Responsive design based on container size rather than viewport.
-
-```css
-.card-container {
-  container-type: inline-size;
-  container-name: card;
-}
-
-@container card (min-width: 400px) {
-  .card {
-    display: grid;
-    grid-template-columns: 200px 1fr;
-  }
-}
-
-/* Container query units */
-.title {
-  font-size: clamp(1.5rem, 4cqi, 3rem); /* 4% of container inline size */
-}
-```
 
 ### CSS :has() Selector
 
@@ -384,9 +361,7 @@ Enables smooth transitions for discrete properties like display.
 .modal {
   display: none;
   opacity: 0;
-  transition:
-    opacity 0.3s ease,
-    display 0.3s ease;
+  transition: opacity 0.3s ease, display 0.3s ease;
   transition-behavior: allow-discrete;
 }
 

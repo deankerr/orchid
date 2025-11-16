@@ -1,9 +1,115 @@
-# Agents: Convex
+# ORCHID Data Philosophy
 
-- Do NOT try to run the dev server or compile functions/API routes. It is not necessary.
-- The contents of the convex directory must successfully type check in order for the dev server to work.
-- Files in the Convex folder cannot use hyphens; a different file naming convention may be necessary.
+## Core Principles
+
+### 1. Derived State is Expendable
+
+All processed data in ORCHID is **derived state** that can be completely regenerated from source snapshots. This fundamental principle shapes every design decision:
+
+- **Projections are expendable**: Any processed data can be voided and regenerated at any time
+- **Snapshots are the source of truth**: Raw API responses are preserved as the authoritative record
+- **Processing is idempotent**: Running the same process multiple times produces identical results
+- **Recovery by regeneration**: Rather than complex data migration, we rebuild from snapshots
+
+### 2. Embrace Uncertainty and Change
+
+The AI model ecosystem is rapidly evolving, and external APIs will change without notice:
+
+- **APIs will break**: OpenRouter's data structures and endpoints will change unexpectedly
+- **Schemas evolve**: New fields appear, old fields disappear, semantics shift over time
+- **Availability fluctuates**: Models and endpoints may vanish temporarily or permanently
+- **Complete rewrites are inevitable**: Major changes may require rebuilding entire systems
+
+**Response Strategy**: Design for adaptability, not perfection. Build systems that can evolve, fail gracefully, and be completely rebuilt when necessary.
+
+### 3. Temporal Awareness
+
+Everything in ORCHID exists within a temporal context defined by snapshots:
+
+- **Data has validity periods**: Each piece of information is valid from one snapshot until superseded
+- **Missing data is meaningful**: Absence of data in an snapshot indicates unavailability
+- **Entities may disappear and return**: Models/endpoints can leave OpenRouter and come back
+- **Historical reconstruction**: Any point-in-time state can be rebuilt from snapshot data
+
+### 4. Graceful Degradation
+
+Systems must continue functioning when individual components fail:
+
+- **Partial data is acceptable**: Continue processing even when some entities fail validation
+- **Individual failures don't cascade**: One bad data point doesn't halt the entire pipeline
+- **Visibility into failures**: Log and track failures without stopping progress
+- **Progressive enhancement**: Core functionality works, additional features enhance the experience
+
+### 5. Query-First Design
+
+Data structures are optimized for read performance and query convenience:
+
+- **Denormalization for speed**: Flatten and duplicate data to eliminate joins
+- **Boolean-heavy filtering**: Most query parameters are feature flags and boolean filters
+- **Predictable access patterns**: Design tables around known query needs
+- **Sub-second responses**: All user-facing queries should be nearly instantaneous
+
+### 6. Projection-Based Thinking
+
+All user-facing data comes from "projections" of the underlying snapshot data:
+
+- **Multiple views of the same data**: Different projections serve different query patterns
+
+### 7. Adaptive Implementation
+
+Plans and implementations evolve based on real-world data and experience:
+
+- **Proposals, not commitments**: All plans are marked as proposals until implemented
+- **Data-driven decisions**: Let actual API responses guide schema design
+- **Iterative refinement**: Build minimal working versions, then enhance based on learnings
+- **Documentation reflects reality**: Update specs when implementation teaches us better approaches
+
+## Design Implications
+
+### Schema Design
+
+- Design for flat, denormalized query structures
+- Validate strictly but continue processing on failures
+
+### Processing Pipelines
+
+- Make all operations idempotent and restartable
+- Track processing state separately from data state
+- Handle partial failures gracefully
+- Enable reprocessing of any historical period
+
+### Error Handling
+
+- Log all failures with context but continue processing
+- Provide visibility into data quality and processing health
+- Design recovery mechanisms for common failure modes
+- Accept that some data will always be imperfect
+
+### API Design
+
+- Include metadata about data freshness and completeness
+- Provide clear indicators when data is stale or missing
+
+## Long-Term Perspective
+
+ORCHID is built to be **resilient to fundamental change**. While we optimize for current needs, we accept that:
+
+- External APIs will evolve beyond our current understanding
+- Data schemas will require complete redesign periodically
+- Processing logic will need major overhauls as the ecosystem changes
+- The only constant is change itself
+
+This philosophy guides us to build systems that can adapt, evolve, and when necessary, be completely rebuilt while preserving the valuable historical data we've collected along the way.
+
+# Convex
+
+- The only requirement for valid convex code is for it to typecheck successfully. Use your linter/LSP tool to confirm this.
+- There is no "typegen" or "routes" that are generated by the server - the `_generated` folder will not contain direct evidence of our endpoints. The types are inferred directly from the endpoints themselves.
+- Files in the Convex folder cannot use hyphens. A pascalCase convention is normally used, even if the rest of the project is kebab-case.
 - Share args/returns validators between convex functions rather than redefining them each time.
+- Use the prefix "v" to indicate a shared validator, e.g. "vNewChatArgs".
+- Convex has first class support for objects as fields on documents, including indexes on nested fields.
+- NEVER try to 'deploy' to convex, this will deploy to production!
 
 ## Utilities
 
@@ -16,89 +122,6 @@ import { v, type Infer } from 'convex/values'
 import { api, components, internal } from './_generated/api'
 import type { Doc, Id, TableNames } from './_generated/dataModel'
 import type { ActionCtx, MutationCtx, QueryCtx } from './_generated/server'
-```
-
-## Production Data Analysis
-
-### `or_views_changes`
-
-```js
-{
-  changeKindDistribution: {
-    create: [417, "9.5%"],
-    delete: [292, "6.6%"],
-    update: [3693, "83.9%"],
-  },
-  changesPerCrawl: {
-    avg: 9.569565217391304,
-    max: 976,
-    median: 3,
-    min: 1,
-  },
-  changesPerDay: {
-    avg: 65.70149253731343,
-    max: 1018,
-    median: 31,
-    min: 2,
-  },
-  crawlCount: 460,
-  dateRange: {
-    earliest: "2025-08-13",
-    latest: "2025-10-19",
-  },
-  dayCount: 67,
-  entityChangeDistribution: [
-    ["endpoint update", [3621, "82.3%"]],
-    ["endpoint create", [318, "7.2%"]],
-    ["endpoint delete", [221, "5.0%"]],
-    ["model create", [87, "2.0%"]],
-    ["model update", [61, "1.4%"]],
-    ["model delete", [61, "1.4%"]],
-    ["provider create", [12, "0.3%"]],
-    ["provider update", [11, "0.2%"]],
-    ["provider delete", [10, "0.2%"]],
-  ],
-  entityDistribution: {
-    endpoint: [4160, "94.5%"],
-    model: [209, "4.7%"],
-    provider: [33, "0.7%"],
-  },
-  topPaths: [
-    ["supported_parameters", 1019, "23.1%"],
-    ["data_policy", 1013, "23.0%"],
-    ["pricing", 668, "15.2%"],
-    ["context_length", 300, "6.8%"],
-    ["limits", 189, "4.3%"],
-    ["provider", 151, "3.4%"],
-    ["quantization", 104, "2.4%"],
-    ["model", 77, "1.7%"],
-    ["status", 33, "0.7%"],
-    ["deranked", 27, "0.6%"],
-    ["description", 19, "0.4%"],
-    ["native_web_search", 17, "0.4%"],
-    ["file_urls", 16, "0.4%"],
-    ["input_modalities", 10, "0.2%"],
-    ["name", 9, "0.2%"],
-  ],
-  topProviders: [
-    ["chutes", 1062, "24.1%"],
-    ["novita", 432, "9.8%"],
-    ["deepinfra", 280, "6.4%"],
-    ["mistral", 256, "5.8%"],
-    ["google-vertex", 214, "4.9%"],
-    ["parasail", 177, "4.0%"],
-    ["mancer", 138, "3.1%"],
-    ["siliconflow", 135, "3.1%"],
-    ["groq", 95, "2.2%"],
-    ["openai", 89, "2.0%"],
-    ["gmicloud", 89, "2.0%"],
-    ["together", 88, "2.0%"],
-    ["google-ai-studio", 70, "1.6%"],
-    ["nebius", 67, "1.5%"],
-    ["hyperbolic", 67, "1.5%"],
-  ],
-  total: 4402,
-}
 ```
 
 ## Common Issues
@@ -173,16 +196,12 @@ export const myAction = action({
 
 ### New function syntax
 
-- ALWAYS use the new function syntax for Convex functions. For example:
-
 ```typescript
 import { v } from 'convex/values'
-
 import { query } from './_generated/server'
 
 export const f = query({
   args: {},
-  returns: v.null(),
   handler: async (ctx, args) => {
     // Function body
   },
@@ -195,7 +214,6 @@ export const f = query({
 
 ```typescript
 import { httpRouter } from 'convex/server'
-
 import { httpAction } from './_generated/server'
 
 const http = httpRouter()
@@ -217,10 +235,9 @@ http.route({
 
 ```typescript
 import { v } from 'convex/values'
-
 import { mutation } from './_generated/server'
 
-export default mutation({
+export const create = mutation({
   args: {
     simpleArray: v.array(v.union(v.string(), v.number())),
   },
@@ -252,23 +269,6 @@ export default defineSchema({
 })
 ```
 
-- You can use the `v.null()` validator when returning a null value. Below is an example query that returns a null value:
-
-```typescript
-import { v } from 'convex/values'
-
-import { query } from './_generated/server'
-
-export const exampleQuery = query({
-  args: {},
-  returns: v.null(),
-  handler: async (ctx, args) => {
-    console.log('This query returns a null value')
-    return null
-  },
-})
-```
-
 - Here are the valid Convex types along with their respective validators:
   Convex Type | TS/JS type | Example Usage | Validator for argument validation and schemas | Notes |
   | ----------- | ------------| -----------------------| -----------------------------------------------| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -285,7 +285,7 @@ export const exampleQuery = query({
 
 ### Function registration
 
-- Use `internalQuery`, `internalMutation`, and `internalAction` to register internal functions. These functions are private and aren't part of an app's API. They can only be called by other Convex functions. These functions are always imported from `./_generated/server`.
+- Use `internalQuery`, `internalMutation`, and `internalAction` to register internal functions. These functions are private and aren't part of an app's public API. They can only be called by other Convex functions. These functions are always imported from `./_generated/server`.
 - Use `query`, `mutation`, and `action` to register public functions. These functions are part of the public API and are exposed to the public Internet. Do NOT use `query`, `mutation`, or `action` to register sensitive internal functions that should be kept private.
 - You CANNOT register a function through the `api` or `internal` objects.
 - Return validators are optional. Typescript can infer the result type anyway. NEVER use `returns: v.any()` - we lose the inferred type.
@@ -301,23 +301,22 @@ export const exampleQuery = query({
 - All of these calls take in a `FunctionReference`. Do NOT try to pass the callee function directly into one of these calls.
 - When using `ctx.runQuery`, `ctx.runMutation`, or `ctx.runAction` to call a function in the same file, specify a type annotation on the return value to work around TypeScript circularity limitations. For example,
 
-```
+```ts
 export const f = query({
   args: { name: v.string() },
   returns: v.string(),
   handler: async (ctx, args) => {
-    return "Hello " + args.name;
+    return 'Hello ' + args.name
   },
-});
+})
 
 export const g = query({
   args: {},
-  returns: v.null(),
   handler: async (ctx, args) => {
-    const result: string = await ctx.runQuery(api.example.f, { name: "Bob" });
-    return null;
+    const result: string = await ctx.runQuery(api.example.f, { name: 'Bob' })
+    return result
   },
-});
+})
 ```
 
 ### Function references
@@ -328,12 +327,6 @@ export const g = query({
 - Convex uses file-based routing, so a public function defined in `convex/example.ts` named `f` has a function reference of `api.example.f`.
 - A private function defined in `convex/example.ts` named `g` has a function reference of `internal.example.g`.
 - Functions can also registered within directories nested within the `convex/` folder. For example, a public function `h` defined in `convex/messages/access.ts` has a function reference of `api.messages.access.h`.
-
-### Api design
-
-- Convex uses file-based routing, so thoughtfully organize files with public query, mutation, or action functions within the `convex/` directory.
-- Use `query`, `mutation`, and `action` to define public functions.
-- Use `internalQuery`, `internalMutation`, and `internalAction` to define private, internal functions.
 
 ### Pagination
 
@@ -363,11 +356,6 @@ Note: `paginationOpts` is an object with the following properties:
 - `numItems`: the maximum number of documents to return (the validator is `v.number()`)
 - `cursor`: the cursor to use to fetch the next page of documents (the validator is `v.union(v.string(), v.null())`)
 - A query that ends in `.paginate()` returns an object that has the following properties: - page (contains an array of documents that you fetches) - isDone (a boolean that represents whether or not this is the last page of documents) - continueCursor (a string that represents the cursor to use to fetch the next page of documents)
-
-## Validator guidelines
-
-- `v.bigint()` is deprecated for representing signed 64-bit integers. Use `v.int64()` instead.
-- Use `v.record()` for defining a record type. `v.map()` and `v.set()` are not supported.
 
 ## Schema guidelines
 
@@ -407,22 +395,21 @@ export const exampleQuery = query({
 - Always use `as const` for string literals in discriminated union types.
 - When using the `Array` type, make sure to always define your arrays as `const array: Array<T> = [...];`
 - When using the `Record` type, make sure to always define your records as `const record: Record<KeyType, ValueType> = {...};`
-- Always add `@types/node` to your `package.json` when using any Node.js built-in modules.
 
 ## Full text search guidelines
 
 - A query for "10 messages in channel '#general' that best match the query 'hello hi' in their body" would look like:
 
+```ts
 const messages = await ctx.db
-.query("messages")
-.withSearchIndex("search_body", (q) =>
-q.search("body", "hello hi").eq("channel", "#general"),
-)
-.take(10);
+  .query('messages')
+  .withSearchIndex('search_body', (q) => q.search('body', 'hello hi').eq('channel', '#general'))
+  .take(10)
+```
 
 ## Query guidelines
 
-- Do NOT use `filter` in queries. Instead, define an index in the schema and use `withIndex` instead.
+- Avoid using `filter` in queries. Instead, define an index in the schema and use `withIndex` instead.
 - Convex queries do NOT support `.delete()`. Instead, `.collect()` the results, iterate over them, and call `ctx.db.delete(row._id)` on each result.
 - Use `.unique()` to get a single document from a query. This method will throw an error if there are multiple documents that match the query.
 - When using async iteration, don't use `.collect()` or `.take(n)` on the result of a query. Instead, use the `for await (const row of query)` syntax.
@@ -440,8 +427,7 @@ q.search("body", "hello hi").eq("channel", "#general"),
 
 ## Action guidelines
 
-- Always add `"use node";` to the top of files containing actions that use Node.js built-in modules.
-- Never use `ctx.db` inside of an action. Actions don't have access to the database.
+- Never use `ctx.db` inside of an action. Actions don't have access to the database, they must use `ctx.runQuery` or `ctx.runMutation`.
 - Below is an example of the syntax for an action:
 
 ```ts
@@ -449,10 +435,8 @@ import { action } from './_generated/server'
 
 export const exampleAction = action({
   args: {},
-  returns: v.null(),
   handler: async (ctx, args) => {
     console.log('This action does not return anything')
-    return null
   },
 })
 ```
@@ -473,9 +457,8 @@ import { internalAction } from './_generated/server'
 
 const empty = internalAction({
   args: {},
-  returns: v.null(),
   handler: async (ctx, args) => {
-    console.log('empty')
+    console.log('Deleting inactive users...')
   },
 })
 
@@ -496,29 +479,29 @@ export default crons
 - The `ctx.storage.getUrl()` method returns a signed URL for a given file. It returns `null` if the file doesn't exist.
 - Do NOT use the deprecated `ctx.storage.getMetadata` call for loading a file's metadata.
 
-                    Instead, query the `_storage` system table. For example, you can use `ctx.db.system.get` to get an `Id<"_storage">`.
+Instead, query the `_storage` system table. For example, you can use `ctx.db.system.get` to get an `Id<"_storage">`.
 
-```
-import { query } from "./_generated/server";
-import { Id } from "./_generated/dataModel";
+```ts
+import { query } from './_generated/server'
+import { Id } from './_generated/dataModel'
 
 type FileMetadata = {
-    _id: Id<"_storage">;
-    _creationTime: number;
-    contentType?: string;
-    sha256: string;
-    size: number;
+  _id: Id<'_storage'>
+  _creationTime: number
+  contentType?: string
+  sha256: string
+  size: number
 }
 
 export const exampleQuery = query({
-    args: { fileId: v.id("_storage") },
-    returns: v.null(),
-    handler: async (ctx, args) => {
-        const metadata: FileMetadata | null = await ctx.db.system.get(args.fileId);
-        console.log(metadata);
-        return null;
-    },
-});
+  args: { fileId: v.id('_storage') },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const metadata: FileMetadata | null = await ctx.db.system.get(args.fileId)
+    console.log(metadata)
+    return null
+  },
+})
 ```
 
 - Convex storage stores items as `Blob` objects. You must convert all items to/from a `Blob` when using Convex storage.
@@ -692,13 +675,7 @@ import { v } from 'convex/values'
 import OpenAI from 'openai'
 
 import { internal } from './_generated/api'
-import {
-  internalAction,
-  internalMutation,
-  internalQuery,
-  mutation,
-  query,
-} from './_generated/server'
+import { internalAction, internalMutation, internalQuery, mutation, query } from './_generated/server'
 
 /**
  * Create a user with a given name.
@@ -893,6 +870,6 @@ export default defineSchema({
 
 ```typescript
 export default function App() {
-  return <div>Hello World</div>;
+  return <div>Hello World</div>
 }
 ```

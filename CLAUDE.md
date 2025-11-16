@@ -1,9 +1,3 @@
----
-description:
-globs:
-alwaysApply: true
----
-
 # Project Brief: ORCHID (OpenRouter Capability & Health Intelligence Dashboard)
 
 ## Overview
@@ -45,3 +39,7 @@ As the AI model ecosystem grows more complex, users of OpenRouter face challenge
 - Create customizable views and filters to narrow down model selection
 - Offer performance insights that help users make informed decisions
 - Maintain a historical view of how models evolve over time
+
+# Notes
+
+- `crawl_id` is the timestamp of when a crawl started, stored as a string. It uniquely identifies a crawl archive bundle. It is sortable, exactly the same as in numeric form. It can be parsed into a Date if needed.
