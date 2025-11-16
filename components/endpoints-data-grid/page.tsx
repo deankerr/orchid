@@ -10,6 +10,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
+import ms from 'ms'
 
 import { api } from '@/convex/_generated/api'
 
@@ -17,15 +18,25 @@ import { useCachedQuery } from '@/hooks/use-cached-query'
 import { attributes } from '@/lib/attributes'
 
 import { DataGrid } from '../data-grid/data-grid'
-import { DataGridCard, DataGridCardContent, DataGridCardToolbar } from '../data-grid/data-grid-card'
+import {
+  DataGridCard,
+  DataGridCardContent,
+  DataGridCardFooter,
+  DataGridCardToolbar,
+} from '../data-grid/data-grid-card'
 import { fuzzyFilter } from '../data-grid/data-grid-fuzzy'
 import { DataGridTableDndVirtual } from '../data-grid/data-grid-table-dnd'
 import { columns } from './columns'
 import { Controls } from './controls'
+import { DataGridFooter } from './footer'
 import { useEndpointFilters } from './use-endpoint-filters'
 
 export function EndpointsDataGrid() {
-  const endpointsList = useCachedQuery(api.db.or.views.endpoints.all, {}, 'endpoints-all')
+  const endpointsList = useCachedQuery(
+    api.endpoints.list,
+    { maxTimeUnavailable: ms('30d') },
+    'endpoints.list',
+  )
   const { globalFilter, sorting, onSortingChange, attributeFilters } = useEndpointFilters()
 
   const filteredEndpoints = useMemo(() => {
@@ -136,6 +147,10 @@ export function EndpointsDataGrid() {
         <DataGridCardContent>
           <DataGridTableDndVirtual handleDragEnd={handleDragEnd} />
         </DataGridCardContent>
+
+        <DataGridCardFooter>
+          <DataGridFooter />
+        </DataGridCardFooter>
       </DataGridCard>
     </DataGrid>
   )

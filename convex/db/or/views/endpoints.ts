@@ -155,6 +155,7 @@ export async function replace(
   return await ctx.db.replace(id, { ...data, updated_at: Date.now() })
 }
 
+// NOTE: deprecated
 export const all = query({
   handler: async (ctx) => {
     return await ctx.db.query(vTable.name).order('desc').collect()
