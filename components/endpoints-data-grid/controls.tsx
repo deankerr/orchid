@@ -35,7 +35,7 @@ export function DataGridControls() {
   const { hasActiveAttributeFilters, clearAttributeFilters } = useEndpointFilters()
 
   return (
-    <>
+    <div className="flex items-center gap-2 px-3 py-4">
       <EndpointsSearchInput />
       <AttributeFilterControls />
 
@@ -49,6 +49,6 @@ export function DataGridControls() {
       <div className="flex-1" />
 
       <DataGridColumnVisibility table={table} trigger={<ColumnsButton />} />
-    </>
+    </div>
   )
 }

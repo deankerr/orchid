@@ -11,15 +11,17 @@ import { EndpointsDataGrid } from '@/components/endpoints-data-grid/page'
 
 export const metadata: Metadata = {
   title: 'Endpoints',
-  description: 'View and compare AI model endpoints available through OpenRouter',
+  description: 'Compare the models and provider endpoint available on OpenRouter',
 }
 
 export default function Page() {
   return (
     <PageContainer className="overflow-hidden px-0 pb-0 sm:px-0 sm:pb-0">
-      <PageHeader className="px-6">
+      <PageHeader>
         <PageTitle>Endpoints</PageTitle>
-        <PageDescription>Browse models and providers available on OpenRouter</PageDescription>
+        <PageDescription>
+          Compare the models and provider endpoint available on OpenRouter
+        </PageDescription>
       </PageHeader>
 
       <Suspense>

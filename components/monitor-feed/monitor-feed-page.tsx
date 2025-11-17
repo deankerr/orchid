@@ -30,9 +30,9 @@ export function MonitorFeed() {
 
   return (
     <ScrollArea className="flex-1 rounded-none border-t" viewportRef={viewportRef} maskHeight={10}>
-      <div className="space-y-7 px-2 py-4 sm:px-3">
+      <div className="space-y-6 px-2 py-4 sm:px-6">
         {results.map(({ crawl_id, data: changes }) => (
-          <div key={crawl_id} className="space-y-5 text-sm">
+          <div key={crawl_id} className="space-y-4 text-sm">
             <TimelineMarker crawl_id={crawl_id} />
 
             <ul className="ml-2 list-disc space-y-4 font-mono leading-loose text-muted-foreground sm:pl-2">

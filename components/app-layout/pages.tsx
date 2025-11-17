@@ -16,7 +16,7 @@ export function PageHeader({ className, ...props }: React.ComponentProps<'div'>)
   return (
     <div
       data-slot="page-header"
-      className={cn('flex shrink-0 flex-col gap-1 bg-background px-2 sm:py-2', className)}
+      className={cn('flex shrink-0 flex-col gap-1 bg-background px-2 sm:px-6 sm:py-2', className)}
       {...props}
     />
   )

@@ -410,7 +410,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
         return formatDateTime(timestamp).split(' ')[0]
       }
     },
-    size: 120,
+    size: 125,
     sortUndefined: -1,
     meta: {
       skeleton: <Skeleton className="h-5 w-full" />,

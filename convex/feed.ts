@@ -81,6 +81,7 @@ export const changesByCrawlId = query({
 
         return batch
           .filter((b) => b.path !== 'provider.icon_url')
+          .filter((b) => b.path !== 'provider.model_id')
           .filter((b) => b.entity_type !== 'provider') // very very few of these, it's fine
       })
 

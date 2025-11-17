@@ -12,8 +12,13 @@ export function DataGridCardToolbar({
   ...props
 }: React.ComponentProps<typeof ScrollArea>) {
   return (
-    <ScrollArea className="shrink-0" maskHeight={10} orientation="horizontal" {...props}>
-      <div className={cn('flex items-center gap-2 px-2 py-4', className)}>{children}</div>
+    <ScrollArea
+      className={cn('shrink-0', className)}
+      maskHeight={10}
+      orientation="horizontal"
+      {...props}
+    >
+      {children}
     </ScrollArea>
   )
 }

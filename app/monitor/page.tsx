@@ -10,15 +10,15 @@ import { MonitorFeed } from '@/components/monitor-feed/monitor-feed-page'
 
 export const metadata: Metadata = {
   title: 'Monitor',
-  description: 'Monitor changes detected between OpenRouter snapshots.',
+  description: 'Changes detected between snapshots of the OpenRouter APIs',
 }
 
 export default function Page() {
   return (
     <PageContainer className="overflow-hidden px-0 pb-0 sm:px-0 sm:pb-0">
-      <PageHeader className="px-6">
+      <PageHeader>
         <PageTitle>Monitor</PageTitle>
-        <PageDescription>Monitor changes detected between OpenRouter snapshots.</PageDescription>
+        <PageDescription>Changes detected between snapshots of the OpenRouter APIs</PageDescription>
       </PageHeader>
 
       <MonitorFeed />
