@@ -1,20 +1,19 @@
 import { useMemo } from 'react'
 
+import { convexQuery } from '@convex-dev/react-query'
+import { useQuery } from '@tanstack/react-query'
 import ms from 'ms'
 
 import { api } from '@/convex/_generated/api'
 import { Doc } from '@/convex/_generated/dataModel'
 
-import { useCachedQuery } from '@/hooks/use-cached-query'
 import { attributes } from '@/lib/attributes'
 
 import { useEndpointFilters } from './use-endpoint-filters'
 
 export function useEndpointsData() {
-  const rawEndpoints = useCachedQuery(
-    api.endpoints.list,
-    { maxTimeUnavailable: ms('30d') },
-    'endpoints.list',
+  const { data: rawEndpoints, isPending } = useQuery(
+    convexQuery(api.endpoints.list, { maxTimeUnavailable: ms('30d') }),
   )
 
   const { attributeFilters } = useEndpointFilters()
@@ -63,9 +62,9 @@ export function useEndpointsData() {
   }, [rawEndpoints, attributeFilters])
 
   return {
-    rawEndpoints,
+    rawEndpoints: rawEndpoints ?? [],
     filteredEndpoints,
-    isLoading: !rawEndpoints,
+    isLoading: isPending,
   }
 }
 
