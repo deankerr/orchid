@@ -1,7 +1,22 @@
 {
   "permissions": {
     "allow": [
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "mcp__linear-server__list_teams",
+      "mcp__linear-server__list_users",
+      "mcp__linear-server__list_projects",
+      "mcp__linear-server__list_issues",
+      "mcp__linear-server__list_issue_labels",
+      "mcp__linear-server__get_issue",
+      "mcp__linear-server__create_issue_label",
+      "mcp__linear-server__create_project",
+      "mcp__linear-server__update_issue",
+      "mcp__linear-server__update_project",
+      "mcp__linear-server__create_issue",
+      "mcp__convex__status",
+      "mcp__convex__tables",
+      "mcp__convex__data",
+      "mcp__convex__logs"
     ],
     "deny": [],
     "ask": []
