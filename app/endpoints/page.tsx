@@ -7,6 +7,7 @@ import {
   PageHeader,
   PageTitle,
 } from '@/components/app-layout/pages'
+import { ClientOnly } from '@/components/client-only'
 import { EndpointsDataGrid } from '@/components/endpoints-data-grid/page'
 
 export const metadata: Metadata = {
@@ -25,7 +26,9 @@ export default function Page() {
       </PageHeader>
 
       <Suspense>
-        <EndpointsDataGrid />
+        <ClientOnly>
+          <EndpointsDataGrid />
+        </ClientOnly>
       </Suspense>
     </PageContainer>
   )
