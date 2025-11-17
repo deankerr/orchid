@@ -16,7 +16,10 @@
       "mcp__convex__status",
       "mcp__convex__tables",
       "mcp__convex__data",
-      "mcp__convex__logs"
+      "mcp__convex__logs",
+      "WebFetch(domain:docs.convex.dev)",
+      "WebFetch(domain:tanstack.com)",
+      "WebSearch"
     ],
     "deny": [],
     "ask": []

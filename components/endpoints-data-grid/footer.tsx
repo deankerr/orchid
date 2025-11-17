@@ -4,10 +4,10 @@ import { useEndpointFilters } from './use-endpoint-filters'
 
 export function DataGridFooter() {
   const { table } = useDataGrid()
-  const { rawEndpoints } = useEndpointsData()
+  const { rawEndpoints, isLoading } = useEndpointsData()
   const { hasActiveFilters } = useEndpointFilters()
 
-  if (!rawEndpoints) return null
+  if (isLoading) return null
 
   const filteredEndpoints = table.getFilteredRowModel().rows.map((row) => row.original)
 
