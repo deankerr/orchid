@@ -1,4 +1,4 @@
-import { compareItems, RankingInfo, rankItem } from '@tanstack/match-sorter-utils'
+import { compareItems, RankingInfo, rankings, rankItem } from '@tanstack/match-sorter-utils'
 import { FilterFn, SortingFn, sortingFns } from '@tanstack/react-table'
 
 declare module '@tanstack/react-table' {
@@ -13,7 +13,9 @@ declare module '@tanstack/react-table' {
 
 export const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
   // Rank the item
-  const itemRank = rankItem(row.getValue(columnId), value)
+  const itemRank = rankItem(row.getValue(columnId), value, {
+    threshold: rankings.WORD_STARTS_WITH,
+  })
 
   // Store the itemRank info
   addMeta({ itemRank })
