@@ -1,12 +1,11 @@
 'use client'
 
-import Link from 'next/link'
-
 import { usePaginatedQuery } from 'convex-helpers/react/cache/hooks'
 
 import { api } from '@/convex/_generated/api'
 import { ChangeDoc } from '@/convex/feed'
 
+import { useEntitySheet } from '@/components/entity-sheet/use-entity-sheet'
 import { ChangeValuePair } from '@/components/monitor-feed/monitor-feed-values'
 import { EntityAvatar } from '@/components/shared/entity-avatar'
 import { PaginatedLoadButton } from '@/components/shared/paginated-load-button'
@@ -77,21 +76,15 @@ function FeedItem({ change }: { change: ChangeDoc }) {
     <li className="[&>span]:font-normal">
       {change.entity_type === 'model' && 'model '}
       {'provider_tag_slug' in change && (
-        <Link
-          href={`https://openrouter.ai/provider/${change.provider_slug}`}
-          className="underline decoration-primary/40 decoration-dotted underline-offset-3 transition-colors duration-200 hover:decoration-primary/60"
-        >
-          <EntityBadgeInline slug={change.provider_tag_slug} />
-        </Link>
+        <span className="underline decoration-primary/40 decoration-dotted underline-offset-3">
+          <EntityBadgeInline slug={change.provider_tag_slug} type="provider" />
+        </span>
       )}
       {change.entity_type === 'endpoint' && ' endpoint for '}
       {'model_slug' in change && (
-        <Link
-          href={`https://openrouter.ai/${change.model_slug}`}
-          className="underline decoration-primary/40 decoration-dotted underline-offset-3 transition-colors duration-200 hover:decoration-primary/60"
-        >
-          <EntityBadgeInline slug={change.model_slug} />
-        </Link>
+        <span className="underline decoration-primary/40 decoration-dotted underline-offset-3">
+          <EntityBadgeInline slug={change.model_slug} type="model" />
+        </span>
       )}{' '}
       was {actionText}
       {change.change_kind === 'update' && (
@@ -111,11 +104,33 @@ function FeedItem({ change }: { change: ChangeDoc }) {
   )
 }
 
-function EntityBadgeInline({ slug }: { slug: string }) {
+function EntityBadgeInline({
+  slug,
+  type,
+}: {
+  slug: string
+  type: 'model' | 'provider'
+}) {
+  const { openModel, openProvider } = useEntitySheet()
+
+  const handleClick = () => {
+    if (type === 'model') {
+      openModel(slug)
+    } else {
+      // Extract base slug for providers (remove region suffix)
+      const [baseSlug] = slug.split('/')
+      openProvider(baseSlug)
+    }
+  }
+
   return (
-    <span className="text-foreground">
+    <button
+      type="button"
+      onClick={handleClick}
+      className="inline text-foreground hover:opacity-80"
+    >
       <EntityAvatar className="mr-1.5 size-4.5 align-text-bottom" slug={slug} />
       {slug}
-    </span>
+    </button>
   )
 }

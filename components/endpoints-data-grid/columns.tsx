@@ -10,7 +10,7 @@ import { formatDateTime, formatPrice } from '@/lib/formatters'
 
 import { fuzzySort } from '../data-grid/data-grid-fuzzy'
 import { AttributeBadge, AttributeBadgeName, AttributeBadgeSet } from '../shared/attribute-badge'
-import { EntityBadge } from '../shared/entity-badge'
+import { ModelBadge, ProviderBadge } from '../shared/entity-badge'
 import { PricingBadgeSet } from '../shared/pricing-badges'
 
 export type EndpointRow = Doc<'or_views_endpoints'>
@@ -24,7 +24,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
     ),
     cell: ({ row }) => {
       const endpoint = row.original
-      return <EntityBadge name={endpoint.model.name} slug={endpoint.model.slug} />
+      return <ModelBadge slug={endpoint.model.slug} />
     },
     size: 260,
     sortingFn: fuzzySort,
@@ -50,7 +50,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
       return (
         <div className="flex items-center gap-1">
           <div className="grow">
-            <EntityBadge name={endpoint.provider.name} slug={endpoint.provider.tag_slug} />
+            <ProviderBadge slug={endpoint.provider.tag_slug} />
           </div>
 
           {endpointGone.has ? (
@@ -410,7 +410,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
         return formatDateTime(timestamp).split(' ')[0]
       }
     },
-    size: 125,
+    size: 135,
     sortUndefined: -1,
     meta: {
       skeleton: <Skeleton className="h-5 w-full" />,

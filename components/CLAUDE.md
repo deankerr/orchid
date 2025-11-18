@@ -62,6 +62,17 @@ ORCHID serves highly technical users who work with OpenRouter and LLMs professio
 - Use a shadcn/ui-inspired structure for components, a single file which exports composable component parts, allowing for dynamic customization.
 - Use named exports only. NEVER use default exports.
 
+### Presentation Component Design
+
+When creating reusable presentation components (like DataList, Card, etc.), follow shadcn's philosophy:
+
+- **Use semantic HTML** - `<dl>/<dt>/<dd>`, `<article>`, `<section>`, etc.
+- **Composable primitives** - Break into small, focused components instead of prop-heavy monoliths
+- **No conditional logic** - Pure presentation, no business logic or prop-based rendering
+- **Full flexibility** - Accept `className` and `...props` on every component for overrides
+
+Example: DataList exports `DataList`, `DataListItem`, `DataListLabel`, `DataListValue` as separate primitives, not one component with label/value props.
+
 ### Component File Structure/Locations
 
 - Route components (layouts, pages): `app/[relevant directory]`

@@ -17,8 +17,8 @@ import { FeedTreeContent, FeedTreeGroup, FeedTreeItem, FeedTreeTrigger } from '.
 const DEFAULT_EXPAND_ALL_GROUPS = true
 
 export function FeedTree() {
-  useCachedQuery(api.db.or.views.providers.list, {})
-  useCachedQuery(api.db.or.views.models.list, {})
+  useCachedQuery(api.providers.list, {})
+  useCachedQuery(api.models.list, {})
   const items = usePaginatedQuery(api.dev.feedTree.feedTreeItems, {}, { initialNumItems: 50 })
 
   const itemsByCrawlId = groupBy(items.results, (item) => item.crawl_id)

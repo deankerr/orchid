@@ -30,8 +30,8 @@ export function OREntityCombobox({
 }) {
   const [open, setOpen] = useState(false)
 
-  const models = useCachedQuery(api.db.or.views.models.list, {}, 'models-list')
-  const providers = useCachedQuery(api.db.or.views.providers.list, {}, 'providers-list')
+  const models = useCachedQuery(api.models.list, {}, 'models-list')
+  const providers = useCachedQuery(api.providers.list, {}, 'providers-list')
 
   const isLoading = models === undefined || providers === undefined
 
