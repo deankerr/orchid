@@ -1,4 +1,5 @@
 import { v, type Infer } from 'convex/values'
+import * as R from 'remeda'
 import { z } from 'zod'
 
 import { db } from '@/convex/db'
@@ -66,7 +67,15 @@ export function materializeModelEndpoints(bundle: CrawlArchiveBundle) {
     providersMap.set(provider.slug, provider)
   }
 
-  if (issues.length) console.error('[materialize:endpoints]', { issues })
+  if (issues.length) {
+    const consolidatedIssues = R.pipe(
+      issues,
+      R.countBy((x) => x),
+      R.entries(),
+      R.map(([msg, count]) => (count > 1 ? `${msg} (x${count})` : msg)),
+    )
+    console.error('[materialize:endpoints]', { issues: consolidatedIssues })
+  }
 
   return {
     models: Array.from(modelsMap.values()),
