@@ -49,39 +49,57 @@ export const columns: ColumnDef<EndpointRow>[] = [
     ),
     cell: ({ row }) => {
       const endpoint = row.original
-
-      const endpointGone = getEndpointAttributeData(endpoint, 'gone')
-
       return (
-        <div className="flex items-center gap-1">
-          <div className="grow">
-            <EntitySheetTrigger type="provider" slug={endpoint.provider.slug} asChild>
-              <EntityBadge name={endpoint.provider.name} slug={endpoint.provider.tag_slug} />
-            </EntitySheetTrigger>
-          </div>
-
-          {endpointGone.has ? (
-            <AttributeBadge
-              sprite={endpointGone.icon}
-              name={endpointGone.name}
-              details={endpointGone.details}
-              color={endpointGone.color}
-              variant="soft"
-            />
-          ) : endpoint.disabled ? (
-            <AttributeBadgeName name="disabled" />
-          ) : endpoint.deranked ? (
-            <AttributeBadgeName name="deranked" />
-          ) : null}
-        </div>
+        <EntitySheetTrigger type="provider" slug={endpoint.provider.slug} asChild>
+          <EntityBadge name={endpoint.provider.name} slug={endpoint.provider.tag_slug} />
+        </EntitySheetTrigger>
       )
     },
-    size: 260,
+    size: 230,
     sortingFn: fuzzySort,
     enableHiding: false,
     meta: {
       skeleton: <Skeleton className="h-8 w-full" />,
       headerTitle: 'Provider',
+    },
+  },
+
+  {
+    id: 'status',
+    header: ({ column }) => (
+      <div className="grow text-center">
+        <DataGridColumnHeader column={column} title="STATUS" />
+      </div>
+    ),
+    cell: ({ row }) => {
+      const endpoint = row.original
+      const endpointGone = getEndpointAttributeData(endpoint, 'gone')
+      let content = null
+
+      if (endpointGone.has) {
+        content = (
+          <AttributeBadge
+            sprite={endpointGone.icon}
+            name={endpointGone.name}
+            details={endpointGone.details}
+            color={endpointGone.color}
+            variant="soft"
+          />
+        )
+      } else if (endpoint.disabled) {
+        content = <AttributeBadgeName name="disabled" />
+      } else if (endpoint.deranked) {
+        content = <AttributeBadgeName name="deranked" />
+      }
+
+      return content ? <div className="flex justify-center">{content}</div> : null
+    },
+    size: 110,
+    enableHiding: true,
+    meta: {
+      skeleton: <Skeleton className="h-8 w-full" />,
+      headerTitle: 'Status',
+      cellClassName: 'justify-center',
     },
   },
 
