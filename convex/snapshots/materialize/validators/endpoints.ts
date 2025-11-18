@@ -22,17 +22,17 @@ export const EndpointTransformSchema = z
     provider_display_name: z.string(),
     provider_slug: z.string(),
     provider_model_id: z.string(),
-    provider_region: z.string().nullable(),
+    provider_region: z.string().nullish(),
 
-    max_prompt_tokens: z.number().nullable(),
-    max_completion_tokens: z.number().nullable(),
-    max_prompt_images: z.number().nullable(),
-    max_tokens_per_image: z.number().nullable(),
-    limit_rpm: z.number().nullable(),
-    limit_rpd: z.number().nullable(),
+    max_prompt_tokens: z.number().nullish(),
+    max_completion_tokens: z.number().nullish(),
+    max_prompt_images: z.number().nullish(),
+    max_tokens_per_image: z.number().nullish(),
+    limit_rpm: z.number().nullish(),
+    limit_rpd: z.number().nullish(),
 
     variant: z.string(),
-    quantization: z.string().nullable(),
+    quantization: z.string().nullish(),
     supported_parameters: z.array(z.string()).transform((arr) => arr.sort()),
 
     data_policy: z.object({

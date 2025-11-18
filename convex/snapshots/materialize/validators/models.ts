@@ -5,7 +5,7 @@ import { getIconUrl } from '../../shared/icons'
 export const ModelTransformSchema = z
   .object({
     slug: z.string(),
-    hf_slug: z.string().nullable(),
+    hf_slug: z.string().nullish(),
     created_at: z
       .string()
       .transform((val) => Date.parse(val))
@@ -16,8 +16,8 @@ export const ModelTransformSchema = z
     context_length: z.number(),
     input_modalities: z.array(z.string()).transform((arr) => arr.sort()),
     output_modalities: z.array(z.string()).transform((arr) => arr.sort()),
-    group: z.string().nullable(),
-    instruct_type: z.string().nullable(),
+    group: z.string().nullish(),
+    instruct_type: z.string().nullish(),
     promotion_message: z.string().nullish(),
     warning_message: z.string().nullish(),
     permaslug: z.string(),
@@ -26,7 +26,7 @@ export const ModelTransformSchema = z
         start_token: z.string(),
         end_token: z.string(),
       })
-      .nullable(),
+      .nullish(),
     // only available in some contexts
     endpoint: z
       .object({
