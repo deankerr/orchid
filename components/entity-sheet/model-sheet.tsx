@@ -1,8 +1,5 @@
-'use client'
-
 import { convexQuery } from '@convex-dev/react-query'
 import { useQuery } from '@tanstack/react-query'
-import { toast } from 'sonner'
 
 import { api } from '@/convex/_generated/api'
 
@@ -11,12 +8,10 @@ import { SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { DataList, DataListItem, DataListLabel, DataListValue } from '../shared/data-list'
 import { EntityBadge } from '../shared/entity-badge'
 import { ExternalLink } from '../shared/external-link'
+import { EntitySheetTrigger } from './entity-sheet'
 import { EntitySheetHeader, EntitySheetSection } from './entity-sheet-components'
-import { useEntitySheet } from './use-entity-sheet'
 
 export function ModelSheet({ slug }: { slug: string }) {
-  const { openProvider } = useEntitySheet()
-
   const { data: model, isPending: modelPending } = useQuery(
     convexQuery(api.models.getBySlug, { slug }),
   )
@@ -51,27 +46,13 @@ export function ModelSheet({ slug }: { slug: string }) {
     )
   }
 
-  const handleCopySlug = async () => {
-    try {
-      await navigator.clipboard.writeText(model.slug)
-      toast.success(`Copied to clipboard: ${model.slug}`)
-    } catch (err) {
-      console.error('Failed to copy text: ', err)
-    }
-  }
-
   return (
     <>
       <SheetTitle className="sr-only">{model.name}</SheetTitle>
       <div className="flex flex-col gap-6">
         {/* Header */}
         <SheetHeader>
-          <EntitySheetHeader
-            type="model"
-            slug={model.slug}
-            name={model.name}
-            onSlugClick={handleCopySlug}
-          />
+          <EntitySheetHeader type="model" slug={model.slug} name={model.name} />
         </SheetHeader>
 
         {/* External Links */}
@@ -136,11 +117,9 @@ export function ModelSheet({ slug }: { slug: string }) {
                   key={endpoint._id}
                   className="flex items-center justify-between rounded-xs border p-2"
                 >
-                  <EntityBadge
-                    name={endpoint.provider.name}
-                    slug={endpoint.provider.tag_slug}
-                    onBadgeClick={() => openProvider(endpoint.provider.slug)}
-                  />
+                  <EntitySheetTrigger type="provider" slug={endpoint.provider.slug} asChild>
+                    <EntityBadge name={endpoint.provider.name} slug={endpoint.provider.tag_slug} />
+                  </EntitySheetTrigger>
                   {endpoint.provider.region && (
                     <span className="font-mono text-xs text-muted-foreground">
                       {endpoint.provider.region}

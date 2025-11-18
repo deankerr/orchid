@@ -9,8 +9,9 @@ import { getEndpointAttributeData } from '@/lib/attributes'
 import { formatDateTime, formatPrice } from '@/lib/formatters'
 
 import { fuzzySort } from '../data-grid/data-grid-fuzzy'
+import { EntitySheetTrigger } from '../entity-sheet/entity-sheet'
 import { AttributeBadge, AttributeBadgeName, AttributeBadgeSet } from '../shared/attribute-badge'
-import { ModelBadge, ProviderBadge } from '../shared/entity-badge'
+import { EntityBadge } from '../shared/entity-badge'
 import { PricingBadgeSet } from '../shared/pricing-badges'
 
 export type EndpointRow = Doc<'or_views_endpoints'>
@@ -24,7 +25,11 @@ export const columns: ColumnDef<EndpointRow>[] = [
     ),
     cell: ({ row }) => {
       const endpoint = row.original
-      return <ModelBadge slug={endpoint.model.slug} />
+      return (
+        <EntitySheetTrigger type="model" slug={endpoint.model.slug} asChild>
+          <EntityBadge name={endpoint.model.name} slug={endpoint.model.slug} />
+        </EntitySheetTrigger>
+      )
     },
     size: 260,
     sortingFn: fuzzySort,
@@ -50,7 +55,9 @@ export const columns: ColumnDef<EndpointRow>[] = [
       return (
         <div className="flex items-center gap-1">
           <div className="grow">
-            <ProviderBadge slug={endpoint.provider.tag_slug} />
+            <EntitySheetTrigger type="provider" slug={endpoint.provider.slug} asChild>
+              <EntityBadge name={endpoint.provider.name} slug={endpoint.provider.tag_slug} />
+            </EntitySheetTrigger>
           </div>
 
           {endpointGone.has ? (

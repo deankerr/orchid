@@ -5,9 +5,9 @@ import { usePaginatedQuery } from 'convex-helpers/react/cache/hooks'
 import { api } from '@/convex/_generated/api'
 import { ChangeDoc } from '@/convex/feed'
 
-import { useEntitySheet } from '@/components/entity-sheet/use-entity-sheet'
+import { EntitySheetTrigger } from '@/components/entity-sheet/entity-sheet'
 import { ChangeValuePair } from '@/components/monitor-feed/monitor-feed-values'
-import { EntityAvatar } from '@/components/shared/entity-avatar'
+import { EntityInline } from '@/components/shared/entity-badge'
 import { PaginatedLoadButton } from '@/components/shared/paginated-load-button'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -76,15 +76,21 @@ function FeedItem({ change }: { change: ChangeDoc }) {
     <li className="[&>span]:font-normal">
       {change.entity_type === 'model' && 'model '}
       {'provider_tag_slug' in change && (
-        <span className="underline decoration-primary/40 decoration-dotted underline-offset-3">
-          <EntityBadgeInline slug={change.provider_tag_slug} type="provider" />
-        </span>
+        <EntitySheetTrigger type="provider" slug={change.provider_slug} asChild>
+          <EntityInline
+            slug={change.provider_tag_slug}
+            className="text-primary underline decoration-primary/40 decoration-dotted underline-offset-3"
+          />
+        </EntitySheetTrigger>
       )}
       {change.entity_type === 'endpoint' && ' endpoint for '}
       {'model_slug' in change && (
-        <span className="underline decoration-primary/40 decoration-dotted underline-offset-3">
-          <EntityBadgeInline slug={change.model_slug} type="model" />
-        </span>
+        <EntitySheetTrigger type="model" slug={change.model_slug} asChild>
+          <EntityInline
+            slug={change.model_slug}
+            className="text-primary underline decoration-primary/40 decoration-dotted underline-offset-3"
+          />
+        </EntitySheetTrigger>
       )}{' '}
       was {actionText}
       {change.change_kind === 'update' && (
@@ -101,36 +107,5 @@ function FeedItem({ change }: { change: ChangeDoc }) {
         </>
       )}
     </li>
-  )
-}
-
-function EntityBadgeInline({
-  slug,
-  type,
-}: {
-  slug: string
-  type: 'model' | 'provider'
-}) {
-  const { openModel, openProvider } = useEntitySheet()
-
-  const handleClick = () => {
-    if (type === 'model') {
-      openModel(slug)
-    } else {
-      // Extract base slug for providers (remove region suffix)
-      const [baseSlug] = slug.split('/')
-      openProvider(baseSlug)
-    }
-  }
-
-  return (
-    <button
-      type="button"
-      onClick={handleClick}
-      className="inline text-foreground hover:opacity-80"
-    >
-      <EntityAvatar className="mr-1.5 size-4.5 align-text-bottom" slug={slug} />
-      {slug}
-    </button>
   )
 }

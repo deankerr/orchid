@@ -4,7 +4,7 @@ import { usePaginatedQuery } from 'convex/react'
 
 import { api } from '@/convex/_generated/api'
 
-import { ProviderBadge } from '@/components/shared/entity-badge'
+import { EntityBadge } from '@/components/shared/entity-badge'
 import { PaginatedLoadButton } from '@/components/shared/paginated-load-button'
 import { Badge } from '@/components/ui/badge'
 import { useCachedQuery } from '@/hooks/use-cached-query'
@@ -17,7 +17,7 @@ import { FeedTreeContent, FeedTreeGroup, FeedTreeItem, FeedTreeTrigger } from '.
 const DEFAULT_EXPAND_ALL_GROUPS = true
 
 export function FeedTree() {
-  useCachedQuery(api.providers.list, {})
+  const providersList = useCachedQuery(api.providers.list, {})
   useCachedQuery(api.models.list, {})
   const items = usePaginatedQuery(api.dev.feedTree.feedTreeItems, {}, { initialNumItems: 50 })
 
@@ -48,6 +48,9 @@ export function FeedTree() {
                     .map(({ key: provider_tag_slug, items: providerItems }) => {
                       const itemsByModel = groupBy(providerItems, (item) => item.model_slug)
                       const providerValue = `${crawl_id}-${provider_tag_slug}`
+                      const providerName =
+                        providersList?.find((p) => p.slug === provider_tag_slug.split('/')[0])
+                          ?.name ?? ''
 
                       return (
                         <FeedTreeGroup
@@ -56,7 +59,7 @@ export function FeedTree() {
                         >
                           <FeedTreeItem value={providerValue}>
                             <FeedTreeTrigger>
-                              <ProviderBadge slug={provider_tag_slug} />
+                              <EntityBadge name={providerName} slug={provider_tag_slug} />
                             </FeedTreeTrigger>
                             <FeedTreeContent className="space-y-3 pt-3">
                               {itemsByModel

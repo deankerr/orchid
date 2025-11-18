@@ -6,8 +6,6 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
 
 import { App } from '@/components/app-layout/app'
-import { EntitySheet } from '@/components/entity-sheet/entity-sheet'
-import { EntitySheetProvider } from '@/components/entity-sheet/use-entity-sheet'
 import { Toaster } from '@/components/ui/sonner'
 
 import { ConvexClientProvider } from './convex-client-provider'
@@ -56,10 +54,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} dark font-sans antialiased`}>
         <NuqsAdapter>
           <ConvexClientProvider>
-            <EntitySheetProvider>
-              <App>{children}</App>
-              <EntitySheet />
-            </EntitySheetProvider>
+            <App>{children}</App>
           </ConvexClientProvider>
         </NuqsAdapter>
         <Toaster position="top-center" />

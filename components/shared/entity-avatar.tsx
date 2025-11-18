@@ -17,14 +17,20 @@ export function EntityAvatar({
   return (
     <span
       className={cn(
-        '@container inline-flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-sm border border-neutral-700/50 bg-muted text-sm select-none',
+        '@container relative inline-flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-sm border border-neutral-700/50 bg-muted text-sm select-none',
         className,
       )}
       style={{ background: style?.background }}
       {...props}
     >
       {url ? (
-        <Image src={url} alt="" width={28} height={28} style={{ scale: style?.scale ?? 0.75 }} />
+        <Image
+          src={url}
+          alt=""
+          fill
+          className="object-contain"
+          style={{ scale: style?.scale ?? 0.75 }}
+        />
       ) : (
         <span className="font-mono text-[55cqi] text-foreground/90 uppercase">
           {(fallbackText || slug).replace(/[^a-zA-Z0-9]/g, '').slice(0, 2)}
