@@ -74,7 +74,15 @@ function FeedItem({ change }: { change: ChangeDoc }) {
 
   return (
     <li className="[&>span]:font-normal">
-      {change.entity_type === 'model' && 'model '}
+      {change.entity_type !== 'endpoint' && `${change.entity_type} `}
+      {change.entity_type === 'provider' && (
+        <EntitySheetTrigger type="provider" slug={change.provider_slug} asChild>
+          <EntityInline
+            slug={change.provider_slug}
+            className="text-primary underline decoration-primary/40 decoration-dotted underline-offset-3"
+          />
+        </EntitySheetTrigger>
+      )}
       {'provider_tag_slug' in change && (
         <EntitySheetTrigger type="provider" slug={change.provider_slug} asChild>
           <EntityInline

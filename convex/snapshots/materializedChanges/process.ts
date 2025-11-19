@@ -14,11 +14,25 @@ const DIFF_OPTIONS: DiffOptions = {
   keysToSkip: [
     'updated_at',
     'unavailable_at',
+
+    // model/provider
+    'icon_url',
+    'or_added_at',
+
+    // endpoint
     'stats',
     'status',
-    'or_added_at',
-    'model.or_added_at',
+    // denormalised model/provider fields in endpoint doc
+    'provider.slug',
+    'provider.name',
     'provider.icon_url',
+    'provider.model_id',
+    'provider.region',
+    'model.name',
+    'model.icon_url',
+    'model.author_slug',
+    'model.author_name',
+    'model.or_added_at',
   ],
   embeddedObjKeys: {
     // models

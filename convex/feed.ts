@@ -80,9 +80,6 @@ export const changesByCrawlId = query({
           .collect()
 
         return batch
-          .filter((b) => b.path !== 'provider.icon_url')
-          .filter((b) => b.path !== 'provider.model_id')
-          .filter((b) => b.entity_type !== 'provider') // very very few of these, it's fine
       })
 
     const batchResults: { crawl_id: string; data: ChangeDoc[] }[] = []
@@ -93,7 +90,7 @@ export const changesByCrawlId = query({
     for await (const batch of batchStream) {
       cycles++
 
-      const crawl_id = batch?.[0].crawl_id
+      const crawl_id = batch?.[0]?.crawl_id
       if (crawl_id) {
         const sortedBatch = sortChanges(batch)
         batchResults.push({ crawl_id, data: sortedBatch })
