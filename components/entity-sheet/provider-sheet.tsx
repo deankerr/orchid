@@ -5,20 +5,20 @@ import { api } from '@/convex/_generated/api'
 
 import { SheetHeader, SheetTitle } from '@/components/ui/sheet'
 
+import { useEndpointFilters } from '../endpoints-data-grid/use-endpoint-filters'
+import { ActionLink } from '../shared/action-link'
 import { DataList, DataListItem, DataListLabel, DataListValue } from '../shared/data-list'
-import { EntityBadge } from '../shared/entity-badge'
 import { ExternalLink } from '../shared/external-link'
 import { EntityChanges } from './entity-changes'
-import { EntitySheetTrigger } from './entity-sheet'
+import { useEntitySheet } from './entity-sheet'
 import { EntitySheetHeader, EntitySheetSection } from './entity-sheet-components'
 
 export function ProviderSheet({ slug }: { slug: string }) {
+  const { setFocusSearch } = useEndpointFilters()
+  const { close } = useEntitySheet()
+
   const { data: provider, isPending: providerPending } = useQuery(
     convexQuery(api.providers.getBySlug, { slug }),
-  )
-
-  const { data: endpoints, isPending: endpointsPending } = useQuery(
-    convexQuery(api.endpoints.listForProvider, { providerSlug: slug }),
   )
 
   const { data: changes, isPending: changesPending } = useQuery(
@@ -106,26 +106,19 @@ export function ProviderSheet({ slug }: { slug: string }) {
         </EntitySheetSection>
 
         {/* Related Endpoints Section */}
-        <EntitySheetSection title="Endpoints" count={endpoints?.length ?? '...'}>
-          {endpointsPending ? (
-            <div className="text-sm text-muted-foreground">Loading endpoints...</div>
-          ) : endpoints && endpoints.length > 0 ? (
-            <div className="space-y-2">
-              {endpoints.map((endpoint) => (
-                <div
-                  key={endpoint._id}
-                  className="flex items-center justify-between rounded-xs border p-2"
-                >
-                  <EntitySheetTrigger type="model" slug={endpoint.model.slug} asChild>
-                    <EntityBadge name={endpoint.model.name} slug={endpoint.model.slug} />
-                  </EntitySheetTrigger>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-sm text-muted-foreground">No endpoints found</div>
-          )}
-        </EntitySheetSection>
+        <EntitySheetSection
+          title="Endpoints"
+          action={
+            <ActionLink
+              onClick={() => {
+                setFocusSearch(provider.slug)
+                close()
+              }}
+            >
+              Find all Endpoints
+            </ActionLink>
+          }
+        />
 
         {/* Change History Section */}
         <EntityChanges changes={changes} isPending={changesPending} />

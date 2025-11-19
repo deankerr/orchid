@@ -24,19 +24,24 @@ export function EntitySheetHeader({
 export function EntitySheetSection({
   title,
   count,
+  action,
   children,
   className,
   ...props
 }: {
   title: string
   count?: number | string
-  children: React.ReactNode
+  action?: React.ReactNode
+  children?: React.ReactNode
 } & React.ComponentProps<'div'>) {
   return (
     <div className={cn('space-y-2 px-4', className)} {...props}>
       <div className="flex items-center justify-between font-mono text-xs text-muted-foreground uppercase">
         <div>{title}</div>
-        {count !== undefined && <div>{count}</div>}
+        <div className="flex items-center gap-2">
+          {action}
+          {count !== undefined && <div>{count}</div>}
+        </div>
       </div>
       {children}
     </div>

@@ -43,7 +43,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
 
   {
     id: 'provider',
-    accessorFn: (row) => row.provider.name,
+    accessorFn: (row) => `${row.provider.name} ${row.provider.slug}`,
     header: ({ column }) => (
       <DataGridColumnHeader column={column} title="PROVIDER" className="justify-start" />
     ),
