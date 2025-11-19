@@ -13,5 +13,5 @@ export function DataListLabel({ className, ...props }: React.ComponentProps<'dt'
 }
 
 export function DataListValue({ className, ...props }: React.ComponentProps<'dd'>) {
-  return <dd className={cn('font-mono text-sm', className)} {...props} />
+  return <dd className={cn('text-right font-mono text-sm', className)} {...props} />
 }

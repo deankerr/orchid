@@ -23,16 +23,21 @@ export function EntitySheetHeader({
 
 export function EntitySheetSection({
   title,
+  count,
   children,
   className,
   ...props
 }: {
   title: string
+  count?: number | string
   children: React.ReactNode
 } & React.ComponentProps<'div'>) {
   return (
-    <div className={cn('space-y-3 px-4', className)} {...props}>
-      <h3 className="font-mono text-xs text-muted-foreground uppercase">{title}</h3>
+    <div className={cn('space-y-2 px-4', className)} {...props}>
+      <div className="flex items-center justify-between font-mono text-xs text-muted-foreground uppercase">
+        <div>{title}</div>
+        {count !== undefined && <div>{count}</div>}
+      </div>
       {children}
     </div>
   )

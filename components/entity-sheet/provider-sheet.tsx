@@ -8,6 +8,7 @@ import { SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { DataList, DataListItem, DataListLabel, DataListValue } from '../shared/data-list'
 import { EntityBadge } from '../shared/entity-badge'
 import { ExternalLink } from '../shared/external-link'
+import { EntityChanges } from './entity-changes'
 import { EntitySheetTrigger } from './entity-sheet'
 import { EntitySheetHeader, EntitySheetSection } from './entity-sheet-components'
 
@@ -49,16 +50,16 @@ export function ProviderSheet({ slug }: { slug: string }) {
   return (
     <>
       <SheetTitle className="sr-only">{provider.name}</SheetTitle>
-      <div className="flex flex-col gap-6">
-        {/* Header */}
-        <SheetHeader>
-          <EntitySheetHeader type="provider" slug={provider.slug} name={provider.name} />
-        </SheetHeader>
+      {/* Header */}
+      <SheetHeader>
+        <EntitySheetHeader type="provider" slug={provider.slug} name={provider.name} />
+      </SheetHeader>
 
+      <div className="flex flex-col gap-6 pb-6 text-sm">
         {/* OpenRouter Link */}
-        <div className="px-4">
+        <div className="flex flex-col items-end gap-1 px-4 text-right">
           <ExternalLink href={`https://openrouter.ai/providers/${provider.slug}`}>
-            View on OpenRouter
+            OpenRouter
           </ExternalLink>
         </div>
 
@@ -105,7 +106,7 @@ export function ProviderSheet({ slug }: { slug: string }) {
         </EntitySheetSection>
 
         {/* Related Endpoints Section */}
-        <EntitySheetSection title={`Endpoints (${endpoints?.length ?? '...'})`}>
+        <EntitySheetSection title="Endpoints" count={endpoints?.length ?? '...'}>
           {endpointsPending ? (
             <div className="text-sm text-muted-foreground">Loading endpoints...</div>
           ) : endpoints && endpoints.length > 0 ? (
@@ -118,11 +119,6 @@ export function ProviderSheet({ slug }: { slug: string }) {
                   <EntitySheetTrigger type="model" slug={endpoint.model.slug} asChild>
                     <EntityBadge name={endpoint.model.name} slug={endpoint.model.slug} />
                   </EntitySheetTrigger>
-                  {endpoint.context_length && (
-                    <span className="font-mono text-xs text-muted-foreground">
-                      {endpoint.context_length.toLocaleString()}
-                    </span>
-                  )}
                 </div>
               ))}
             </div>
@@ -132,41 +128,7 @@ export function ProviderSheet({ slug }: { slug: string }) {
         </EntitySheetSection>
 
         {/* Change History Section */}
-        <EntitySheetSection title={`Recent Changes (${changes?.length ?? '...'})`}>
-          {changesPending ? (
-            <div className="text-sm text-muted-foreground">Loading changes...</div>
-          ) : changes && changes.length > 0 ? (
-            <div className="space-y-2">
-              {changes.map((change, idx) => (
-                <div key={idx} className="rounded-xs border p-2">
-                  <div className="mb-1 flex items-center justify-between">
-                    <span
-                      className="font-mono text-xs"
-                      style={{
-                        color:
-                          change.change_kind === 'create'
-                            ? 'hsl(var(--chart-2))'
-                            : change.change_kind === 'delete'
-                              ? 'hsl(var(--chart-1))'
-                              : 'hsl(var(--chart-3))',
-                      }}
-                    >
-                      {change.change_kind}
-                    </span>
-                    <span className="font-mono text-xs text-muted-foreground">
-                      {new Date(change.crawl_id).toLocaleDateString()}
-                    </span>
-                  </div>
-                  {change.path && (
-                    <div className="font-mono text-xs text-muted-foreground">{change.path}</div>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-sm text-muted-foreground">No recent changes</div>
-          )}
-        </EntitySheetSection>
+        <EntityChanges changes={changes} isPending={changesPending} />
       </div>
     </>
   )
