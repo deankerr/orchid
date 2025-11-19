@@ -131,6 +131,16 @@ export function useEndpointFilters() {
     })
   }
 
+  const setFocusSearch = (query: string) => {
+    setFilters({
+      q: query,
+      has: [],
+      not: [],
+      sort: null,
+      order: null,
+    })
+  }
+
   // Calculate active filter count (only for Filters button badge)
   const activeFilterCount = filters.has.length + filters.not.length
 
@@ -149,6 +159,7 @@ export function useEndpointFilters() {
     setAttributeFilter,
     clearAttributeFilters,
     clearAllFilters,
+    setFocusSearch,
     activeFilterCount,
     hasActiveFilters,
     hasActiveAttributeFilters,

@@ -1,8 +1,5 @@
 import { toast } from 'sonner'
 
-import { api } from '@/convex/_generated/api'
-
-import { useCachedQuery } from '@/hooks/use-cached-query'
 import { cn } from '@/lib/utils'
 
 import { EntityAvatar } from './entity-avatar'
@@ -10,11 +7,13 @@ import { EntityAvatar } from './entity-avatar'
 export function EntityBadge({
   name,
   slug,
+  size = 'sm',
   className,
   ...props
 }: {
   name: string
   slug: string
+  size?: 'sm' | 'lg'
 } & React.ComponentProps<'div'>) {
   const fallbackText = name || slug
 
@@ -27,87 +26,62 @@ export function EntityBadge({
     }
   }
 
-  return (
-    <div className={cn('flex overflow-hidden p-0.5 text-left', className)} {...props}>
-      {/* avatar */}
-      <EntityAvatar slug={slug} fallbackText={fallbackText} />
+  const sizeClasses = {
+    sm: {
+      avatar: 'size-7',
+      name: 'font-sans text-sm leading-none font-medium',
+      slug: 'font-mono text-xs',
+    },
+    lg: {
+      avatar: 'size-10 mr-1',
+      name: 'font-sans text-lg leading-tight font-semibold',
+      slug: 'font-mono text-sm',
+    },
+  }
 
-      {/* text */}
-      <div className="grid gap-0.5 overflow-hidden px-2">
-        <div className="truncate font-sans text-sm leading-none font-medium">{name}</div>
-        <div
-          className="-mx-1 cursor-pointer truncate rounded px-1 font-mono text-xs leading-none text-muted-foreground hover:text-primary/90"
-          onClick={handleCopySlug}
-          title={slug}
+  const sizeConfig = sizeClasses[size]
+
+  return (
+    <div className={cn('flex gap-2 overflow-hidden p-0.5 text-left', className)} {...props}>
+      <EntityAvatar slug={slug} fallbackText={fallbackText} className={sizeConfig.avatar} />
+      <div className="flex flex-col overflow-hidden">
+        <div className={cn('truncate', sizeConfig.name)}>{name}</div>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            handleCopySlug()
+          }}
+          className={cn(
+            'cursor-pointer truncate text-left text-muted-foreground hover:text-primary/90',
+            sizeConfig.slug,
+          )}
+          title="Click to copy"
         >
           {slug}
-        </div>
+        </button>
       </div>
     </div>
   )
 }
 
-function EntityBadgeInline({
-  name,
+export function EntityInline({
   slug,
+  fallbackText,
   className,
   ...props
 }: {
-  name: string
   slug: string
-} & React.ComponentProps<'div'>) {
-  const fallbackText = name || slug
-
-  const handleCopySlug = async () => {
-    try {
-      await navigator.clipboard.writeText(slug)
-      toast.success(`Copied to clipboard: ${slug}`)
-    } catch (err) {
-      console.error('Failed to copy text: ', err)
-    }
-  }
-
+  fallbackText?: string
+} & React.ComponentProps<'span'>) {
   return (
-    <div className={cn('flex items-center gap-1.5 px-0.5 text-sm', className)} {...props}>
-      <EntityAvatar slug={slug} fallbackText={fallbackText} className="size-3.5" />
-      <div
-        className="-mx-1 cursor-pointer rounded px-1 font-mono text-[95%] leading-none text-foreground/85"
-        onClick={handleCopySlug}
-      >
-        {slug}
-      </div>
-    </div>
+    <span className={cn('gap-1.5 font-mono text-muted-foreground', className)} {...props}>
+      <EntityAvatar
+        slug={slug}
+        fallbackText={fallbackText}
+        className="mr-1 size-4.5 align-text-bottom"
+      />
+      {slug}
+    </span>
   )
-}
-
-export function ProviderBadge({
-  slug,
-  inline,
-  ...props
-}: { slug: string; inline?: boolean } & React.ComponentProps<'div'>) {
-  const [baseSlug] = slug.split('/')
-
-  const providersList = useCachedQuery(api.db.or.views.providers.list, {})
-  const provider = providersList?.find((p) => p.slug === baseSlug)
-
-  if (inline) {
-    return <EntityBadgeInline name={provider?.name ?? ''} slug={slug} {...props} />
-  }
-
-  return <EntityBadge name={provider?.name ?? ''} slug={slug} {...props} />
-}
-
-export function ModelBadge({
-  slug,
-  inline = false,
-  ...props
-}: { slug: string; inline?: boolean } & React.ComponentProps<'div'>) {
-  const modelsList = useCachedQuery(api.db.or.views.models.list, {})
-  const model = modelsList?.find((m) => m.slug === slug)
-
-  if (inline) {
-    return <EntityBadgeInline name={model?.name ?? ''} slug={slug} {...props} />
-  }
-
-  return <EntityBadge name={model?.name ?? ''} slug={slug} {...props} />
 }

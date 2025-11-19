@@ -19,9 +19,15 @@
       "mcp__convex__logs",
       "WebFetch(domain:docs.convex.dev)",
       "WebFetch(domain:tanstack.com)",
-      "WebSearch"
+      "WebSearch",
+      "mcp__linear-server__get_project",
+      "mcp__next-devtools__nextjs_runtime"
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "next-devtools"
+  ]
 }

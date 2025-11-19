@@ -9,6 +9,7 @@ import { getEndpointAttributeData } from '@/lib/attributes'
 import { formatDateTime, formatPrice } from '@/lib/formatters'
 
 import { fuzzySort } from '../data-grid/data-grid-fuzzy'
+import { EntitySheetTrigger } from '../entity-sheet/entity-sheet'
 import { AttributeBadge, AttributeBadgeName, AttributeBadgeSet } from '../shared/attribute-badge'
 import { EntityBadge } from '../shared/entity-badge'
 import { PricingBadgeSet } from '../shared/pricing-badges'
@@ -24,7 +25,11 @@ export const columns: ColumnDef<EndpointRow>[] = [
     ),
     cell: ({ row }) => {
       const endpoint = row.original
-      return <EntityBadge name={endpoint.model.name} slug={endpoint.model.slug} />
+      return (
+        <EntitySheetTrigger type="model" slug={endpoint.model.slug} asChild>
+          <EntityBadge name={endpoint.model.name} slug={endpoint.model.slug} />
+        </EntitySheetTrigger>
+      )
     },
     size: 260,
     sortingFn: fuzzySort,
@@ -38,43 +43,63 @@ export const columns: ColumnDef<EndpointRow>[] = [
 
   {
     id: 'provider',
-    accessorFn: (row) => row.provider.name,
+    accessorFn: (row) => `${row.provider.name} ${row.provider.slug}`,
     header: ({ column }) => (
       <DataGridColumnHeader column={column} title="PROVIDER" className="justify-start" />
     ),
     cell: ({ row }) => {
       const endpoint = row.original
-
-      const endpointGone = getEndpointAttributeData(endpoint, 'gone')
-
       return (
-        <div className="flex items-center gap-1">
-          <div className="grow">
-            <EntityBadge name={endpoint.provider.name} slug={endpoint.provider.tag_slug} />
-          </div>
-
-          {endpointGone.has ? (
-            <AttributeBadge
-              sprite={endpointGone.icon}
-              name={endpointGone.name}
-              details={endpointGone.details}
-              color={endpointGone.color}
-              variant="soft"
-            />
-          ) : endpoint.disabled ? (
-            <AttributeBadgeName name="disabled" />
-          ) : endpoint.deranked ? (
-            <AttributeBadgeName name="deranked" />
-          ) : null}
-        </div>
+        <EntitySheetTrigger type="provider" slug={endpoint.provider.slug} asChild>
+          <EntityBadge name={endpoint.provider.name} slug={endpoint.provider.tag_slug} />
+        </EntitySheetTrigger>
       )
     },
-    size: 260,
+    size: 230,
     sortingFn: fuzzySort,
     enableHiding: false,
     meta: {
       skeleton: <Skeleton className="h-8 w-full" />,
       headerTitle: 'Provider',
+    },
+  },
+
+  {
+    id: 'status',
+    header: ({ column }) => (
+      <div className="grow text-center">
+        <DataGridColumnHeader column={column} title="STATUS" />
+      </div>
+    ),
+    cell: ({ row }) => {
+      const endpoint = row.original
+      const endpointGone = getEndpointAttributeData(endpoint, 'gone')
+      let content = null
+
+      if (endpointGone.has) {
+        content = (
+          <AttributeBadge
+            sprite={endpointGone.icon}
+            name={endpointGone.name}
+            details={endpointGone.details}
+            color={endpointGone.color}
+            variant="soft"
+          />
+        )
+      } else if (endpoint.disabled) {
+        content = <AttributeBadgeName name="disabled" />
+      } else if (endpoint.deranked) {
+        content = <AttributeBadgeName name="deranked" />
+      }
+
+      return content ? <div className="flex justify-center">{content}</div> : null
+    },
+    size: 110,
+    enableHiding: true,
+    meta: {
+      skeleton: <Skeleton className="h-8 w-full" />,
+      headerTitle: 'Status',
+      cellClassName: 'justify-center',
     },
   },
 
@@ -410,7 +435,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
         return formatDateTime(timestamp).split(' ')[0]
       }
     },
-    size: 125,
+    size: 135,
     sortUndefined: -1,
     meta: {
       skeleton: <Skeleton className="h-5 w-full" />,

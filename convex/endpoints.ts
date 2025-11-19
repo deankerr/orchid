@@ -32,3 +32,17 @@ export const list = query({
     )
   },
 })
+
+export const listForModel = query({
+  args: { modelSlug: v.string() },
+  handler: async (ctx, args) => {
+    return await db.or.views.endpoints.listByModelSlug(ctx, args.modelSlug)
+  },
+})
+
+export const listForProvider = query({
+  args: { providerSlug: v.string() },
+  handler: async (ctx, args) => {
+    return await db.or.views.endpoints.listByProviderSlug(ctx, args.providerSlug)
+  },
+})
