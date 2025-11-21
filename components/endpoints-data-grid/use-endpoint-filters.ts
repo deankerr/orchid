@@ -19,6 +19,8 @@ type ModalityFilterState = {
 // Parser for arrays of attribute/modality names
 const parseAsAttributeArray = parseAsArrayOf(parseAsString).withDefault([])
 
+const MODALITIES: ModalityName[] = ['image_input', 'file_input', 'audio_input', 'image_output']
+
 export function useEndpointFilters() {
   const [filters, setFilters] = useQueryStates(
     {
@@ -115,19 +117,28 @@ export function useEndpointFilters() {
   }
 
   const clearAttributeFilters = () => {
+    // Only keep modalities
+    const currentModalities = filters.has.filter((a) => MODALITIES.includes(a as ModalityName))
+
     setFilters({
-      has: [],
+      has: currentModalities,
       not: [],
+    })
+  }
+
+  const clearModalityFilters = () => {
+    // Keep only non-modality attributes
+    const currentAttributes = filters.has.filter((a) => !MODALITIES.includes(a as ModalityName))
+
+    setFilters({
+      has: currentAttributes,
     })
   }
 
   const clearAllFilters = () => {
     setFilters({
-      q: '',
       has: [],
       not: [],
-      sort: null,
-      order: null,
     })
   }
 
@@ -141,12 +152,17 @@ export function useEndpointFilters() {
     })
   }
 
-  // Calculate active filter count (only for Filters button badge)
-  const activeFilterCount = filters.has.length + filters.not.length
+  // Derived counts
+  const activeModalityCount = Object.values(modalityFilters).filter(Boolean).length
+
+  // Active attribute count = Total active filters - Modality filters
+  // Note: Modalities only exist in 'has', so 'not' is purely attributes
+  const activeAttributeCount = filters.has.length - activeModalityCount + filters.not.length
 
   const hasActiveSorting = filters.sort !== null
-  const hasActiveAttributeFilters = filters.has.length > 0 || filters.not.length > 0
-  const hasActiveFilters = hasActiveAttributeFilters || !!filters.q
+  const hasActiveModalityFilters = activeModalityCount > 0
+  const hasActiveAttributeFilters = activeAttributeCount > 0
+  const hasAnyActiveFilters = hasActiveModalityFilters || hasActiveAttributeFilters || !!filters.q
 
   return {
     globalFilter: filters.q,
@@ -158,11 +174,14 @@ export function useEndpointFilters() {
     setModalityFilter,
     setAttributeFilter,
     clearAttributeFilters,
+    clearModalityFilters,
     clearAllFilters,
     setFocusSearch,
-    activeFilterCount,
-    hasActiveFilters,
+    activeModalityCount,
+    activeAttributeCount,
+    hasActiveFilters: hasAnyActiveFilters,
     hasActiveAttributeFilters,
+    hasActiveModalityFilters,
     hasActiveSorting,
   }
 }

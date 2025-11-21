@@ -4,7 +4,7 @@ import { useDataGrid } from '../data-grid/data-grid'
 import { DataGridColumnVisibility } from '../data-grid/data-grid-column-visibility'
 import { SearchInput } from '../shared/search-input'
 import { Button } from '../ui/button'
-import { AttributeFilterControls } from './attribute-filter-controls'
+import { AttributeFilterControls, ModalityFilterControls } from './attribute-filter-controls'
 import { useEndpointFilters } from './use-endpoint-filters'
 
 function ColumnsButton(props: React.ComponentProps<typeof Button>) {
@@ -32,15 +32,19 @@ function EndpointsSearchInput() {
 
 export function DataGridControls() {
   const { table } = useDataGrid()
-  const { hasActiveAttributeFilters, clearAttributeFilters } = useEndpointFilters()
+  const { hasActiveAttributeFilters, hasActiveModalityFilters, clearAllFilters } =
+    useEndpointFilters()
+
+  const hasAnyFilter = hasActiveAttributeFilters || hasActiveModalityFilters
 
   return (
     <div className="flex items-center gap-2 px-3 py-4">
       <EndpointsSearchInput />
+      <ModalityFilterControls />
       <AttributeFilterControls />
 
-      {hasActiveAttributeFilters && (
-        <Button variant="secondary" onClick={clearAttributeFilters}>
+      {hasAnyFilter && (
+        <Button variant="secondary" onClick={clearAllFilters}>
           <XIcon />
           Clear
         </Button>

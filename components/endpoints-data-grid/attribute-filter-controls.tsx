@@ -1,7 +1,8 @@
-import { CheckIcon, FilterIcon, XIcon } from 'lucide-react'
+import { CheckIcon, FilterIcon, LayoutGridIcon, XIcon } from 'lucide-react'
 
 import { AttributeName, attributes } from '@/lib/attributes'
 import { SpriteIconName } from '@/lib/sprite-icons'
+import { cn } from '@/lib/utils'
 
 import { Button } from '../ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover'
@@ -9,115 +10,121 @@ import { Separator } from '../ui/separator'
 import { SpriteIcon } from '../ui/sprite-icon'
 import { useEndpointFilters, type FilterMode } from './use-endpoint-filters'
 
+export function ModalityFilterControls() {
+  const { modalityFilters, setModalityFilter, clearModalityFilters, activeModalityCount } =
+    useEndpointFilters()
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="outline">
+          <LayoutGridIcon />
+          Modalities
+          {activeModalityCount > 0 && (
+            <span className="ml-1 rounded-full bg-primary px-1.5 text-xs text-primary-foreground">
+              {activeModalityCount}
+            </span>
+          )}
+        </Button>
+      </PopoverTrigger>
+
+      <PopoverContent className="w-[min(100vw-2rem,360px)]" align="start">
+        <div className="space-y-4">
+          <FilterSection title="Input">
+            <div className="grid grid-cols-2 gap-2">
+              <FilterToggle
+                icon="image-up"
+                label="Image"
+                mode={modalityFilters.image_input ? 'include' : 'any'}
+                onChange={(mode) => setModalityFilter('image_input', mode === 'include')}
+                allowExclude={false}
+              />
+              <FilterToggle
+                icon="file-spreadsheet"
+                label="File"
+                mode={modalityFilters.file_input ? 'include' : 'any'}
+                onChange={(mode) => setModalityFilter('file_input', mode === 'include')}
+                allowExclude={false}
+              />
+              <FilterToggle
+                icon="audio-lines"
+                label="Audio"
+                mode={modalityFilters.audio_input ? 'include' : 'any'}
+                onChange={(mode) => setModalityFilter('audio_input', mode === 'include')}
+                allowExclude={false}
+              />
+            </div>
+          </FilterSection>
+
+          <FilterSection title="Output">
+            <div className="grid grid-cols-2 gap-2">
+              <FilterToggle
+                icon="image-down"
+                label="Image"
+                mode={modalityFilters.image_output ? 'include' : 'any'}
+                onChange={(mode) => setModalityFilter('image_output', mode === 'include')}
+                allowExclude={false}
+              />
+            </div>
+          </FilterSection>
+
+          {activeModalityCount > 0 && (
+            <>
+              <Separator />
+              <div className="flex justify-end gap-2">
+                <Button variant="ghost" size="sm" onClick={clearModalityFilters}>
+                  Clear
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
+}
+
 export function AttributeFilterControls() {
-  const {
-    modalityFilters,
-    attributeFilters,
-    setModalityFilter,
-    setAttributeFilter,
-    clearAttributeFilters,
-    activeFilterCount,
-  } = useEndpointFilters()
+  const { attributeFilters, setAttributeFilter, clearAttributeFilters, activeAttributeCount } =
+    useEndpointFilters()
+
+  // Helper to render an attribute filter toggle
+  const renderAttributeToggle = (name: AttributeName, label: string) => (
+    <FilterToggle
+      icon={attributes[name].icon}
+      label={label}
+      mode={attributeFilters[name] ?? 'any'}
+      onChange={(mode) => setAttributeFilter(name, mode)}
+    />
+  )
 
   return (
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="outline">
           <FilterIcon />
-          Filters
-          {activeFilterCount > 0 && (
+          Attributes
+          {activeAttributeCount > 0 && (
             <span className="ml-1 rounded-full bg-primary px-1.5 text-xs text-primary-foreground">
-              {activeFilterCount}
+              {activeAttributeCount}
             </span>
           )}
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent className="w-[460px]" align="start">
+      <PopoverContent className="w-[min(100vw-2rem,520px)]" align="start">
         <div className="space-y-4">
-          {/* Modalities */}
-          <FilterSection title="Modalities">
-            <div className="grid grid-cols-2 gap-2">
-              <ModalityToggle
-                icon="image-up"
-                label="Image Input"
-                checked={modalityFilters.image_input}
-                onCheckedChange={(checked) => setModalityFilter('image_input', checked)}
-              />
-              <ModalityToggle
-                icon="file-spreadsheet"
-                label="File Input"
-                checked={modalityFilters.file_input}
-                onCheckedChange={(checked) => setModalityFilter('file_input', checked)}
-              />
-              <ModalityToggle
-                icon="audio-lines"
-                label="Audio Input"
-                checked={modalityFilters.audio_input}
-                onCheckedChange={(checked) => setModalityFilter('audio_input', checked)}
-              />
-              <ModalityToggle
-                icon="image-down"
-                label="Image Output"
-                checked={modalityFilters.image_output}
-                onCheckedChange={(checked) => setModalityFilter('image_output', checked)}
-              />
-            </div>
-          </FilterSection>
-
-          <Separator />
-
           {/* Features */}
           <FilterSection title="Features">
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
-              <AttributeFilter
-                name="reasoning"
-                label="Reasoning"
-                mode={attributeFilters.reasoning ?? 'any'}
-                onChange={(mode) => setAttributeFilter('reasoning', mode)}
-              />
-              <AttributeFilter
-                name="tools"
-                label="Tools"
-                mode={attributeFilters.tools ?? 'any'}
-                onChange={(mode) => setAttributeFilter('tools', mode)}
-              />
-              <AttributeFilter
-                name="response_format"
-                label="Response Format"
-                mode={attributeFilters.response_format ?? 'any'}
-                onChange={(mode) => setAttributeFilter('response_format', mode)}
-              />
-              <AttributeFilter
-                name="structured_outputs"
-                label="Structured Outputs"
-                mode={attributeFilters.structured_outputs ?? 'any'}
-                onChange={(mode) => setAttributeFilter('structured_outputs', mode)}
-              />
-              <AttributeFilter
-                name="caching"
-                label="Caching"
-                mode={attributeFilters.caching ?? 'any'}
-                onChange={(mode) => setAttributeFilter('caching', mode)}
-              />
-              <AttributeFilter
-                name="native_web_search"
-                label="Native Web Search"
-                mode={attributeFilters.native_web_search ?? 'any'}
-                onChange={(mode) => setAttributeFilter('native_web_search', mode)}
-              />
-              <AttributeFilter
-                name="moderated"
-                label="Moderated"
-                mode={attributeFilters.moderated ?? 'any'}
-                onChange={(mode) => setAttributeFilter('moderated', mode)}
-              />
-              <AttributeFilter
-                name="free"
-                label="Free"
-                mode={attributeFilters.free ?? 'any'}
-                onChange={(mode) => setAttributeFilter('free', mode)}
-              />
+            <div className="grid grid-cols-1 gap-x-2 gap-y-1.5 sm:grid-cols-2">
+              {renderAttributeToggle('reasoning', 'Reasoning')}
+              {renderAttributeToggle('tools', 'Tools')}
+              {renderAttributeToggle('response_format', 'Response Format')}
+              {renderAttributeToggle('structured_outputs', 'Structured Outputs')}
+              {renderAttributeToggle('caching', 'Caching')}
+              {renderAttributeToggle('native_web_search', 'Native Web Search')}
+              {renderAttributeToggle('moderated', 'Moderated')}
+              {renderAttributeToggle('free', 'Free')}
             </div>
           </FilterSection>
 
@@ -125,36 +132,23 @@ export function AttributeFilterControls() {
 
           {/* Status */}
           <FilterSection title="Status">
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
-              <AttributeFilter
-                name="gone"
-                label="Gone"
-                mode={attributeFilters.gone ?? 'any'}
-                onChange={(mode) => setAttributeFilter('gone', mode)}
-              />
-              <AttributeFilter
-                name="disabled"
-                label="Disabled"
-                mode={attributeFilters.disabled ?? 'any'}
-                onChange={(mode) => setAttributeFilter('disabled', mode)}
-              />
-              <AttributeFilter
-                name="deranked"
-                label="Deranked"
-                mode={attributeFilters.deranked ?? 'any'}
-                onChange={(mode) => setAttributeFilter('deranked', mode)}
-              />
+            <div className="grid grid-cols-1 gap-x-4 gap-y-1.5 sm:grid-cols-2">
+              {renderAttributeToggle('gone', 'Gone')}
+              {renderAttributeToggle('disabled', 'Disabled')}
+              {renderAttributeToggle('deranked', 'Deranked')}
             </div>
           </FilterSection>
 
-          <Separator />
-
-          {/* Actions */}
-          <div className="flex justify-end gap-2">
-            <Button variant="ghost" size="sm" onClick={clearAttributeFilters}>
-              Clear
-            </Button>
-          </div>
+          {activeAttributeCount > 0 && (
+            <>
+              <Separator />
+              <div className="flex justify-end gap-2">
+                <Button variant="ghost" size="sm" onClick={clearAttributeFilters}>
+                  Clear
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       </PopoverContent>
     </Popover>
@@ -170,81 +164,93 @@ function FilterSection({ title, children }: { title: string; children: React.Rea
   )
 }
 
-function ModalityToggle({
+function FilterToggle({
   icon,
-  label,
-  checked,
-  onCheckedChange,
-}: {
-  icon: SpriteIconName
-  label: string
-  checked: boolean
-  onCheckedChange: (checked: boolean) => void
-}) {
-  return (
-    <button
-      type="button"
-      onClick={() => onCheckedChange(!checked)}
-      className={`flex items-center gap-2 rounded-sm border px-2 py-1.5 transition-colors ${
-        checked ? 'border-accent-foreground/20 bg-accent' : 'border-transparent hover:bg-accent/50'
-      }`}
-    >
-      <SpriteIcon name={icon} className="size-4" />
-      <span className="text-sm">{label}</span>
-    </button>
-  )
-}
-
-function AttributeFilter({
-  name,
   label,
   mode,
   onChange,
+  allowExclude = true,
 }: {
-  name: AttributeName
+  icon: SpriteIconName
   label: string
   mode: FilterMode
   onChange: (mode: FilterMode) => void
+  allowExclude?: boolean
 }) {
-  const nextMode = (current: FilterMode): FilterMode => {
-    if (current === 'any') return 'include'
-    if (current === 'include') return 'exclude'
-    return 'any'
+  const toggleInclude = () => {
+    onChange(mode === 'include' ? 'any' : 'include')
   }
 
-  const attribute = attributes[name]
+  const toggleExclude = () => {
+    onChange(mode === 'exclude' ? 'any' : 'exclude')
+  }
+
+  const toggleLabel = () => {
+    if (allowExclude) {
+      // Cycle: any -> include -> exclude -> any
+      if (mode === 'any') {
+        onChange('include')
+      } else if (mode === 'include') {
+        onChange('exclude')
+      } else {
+        onChange('any')
+      }
+    } else {
+      // Toggle: any <-> include
+      onChange(mode === 'include' ? 'any' : 'include')
+    }
+  }
+
+  const getAriaLabel = () => {
+    const state = mode === 'include' ? 'included' : mode === 'exclude' ? 'excluded' : 'not filtered'
+    return `${label}, ${state}. Click to toggle filter`
+  }
 
   return (
-    <button
-      type="button"
-      onClick={() => onChange(nextMode(mode))}
-      className="flex items-center justify-between gap-2 rounded-sm px-2 py-1 text-left text-sm transition-colors hover:bg-accent"
-    >
-      <div className="flex items-center gap-2">
-        <SpriteIcon name={attribute.icon} className="size-4" />
-        <span className={mode === 'any' ? 'text-muted-foreground' : ''}>{label}</span>
+    <div className="flex items-center justify-between gap-2 rounded-sm px-1 py-1 text-sm text-foreground transition-colors hover:bg-muted">
+      <button
+        type="button"
+        onClick={toggleLabel}
+        className="flex flex-1 items-center gap-2 rounded-sm px-1 py-0.5 text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+        aria-label={getAriaLabel()}
+      >
+        <SpriteIcon name={icon} className="size-4 shrink-0" aria-hidden="true" />
+        <span>{label}</span>
+      </button>
+
+      <div className="flex items-center gap-1" role="group" aria-label={`${label} filter controls`}>
+        <button
+          type="button"
+          onClick={toggleInclude}
+          className={cn(
+            'flex size-6 items-center justify-center rounded-xs transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+            mode === 'include'
+              ? 'bg-green-500/20 text-green-600 hover:bg-green-500/30 dark:text-green-400'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+          )}
+          aria-label={`Include ${label}`}
+          aria-pressed={mode === 'include'}
+        >
+          <CheckIcon className="size-3.5" aria-hidden="true" />
+        </button>
+
+        {allowExclude && (
+          <button
+            type="button"
+            onClick={toggleExclude}
+            className={cn(
+              'flex size-6 items-center justify-center rounded-xs transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+              mode === 'exclude'
+                ? 'bg-red-500/20 text-red-600 hover:bg-red-500/30 dark:text-red-400'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+            )}
+            aria-label={`Exclude ${label}`}
+            aria-pressed={mode === 'exclude'}
+          >
+            <XIcon className="size-3.5" aria-hidden="true" />
+          </button>
+        )}
       </div>
-      <FilterModeIndicator mode={mode} />
-    </button>
+    </div>
   )
-}
-
-function FilterModeIndicator({ mode }: { mode: FilterMode }) {
-  if (mode === 'include') {
-    return (
-      <div className="flex size-5 items-center justify-center rounded-xs border border-green-500/30 bg-green-500/20 text-green-400">
-        <CheckIcon className="size-3.5" />
-      </div>
-    )
-  }
-
-  if (mode === 'exclude') {
-    return (
-      <div className="flex size-5 items-center justify-center rounded-xs border border-red-500/30 bg-red-500/20 text-red-400">
-        <XIcon className="size-3.5" />
-      </div>
-    )
-  }
-
-  return <div className="size-5 rounded-xs border bg-muted" />
 }
