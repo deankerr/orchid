@@ -1,20 +1,9 @@
-import { Settings2, XIcon } from 'lucide-react'
+import { XIcon } from 'lucide-react'
 
-import { useDataGrid } from '../data-grid/data-grid'
-import { DataGridColumnVisibility } from '../data-grid/data-grid-column-visibility'
 import { SearchInput } from '../shared/search-input'
 import { Button } from '../ui/button'
 import { AttributeFilterControls, ModalityFilterControls } from './attribute-filter-controls'
 import { useEndpointFilters } from './use-endpoint-filters'
-
-function ColumnsButton(props: React.ComponentProps<typeof Button>) {
-  return (
-    <Button variant="outline" {...props}>
-      <Settings2 />
-      Columns
-    </Button>
-  )
-}
 
 function EndpointsSearchInput() {
   const { globalFilter, setGlobalFilter } = useEndpointFilters()
@@ -31,7 +20,6 @@ function EndpointsSearchInput() {
 }
 
 export function DataGridControls() {
-  const { table } = useDataGrid()
   const { hasActiveAttributeFilters, hasActiveModalityFilters, clearAllFilters } =
     useEndpointFilters()
 
@@ -49,10 +37,6 @@ export function DataGridControls() {
           Clear
         </Button>
       )}
-
-      <div className="flex-1" />
-
-      <DataGridColumnVisibility table={table} trigger={<ColumnsButton />} />
     </div>
   )
 }
