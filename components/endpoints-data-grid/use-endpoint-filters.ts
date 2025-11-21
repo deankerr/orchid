@@ -86,7 +86,7 @@ export function useEndpointFilters() {
     }
   }
 
-  // Helper to update search with debouncing
+  // Helper to update search
   const setGlobalFilter = (value: string) => {
     setFilters({ q: value })
   }
@@ -94,7 +94,7 @@ export function useEndpointFilters() {
   // Convert URL state to TanStack SortingState
   const sorting: SortingState = filters.sort
     ? [{ id: filters.sort, desc: filters.order === 'desc' }]
-    : [{ id: 'model', desc: false }]
+    : [{ id: 'modelAddedAt', desc: true }]
 
   // Helper to update sorting from TanStack's onSortingChange
   const onSortingChange = (
