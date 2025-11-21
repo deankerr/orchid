@@ -19,9 +19,9 @@ function isEqual(from: Record<string, unknown>, to: Record<string, unknown>) {
 
 export const upsert = internalMutation({
   args: {
-    models: vUpsertModel.array(),
-    endpoints: vUpsertEndpoint.array(),
-    providers: vUpsertProvider.array(),
+    models: v.array(vUpsertModel),
+    endpoints: v.array(vUpsertEndpoint),
+    providers: v.array(vUpsertProvider),
     crawl_id: v.string(),
   },
   handler: async (ctx, args) => {

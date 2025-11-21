@@ -20,7 +20,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@lobehub/icons": "^2.43.1",
-    "@posthog/nextjs-config": "^1.4.0",
+    "@posthog/nextjs-config": "^1.5.0",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-slot": "^1.2.4",
     "@tanstack/match-sorter-utils": "^8.19.4",
@@ -32,7 +32,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
-    "convex": "^1.29.1",
+    "convex": "^1.29.3",
     "convex-helpers": "^0.1.105",
     "date-fns": "^4.1.0",
     "fflate": "^0.8.2",
@@ -45,8 +45,8 @@
     "next": "16.0.3",
     "next-themes": "^0.4.6",
     "nuqs": "^2.8.0",
-    "posthog-js": "^1.295.0",
-    "posthog-node": "^5.11.2",
+    "posthog-js": "^1.297.2",
+    "posthog-node": "^5.13.2",
     "pretty-bytes": "^7.1.0",
     "radix-ui": "^1.4.3",
     "react": "^19.2.0",
@@ -83,7 +83,11 @@
     "typescript": "^5.9.3"
   },
   "trustedDependencies": [
+    "@posthog/cli",
     "@tailwindcss/oxide",
+    "core-js",
+    "esbuild",
+    "sharp",
     "unrs-resolver"
   ]
 }

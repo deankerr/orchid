@@ -31,7 +31,7 @@ export const getByCrawlId = internalQuery({
   args: {
     crawl_id: v.string(),
   },
-  returns: vTable.doc.nullable(),
+  returns: nullable(vTable.doc),
   handler: async (ctx, args) => {
     return await ctx.db
       .query('snapshot_crawl_archives')

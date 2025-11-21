@@ -1,3 +1,4 @@
+import { nullable } from 'convex-helpers/validators'
 import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
@@ -21,7 +22,7 @@ export const vTable = createTableVHelper('snapshot_crawl_config', table.validato
 
 export const getFirst = internalQuery({
   args: {},
-  returns: vTable.doc.nullable(),
+  returns: nullable(vTable.doc),
   handler: async (ctx) => {
     return await ctx.db.query('snapshot_crawl_config').first()
   },

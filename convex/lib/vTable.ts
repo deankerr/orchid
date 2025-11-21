@@ -1,123 +1,4 @@
-import { omit, pick, type BetterOmit, type Expand } from 'convex-helpers'
-import { nullable, parse, partial } from 'convex-helpers/validators'
-import {
-  v,
-  type ObjectType,
-  type PropertyValidators,
-  type VObject,
-  type VOptional,
-} from 'convex/values'
-
-// Define the type for the builder methods that will be attached to the validator
-type PartialFields<Fields extends PropertyValidators> = {
-  [K in keyof Fields]: VOptional<Fields[K]>
-}
-
-// Define the type for the builder methods that will be attached to the validator
-interface BuilderMethods<Fields extends PropertyValidators> {
-  pick: <K extends keyof Fields & string>(...keys: K[]) => Builder<Pick<Fields, K>>
-  omit: <K extends keyof Fields & string>(...keys: K[]) => Builder<Expand<BetterOmit<Fields, K>>>
-  partial: () => Builder<PartialFields<Fields>>
-  and: <Fields2 extends PropertyValidators>(additionalFields: Fields2) => Builder<Fields & Fields2>
-  parse: (value: unknown) => ObjectType<Fields>
-  nullable: () => ReturnType<typeof nullable>
-  array: () => ReturnType<typeof v.array>
-}
-
-// The Builder type is a VObject augmented with the builder methods
-export type Builder<Fields extends PropertyValidators> = VObject<
-  ObjectType<Fields>,
-  Fields,
-  'required',
-  any
-> &
-  BuilderMethods<Fields>
-
-/**
- * Enhances a Convex object validator with chainable builder methods.
- * Each method returns a new, enhanced validator, eliminating the need for a `build()` step.
- *
- * @param validator - The `v.object` validator to enhance.
- * @returns A new `VObject` augmented with chainable builder methods.
- */
-function createBuilder<Fields extends PropertyValidators>(
-  validator: VObject<ObjectType<Fields>, Fields, 'required', any>,
-): Builder<Fields> {
-  const fields = validator.fields
-
-  const methods: BuilderMethods<Fields> = {
-    pick<K extends keyof Fields & string>(...keys: K[]) {
-      const newFields = pick(fields, keys)
-      const newValidator = v.object(newFields)
-      return createBuilder(newValidator)
-    },
-
-    omit<K extends keyof Fields & string>(...keys: K[]) {
-      const newFields = omit(fields, keys)
-      const newValidator = v.object(newFields)
-      return createBuilder(newValidator)
-    },
-
-    partial() {
-      const newFields = partial(fields)
-      const newValidator = v.object(newFields) as VObject<
-        ObjectType<PartialFields<Fields>>,
-        PartialFields<Fields>,
-        'required',
-        any
-      >
-      return createBuilder(newValidator)
-    },
-
-    and<Fields2 extends PropertyValidators>(additionalFields: Fields2) {
-      const newFields = { ...fields, ...additionalFields }
-      const newValidator = v.object(newFields)
-      return createBuilder(newValidator)
-    },
-
-    parse(value: unknown) {
-      return parse(validator, value)
-    },
-
-    nullable() {
-      return nullable(validator)
-    },
-
-    array() {
-      return v.array(validator)
-    },
-  }
-
-  return Object.assign(validator, methods)
-}
-
-/**
- * Entry point to create a new chainable validator builder from an existing
- * v.object() validator or a raw PropertyValidators object.
- *
- * @param source - A VObject or a PropertyValidators object.
- * @returns A new enhanced VObject validator.
- *
- * @example
- * ```typescript
- * const userValidator = v.object({ name: v.string(), email: v.string() });
- * const userBuilder = withVBuilder(userValidator);
- *
- * const partialUserName = userBuilder.pick('name').partial();
- * // partialUserName is a valid validator, no .build() needed.
- * ```
- */
-export function withVBuilder<Fields extends PropertyValidators>(
-  source: VObject<ObjectType<Fields>, Fields, 'required', any> | Fields,
-) {
-  const validator = ('fields' in source ? source : v.object(source as Fields)) as VObject<
-    ObjectType<Fields>,
-    Fields,
-    'required',
-    any
-  >
-  return createBuilder(validator)
-}
+import { v, type ObjectType, type PropertyValidators, type VObject } from 'convex/values'
 
 /**
  * Creates a schema-aware helper for a single Convex table, providing typed
@@ -174,9 +55,9 @@ export function createTableVHelper<TableName extends string, Fields extends Prop
 
   return {
     name: tableName,
-    validator: withVBuilder(validator),
-    doc: withVBuilder(doc),
-    systemFields: withVBuilder(systemFields),
+    validator,
+    doc,
+    systemFields,
     _id: systemFields._id,
   }
 }
