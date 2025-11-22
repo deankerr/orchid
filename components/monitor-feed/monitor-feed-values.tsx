@@ -141,7 +141,7 @@ function PercentageBadge({
   )
 }
 
-export function ArrayDiff({
+function ArrayDiff({
   before,
   after,
   showUnchanged,

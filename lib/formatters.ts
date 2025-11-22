@@ -4,7 +4,7 @@ type PricingFormat = {
 }
 
 // Pricing format configurations using our schema keys
-export const pricingFormats: Record<string, PricingFormat> = {
+const pricingFormats: Record<string, PricingFormat> = {
   // Per-token pricing (display per million tokens)
   text_input: { transform: (v) => v * 1_000_000, unit: '/MTOK' },
   text_output: { transform: (v) => v * 1_000_000, unit: '/MTOK' },

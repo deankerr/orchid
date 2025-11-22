@@ -6,6 +6,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
 
 import { App } from '@/components/app-layout/app'
+import { DevBreakpointIndicator } from '@/components/dev-utils/dev-breakpoint-indicator'
 import { Toaster } from '@/components/ui/sonner'
 
 import { ConvexClientProvider } from './convex-client-provider'
@@ -58,6 +59,7 @@ export default function RootLayout({
           </ConvexClientProvider>
         </NuqsAdapter>
         <Toaster position="top-center" />
+        <DevBreakpointIndicator />
       </body>
     </html>
   )

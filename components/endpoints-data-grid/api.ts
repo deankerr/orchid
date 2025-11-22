@@ -68,7 +68,7 @@ export function useEndpointsData() {
   }
 }
 
-export const FAKE_ENDPOINT: Doc<'or_views_endpoints'> = {
+const FAKE_ENDPOINT: Doc<'or_views_endpoints'> = {
   _id: '__fake__' as any,
   _creationTime: Date.now(),
   uuid: 'fake-endpoint-uuid',
