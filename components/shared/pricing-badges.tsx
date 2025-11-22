@@ -39,7 +39,7 @@ export function PricingBadgeSet({ endpoint }: PricingBadgeProps) {
           priceKey: 'image_input',
           priceValue: pricing.image_input,
         })}
-        color="purple"
+        color="violet"
       />,
     )
   }
@@ -55,7 +55,7 @@ export function PricingBadgeSet({ endpoint }: PricingBadgeProps) {
           priceKey: 'image_output',
           priceValue: pricing.image_output,
         })}
-        color="purple"
+        color="violet"
       />,
     )
   }
@@ -90,7 +90,7 @@ export function PricingBadgeSet({ endpoint }: PricingBadgeProps) {
         sprite="audio-lines"
         name="audio"
         details={audioDetails.join('\n')}
-        color="green"
+        color="fuchsia"
       />,
     )
   }

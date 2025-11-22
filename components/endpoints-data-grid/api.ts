@@ -32,8 +32,12 @@ export function useEndpointsData() {
           hasAttribute = endpoint.model.input_modalities.includes('file')
         } else if (filterName === 'audio_input') {
           hasAttribute = endpoint.model.input_modalities.includes('audio')
+        } else if (filterName === 'video_input') {
+          hasAttribute = endpoint.model.input_modalities.includes('video')
         } else if (filterName === 'image_output') {
           hasAttribute = endpoint.model.output_modalities.includes('image')
+        } else if (filterName === 'embeddings_output') {
+          hasAttribute = endpoint.model.output_modalities.includes('embeddings')
         } else {
           // Handle regular attribute filters
           const attr = attributes[filterName as keyof typeof attributes]

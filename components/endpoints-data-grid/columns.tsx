@@ -169,7 +169,15 @@ export const columns: ColumnDef<EndpointRow>[] = [
       return (
         <AttributeBadgeSet
           endpoint={endpoint}
-          attributes={['image_input', 'file_input', 'audio_input', 'image_output']}
+          attributes={[
+            'image_input',
+            'file_input',
+            'audio_input',
+            'image_output',
+            'video_input',
+            'embeddings_output',
+          ]}
+          hideUnavailable
         />
       )
     },

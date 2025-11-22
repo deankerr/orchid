@@ -14,6 +14,7 @@ export type SpriteIconName =
   | 'calendar'
   | 'chevrons-down'
   | 'fingerprint'
+  | 'file-digit'
   | 'letter-text'
   | 'link'
   | 'message-square'
@@ -27,6 +28,7 @@ export type SpriteIconName =
   | 'shield-alert'
   | 'square-stop'
   | 'wrench'
+  | 'video'
   | 'file-chart-column-increasing'
   | 'file-spreadsheet'
   | 'file-text'
@@ -39,5 +41,5 @@ export type SpriteIconName =
  * Get the sprite URL for an icon (for use in <use> elements)
  */
 export function getSpriteUrl(iconName: SpriteIconName): string {
-  return `/sprites/lucide-sprite.16cb546f.svg#lucide-${iconName}`
+  return `/sprites/lucide-sprite.e5f0482e.svg#lucide-${iconName}`
 }

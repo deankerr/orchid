@@ -28,30 +28,37 @@ export function ModalityFilterControls() {
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent className="w-[min(100vw-2rem,360px)]" align="start">
+      <PopoverContent className="w-[min(100vw-2rem,410px)]" align="start">
         <div className="space-y-4">
           <FilterSection title="Input">
             <div className="grid grid-cols-2 gap-2">
               <FilterToggle
                 icon="image-up"
                 label="Image"
-                mode={modalityFilters.image_input ? 'include' : 'any'}
-                onChange={(mode) => setModalityFilter('image_input', mode === 'include')}
-                allowExclude={false}
+                mode={modalityFilters.image_input}
+                onChange={(mode) => setModalityFilter('image_input', mode)}
+                allowExclude={true}
               />
               <FilterToggle
                 icon="file-spreadsheet"
                 label="File"
-                mode={modalityFilters.file_input ? 'include' : 'any'}
-                onChange={(mode) => setModalityFilter('file_input', mode === 'include')}
-                allowExclude={false}
+                mode={modalityFilters.file_input}
+                onChange={(mode) => setModalityFilter('file_input', mode)}
+                allowExclude={true}
               />
               <FilterToggle
                 icon="audio-lines"
                 label="Audio"
-                mode={modalityFilters.audio_input ? 'include' : 'any'}
-                onChange={(mode) => setModalityFilter('audio_input', mode === 'include')}
-                allowExclude={false}
+                mode={modalityFilters.audio_input}
+                onChange={(mode) => setModalityFilter('audio_input', mode)}
+                allowExclude={true}
+              />
+              <FilterToggle
+                icon="video"
+                label="Video"
+                mode={modalityFilters.video_input}
+                onChange={(mode) => setModalityFilter('video_input', mode)}
+                allowExclude={true}
               />
             </div>
           </FilterSection>
@@ -61,9 +68,16 @@ export function ModalityFilterControls() {
               <FilterToggle
                 icon="image-down"
                 label="Image"
-                mode={modalityFilters.image_output ? 'include' : 'any'}
-                onChange={(mode) => setModalityFilter('image_output', mode === 'include')}
-                allowExclude={false}
+                mode={modalityFilters.image_output}
+                onChange={(mode) => setModalityFilter('image_output', mode)}
+                allowExclude={true}
+              />
+              <FilterToggle
+                icon="file-digit"
+                label="Embeddings"
+                mode={modalityFilters.embeddings_output}
+                onChange={(mode) => setModalityFilter('embeddings_output', mode)}
+                allowExclude={true}
               />
             </div>
           </FilterSection>

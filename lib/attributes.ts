@@ -251,6 +251,22 @@ export const attributes = {
     has: (endpoint: EndpointPartial) =>
       endpoint.model?.input_modalities?.includes('audio') ?? false,
   },
+
+  video_input: {
+    icon: 'video',
+    details: 'Supports video input',
+    color: 'emerald',
+    has: (endpoint: EndpointPartial) =>
+      endpoint.model?.input_modalities?.includes('video') ?? false,
+  },
+
+  embeddings_output: {
+    icon: 'file-digit',
+    details: 'Supports embeddings output',
+    color: 'amber',
+    has: (endpoint: EndpointPartial) =>
+      endpoint.model?.output_modalities?.includes('embeddings') ?? false,
+  },
 } as const
 
 export type AttributeName = keyof typeof attributes

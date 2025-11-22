@@ -24,6 +24,7 @@ const REQUIRED_ICONS = [
   'calendar',
   'chevrons-down',
   'fingerprint',
+  'file-digit',
   'letter-text',
   'link',
   'message-square',
@@ -37,6 +38,7 @@ const REQUIRED_ICONS = [
   'shield-alert',
   'square-stop',
   'wrench',
+  'video',
 
   'file-chart-column-increasing',
   'file-spreadsheet',
