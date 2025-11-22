@@ -28,6 +28,7 @@ export function EntityAvatar({
           src={url}
           alt=""
           fill
+          sizes="40px"
           className="object-contain"
           style={{ scale: style?.scale ?? 0.75 }}
         />
