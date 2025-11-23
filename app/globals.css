@@ -67,6 +67,13 @@
   --color-negative-surface-border: var(--negative-surface-border);
   --color-negative-outline: var(--negative-outline);
   --color-negative-outline-border: var(--negative-outline-border);
+  --animate-skeleton: skeleton 2s -1s infinite linear;
+
+  @keyframes skeleton {
+    to {
+      background-position: -200% 0;
+    }
+  }
 }
 
 :root {
