@@ -5,14 +5,12 @@ import type { Doc } from '@/convex/_generated/dataModel'
 import { DataGridColumnHeader } from '@/components/data-grid/data-grid-column-header'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { getEndpointAttributeData } from '@/lib/attributes'
 import { formatDateTime, formatPrice } from '@/lib/formatters'
 
 import { fuzzySort } from '../data-grid/data-grid-fuzzy'
 import { EntitySheetTrigger } from '../entity-sheet/entity-sheet'
-import { AttributeBadge, AttributeBadgeName, AttributeBadgeSet } from '../shared/attribute-badge'
+import { AttributeBadgeSet } from '../shared/attribute-badge'
 import { EntityBadge } from '../shared/entity-badge'
-import { PricingBadgeSet } from '../shared/pricing-badges'
 
 export type EndpointRow = Doc<'or_views_endpoints'>
 
@@ -73,26 +71,14 @@ export const columns: ColumnDef<EndpointRow>[] = [
     ),
     cell: ({ row }) => {
       const endpoint = row.original
-      const endpointGone = getEndpointAttributeData(endpoint, 'gone')
-      let content = null
 
-      if (endpointGone.has) {
-        content = (
-          <AttributeBadge
-            sprite={endpointGone.icon}
-            name={endpointGone.name}
-            details={endpointGone.details}
-            color={endpointGone.color}
-            variant="soft"
-          />
-        )
-      } else if (endpoint.disabled) {
-        content = <AttributeBadgeName name="disabled" />
-      } else if (endpoint.deranked) {
-        content = <AttributeBadgeName name="deranked" />
-      }
-
-      return content ? <div className="flex justify-center">{content}</div> : null
+      return (
+        <AttributeBadgeSet
+          endpoint={endpoint}
+          attributes={['gone', 'disabled', 'deranked']}
+          mode="compact"
+        />
+      )
     },
     size: 110,
     enableHiding: true,
@@ -177,7 +163,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
             'video_input',
             'embeddings_output',
           ]}
-          hideUnavailable
+          mode="compact"
         />
       )
     },
@@ -199,17 +185,15 @@ export const columns: ColumnDef<EndpointRow>[] = [
         <AttributeBadgeSet
           endpoint={endpoint}
           attributes={[
-            'reasoning',
-            'mandatory_reasoning',
+            ['reasoning', 'mandatory_reasoning'],
             'tools',
-            'response_format',
-            'structured_outputs',
-            'caching',
-            'implicit_caching',
+            ['response_format', 'structured_outputs'],
+            ['caching', 'implicit_caching'],
             'native_web_search',
             'moderated',
             'free',
           ]}
+          mode="grid"
         />
       )
     },
@@ -340,9 +324,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
     header: ({ column }) => <DataGridColumnHeader column={column} title="OTHER $" />,
     cell: ({ row }) => {
       const endpoint = row.original
-      const pricingBadges = <PricingBadgeSet endpoint={endpoint} />
-
-      return pricingBadges
+      return <AttributeBadgeSet endpoint={endpoint} attributes={['request']} mode="compact" />
     },
     size: 135,
     meta: {
@@ -363,7 +345,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
         <AttributeBadgeSet
           endpoint={endpoint}
           attributes={['training', 'data_publishing', 'user_id', 'data_retention']}
-          hideUnavailable
+          mode="compact"
         />
       )
     },
@@ -391,7 +373,7 @@ export const columns: ColumnDef<EndpointRow>[] = [
             'max_requests_per_minute',
             'max_requests_per_day',
           ]}
-          hideUnavailable
+          mode="compact"
         />
       )
     },

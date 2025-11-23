@@ -1,286 +1,593 @@
+import type { VariantProps } from 'class-variance-authority'
+
 import { Doc } from '@/convex/_generated/dataModel'
 
-import { formatPrice } from './formatters'
+import { RadIconBadge } from '@/components/shared/rad-badge'
+import { SpriteIconName } from '@/lib/sprite-icons'
+
+import { formatDateTime, formatPrice } from './formatters'
 
 type EndpointPartial = Partial<Doc<'or_views_endpoints'>>
+type Color = VariantProps<typeof RadIconBadge>['color']
 
-export const attributes = {
+export interface Attribute {
+  key: string
+  icon: SpriteIconName
+  label: string
+  description: string
+  color: Color
+  resolve: (endpoint: EndpointPartial) => {
+    active: boolean
+    value?: string
+    details?: { label?: string; value: string }[]
+  }
+}
+
+export const attributes: Record<string, Attribute> = {
   // Features (model)
   reasoning: {
+    key: 'reasoning',
     icon: 'brain-cog',
-    details: 'Model supports reasoning capabilities',
+    label: 'Reasoning',
+    description: 'Model supports reasoning capabilities',
     color: 'indigo',
-    has: (endpoint: EndpointPartial) => endpoint.model?.reasoning ?? false,
-  },
+    resolve: (endpoint) => {
+      const active = endpoint.model?.reasoning ?? false
+      const items = []
 
-  // Features (endpoint)
-  tools: {
-    icon: 'wrench',
-    details: 'Supports tool parameters',
-    color: 'blue',
-    has: (endpoint: EndpointPartial) => endpoint.supported_parameters?.includes('tools') ?? false,
-  },
+      if (endpoint.pricing?.internal_reasoning) {
+        items.push({
+          label: 'Internal Reasoning',
+          value: formatPrice({
+            priceKey: 'internal_reasoning',
+            priceValue: endpoint.pricing.internal_reasoning,
+          }),
+        })
+      }
 
-  response_format: {
-    icon: 'braces',
-    details: 'Supports the response_format parameter with json_object type',
-    color: 'teal',
-    has: (endpoint: EndpointPartial) =>
-      endpoint.supported_parameters?.includes('response_format') ?? false,
-  },
-
-  structured_outputs: {
-    icon: 'braces',
-    details: 'Supports the response_format parameter with json_schema type',
-    color: 'teal',
-    variant: 'soft',
-    has: (endpoint: EndpointPartial) =>
-      endpoint.supported_parameters?.includes('structured_outputs') ?? false,
-  },
-
-  caching: {
-    icon: 'database',
-    details: 'Inputs can be cached',
-    color: 'cyan',
-    has: (endpoint: EndpointPartial) => !!endpoint.pricing?.cache_read,
-  },
-
-  implicit_caching: {
-    icon: 'database',
-    details: 'Inputs are cached automatically',
-    color: 'cyan',
-    variant: 'soft',
-    has: (endpoint: EndpointPartial) => endpoint.implicit_caching ?? false,
+      return {
+        active,
+        details: items.length > 0 ? items : undefined,
+      }
+    },
   },
 
   mandatory_reasoning: {
+    key: 'mandatory_reasoning',
     icon: 'brain-cog',
-    details: 'Reasoning cannot be disabled.',
+    label: 'Mandatory Reasoning',
+    description: 'Reasoning cannot be disabled.',
     color: 'indigo',
-    variant: 'soft',
-    has: (endpoint: EndpointPartial) => endpoint.mandatory_reasoning ?? false,
+    resolve: (endpoint) => {
+      const active = endpoint.mandatory_reasoning ?? false
+      const items = []
+
+      if (endpoint.pricing?.internal_reasoning) {
+        items.push({
+          label: 'Internal Reasoning',
+          value: formatPrice({
+            priceKey: 'internal_reasoning',
+            priceValue: endpoint.pricing.internal_reasoning,
+          }),
+        })
+      }
+
+      return {
+        active,
+        details: items.length > 0 ? items : undefined,
+      }
+    },
+  },
+
+  tools: {
+    key: 'tools',
+    icon: 'wrench',
+    label: 'Tools',
+    description: 'Supports tool parameters',
+    color: 'blue',
+    resolve: (endpoint) => ({
+      active: endpoint.supported_parameters?.includes('tools') ?? false,
+    }),
+  },
+
+  response_format: {
+    key: 'response_format',
+    icon: 'braces',
+    label: 'Response Format',
+    description: 'Supports the response_format parameter with json_object type',
+    color: 'teal',
+    resolve: (endpoint) => ({
+      active: endpoint.supported_parameters?.includes('response_format') ?? false,
+    }),
+  },
+
+  structured_outputs: {
+    key: 'structured_outputs',
+    icon: 'braces',
+    label: 'Structured Outputs',
+    description: 'Supports the response_format parameter with json_schema type',
+    color: 'teal',
+    resolve: (endpoint) => ({
+      active: endpoint.supported_parameters?.includes('structured_outputs') ?? false,
+    }),
+  },
+
+  caching: {
+    key: 'caching',
+    icon: 'database',
+    label: 'Caching',
+    description: 'Inputs can be cached',
+    color: 'cyan',
+    resolve: (endpoint) => {
+      const active = !!endpoint.pricing?.cache_read
+      const items = []
+
+      if (endpoint.pricing?.cache_read) {
+        items.push({
+          label: 'Read',
+          value: formatPrice({
+            priceKey: 'cache_read',
+            priceValue: endpoint.pricing.cache_read,
+          }),
+        })
+      }
+
+      if (endpoint.pricing?.cache_write) {
+        items.push({
+          label: 'Write',
+          value: formatPrice({
+            priceKey: 'cache_write',
+            priceValue: endpoint.pricing.cache_write,
+          }),
+        })
+      }
+
+      return {
+        active,
+        details: items.length > 0 ? items : undefined,
+      }
+    },
+  },
+
+  implicit_caching: {
+    key: 'implicit_caching',
+    icon: 'database',
+    label: 'Implicit Caching',
+    description: 'Inputs are cached automatically',
+    color: 'cyan',
+    resolve: (endpoint) => {
+      const active = endpoint.implicit_caching ?? false
+      const items = []
+
+      if (endpoint.pricing?.cache_read) {
+        items.push({
+          label: 'Read',
+          value: formatPrice({
+            priceKey: 'cache_read',
+            priceValue: endpoint.pricing.cache_read,
+          }),
+        })
+      }
+
+      if (endpoint.pricing?.cache_write) {
+        items.push({
+          label: 'Write',
+          value: formatPrice({
+            priceKey: 'cache_write',
+            priceValue: endpoint.pricing.cache_write,
+          }),
+        })
+      }
+
+      return {
+        active,
+        details: items.length > 0 ? items : undefined,
+      }
+    },
   },
 
   // Features (OpenRouter)
   moderated: {
+    key: 'moderated',
     icon: 'shield-alert',
-    details: 'Content is moderated by OpenRouter before being sent to the provider.',
+    label: 'Moderated',
+    description: 'Content is moderated by OpenRouter before being sent to the provider.',
     color: 'amber',
-    has: (endpoint: EndpointPartial) => endpoint.moderated ?? false,
+    resolve: (endpoint) => ({
+      active: endpoint.moderated ?? false,
+    }),
   },
 
   // Other features
   file_urls: {
+    key: 'file_urls',
     icon: 'link',
-    details: 'Supports file URL inputs',
+    label: 'File URLs',
+    description: 'Supports file URL inputs',
     color: 'purple',
-    has: (endpoint: EndpointPartial) => endpoint.file_urls ?? false,
+    resolve: (endpoint) => ({
+      active: endpoint.file_urls ?? false,
+    }),
   },
 
   native_web_search: {
+    key: 'native_web_search',
     icon: 'globe',
-    details: 'Use native web search capabilities',
+    label: 'Native Web Search',
+    description: 'Use native web search capabilities',
     color: 'emerald',
-    has: (endpoint: EndpointPartial) => endpoint.native_web_search ?? false,
-    getValue: (endpoint: EndpointPartial) => {
+    resolve: (endpoint) => {
+      const active = endpoint.native_web_search ?? false
+      const items = []
+
       if (endpoint.pricing?.web_search) {
-        return formatPrice({
-          priceKey: 'web_search',
-          priceValue: endpoint.pricing.web_search,
+        items.push({
+          label: 'Per Request',
+          value: formatPrice({
+            priceKey: 'web_search',
+            priceValue: endpoint.pricing.web_search,
+          }),
         })
       }
-      return undefined
+
+      return {
+        active,
+        details: items.length > 0 ? items : undefined,
+      }
     },
   },
 
   completions: {
+    key: 'completions',
     icon: 'message-square',
-    details: 'Supports text completion API',
+    label: 'Completions',
+    description: 'Supports text completion API',
     color: 'blue',
-    has: (endpoint: EndpointPartial) => endpoint.completions ?? false,
+    resolve: (endpoint) => ({
+      active: endpoint.completions ?? false,
+    }),
   },
 
   chat_completions: {
+    key: 'chat_completions',
     icon: 'messages-square',
-    details: 'Supports chat completion API',
+    label: 'Chat Completions',
+    description: 'Supports chat completion API',
     color: 'blue',
-    has: (endpoint: EndpointPartial) => endpoint.chat_completions ?? false,
+    resolve: (endpoint) => ({
+      active: endpoint.chat_completions ?? false,
+    }),
   },
 
   stream_cancellation: {
+    key: 'stream_cancellation',
     icon: 'square-stop',
-    details: 'Supports streaming cancellation',
+    label: 'Stream Cancellation',
+    description: 'Supports streaming cancellation',
     color: 'gray',
-    has: (endpoint: EndpointPartial) => endpoint.stream_cancellation ?? false,
+    resolve: (endpoint) => ({
+      active: endpoint.stream_cancellation ?? false,
+    }),
   },
 
   // Variant
   free: {
+    key: 'free',
     icon: 'cake-slice',
-    details: 'Free variant, subject to request limits and may have low availability.',
+    label: 'Free',
+    description: 'Free variant, subject to request limits and may have low availability.',
     color: 'pink',
-    has: (endpoint: EndpointPartial) => endpoint.model?.variant === 'free',
+    resolve: (endpoint) => ({
+      active: endpoint.model?.variant === 'free',
+    }),
   },
 
   // Status Flags
   deranked: {
+    key: 'deranked',
     icon: 'chevrons-down',
-    details: 'Will only be routed to as a fallback',
+    label: 'Deranked',
+    description: 'Will only be routed to as a fallback',
     color: 'amber',
-    has: (endpoint: EndpointPartial) => endpoint.deranked ?? false,
+    resolve: (endpoint) => ({
+      active: endpoint.deranked ?? false,
+    }),
   },
 
   disabled: {
+    key: 'disabled',
     icon: 'octagon-x',
-    details: 'Endpoint is currently disabled',
+    label: 'Disabled',
+    description: 'Endpoint is currently disabled',
     color: 'red',
-    has: (endpoint: EndpointPartial) => endpoint.disabled ?? false,
+    resolve: (endpoint) => ({
+      active: endpoint.disabled ?? false,
+    }),
   },
 
   gone: {
+    key: 'gone',
     icon: 'skull',
-    details: 'This endpoint no longer exists.',
+    label: 'Gone',
+    description: 'This endpoint no longer exists.',
     color: 'rose',
-    has: (endpoint: EndpointPartial) => !!endpoint.unavailable_at,
-    getValue: (endpoint: EndpointPartial) =>
-      `Last seen: ${endpoint.unavailable_at?.toLocaleString() ?? 'unknown'}`,
+    resolve: (endpoint) => ({
+      active: !!endpoint.unavailable_at,
+      details: endpoint.unavailable_at
+        ? [
+            {
+              label: 'Last Seen',
+              value: formatDateTime(endpoint.unavailable_at),
+            },
+          ]
+        : undefined,
+    }),
   },
 
   // Data Policy
   training: {
+    key: 'training',
     icon: 'scan-eye',
-    details: 'Your data may be used to train new models.',
+    label: 'Training',
+    description: 'Your data may be used to train new models.',
     color: 'orange',
-    has: (endpoint: EndpointPartial) => endpoint.data_policy?.training === true,
+    resolve: (endpoint) => ({
+      active: endpoint.data_policy?.training === true,
+    }),
   },
 
   data_publishing: {
+    key: 'data_publishing',
     icon: 'scroll-text',
-    details: 'Your data may be published or shared publicly.',
+    label: 'Data Publishing',
+    description: 'Your data may be published or shared publicly.',
     color: 'orange',
-    has: (endpoint: EndpointPartial) => endpoint.data_policy?.can_publish === true,
+    resolve: (endpoint) => ({
+      active: endpoint.data_policy?.can_publish === true,
+    }),
   },
 
   user_id: {
+    key: 'user_id',
     icon: 'fingerprint',
-    details: 'An anonymous user ID is shared with the provider.',
+    label: 'User ID',
+    description: 'An anonymous user ID is shared with the provider.',
     color: 'orange',
-    has: (endpoint: EndpointPartial) => endpoint.data_policy?.requires_user_ids === true,
+    resolve: (endpoint) => ({
+      active: endpoint.data_policy?.requires_user_ids === true,
+    }),
   },
 
   data_retention: {
+    key: 'data_retention',
     icon: 'save',
-    details: 'Your data may be retained by the provider.',
+    label: 'Data Retention',
+    description: 'Your data may be retained by the provider.',
     color: 'orange',
-    has: (endpoint: EndpointPartial) => endpoint.data_policy?.retains_prompts === true,
-    getValue: (endpoint: EndpointPartial) => {
+    resolve: (endpoint) => {
+      const active = endpoint.data_policy?.retains_prompts === true
       const days = endpoint.data_policy?.retains_prompts_days?.toLocaleString()
-      return days ? `${days} days` : `unknown period`
+      const value = days ? `${days} days` : 'unknown period'
+      return {
+        active,
+        value,
+      }
     },
   },
 
   // Limits
   max_text_input_tokens: {
+    key: 'max_text_input_tokens',
     icon: 'letter-text',
-    details: 'Maximum text input tokens allowed',
+    label: 'Max Context',
+    description: 'Maximum text input tokens allowed',
     color: 'yellow',
-    has: (endpoint: EndpointPartial) => endpoint.limits?.text_input_tokens != null,
-    getValue: (endpoint: EndpointPartial) => endpoint.limits?.text_input_tokens?.toLocaleString(),
+    resolve: (endpoint) => ({
+      active: endpoint.limits?.text_input_tokens != null,
+      value: endpoint.limits?.text_input_tokens?.toLocaleString(),
+    }),
   },
 
   max_image_input_tokens: {
+    key: 'max_image_input_tokens',
     icon: 'image',
-    details: 'Maximum image input tokens allowed',
+    label: 'Max Image Tokens',
+    description: 'Maximum image input tokens allowed',
     color: 'yellow',
-    has: (endpoint: EndpointPartial) => endpoint.limits?.image_input_tokens != null,
-    getValue: (endpoint: EndpointPartial) => endpoint.limits?.image_input_tokens?.toLocaleString(),
+    resolve: (endpoint) => ({
+      active: endpoint.limits?.image_input_tokens != null,
+      value: endpoint.limits?.image_input_tokens?.toLocaleString(),
+    }),
   },
 
   max_images_per_input: {
+    key: 'max_images_per_input',
     icon: 'image',
-    details: 'Maximum number of images per input',
+    label: 'Max Images',
+    description: 'Maximum number of images per input',
     color: 'yellow',
-    has: (endpoint: EndpointPartial) => endpoint.limits?.images_per_input != null,
-    getValue: (endpoint: EndpointPartial) => endpoint.limits?.images_per_input?.toLocaleString(),
+    resolve: (endpoint) => ({
+      active: endpoint.limits?.images_per_input != null,
+      value: endpoint.limits?.images_per_input?.toLocaleString(),
+    }),
   },
 
   max_requests_per_minute: {
+    key: 'max_requests_per_minute',
     icon: 'alarm-clock',
-    details: 'Maximum requests per minute allowed',
+    label: 'Max Requests/Min',
+    description: 'Maximum requests per minute allowed',
     color: 'yellow',
-    has: (endpoint: EndpointPartial) => endpoint.limits?.requests_per_minute != null,
-    getValue: (endpoint: EndpointPartial) => endpoint.limits?.requests_per_minute?.toLocaleString(),
+    resolve: (endpoint) => ({
+      active: endpoint.limits?.requests_per_minute != null,
+      value: endpoint.limits?.requests_per_minute?.toLocaleString(),
+    }),
   },
 
   max_requests_per_day: {
+    key: 'max_requests_per_day',
     icon: 'calendar',
-    details: 'Maximum requests per day allowed',
+    label: 'Max Requests/Day',
+    description: 'Maximum requests per day allowed',
     color: 'yellow',
-    has: (endpoint: EndpointPartial) => endpoint.limits?.requests_per_day != null,
-    getValue: (endpoint: EndpointPartial) => endpoint.limits?.requests_per_day?.toLocaleString(),
+    resolve: (endpoint) => ({
+      active: endpoint.limits?.requests_per_day != null,
+      value: endpoint.limits?.requests_per_day?.toLocaleString(),
+    }),
   },
 
   // Modalities
   image_input: {
+    key: 'image_input',
     icon: 'image-up',
-    details: 'Supports image input',
+    label: 'Image Input',
+    description: 'Supports image input',
     color: 'violet',
-    has: (endpoint: EndpointPartial) =>
-      endpoint.model?.input_modalities?.includes('image') ?? false,
+    resolve: (endpoint) => {
+      const active = endpoint.model?.input_modalities?.includes('image') ?? false
+      const items = []
+
+      if (endpoint.pricing?.image_input) {
+        items.push({
+          label: 'Input',
+          value: formatPrice({
+            priceKey: 'image_input',
+            priceValue: endpoint.pricing.image_input,
+          }),
+        })
+      }
+
+      return {
+        active,
+        details: items.length > 0 ? items : undefined,
+      }
+    },
   },
 
   image_output: {
+    key: 'image_output',
     icon: 'image-down',
-    details: 'Supports image output',
+    label: 'Image Output',
+    description: 'Supports image output',
     color: 'violet',
-    has: (endpoint: EndpointPartial) =>
-      endpoint.model?.output_modalities?.includes('image') ?? false,
+    resolve: (endpoint) => {
+      const active = endpoint.model?.output_modalities?.includes('image') ?? false
+      const items = []
+
+      if (endpoint.pricing?.image_output) {
+        items.push({
+          label: 'Output',
+          value: formatPrice({
+            priceKey: 'image_output',
+            priceValue: endpoint.pricing.image_output,
+          }),
+        })
+      }
+
+      return {
+        active,
+        details: items.length > 0 ? items : undefined,
+      }
+    },
   },
 
   file_input: {
+    key: 'file_input',
     icon: 'file-spreadsheet',
-    details: 'Supports file input',
+    label: 'File Input',
+    description: 'Supports file input',
     color: 'sky',
-    has: (endpoint: EndpointPartial) => endpoint.model?.input_modalities?.includes('file') ?? false,
+    resolve: (endpoint) => ({
+      active: endpoint.model?.input_modalities?.includes('file') ?? false,
+    }),
   },
 
   audio_input: {
+    key: 'audio_input',
     icon: 'audio-lines',
-    details: 'Supports audio input',
+    label: 'Audio Input',
+    description: 'Supports audio input',
     color: 'fuchsia',
-    has: (endpoint: EndpointPartial) =>
-      endpoint.model?.input_modalities?.includes('audio') ?? false,
+    resolve: (endpoint) => {
+      const active = endpoint.model?.input_modalities?.includes('audio') ?? false
+      const items = []
+
+      if (endpoint.pricing?.audio_input) {
+        items.push({
+          label: 'Input',
+          value: formatPrice({
+            priceKey: 'audio_input',
+            priceValue: endpoint.pricing.audio_input,
+          }),
+        })
+      }
+
+      if (endpoint.pricing?.audio_cache_input) {
+        items.push({
+          label: 'Cache',
+          value: formatPrice({
+            priceKey: 'audio_cache_input',
+            priceValue: endpoint.pricing.audio_cache_input,
+          }),
+        })
+      }
+
+      return {
+        active,
+        details: items.length > 0 ? items : undefined,
+      }
+    },
   },
 
   video_input: {
+    key: 'video_input',
     icon: 'video',
-    details: 'Supports video input',
+    label: 'Video Input',
+    description: 'Supports video input',
     color: 'emerald',
-    has: (endpoint: EndpointPartial) =>
-      endpoint.model?.input_modalities?.includes('video') ?? false,
+    resolve: (endpoint) => ({
+      active: endpoint.model?.input_modalities?.includes('video') ?? false,
+    }),
   },
 
   embeddings_output: {
+    key: 'embeddings_output',
     icon: 'file-digit',
-    details: 'Supports embeddings output',
+    label: 'Embeddings',
+    description: 'Supports embeddings output',
     color: 'amber',
-    has: (endpoint: EndpointPartial) =>
-      endpoint.model?.output_modalities?.includes('embeddings') ?? false,
+    resolve: (endpoint) => ({
+      active: endpoint.model?.output_modalities?.includes('embeddings') ?? false,
+    }),
+  },
+
+  // Request Pricing & Limits
+  request: {
+    key: 'request',
+    icon: 'flag',
+    label: 'Request',
+    description: 'Flat rate fee for every request.',
+    color: 'yellow',
+    resolve: (endpoint) => {
+      const active = !!endpoint.pricing?.request
+      const items = []
+
+      if (endpoint.pricing?.request) {
+        items.push({
+          label: 'Per Request',
+          value: formatPrice({
+            priceKey: 'request',
+            priceValue: endpoint.pricing.request,
+          }),
+        })
+      }
+
+      return {
+        active,
+        details: items.length > 0 ? items : undefined,
+      }
+    },
   },
 } as const
 
 export type AttributeName = keyof typeof attributes
-
-export function getEndpointAttributeData(endpoint: EndpointPartial, name: AttributeName) {
-  const attr = attributes[name]
-  const value = 'getValue' in attr ? attr.getValue(endpoint) : undefined
-  const variant = 'variant' in attr ? attr.variant : ('surface' as const)
-
-  return {
-    ...attr,
-    has: attr.has(endpoint),
-    name,
-    value,
-    variant,
-  }
-}

@@ -25,25 +25,10 @@ export function useEndpointsData() {
       for (const [filterName, mode] of Object.entries(attributeFilters)) {
         let hasAttribute = false
 
-        // Handle modality filters
-        if (filterName === 'image_input') {
-          hasAttribute = endpoint.model.input_modalities.includes('image')
-        } else if (filterName === 'file_input') {
-          hasAttribute = endpoint.model.input_modalities.includes('file')
-        } else if (filterName === 'audio_input') {
-          hasAttribute = endpoint.model.input_modalities.includes('audio')
-        } else if (filterName === 'video_input') {
-          hasAttribute = endpoint.model.input_modalities.includes('video')
-        } else if (filterName === 'image_output') {
-          hasAttribute = endpoint.model.output_modalities.includes('image')
-        } else if (filterName === 'embeddings_output') {
-          hasAttribute = endpoint.model.output_modalities.includes('embeddings')
-        } else {
-          // Handle regular attribute filters
-          const attr = attributes[filterName as keyof typeof attributes]
-          if (attr) {
-            hasAttribute = attr.has(endpoint)
-          }
+        // Handle all attribute filters (including modalities which are now in attributes)
+        const attr = attributes[filterName as keyof typeof attributes]
+        if (attr) {
+          hasAttribute = attr.resolve(endpoint).active
         }
 
         if (mode === 'include' && !hasAttribute) {

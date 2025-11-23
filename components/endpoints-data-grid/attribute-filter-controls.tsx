@@ -33,28 +33,28 @@ export function ModalityFilterControls() {
           <FilterSection title="Input">
             <div className="grid grid-cols-2 gap-2">
               <FilterToggle
-                icon="image-up"
+                icon={attributes.image_input.icon}
                 label="Image"
                 mode={modalityFilters.image_input}
                 onChange={(mode) => setModalityFilter('image_input', mode)}
                 allowExclude={true}
               />
               <FilterToggle
-                icon="file-spreadsheet"
+                icon={attributes.file_input.icon}
                 label="File"
                 mode={modalityFilters.file_input}
                 onChange={(mode) => setModalityFilter('file_input', mode)}
                 allowExclude={true}
               />
               <FilterToggle
-                icon="audio-lines"
+                icon={attributes.audio_input.icon}
                 label="Audio"
                 mode={modalityFilters.audio_input}
                 onChange={(mode) => setModalityFilter('audio_input', mode)}
                 allowExclude={true}
               />
               <FilterToggle
-                icon="video"
+                icon={attributes.video_input.icon}
                 label="Video"
                 mode={modalityFilters.video_input}
                 onChange={(mode) => setModalityFilter('video_input', mode)}
@@ -66,14 +66,14 @@ export function ModalityFilterControls() {
           <FilterSection title="Output">
             <div className="grid grid-cols-2 gap-2">
               <FilterToggle
-                icon="image-down"
+                icon={attributes.image_output.icon}
                 label="Image"
                 mode={modalityFilters.image_output}
                 onChange={(mode) => setModalityFilter('image_output', mode)}
                 allowExclude={true}
               />
               <FilterToggle
-                icon="file-digit"
+                icon={attributes.embeddings_output.icon}
                 label="Embeddings"
                 mode={modalityFilters.embeddings_output}
                 onChange={(mode) => setModalityFilter('embeddings_output', mode)}
@@ -103,10 +103,10 @@ export function AttributeFilterControls() {
     useEndpointFilters()
 
   // Helper to render an attribute filter toggle
-  const renderAttributeToggle = (name: AttributeName, label: string) => (
+  const renderAttributeToggle = (name: AttributeName) => (
     <FilterToggle
       icon={attributes[name].icon}
-      label={label}
+      label={attributes[name].label}
       mode={attributeFilters[name] ?? 'any'}
       onChange={(mode) => setAttributeFilter(name, mode)}
     />
@@ -131,14 +131,14 @@ export function AttributeFilterControls() {
           {/* Features */}
           <FilterSection title="Features">
             <div className="grid grid-cols-1 gap-x-2 gap-y-1.5 sm:grid-cols-2">
-              {renderAttributeToggle('reasoning', 'Reasoning')}
-              {renderAttributeToggle('tools', 'Tools')}
-              {renderAttributeToggle('response_format', 'Response Format')}
-              {renderAttributeToggle('structured_outputs', 'Structured Outputs')}
-              {renderAttributeToggle('caching', 'Caching')}
-              {renderAttributeToggle('native_web_search', 'Native Web Search')}
-              {renderAttributeToggle('moderated', 'Moderated')}
-              {renderAttributeToggle('free', 'Free')}
+              {renderAttributeToggle('reasoning')}
+              {renderAttributeToggle('tools')}
+              {renderAttributeToggle('response_format')}
+              {renderAttributeToggle('structured_outputs')}
+              {renderAttributeToggle('caching')}
+              {renderAttributeToggle('native_web_search')}
+              {renderAttributeToggle('moderated')}
+              {renderAttributeToggle('free')}
             </div>
           </FilterSection>
 
@@ -147,9 +147,9 @@ export function AttributeFilterControls() {
           {/* Status */}
           <FilterSection title="Status">
             <div className="grid grid-cols-1 gap-x-4 gap-y-1.5 sm:grid-cols-2">
-              {renderAttributeToggle('gone', 'Gone')}
-              {renderAttributeToggle('disabled', 'Disabled')}
-              {renderAttributeToggle('deranked', 'Deranked')}
+              {renderAttributeToggle('gone')}
+              {renderAttributeToggle('disabled')}
+              {renderAttributeToggle('deranked')}
             </div>
           </FilterSection>
 

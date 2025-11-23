@@ -1,107 +1,92 @@
-import type { VariantProps } from 'class-variance-authority'
-
 import { Doc } from '@/convex/_generated/dataModel'
 
-import { AttributeName, attributes, getEndpointAttributeData } from '@/lib/attributes'
-import type { SpriteIconName } from '@/lib/sprite-icons'
+import { SpriteIcon } from '@/components/ui/sprite-icon'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { Attribute, AttributeName, attributes } from '@/lib/attributes'
 
-import { SpriteIcon } from '../ui/sprite-icon'
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { RadIconBadge } from './rad-badge'
 
-export function AttributeBadge({
-  sprite,
-  name,
-  details,
-  detailsValue,
-  color,
-  variant = 'surface',
-  disabled,
-}: {
-  sprite: SpriteIconName
-  name: string
-  details: string
-  detailsValue?: string
-  color: VariantProps<typeof RadIconBadge>['color']
-  variant?: VariantProps<typeof RadIconBadge>['variant']
-  disabled?: boolean
-}) {
+interface AttributeBadgeProps {
+  definition: Attribute
+  state?: ReturnType<Attribute['resolve']>
+}
+
+export function AttributeBadge({ definition, state }: AttributeBadgeProps) {
+  const { icon, label, description, color, key } = definition
+  const badge = state?.value
+  const details = state?.details
+
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <RadIconBadge variant={variant} color={color} aria-label={name} aria-disabled={disabled}>
-          <SpriteIcon name={sprite} className="size-full" />
+        <RadIconBadge variant="surface" color={color} aria-label={key}>
+          <SpriteIcon name={icon} className="size-full" />
         </RadIconBadge>
       </TooltipTrigger>
-      <TooltipContent className="max-w-60 font-mono">
+      <TooltipContent className="max-w-72 font-mono text-pretty">
         <div className="space-y-1">
-          <p className="font-medium uppercase">{name}</p>
-          <p className="font-sans">{details}</p>
-          {detailsValue && <p className="">{detailsValue}</p>}
+          <div className="space-y-1 not-only:mb-2">
+            <div className="flex items-center justify-between gap-2">
+              <p className="font-medium uppercase">{label}</p>
+              {badge && <span>{badge}</span>}
+            </div>
+            <p className="font-sans">{description}</p>
+          </div>
+
+          {details?.map((item, i) => (
+            <div key={i} className="flex justify-between gap-2">
+              {item.label && <span className="uppercase">{item.label}:</span>}
+              <span>{item.value}</span>
+            </div>
+          ))}
         </div>
       </TooltipContent>
     </Tooltip>
   )
 }
 
-export function AttributeBadgeName({ name }: { name: AttributeName }) {
-  const attr = attributes[name]
-  return (
-    <AttributeBadge
-      sprite={attr.icon}
-      name={name}
-      details={attr.details}
-      color={attr.color}
-      disabled={!attr.has}
-    />
-  )
+interface AttributeBadgeSetProps {
+  endpoint: Doc<'or_views_endpoints'>
+  attributes: (AttributeName | AttributeName[])[]
+  mode?: 'grid' | 'compact'
 }
 
 export function AttributeBadgeSet({
   endpoint,
-  attributes,
-  hideUnavailable = false,
-}: {
-  endpoint: Doc<'or_views_endpoints'>
-  attributes: AttributeName[]
-  hideUnavailable?: boolean
-}) {
-  const data = attributes.map((attr) => getEndpointAttributeData(endpoint, attr))
-  const pdata = processPairs(data)
+  attributes: attributeItems,
+  mode = 'grid',
+}: AttributeBadgeSetProps) {
+  const components: React.ReactNode[] = []
 
-  return (
-    <div className="flex items-center justify-center gap-1">
-      {pdata.map((attr) =>
-        attr.has ? (
-          <AttributeBadge
-            key={attr.name}
-            sprite={attr.icon}
-            name={attr.name}
-            details={attr.details}
-            detailsValue={attr.value}
-            color={attr.color}
-            variant={attr.variant}
-            disabled={!attr.has}
-          />
-        ) : hideUnavailable ? null : (
-          <div key={attr.name} className="size-7 shrink-0" />
-        ),
-      )}
-    </div>
-  )
-}
-
-const pairs = [
-  ['reasoning', 'mandatory_reasoning'],
-  ['response_format', 'structured_outputs'],
-  ['caching', 'implicit_caching'],
-]
-
-function processPairs<T extends { name: string; has: boolean }>(attributeData: T[]) {
-  const map = new Map(attributeData.map((attr) => [attr.name, attr]))
-  for (const [a1, a2] of pairs) {
-    if (map.get(a2)?.has) map.delete(a1)
-    else map.delete(a2)
+  for (const item of attributeItems) {
+    if (Array.isArray(item)) {
+      // Array: resolve in reverse order, render first active one
+      let rendered = false
+      for (const name of [...item].reverse()) {
+        const definition = attributes[name]
+        const state = definition.resolve(endpoint)
+        if (state.active) {
+          components.push(<AttributeBadge key={name} definition={definition} state={state} />)
+          rendered = true
+          break
+        }
+      }
+      // If none were active and in grid mode, add placeholder
+      if (!rendered && mode === 'grid') {
+        components.push(<div key={item[0]} className="size-7 shrink-0" />)
+      }
+    } else {
+      // Single attribute: resolve and add
+      const name = item
+      const definition = attributes[name]
+      const state = definition.resolve(endpoint)
+      if (state.active) {
+        components.push(<AttributeBadge key={name} definition={definition} state={state} />)
+      } else if (mode === 'grid') {
+        components.push(<div key={name} className="size-7 shrink-0" />)
+      }
+    }
   }
-  return [...map.values()]
+
+  return <div className="flex items-center justify-center gap-1">{components}</div>
 }
