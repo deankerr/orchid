@@ -32,6 +32,8 @@ import type * as lib_vTable from "../lib/vTable.js";
 import type * as lib_validator from "../lib/validator.js";
 import type * as models from "../models.js";
 import type * as providers from "../providers.js";
+import type * as public_api_preview_v1 from "../public_api/preview_v1.js";
+import type * as public_api_preview_v2 from "../public_api/preview_v2.js";
 import type * as shared from "../shared.js";
 import type * as snapshots_crawl_main from "../snapshots/crawl/main.js";
 import type * as snapshots_materialize_main from "../snapshots/materialize/main.js";
@@ -78,6 +80,8 @@ declare const fullApi: ApiFromModules<{
   "lib/validator": typeof lib_validator;
   models: typeof models;
   providers: typeof providers;
+  "public_api/preview_v1": typeof public_api_preview_v1;
+  "public_api/preview_v2": typeof public_api_preview_v2;
   shared: typeof shared;
   "snapshots/crawl/main": typeof snapshots_crawl_main;
   "snapshots/materialize/main": typeof snapshots_materialize_main;

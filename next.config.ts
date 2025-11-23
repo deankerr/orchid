@@ -36,6 +36,7 @@ const nextConfig: NextConfig = {
   },
   rewrites: async () => {
     return [
+      // * posthog
       {
         source: '/snarf/static/:path*',
         destination: 'https://us-assets.i.posthog.com/static/:path*',
@@ -44,9 +45,19 @@ const nextConfig: NextConfig = {
         source: '/snarf/:path*',
         destination: 'https://us.i.posthog.com/:path*',
       },
+      // * public api preview (legacy)
       {
         source: '/api/preview/endpoints',
-        destination: getConvexHttpUrl('/listmeps'),
+        destination: getConvexHttpUrl('/public-api-preview/v1'),
+      },
+      // * public api preview
+      {
+        source: '/api/preview/v1/models',
+        destination: getConvexHttpUrl('/public-api-preview/v1'),
+      },
+      {
+        source: '/api/preview/v2/models',
+        destination: getConvexHttpUrl('/public-api-preview/v2'),
       },
     ]
   },

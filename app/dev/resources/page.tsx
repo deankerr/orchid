@@ -48,8 +48,9 @@ export default function Page() {
           <ExtLink href="https://openrouter.ai/api/frontend/models/find?">(Find)</ExtLink>
         </div>
         <div className="space-x-1">
-          HTTP API:
-          <ExtLink href={getConvexHttpUrl('/listmeps')}>listmeps</ExtLink>
+          Public API:
+          <ExtLink href={getConvexHttpUrl('/public-api-preview/v1')}>v1</ExtLink>
+          <ExtLink href={getConvexHttpUrl('/public-api-preview/v2')}>v2</ExtLink>
         </div>
       </div>
 

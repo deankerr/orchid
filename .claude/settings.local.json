@@ -21,7 +21,8 @@
       "WebFetch(domain:tanstack.com)",
       "WebSearch",
       "mcp__linear-server__get_project",
-      "mcp__next-devtools__nextjs_runtime"
+      "mcp__next-devtools__nextjs_runtime",
+      "mcp__convex__runOneoffQuery"
     ],
     "deny": [],
     "ask": []

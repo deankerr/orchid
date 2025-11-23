@@ -111,6 +111,31 @@ This philosophy guides us to build systems that can adapt, evolve, and when nece
 - Convex has first class support for objects as fields on documents, including indexes on nested fields.
 - NEVER try to 'deploy' to convex, this will deploy to production!
 
+## HTTP Endpoints and Deployment URLs
+
+**Two separate servers run in this project:**
+
+1. **Next.js dev server** (`localhost:3020`) - Frontend application
+   - Runs via `bun dev` or similar
+   - Serves the React app from `app/` directory
+   - Handles frontend routes like `/`, `/endpoints`, `/monitor`
+
+2. **Convex backend** (`https://<deployment-name>.convex.site`) - Serverless backend
+   - Runs independently in Convex cloud
+   - Handles all database queries, mutations, actions
+   - Serves HTTP endpoints defined in `convex/http.ts`
+
+**Convex URL format:**
+
+- Development: `https://<deployment-name>.convex.site` (use `.site` for HTTP endpoints)
+- Dashboard/Internal: `https://<deployment-name>.convex.cloud` (internal Convex APIs)
+
+**Finding your deployment URL:**
+
+- Run `mcp__convex__status` to get deployment info
+- Development deployment will have `url` field with `.convex.cloud` domain
+- Replace `.cloud` with `.site` to access HTTP endpoints
+
 ## Utilities
 
 ```typescript
