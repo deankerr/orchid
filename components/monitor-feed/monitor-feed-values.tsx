@@ -20,7 +20,7 @@ export function ChangeValuePair({
   path_level_2?: string
 }) {
   // Handle array diffs
-  if (Array.isArray(before) && Array.isArray(after)) {
+  if (Array.isArray(before) && Array.isArray(after) && path_level_1 !== 'variable_pricings') {
     return <ArrayDiff before={before} after={after} />
   }
 
@@ -67,7 +67,7 @@ function ChangeValue({
   return <JSONValue value={value} />
 }
 
-function ValueBadge({ className, ...props }: React.ComponentProps<'span'>) {
+function BaseBadge({ className, ...props }: React.ComponentProps<'span'>) {
   return (
     <Badge
       variant="outline"
@@ -85,7 +85,7 @@ function NumericValue({ value, priceKey }: { value: number; priceKey?: string })
         unitSuffix: priceKey === 'discount',
       })
     : value.toLocaleString()
-  return <ValueBadge title={String(value)}>{formatted}</ValueBadge>
+  return <BaseBadge title={String(value)}>{formatted}</BaseBadge>
 }
 
 function StringValue({ value }: { value: string }) {
@@ -96,28 +96,28 @@ function StringValue({ value }: { value: string }) {
   const hasSpace = value.match(/\s/)
   const isSlug = !hasUppercase && !hasSpace
 
-  return <ValueBadge className={isSlug ? 'font-mono' : undefined}>{value}</ValueBadge>
+  return <BaseBadge className={isSlug ? 'font-mono' : undefined}>{value}</BaseBadge>
 }
 
 function EmptyValue() {
-  return <ValueBadge className="opacity-80">empty</ValueBadge>
+  return <BaseBadge className="opacity-80">empty</BaseBadge>
 }
 
 function BooleanValue({ value }: { value: boolean }) {
-  return <ValueBadge>{value ? 'true' : 'false'}</ValueBadge>
+  return <BaseBadge>{value ? 'true' : 'false'}</BaseBadge>
 }
 
 function NullValue() {
-  return <ValueBadge>null</ValueBadge>
+  return <BaseBadge>null</BaseBadge>
 }
 
 function UndefinedValue() {
-  return <ValueBadge className="text-foreground/50">null {/* intentional */}</ValueBadge>
+  return <BaseBadge className="text-foreground/50">null {/* intentional */}</BaseBadge>
 }
 
 function JSONValue({ value }: { value: unknown }) {
   const stringified = JSON.stringify(value, null, 2)
-  return <ValueBadge className="whitespace-normal">{stringified}</ValueBadge>
+  return <BaseBadge className="mt-1 py-2 text-xs whitespace-normal">{stringified}</BaseBadge>
 }
 
 function PercentageBadge({
