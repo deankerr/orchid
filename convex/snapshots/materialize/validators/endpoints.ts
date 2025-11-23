@@ -124,7 +124,14 @@ export const EndpointTransformSchema = z
       .map((pricing) => {
         const parsed = zVariablePricingPromptThreshold.safeParse(pricing)
         if (parsed.success) {
-          return parsed.data
+          return {
+            type: 'prompt-threshold' as const,
+            threshold: parsed.data.threshold,
+            text_input: parsed.data.prompt,
+            text_output: parsed.data.completions,
+            cache_read: parsed.data.input_cache_read,
+            cache_write: parsed.data.input_cache_write,
+          }
         }
 
         // known/ignored types: search-threshold

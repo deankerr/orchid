@@ -620,37 +620,37 @@ export function resolveThresholdPricing(
       value: `> ${variablePricing.threshold.toLocaleString()} tokens`,
     },
     {
-      label: 'Prompt',
+      label: 'Text Input',
       value: formatPrice({
-        priceKey: 'prompt',
-        priceValue: variablePricing.prompt,
+        priceKey: 'text_input',
+        priceValue: variablePricing.text_input,
       }),
     },
     {
-      label: 'Completions',
+      label: 'Text Output',
       value: formatPrice({
-        priceKey: 'completion',
-        priceValue: variablePricing.completions,
+        priceKey: 'text_output',
+        priceValue: variablePricing.text_output,
       }),
     },
   ]
 
-  if (variablePricing.input_cache_read) {
+  if (variablePricing.cache_read) {
     details.push({
       label: 'Cache Read',
       value: formatPrice({
-        priceKey: 'input_cache_read',
-        priceValue: variablePricing.input_cache_read,
+        priceKey: 'cache_read',
+        priceValue: variablePricing.cache_read,
       }),
     })
   }
 
-  if (variablePricing.input_cache_write) {
+  if (variablePricing.cache_write) {
     details.push({
       label: 'Cache Write',
       value: formatPrice({
-        priceKey: 'input_cache_write',
-        priceValue: variablePricing.input_cache_write,
+        priceKey: 'cache_write',
+        priceValue: variablePricing.cache_write,
       }),
     })
   }
