@@ -1,6 +1,6 @@
 'use client'
 
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 
 import { ConvexQueryCacheProvider } from 'convex-helpers/react/cache/provider'
 import { ConvexProvider, ConvexReactClient } from 'convex/react'
@@ -8,7 +8,9 @@ import { ConvexProvider, ConvexReactClient } from 'convex/react'
 import { ConvexQueryClient } from '@convex-dev/react-query'
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister'
 import { QueryClient } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
+import { useKeys } from 'rooks'
 
 const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!)
 
@@ -55,6 +57,9 @@ const asyncStoragePersister = createAsyncStoragePersister({
 */
 
 export function ConvexClientProvider({ children }: { children: ReactNode }) {
+  const [showDevtools, setShowDevtools] = useState(false)
+  useKeys(['ControlLeft', 'KeyT'], () => setShowDevtools((show) => !show))
+
   return (
     <ConvexProvider client={convex}>
       <ConvexQueryCacheProvider>
@@ -65,6 +70,7 @@ export function ConvexClientProvider({ children }: { children: ReactNode }) {
           }}
         >
           {children}
+          {showDevtools && <ReactQueryDevtools />}
         </PersistQueryClientProvider>
       </ConvexQueryCacheProvider>
     </ConvexProvider>
