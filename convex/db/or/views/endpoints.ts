@@ -77,6 +77,19 @@ export const table = defineTable({
     discount: v.optional(v.number()), // e.g. 0.2
   }),
 
+  variable_pricings: v.optional(
+    v.array(
+      v.object({
+        type: v.literal('prompt-threshold'),
+        threshold: v.number(),
+        prompt: v.number(),
+        completions: v.number(),
+        input_cache_read: v.optional(v.number()),
+        input_cache_write: v.optional(v.number()),
+      }),
+    ),
+  ),
+
   // * limits
   limits: v.object({
     text_input_tokens: v.optional(v.number()),

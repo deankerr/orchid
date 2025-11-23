@@ -9,6 +9,15 @@ const zPrice = z.coerce
   .transform((val) => (val !== 0 ? val : undefined))
   .optional()
 
+const zVariablePricingPromptThreshold = z.strictObject({
+  type: z.literal('prompt-threshold'),
+  threshold: z.number(),
+  prompt: z.coerce.number(),
+  completions: z.coerce.number(),
+  input_cache_read: zPrice,
+  input_cache_write: zPrice,
+})
+
 export const EndpointTransformSchema = z
   .object({
     id: z.string(),
@@ -57,6 +66,8 @@ export const EndpointTransformSchema = z
       input_audio_cache: zPrice,
       discount: zPrice,
     }),
+
+    variable_pricings: z.any().array(),
 
     can_abort: z.boolean(),
     has_completions: z.boolean(),
@@ -107,6 +118,26 @@ export const EndpointTransformSchema = z
       // remove tag suffix if present
       slug: raw.provider_slug.split('/')[0],
     }
+
+    // * parse known variable pricing types
+    const variable_pricings = raw.variable_pricings
+      .map((pricing) => {
+        const parsed = zVariablePricingPromptThreshold.safeParse(pricing)
+        if (parsed.success) {
+          return parsed.data
+        }
+
+        // known/ignored types: search-threshold
+        if (pricing?.type !== 'search-threshold') {
+          console.warn('[materialize:endpoints] unknown variable pricing type', {
+            model: model.slug,
+            provider: provider.slug,
+            pricing,
+          })
+        }
+        return null
+      })
+      .filter(R.isNonNullish)
 
     const endpoint = {
       uuid: raw.id,
@@ -163,6 +194,8 @@ export const EndpointTransformSchema = z
         web_search: raw.pricing.web_search,
         discount: raw.pricing.discount,
       },
+
+      variable_pricings,
 
       // * limits
       limits: {
