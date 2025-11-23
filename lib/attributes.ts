@@ -588,6 +588,77 @@ export const attributes: Record<string, Attribute> = {
       }
     },
   },
+
+  threshold_pricing: {
+    key: 'threshold_pricing',
+    icon: 'flag',
+    label: 'Threshold Pricing',
+    description: 'Pricing varies based on prompt token threshold',
+    color: 'yellow',
+    resolve: (endpoint) => {
+      const active = !!endpoint.variable_pricings && endpoint.variable_pricings.length > 0
+      return {
+        active,
+      }
+    },
+  },
 } as const
+
+/**
+ * Resolve a specific threshold pricing entry to an attribute state
+ */
+export function resolveThresholdPricing(
+  variablePricing: NonNullable<EndpointPartial['variable_pricings']>[number],
+): ReturnType<Attribute['resolve']> {
+  if (variablePricing.type !== 'prompt-threshold') {
+    return { active: false }
+  }
+
+  const details: { label?: string; value: string }[] = [
+    {
+      label: 'Threshold',
+      value: `> ${variablePricing.threshold.toLocaleString()} tokens`,
+    },
+    {
+      label: 'Prompt',
+      value: formatPrice({
+        priceKey: 'prompt',
+        priceValue: variablePricing.prompt,
+      }),
+    },
+    {
+      label: 'Completions',
+      value: formatPrice({
+        priceKey: 'completion',
+        priceValue: variablePricing.completions,
+      }),
+    },
+  ]
+
+  if (variablePricing.input_cache_read) {
+    details.push({
+      label: 'Cache Read',
+      value: formatPrice({
+        priceKey: 'input_cache_read',
+        priceValue: variablePricing.input_cache_read,
+      }),
+    })
+  }
+
+  if (variablePricing.input_cache_write) {
+    details.push({
+      label: 'Cache Write',
+      value: formatPrice({
+        priceKey: 'input_cache_write',
+        priceValue: variablePricing.input_cache_write,
+      }),
+    })
+  }
+
+  return {
+    active: true,
+    details,
+  }
+}
 
 export type AttributeName = keyof typeof attributes

@@ -5,11 +5,12 @@ import type { Doc } from '@/convex/_generated/dataModel'
 import { DataGridColumnHeader } from '@/components/data-grid/data-grid-column-header'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { attributes, resolveThresholdPricing } from '@/lib/attributes'
 import { formatDateTime, formatPrice } from '@/lib/formatters'
 
 import { fuzzySort } from '../data-grid/data-grid-fuzzy'
 import { EntitySheetTrigger } from '../entity-sheet/entity-sheet'
-import { AttributeBadgeSet } from '../shared/attribute-badge'
+import { AttributeBadge, AttributeBadgeSet } from '../shared/attribute-badge'
 import { EntityBadge } from '../shared/entity-badge'
 
 export type EndpointRow = Doc<'or_views_endpoints'>
@@ -320,13 +321,39 @@ export const columns: ColumnDef<EndpointRow>[] = [
   },
 
   {
-    id: 'otherPricing',
-    header: ({ column }) => <DataGridColumnHeader column={column} title="OTHER $" />,
+    id: 'miscPricing',
+    header: ({ column }) => <DataGridColumnHeader column={column} title="MISC $" />,
     cell: ({ row }) => {
       const endpoint = row.original
-      return <AttributeBadgeSet endpoint={endpoint} attributes={['request']} mode="compact" />
+      const badges: React.ReactNode[] = []
+
+      // Render request badge if active
+      const requestDefinition = attributes.request
+      const requestState = requestDefinition.resolve(endpoint)
+      if (requestState.active) {
+        badges.push(
+          <AttributeBadge key="request" definition={requestDefinition} state={requestState} />,
+        )
+      }
+
+      // Render threshold pricing badges
+      const thresholdPricingDefinition = attributes.threshold_pricing
+      for (const [i, variablePricing] of endpoint.variable_pricings?.entries() ?? []) {
+        const state = resolveThresholdPricing(variablePricing)
+        if (state.active) {
+          badges.push(
+            <AttributeBadge
+              key={`threshold-${i}`}
+              definition={thresholdPricingDefinition}
+              state={state}
+            />,
+          )
+        }
+      }
+
+      return <div className="flex items-center justify-center gap-1">{badges}</div>
     },
-    size: 135,
+    size: 105,
     meta: {
       headerClassName: 'text-center',
       skeleton: <Skeleton className="h-8 w-full" />,
