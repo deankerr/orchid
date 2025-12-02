@@ -18,19 +18,9 @@ const nextConfig: NextConfig = {
   redirects: async () => {
     return [
       {
-        source: '/',
-        destination: '/endpoints',
-        permanent: false,
-      },
-      {
-        source: '/models',
-        destination: '/',
-        permanent: false,
-      },
-      {
-        source: '/models/:path*',
-        destination: '/',
-        permanent: false,
+        source: '/:path*',
+        destination: 'https://orca.orb.town/:path*',
+        permanent: true,
       },
     ]
   },
